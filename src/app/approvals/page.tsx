@@ -17,6 +17,8 @@ import {
   Spinner,
   Alert,
   ProgressBar,
+  OverlayTrigger,
+  Tooltip,
 } from "react-bootstrap";
 import {
   Search,
@@ -532,11 +534,11 @@ export default function ExpenseApprovalPage() {
                 </p>
               </div>
             ) : (
-              <div className="table-responsive">
-                <Table hover className="mb-0">
-                  <thead>
+              <div className="table-responsive rounded-3 overflow-hidden border">
+                <Table hover className="align-middle mb-0">
+                  <thead className="bg-light text-muted small">
                     <tr>
-                      <th className="ps-4" style={{ width: "40px" }}>
+                      <th className="ps-4 py-3" style={{ width: "40px" }}>
                         <Form.Check
                           type="checkbox"
                           checked={allSelected}
@@ -544,18 +546,21 @@ export default function ExpenseApprovalPage() {
                             if (input) input.indeterminate = someSelected;
                           }}
                           onChange={toggleSelectAll}
+                          className="mb-0"
                         />
                       </th>
-                      <th>Date</th>
-                      <th>Employee</th>
-                      <th>Department</th>
-                      <th>Category</th>
-                      <th>Description</th>
-                      <th>Amount</th>
-                      <th>Receipt</th>
-                      <th>Status</th>
-                      <th>Progress</th>
-                      <th className="text-end pe-4">Actions</th>
+                      <th className="py-3">Date</th>
+                      <th className="py-3">Employee</th>
+                      <th className="py-3">Department</th>
+                      <th className="py-3">Category</th>
+                      <th className="py-3">Description</th>
+                      <th className="text-end py-3">Amount</th>
+                      <th className="py-3">Receipt</th>
+                      <th className="py-3">Status</th>
+                      <th className="py-3" style={{ minWidth: 200 }}>
+                        Progress
+                      </th>
+                      <th className="text-end pe-4 py-3">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -581,8 +586,11 @@ export default function ExpenseApprovalPage() {
                       );
 
                       return (
-                        <tr key={exp.id}>
-                          <td>
+                        <tr
+                          key={exp.id}
+                          className="cursor-pointer border-bottom"
+                        >
+                          <td className="ps-4">
                             <Form.Check className="mb-0">
                               <Form.Check.Input
                                 type="checkbox"
@@ -592,13 +600,16 @@ export default function ExpenseApprovalPage() {
                             </Form.Check>
                           </td>
                           <td>
-                            <small className="text-muted">
+                            <div className="text-muted small">
                               {formatDate(exp.createdAt)}
-                            </small>
+                            </div>
                           </td>
-                          <td>{employee || "-"}</td>
+                          <td className="fw-medium">{employee || "-"}</td>
                           <td>
-                            <Badge bg="light" text="dark">
+                            <Badge
+                              bg="outline-dark"
+                              className="px-2 py-1 rounded"
+                            >
                               {department}
                             </Badge>
                           </td>
@@ -606,30 +617,30 @@ export default function ExpenseApprovalPage() {
                             <Badge
                               bg="light"
                               text="dark"
-                              className="text-uppercase"
+                              className="px-2 py-1 rounded text-uppercase"
                             >
                               {category}
                             </Badge>
                           </td>
-                          <td>{exp.description}</td>
-                          <td className="fw-medium">
+                          <td className="small">{exp.description}</td>
+                          <td className="fw-bold text-end">
                             {formatMoney(exp.amount, exp.currency)}
                           </td>
                           <td>
                             {hasReceipt ? (
                               <Badge
                                 bg="success"
-                                className="d-flex align-items-center"
+                                className="px-2 py-1 d-flex align-items-center gap-1"
                               >
-                                <FileText size={12} className="me-1" />
+                                <FileText size={13} />
                                 Attached
                               </Badge>
                             ) : (
                               <Badge
                                 bg="secondary"
-                                className="d-flex align-items-center"
+                                className="px-2 py-1 d-flex align-items-center gap-1"
                               >
-                                <FileText size={12} className="me-1" />
+                                <FileText size={13} />
                                 Missing
                               </Badge>
                             )}
@@ -638,30 +649,30 @@ export default function ExpenseApprovalPage() {
                             {exp.status === "PENDING" ? (
                               <Badge
                                 bg="warning"
-                                className="d-flex align-items-center"
+                                className="px-2 py-1 d-flex align-items-center gap-1"
                               >
-                                <ClockHistory size={12} className="me-1" />
+                                <ClockHistory size={13} />
                                 Pending
                               </Badge>
                             ) : exp.status === "APPROVED" ? (
                               <Badge
                                 bg="success"
-                                className="d-flex align-items-center"
+                                className="px-2 py-1 d-flex align-items-center gap-1"
                               >
-                                <CheckCircle size={12} className="me-1" />
+                                <CheckCircle size={13} />
                                 Approved
                               </Badge>
                             ) : (
                               <Badge
                                 bg="danger"
-                                className="d-flex align-items-center"
+                                className="px-2 py-1 d-flex align-items-center gap-1"
                               >
-                                <XLg size={12} className="me-1" />
+                                <XLg size={13} />
                                 Rejected
                               </Badge>
                             )}
                           </td>
-                          <td style={{ minWidth: 180 }}>
+                          <td style={{ minWidth: 200 }}>
                             <div className="mb-1 small text-muted">
                               {approvedSteps}/{totalSteps} approved{" "}
                               {currentStep
@@ -670,30 +681,42 @@ export default function ExpenseApprovalPage() {
                             </div>
                             <ProgressBar
                               now={percent}
-                              label={`${percent}%`}
-                              visuallyHidden={percent < 15}
+                              className="rounded-pill"
+                              style={{ height: "6px" }}
+                              variant={
+                                exp.status === "APPROVED"
+                                  ? "success"
+                                  : exp.status === "PENDING"
+                                  ? "info"
+                                  : "danger"
+                              }
+                              animated={exp.status === "PENDING"}
                             />
                           </td>
                           <td className="text-end pe-4">
-                            <div className="d-flex gap-1 justify-content-end">
+                            <div className="d-flex gap-2 justify-content-end">
                               <Button
                                 variant="outline-primary"
                                 size="sm"
                                 onClick={() => handleViewDetails(exp)}
-                                title="View details & steps"
+                                className="d-flex align-items-center justify-content-center"
+                                style={{ width: "32px", height: "32px" }}
                               >
                                 <Eye size={14} />
                               </Button>
+
                               {exp.status === "PENDING" && (
                                 <>
                                   <Button
                                     variant="outline-success"
                                     size="sm"
                                     onClick={() => handleApprove(exp.id)}
-                                    title="Approve"
+                                    className="d-flex align-items-center justify-content-center"
+                                    style={{ width: "32px", height: "32px" }}
                                   >
                                     <CheckLg size={14} />
                                   </Button>
+
                                   <Button
                                     variant="outline-danger"
                                     size="sm"
@@ -701,7 +724,8 @@ export default function ExpenseApprovalPage() {
                                       setSelectedExpense(exp);
                                       setShowDetailsModal(true);
                                     }}
-                                    title="Reject (add reason in modal)"
+                                    className="d-flex align-items-center justify-content-center"
+                                    style={{ width: "32px", height: "32px" }}
                                   >
                                     <XLg size={14} />
                                   </Button>

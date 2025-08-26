@@ -31,6 +31,7 @@ import {
   ChatLeftText,
   FileEarmarkX,
   PencilSquare,
+  Tag,
 } from "react-bootstrap-icons";
 import CreateExpenseModal from "../components/modals/create-expense-modal";
 import Navbar from "../components/Navbar";
@@ -79,36 +80,63 @@ interface ExpenseStep {
   level?: number; // alias for order
 }
 
+interface Currency {
+  id: number;
+  currency: string;
+  initials: string;
+  rate: number;
+}
+
+interface Category {
+  id: number;
+  name: string;
+}
+
+interface Department {
+  id: number;
+  name: string;
+}
+
+interface PaymentMethod {
+  id: number;
+  name: string;
+}
+
+interface Region {
+  id: number;
+  name: string;
+}
+
 interface Expense {
   id: number;
   description: string;
   amount: number;
-  currency: string;
-  category?: string | null;
+  currency: Currency | null;
+  category: Category | null;
   receiptUrl?: string | null;
   status: "PENDING" | "APPROVED" | "REJECTED" | "PAID";
   isActive?: boolean | null;
-
+  primaryAmount: number;
+  exchangeRate: number;
   payee: string;
   payeeId: string;
   payeeNumber?: string | null;
-  department?: string | null;
-  paymentMethod?: string | null;
-  region?: string | null;
+  department: Department | null;
+  paymentMethod: PaymentMethod | null;
+  region: Region | null;
   referenceNumber?: string | null;
-
   userId: number;
   user: User;
   workflowId?: number | null;
-
-  // Important:
   expenseSteps: ExpenseStep[];
-
   createdAt: Date;
   updatedAt: Date;
 }
 
-type ExpenseRow = Expense;
+type ExpenseRow = Omit<Expense, "createdAt" | "updatedAt"> & {
+  createdAt: Date | string;
+  updatedAt: Date | string;
+};
 
 /** ========= Helpers ========= */
 
@@ -229,79 +257,99 @@ export default function FinanceDashboard() {
       const data = await response.json();
 
       if (Array.isArray(data)) {
-        const mapped: ExpenseRow[] = data.map((item: any): ExpenseRow => {
+        const mapped = data.map((item: any): ExpenseRow => {
+          // Map user
+          const mappedUser: User = {
+            id: Number(item.user?.id ?? 0),
+            firstName: item.user?.firstName ?? "",
+            lastName: item.user?.lastName ?? "",
+            email: item.user?.email ?? "",
+          };
+
+          // Map steps
           const steps: ExpenseStep[] = Array.isArray(item.expenseSteps)
-            ? item.expenseSteps
-                .map((s: any) => ({
-                  id: Number(s.id),
-                  order: Number(s.order ?? 0),
-                  level: Number(s.order ?? 0),
-                  isOptional: Boolean(s.isOptional ?? false),
-                  status:
-                    (normalizeStatus(s.status) as ApprovalStatus) ||
-                    "NOT_STARTED",
-                  comments: s.comments ?? null,
-                  role: s.role
-                    ? {
-                        id: Number(s.role.id),
-                        name: s.role.name ?? "Unknown role",
-                      }
-                    : null,
-                  approver: s.approver
-                    ? {
-                        id: Number(s.approver.id),
-                        firstName: s.approver.firstName ?? "",
-                        lastName: s.approver.lastName ?? "",
-                        email: s.approver.email ?? "",
-                      }
-                    : null,
-                  workflowStep: s.workflowStep
-                    ? {
-                        id: Number(s.workflowStep.id),
-                        order: Number(s.workflowStep.order ?? 0),
-                        isOptional: Boolean(s.workflowStep.isOptional ?? false),
-                        role: s.workflowStep.role
-                          ? {
-                              id: Number(s.workflowStep.role.id),
-                              name: s.workflowStep.role.name ?? "Unknown role",
-                            }
-                          : null,
-                      }
-                    : null,
-                }))
-                .sort((a: ExpenseStep, b: ExpenseStep) => a.order - b.order)
+            ? item.expenseSteps.map((s: any) => ({
+                id: Number(s.id ?? 0),
+                order: Number(s.order ?? 0),
+                isOptional: Boolean(s.isOptional ?? false),
+                status: (s.status as ApprovalStatus) || "PENDING",
+                comments: s.comments ?? null,
+                role: s.role
+                  ? {
+                      id: Number(s.role.id ?? 0),
+                      name: String(s.role.name ?? ""),
+                    }
+                  : null,
+                approver: s.approver
+                  ? {
+                      id: Number(s.approver.id ?? 0),
+                      firstName: String(s.approver.firstName ?? ""),
+                      lastName: String(s.approver.lastName ?? ""),
+                      email: String(s.approver.email ?? ""),
+                    }
+                  : undefined,
+                level: Number(s.order ?? 0),
+              }))
             : [];
 
-          const mappedUser: User =
-            item.user && typeof item.user === "object"
-              ? {
-                  id: Number(item.user.id ?? 0),
-                  firstName: item.user.firstName ?? "Unknown",
-                  lastName: item.user.lastName ?? "User",
-                  email: item.user.email ?? "",
-                }
-              : { id: 0, firstName: "Unknown", lastName: "User", email: "" };
+          // Map related entities
+          const currency = item.currency
+            ? {
+                id: Number(item.currency.id ?? 0),
+                currency: String(item.currency.currency ?? ""),
+                initials: String(item.currency.initials ?? ""),
+                rate: Number(item.currency.rate ?? 1),
+              }
+            : null;
+
+          const category = item.category
+            ? {
+                id: Number(item.category.id ?? 0),
+                name: String(item.category.name ?? ""),
+              }
+            : null;
+
+          const department = item.department
+            ? {
+                id: Number(item.department.id ?? 0),
+                name: String(item.department.name ?? ""),
+              }
+            : null;
+
+          const paymentMethod = item.paymentMethod
+            ? {
+                id: Number(item.paymentMethod.id ?? 0),
+                name: String(item.paymentMethod.name ?? ""),
+              }
+            : null;
+
+          const region = item.region
+            ? {
+                id: Number(item.region.id ?? 0),
+                name: String(item.region.name ?? ""),
+              }
+            : null;
 
           return {
             id: Number(item.id ?? 0),
             description: item.description ?? "",
             amount: Number(item.amount ?? 0),
-            currency: item.currency ?? "",
-            category: item.category ?? null,
+            currency,
+            category,
             receiptUrl: item.receiptUrl ?? null,
             status:
               (normalizeStatus(item.status) as ExpenseRow["status"]) ||
               "PENDING",
             isActive: Boolean(item.isActive ?? true),
-
+            primaryAmount: Number(item.primaryAmount ?? 0),
+            exchangeRate: Number(item.exchangeRate ?? 0),
             payee: item.payee ?? "",
             payeeId: item.payeeId ?? "",
             payeeNumber: item.payeeNumber ?? null,
-            department: item.department ?? null,
-            paymentMethod: item.paymentMethod ?? null,
-            region: item.region ?? null,
+            department,
+            paymentMethod,
+            region,
             referenceNumber: item.referenceNumber ?? null,
-
             userId: Number(item.userId ?? 0),
             user: mappedUser,
             workflowId:
@@ -309,8 +357,8 @@ export default function FinanceDashboard() {
 
             expenseSteps: steps,
 
-            createdAt: parseDate(item.createdAt),
-            updatedAt: parseDate(item.updatedAt),
+            createdAt: item.createdAt ? parseDate(item.createdAt) : new Date(),
+            updatedAt: item.updatedAt ? parseDate(item.updatedAt) : new Date(),
           };
         });
 
@@ -358,28 +406,31 @@ export default function FinanceDashboard() {
     });
   }, [expenses, searchQuery]);
 
-  const formatDate = (date: Date) => {
+  const formatTime = (date: Date | string | null | undefined): string => {
+    if (!date) return "";
+    const d = typeof date === "string" ? new Date(date) : date;
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const formatDate = (date: Date | string | null | undefined): string => {
+    if (!date) return "N/A";
+    const d = typeof date === "string" ? new Date(date) : date;
+    if (isNaN(d.getTime())) return "N/A";
+
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const d = new Date(date);
-    const dd = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const dateToCheck = new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
-    if (dd.getTime() === today.getTime()) {
-      return `Today, ${d.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}`;
-    } else if (dd.getTime() === yesterday.getTime()) {
-      return `Yesterday, ${d.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}`;
-    } else {
-      return d.toLocaleDateString();
+    if (dateToCheck.getTime() === today.getTime()) {
+      return `Today, ${formatTime(d)}`;
+    } else if (dateToCheck.getTime() === yesterday.getTime()) {
+      return `Yesterday, ${formatTime(d)}`;
     }
+    return d.toLocaleDateString();
   };
 
   if (loading) {
@@ -504,9 +555,10 @@ export default function FinanceDashboard() {
                         <thead className="table-light">
                           <tr>
                             <th className="ps-4">#ID</th>
-                            <th>Date</th>
+                            <th>Created</th>
                             <th>Description</th>
                             <th>Amount</th>
+                            <th>Converted</th>
                             <th>Submitted By</th>
                             <th>Status</th>
                             <th style={{ minWidth: 260 }}>Approval Progress</th>
@@ -531,18 +583,21 @@ export default function FinanceDashboard() {
                                 className="cursor-pointer"
                               >
                                 <td className="ps-4 fw-semibold text-muted">
-                                  #{expense.id}
+                                  <div className="d-flex align-items-center">
+                                    <Tag
+                                      size={14}
+                                      className="me-1 text-primary"
+                                    />
+                                    <span>{expense.id}</span>
+                                  </div>
                                 </td>
                                 <td>
                                   <div className="d-flex flex-column">
                                     <span className="fw-medium">
-                                      {expense.createdAt.toLocaleDateString()}
+                                      {formatDate(expense.createdAt)}
                                     </span>
                                     <small className="text-muted">
-                                      {expense.createdAt.toLocaleTimeString(
-                                        [],
-                                        { hour: "2-digit", minute: "2-digit" }
-                                      )}
+                                      {formatTime(expense.createdAt)}
                                     </small>
                                   </div>
                                 </td>
@@ -563,13 +618,38 @@ export default function FinanceDashboard() {
                                         {expense.description}
                                       </div>
                                       <small className="text-muted">
-                                        {formatDate(expense.createdAt)}
+                                        {formatDate(expense.updatedAt)}
                                       </small>
                                     </div>
                                   </div>
                                 </td>
-                                <td className="fw-bold text-danger">
-                                  {expense.currency} {expense.amount.toFixed(2)}
+                                <td>
+                                  <div className="d-flex flex-column">
+                                    <span className="text-danger fw-bold">
+                                      {expense?.primaryAmount?.toFixed(2) ||
+                                        "0.00"}
+                                    </span>
+                                    <span className="text-muted small">
+                                      {expense?.currency?.initials
+                                        ? `${
+                                            expense.currency.initials
+                                              ? `${expense.currency.initials}`
+                                              : ""
+                                          }`
+                                        : "N/A"}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="text-success fw-bold">
+                                  <div className="d-flex flex-column">
+                                    <span>
+                                      {expense?.amount?.toLocaleString() || "0.00"}{" "}
+                                      KES
+                                    </span>
+                                    <span className="text-muted small ms-1 fw-normal">
+                                      (Base currency)
+                                    </span>
+                                  </div>
                                 </td>
                                 <td>
                                   <div className="d-flex align-items-center">
@@ -588,10 +668,18 @@ export default function FinanceDashboard() {
                                 <td>
                                   <Badge
                                     bg={badge.bg}
-                                    className="d-inline-flex align-items-center py-2 px-3 rounded-pill"
+                                    className="d-inline-flex align-items-center py-2 px-3 rounded-pill bg-opacity-10 text-opacity-100"
+                                    text={badge.bg.replace("bg-", "text-")}
                                   >
                                     {badge.icon}
-                                    <span className="ms-1">{badge.label}</span>
+                                    <span
+                                      className={`ms-1 text-${badge.bg.replace(
+                                        "bg-",
+                                        ""
+                                      )}`}
+                                    >
+                                      {badge.label}
+                                    </span>
                                   </Badge>
                                 </td>
                                 <td>
@@ -700,7 +788,6 @@ export default function FinanceDashboard() {
           show={showModal}
           onHide={() => setShowModal(false)}
           size="xl"
-          centered
           className="expense-modal"
         >
           {selectedExpense && (
@@ -744,8 +831,8 @@ export default function FinanceDashboard() {
                   </div>
                   <div className="text-end">
                     <h5 className="mb-0 text-danger fw-bold">
-                      {selectedExpense.currency}{" "}
-                      {selectedExpense.amount.toFixed(2)}
+                      {selectedExpense.amount.toFixed(2)}{" "}
+                      KES
                     </h5>
                     <small className="text-muted">Total amount</small>
                   </div>
@@ -754,9 +841,9 @@ export default function FinanceDashboard() {
                 <Row className="gy-4">
                   {/* Expense Information */}
                   <Col md={6}>
-                    <Card className="border-0 shadow-sm h-100">
+                    <Card className="border shadow-sm h-100">
                       <Card.Body>
-                        <div className="d-flex align-items-center mb-3">
+                        <div className="d-flex align-items-center mb-3 bg-primary bg-opacity-10 p-3 rounded-3">
                           <div className="bg-primary bg-opacity-10 p-2 rounded me-2">
                             <FileText size={18} className="text-primary" />
                           </div>
@@ -769,30 +856,42 @@ export default function FinanceDashboard() {
                           <div className="detail-item">
                             <span className="detail-label">Submitted On</span>
                             <span className="detail-value">
-                              {selectedExpense.createdAt.toLocaleDateString()}{" "}
-                              at{" "}
-                              {selectedExpense.createdAt.toLocaleTimeString(
-                                [],
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                }
-                              )}
+                              {formatDate(selectedExpense.createdAt)}
                             </span>
                           </div>
 
                           <div className="detail-item">
                             <span className="detail-label">Last Updated</span>
                             <span className="detail-value">
-                              {selectedExpense.updatedAt.toLocaleDateString()}{" "}
-                              at{" "}
-                              {selectedExpense.updatedAt.toLocaleTimeString(
-                                [],
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                }
-                              )}
+                              {formatDate(selectedExpense.updatedAt)}
+                            </span>
+                          </div>
+
+                          <div className="detail-item">
+                            <span className="detail-label">Category</span>
+                            <span className="detail-value">
+                              {selectedExpense.category?.name || "N/A"}
+                            </span>
+                          </div>
+
+                          <div className="detail-item">
+                            <span className="detail-label">Department</span>
+                            <span className="detail-value">
+                              {selectedExpense.department?.name || "N/A"}
+                            </span>
+                          </div>
+
+                          <div className="detail-item">
+                            <span className="detail-label">Region</span>
+                            <span className="detail-value">
+                              {selectedExpense.region?.name || "N/A"}
+                            </span>
+                          </div>
+
+                          <div className="detail-item">
+                            <span className="detail-label">Payment Method</span>
+                            <span className="detail-value">
+                              {selectedExpense.paymentMethod?.name || "N/A"}
                             </span>
                           </div>
 
@@ -813,7 +912,7 @@ export default function FinanceDashboard() {
 
                   {/* Approval Details */}
                   <Col md={6}>
-                    <Card className="border-0 shadow-sm h-100">
+                    <Card className="border shadow-sm h-100">
                       <Card.Body>
                         <div className="d-flex align-items-center mb-3">
                           <div className="bg-success bg-opacity-10 p-2 rounded me-2">

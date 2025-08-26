@@ -86,32 +86,33 @@ export default function LoginPage() {
 
   return (
     <div className="login-wrapper">
-      <Container fluid className="g-0">
+      <Container className="g-0">
         <Row className="g-0 min-vh-100">
           {/* Left Hero Section - Enhanced with gradient and better spacing */}
           <Col
-            md={6}
+            md={7}
             className="d-none d-md-flex align-items-center justify-content-center hero-section"
             style={{
               borderRight: "1px solid rgba(255, 255, 255, 0.1)",
             }}
           >
             <div className="text-center text-muted px-5">
-              <div className="mb-1">
-                <div className="d-flex align-items-center justify-content-center mb-4">
-                  <div className="app-logo me-3">
-                    <Bank size={42} />
-                  </div>
-                  <h1 className="fw-bold mb-0 text-dark">ExpenseTracker</h1>
-                </div>
-                <p className="opacity-90 mb-5 px-5">
-                  Take control of your finances with our secure and intuitive
-                  expense management platform.
-                </p>
-              </div>
-
               <div className="features-container bg-white bg-opacity-10 rounded-4 p-4 p-lg-5 mx-auto backdrop-blur">
-                <h5 className="mb-4 fw-semibold">Why choose ExpenseTracker?</h5>
+                <div className="mb-1 bg-primary p-3 rounded-3 bg-opacity-10 mb-5">
+                  <div className="d-flex align-items-center justify-content-center mb-4">
+                    <div className="app-logo me-3">
+                      <Bank size={22} />
+                    </div>
+                    <h3 className="fw-bold mb-0 text-dark">ExpenseTracker</h3>
+                  </div>
+                  <p className="opacity-90 mb-5 px-5">
+                    Take control of your finances with our secure and intuitive
+                    expense management platform.{" "}
+                    <span className="fw-bold text-dark">
+                      Why ExpenseTracker?
+                    </span>
+                  </p>
+                </div>
                 <div className="text-start">
                   <div className="row g-3">
                     {/* 1. Control expenses */}
@@ -119,9 +120,9 @@ export default function LoginPage() {
                       <div className="d-flex align-items-start h-100 p-3 bg-white bg-opacity-5 rounded-3">
                         <div
                           className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                          style={{ width: 40, height: 40 }}
+                          style={{ width: 50, height: 30 }}
                         >
-                          <ShieldLock size={20} />
+                          <ShieldLock size={14} />
                         </div>
                         <div>
                           <div className="fw-medium">Control your expenses</div>
@@ -137,9 +138,9 @@ export default function LoginPage() {
                       <div className="d-flex align-items-start h-100 p-3 bg-white bg-opacity-5 rounded-3">
                         <div
                           className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                          style={{ width: 40, height: 40 }}
+                          style={{ width: 50, height: 30 }}
                         >
-                          <Wallet2 size={20} />
+                          <Wallet2 size={14} />
                         </div>
                         <div>
                           <div className="fw-medium">Budget process</div>
@@ -155,9 +156,9 @@ export default function LoginPage() {
                       <div className="d-flex align-items-start h-100 p-3 bg-white bg-opacity-5 rounded-3">
                         <div
                           className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                          style={{ width: 40, height: 40 }}
+                          style={{ width: 50, height: 30 }}
                         >
-                          <FileEarmarkText size={20} />
+                          <FileEarmarkText size={14} />
                         </div>
                         <div>
                           <div className="fw-medium">Cost saving</div>
@@ -173,9 +174,9 @@ export default function LoginPage() {
                       <div className="d-flex align-items-start h-100 p-3 bg-white bg-opacity-5 rounded-3">
                         <div
                           className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                          style={{ width: 40, height: 40 }}
+                          style={{ width: 50, height: 30 }}
                         >
-                          <CloudCheck size={20} />
+                          <CloudCheck size={14} />
                         </div>
                         <div>
                           <div className="fw-medium">Accessible anywhere</div>
@@ -192,9 +193,9 @@ export default function LoginPage() {
                       <div className="d-flex align-items-start h-100 p-3 bg-white bg-opacity-5 rounded-3">
                         <div
                           className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                          style={{ width: 40, height: 40 }}
+                          style={{ width: 50, height: 30 }}
                         >
-                          <CurrencyExchange size={20} />
+                          <CurrencyExchange size={14} />
                         </div>
                         <div>
                           <div className="fw-medium">
@@ -212,9 +213,9 @@ export default function LoginPage() {
                       <div className="d-flex align-items-start h-100 p-3 bg-white bg-opacity-5 rounded-3">
                         <div
                           className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                          style={{ width: 40, height: 40 }}
+                          style={{ width: 50, height: 30 }}
                         >
-                          <Plug size={20} />
+                          <Plug size={14} />
                         </div>
                         <div>
                           <div className="fw-medium">System integration</div>
@@ -227,31 +228,15 @@ export default function LoginPage() {
                   </div>
                 </div>
               </div>
-
-              <div className="text-center mt-2 small text-muted">
-                © {new Date().getFullYear()} ExpenseTracker •{" "}
-                <a href="#" className="text-muted text-decoration-none">
-                  Privacy
-                </a>{" "}
-                •{" "}
-                <a href="#" className="text-muted text-decoration-none">
-                  Terms
-                </a>
-              </div>
             </div>
           </Col>
 
           {/* Right Login Form - Enhanced with better spacing and modern design */}
           <Col
-            md={6}
+            md={5}
             className="d-flex align-items-center justify-content-center form-section"
           >
             <div className="w-100 px-4 py-5" style={{ maxWidth: "600px" }}>
-              <div className="text-center mb-4">
-                <h2 className="fw-bold text-dark mb-2">Welcome Back</h2>
-                <p className="text-muted">Sign in to access your account</p>
-              </div>
-
               <Card className="border-0 shadow-lg rounded-4 overflow-hidden">
                 <div className="card-header-bg"></div>
                 <Card.Body className="p-4 p-md-5">
