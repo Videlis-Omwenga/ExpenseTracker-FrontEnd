@@ -624,7 +624,7 @@ export default function FinanceDashboard() {
                                   </div>
                                 </td>
                                 <td>
-                                  <div className="d-flex flex-column">
+                                  <div className="d-flex flex-column small">
                                     <span className="text-danger fw-bold">
                                       {expense?.primaryAmount?.toFixed(2) ||
                                         "0.00"}
@@ -640,14 +640,12 @@ export default function FinanceDashboard() {
                                     </span>
                                   </div>
                                 </td>
-                                <td className="text-success fw-bold">
+                                <td className="text-success fw-bold small">
                                   <div className="d-flex flex-column">
                                     <span>
-                                      {expense?.amount?.toLocaleString() || "0.00"}{" "}
+                                      {expense?.amount?.toLocaleString() ||
+                                        "0.00"}{" "}
                                       KES
-                                    </span>
-                                    <span className="text-muted small ms-1 fw-normal">
-                                      (Base currency)
                                     </span>
                                   </div>
                                 </td>
@@ -831,8 +829,7 @@ export default function FinanceDashboard() {
                   </div>
                   <div className="text-end">
                     <h5 className="mb-0 text-danger fw-bold">
-                      {selectedExpense.amount.toFixed(2)}{" "}
-                      KES
+                      {selectedExpense.amount.toLocaleString()} KES
                     </h5>
                     <small className="text-muted">Total amount</small>
                   </div>

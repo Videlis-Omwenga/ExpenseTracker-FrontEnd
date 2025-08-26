@@ -3,23 +3,32 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Card,
-  Button,
-  Table,
   Badge,
-  Container,
-  Row,
+  Button,
+  Card,
   Col,
-  Modal,
-  Form,
+  Container,
   Dropdown,
+  Form,
+  Modal,
   Pagination,
-  Spinner,
-  Alert,
   ProgressBar,
-  OverlayTrigger,
-  Tooltip,
+  Row,
+  Spinner,
+  Table,
+  Alert,
 } from "react-bootstrap";
+import { 
+  FaFlag, 
+  FaInfoCircle, 
+  FaUser, 
+  FaClock, 
+  FaComment, 
+  FaHourglassHalf, 
+  FaCheck, 
+  FaTimes, 
+  FaMinus 
+} from 'react-icons/fa';
 import {
   Search,
   Filter,
@@ -64,31 +73,67 @@ type ExpenseStep = {
   updatedAt?: string;
 };
 
+type Currency = {
+  id: number;
+  currency: string;
+  initials: string;
+  rate: number;
+};
+
+type Region = {
+  id: number;
+  name: string;
+};
+
+type PaymentMethod = {
+  id: number;
+  name: string;
+};
+
+type Category = {
+  id: number;
+  name: string;
+};
+
+type Department = {
+  id: number;
+  name: string;
+};
+
 type Expense = {
   id: number;
+  workflowId: number;
   description: string;
   amount: number;
   currency: string;
-  category?: string | null;
+  category: Category;
   receiptUrl?: string | null;
-  department?: string | null; // (also present on User.department?.name)
+  department: Department;
+  paymentMethod: PaymentMethod;
+  region: Region;
+  currencyDetails: Currency;
   status: ExpenseStatus;
   user: UserLite;
   expenseSteps: ExpenseStep[];
-  createdAt: string; // ISO
-  updatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 /** Utility formatters */
-const formatMoney = (amount: number, currency: string) => {
+const formatMoney = (amount: number, currency: string | Currency) => {
+  // Handle both string currency code and Currency object
+  const currencyCode =
+    typeof currency === "string" ? currency : currency?.initials || "USD";
+
   try {
     return new Intl.NumberFormat(undefined, {
       style: "currency",
-      currency,
+      currency: currencyCode,
       maximumFractionDigits: 2,
     }).format(amount);
-  } catch {
-    return `${currency} ${amount.toFixed(2)}`;
+  } catch (e) {
+    // Fallback if Intl.NumberFormat fails
+    return `${currencyCode} ${amount.toFixed(2)}`;
   }
 };
 const formatDate = (iso?: string) => {
@@ -243,16 +288,21 @@ export default function ExpenseApprovalPage() {
       const employee = `${exp.user?.firstName ?? ""} ${
         exp.user?.lastName ?? ""
       }`.trim();
-      const department = exp.department || exp.user?.department?.name || "";
-      const category = exp.category || "";
+      const department =
+        exp.department?.name || exp.user?.department?.name || "";
+      const category = exp.category?.name || "";
       const description = exp.description || "";
+      const regionName = exp.region?.name || "";
+      const paymentMethodName = exp.paymentMethod?.name || "";
 
       const matchesSearch =
         q.length === 0 ||
         employee.toLowerCase().includes(q) ||
         department.toLowerCase().includes(q) ||
         category.toLowerCase().includes(q) ||
-        description.toLowerCase().includes(q);
+        description.toLowerCase().includes(q) ||
+        regionName.toLowerCase().includes(q) ||
+        paymentMethodName.toLowerCase().includes(q);
 
       const matchesStatus =
         statusFilter === "all" || exp.status === statusFilter;
@@ -553,6 +603,8 @@ export default function ExpenseApprovalPage() {
                       <th className="py-3">Employee</th>
                       <th className="py-3">Department</th>
                       <th className="py-3">Category</th>
+                      <th className="py-3">Region</th>
+                      <th className="py-3">Payment Method</th>
                       <th className="py-3">Description</th>
                       <th className="text-end py-3">Amount</th>
                       <th className="py-3">Receipt</th>
@@ -569,8 +621,13 @@ export default function ExpenseApprovalPage() {
                         exp.user?.lastName ?? ""
                       }`.trim();
                       const department =
-                        exp.department || exp.user?.department?.name || "-";
-                      const category = exp.category || "-";
+                        exp.department?.name ||
+                        exp.user?.department?.name ||
+                        "-";
+                      const category = exp.category?.name || "-";
+                      const description = exp.description || "";
+                      const regionName = exp.region?.name || "";
+                      const paymentMethodName = exp.paymentMethod?.name || "";
                       const hasReceipt = !!exp.receiptUrl;
 
                       const totalSteps = exp.expenseSteps.length || 0;
@@ -610,7 +667,7 @@ export default function ExpenseApprovalPage() {
                               bg="outline-dark"
                               className="px-2 py-1 rounded"
                             >
-                              {department}
+                              {exp.department?.name || "-"}
                             </Badge>
                           </td>
                           <td>
@@ -619,12 +676,25 @@ export default function ExpenseApprovalPage() {
                               text="dark"
                               className="px-2 py-1 rounded text-uppercase"
                             >
-                              {category}
+                              {exp.category?.name || "-"}
+                            </Badge>
+                          </td>
+                          <td>
+                            <Badge bg="info" className="px-2 py-1">
+                              {exp.region?.name || "-"}
+                            </Badge>
+                          </td>
+                          <td>
+                            <Badge bg="warning" className="px-2 py-1">
+                              {exp.paymentMethod?.name || "-"}
                             </Badge>
                           </td>
                           <td className="small">{exp.description}</td>
                           <td className="fw-bold text-end">
-                            {formatMoney(exp.amount, exp.currency)}
+                            {formatMoney(
+                              exp.amount,
+                              exp.currencyDetails || exp.currency
+                            )}
                           </td>
                           <td>
                             {hasReceipt ? (
@@ -794,7 +864,7 @@ export default function ExpenseApprovalPage() {
         <Modal
           show={showDetailsModal}
           onHide={() => setShowDetailsModal(false)}
-          size="lg"
+          size="xl"
         >
           {selectedExpense && (
             <>
@@ -803,8 +873,8 @@ export default function ExpenseApprovalPage() {
               </Modal.Header>
               <Modal.Body>
                 <Row className="gy-4">
-                  <Col md={6}>
-                    <div className="detail-section">
+                  <Col md={6} className="small">
+                    <div className="detail-section border-bottom">
                       <h6 className="section-title">Expense Information</h6>
                       <dl className="row mb-0">
                         <dt className="col-sm-5">Employee</dt>
@@ -816,20 +886,14 @@ export default function ExpenseApprovalPage() {
 
                         <dt className="col-sm-5">Department</dt>
                         <dd className="col-sm-7">
-                          {selectedExpense.department ||
+                          {selectedExpense.department?.name ||
                             selectedExpense.user?.department?.name ||
                             "-"}
                         </dd>
 
                         <dt className="col-sm-5">Category</dt>
                         <dd className="col-sm-7">
-                          <Badge
-                            bg="light"
-                            text="dark"
-                            className="text-uppercase"
-                          >
-                            {selectedExpense.category || "-"}
-                          </Badge>
+                          {selectedExpense.category?.name || "-"}
                         </dd>
 
                         <dt className="col-sm-5">Description</dt>
@@ -839,20 +903,28 @@ export default function ExpenseApprovalPage() {
                       </dl>
                     </div>
                   </Col>
-                  <Col md={6}>
-                    <div className="detail-section">
+                  <Col md={6} className="small">
+                    <div className="detail-section border-bottom">
                       <h6 className="section-title">Financial Details</h6>
                       <dl className="row mb-0">
                         <dt className="col-sm-5">Amount</dt>
                         <dd className="col-sm-7 fw-bold">
                           {formatMoney(
                             selectedExpense.amount,
-                            selectedExpense.currency
+                            selectedExpense.currencyDetails?.initials ||
+                              selectedExpense.currency ||
+                              "USD"
                           )}
                         </dd>
 
                         <dt className="col-sm-5">Currency</dt>
-                        <dd className="col-sm-7">{selectedExpense.currency}</dd>
+                        <dd className="col-sm-7">
+                          {selectedExpense.currencyDetails?.currency ||
+                            selectedExpense?.currencyDetails?.initials ||
+                            "N/A"}
+                          {selectedExpense.currencyDetails?.initials &&
+                            ` (${selectedExpense.currencyDetails.initials})`}
+                        </dd>
 
                         <dt className="col-sm-5">Date Submitted</dt>
                         <dd className="col-sm-7">
@@ -885,39 +957,91 @@ export default function ExpenseApprovalPage() {
                 {/* Steps timeline */}
                 <Row className="mt-4">
                   <Col>
-                    <div className="detail-section">
-                      <h6 className="section-title">Approval Steps</h6>
+                    <div className="detail-section border rounded-4 shadow-sm p-3 p-md-4 bg-white">
+                      <h6 className="section-title fw-bold mb-3 d-flex align-items-center">
+                        <FaFlag className="me-2 text-primary" />
+                        Approval Steps
+                      </h6>
+
                       {selectedExpense.expenseSteps.length === 0 ? (
-                        <div className="text-muted">No steps configured.</div>
+                        <div className="text-muted fst-italic ps-1">
+                          <FaInfoCircle className="me-2" />No steps
+                          configured.
+                        </div>
                       ) : (
-                        <ul className="list-group">
+                        <div className="timeline">
                           {selectedExpense.expenseSteps
                             .sort((a, b) => a.order - b.order)
-                            .map((step) => (
-                              <li
+                            .map((step, index) => (
+                              <div
                                 key={step.id}
-                                className="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center"
+                                className="timeline-item d-flex align-items-start mb-4"
                               >
-                                <div className="mb-2 mb-md-0">
-                                  <strong>Step {step.order}</strong>{" "}
-                                  <span className="text-muted">
-                                    • {step.role?.name ?? "Unassigned role"}
+                                {/* Timeline marker */}
+                                <div className="timeline-marker me-3 d-flex flex-column align-items-center">
+                                  <span
+                                    className={`rounded-circle p-2 shadow-sm d-flex align-items-center justify-content-center ${
+                                      step.status === "PENDING"
+                                        ? "bg-warning text-dark"
+                                        : step.status === "APPROVED"
+                                        ? "bg-success text-white"
+                                        : step.status === "REJECTED"
+                                        ? "bg-danger text-white"
+                                        : "bg-secondary text-white"
+                                    }`}
+                                    style={{ width: '36px', height: '36px' }}
+                                  >
+                                    {step.status === "PENDING" ? (
+                                      <FaHourglassHalf />
+                                    ) : step.status === "APPROVED" ? (
+                                      <FaCheck />
+                                    ) : step.status === "REJECTED" ? (
+                                      <FaTimes />
+                                    ) : (
+                                      <FaMinus />
+                                    )}
                                   </span>
+                                  {index <
+                                    selectedExpense.expenseSteps.length - 1 && (
+                                    <div className="flex-grow-1 border-start border-2 mt-2"></div>
+                                  )}
+                                </div>
+
+                                {/* Step content */}
+                                <div className="flex-grow-1">
+                                  <div className="fw-semibold">
+                                    Step {step.order}{" "}
+                                    <span className="text-muted small">
+                                      • {step.role?.name ?? "Unassigned role"}
+                                    </span>
+                                  </div>
+
                                   <div className="small text-muted mt-1">
+                                    <FaUser className="me-1" />
                                     {step.approver
-                                      ? `Approver: ${step.approver.firstName} ${step.approver.lastName}`
-                                      : "Approver: —"}
-                                    {step.updatedAt
-                                      ? ` • Updated: ${formatDate(
-                                          step.updatedAt
-                                        )}`
-                                      : ""}
-                                    {step.comments
-                                      ? ` • Notes: ${step.comments}`
-                                      : ""}
+                                      ? `${step.approver.firstName} ${step.approver.lastName}`
+                                      : "—"}
+                                    {step.updatedAt && (
+                                      <>
+                                        {" "}
+                                        • <FaClock className="me-1" />
+                                        {formatDate(step.updatedAt)}
+                                      </>
+                                    )}
+                                    {step.comments && (
+                                      <>
+                                        {" "}
+                                        •{" "}
+                                        <FaComment className="me-1" />
+                                        {step.comments}
+                                      </>
+                                    )}
                                   </div>
                                 </div>
+
+                                {/* Status badge */}
                                 <Badge
+                                  pill
                                   bg={
                                     step.status === "PENDING"
                                       ? "warning"
@@ -927,21 +1051,22 @@ export default function ExpenseApprovalPage() {
                                       ? "danger"
                                       : "secondary"
                                   }
+                                  className="ms-3 px-3 py-2 fw-semibold"
                                 >
                                   {humanStatus(step.status)}
                                 </Badge>
-                              </li>
+                              </div>
                             ))}
-                        </ul>
+                        </div>
                       )}
                     </div>
                   </Col>
                 </Row>
 
                 {/* Approval actions */}
-                <Row className="mt-4">
+                <Modal.Footer className="mt-4">
                   <Col>
-                    <div className="detail-section">
+                    <div className="detail-section border-bottom small">
                       <h6 className="section-title">Approval Actions</h6>
                       <Form.Group className="mb-3">
                         <Form.Label>Rejection Reason (if rejecting)</Form.Label>
@@ -950,11 +1075,12 @@ export default function ExpenseApprovalPage() {
                           rows={3}
                           value={rejectionReason}
                           onChange={(e) => setRejectionReason(e.target.value)}
-                          placeholder="Provide reason..."
                         />
+                        <Form.Text> Provide reason...</Form.Text>
                       </Form.Group>
                       <div className="d-flex gap-2">
                         <Button
+                          size="sm"
                           variant="success"
                           onClick={() => handleApproveExpenseFromModal(true)}
                         >
@@ -962,6 +1088,7 @@ export default function ExpenseApprovalPage() {
                           Approve Expense
                         </Button>
                         <Button
+                          size="sm"
                           variant="danger"
                           onClick={() => handleApproveExpenseFromModal(false)}
                         >
@@ -971,7 +1098,7 @@ export default function ExpenseApprovalPage() {
                       </div>
                     </div>
                   </Col>
-                </Row>
+                </Modal.Footer>
               </Modal.Body>
               <Modal.Footer className="border-top-0">
                 <Button
