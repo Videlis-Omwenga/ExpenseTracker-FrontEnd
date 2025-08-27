@@ -19,7 +19,6 @@ import {
 } from "react-bootstrap";
 import {
   ArrowDownCircle,
-  ChevronRight,
   Clock,
   FileText,
   CheckCircle,
@@ -39,6 +38,7 @@ import { toast } from "react-toastify";
 import { BASE_API_URL } from "../static/apiConfig";
 import AuthProvider from "../authPages/tokenData";
 import { User } from "lucide-react";
+import { FaListAlt } from "react-icons/fa";
 
 /** ========= Types aligned to your Prisma schema ========= */
 
@@ -117,7 +117,7 @@ interface Expense {
   status: "PENDING" | "APPROVED" | "REJECTED" | "PAID";
   isActive?: boolean | null;
   primaryAmount: number;
-  exchangeRate: number;
+  exchangeRateUsed: number;
   payee: string;
   payeeId: string;
   payeeNumber?: string | null;
@@ -129,22 +129,22 @@ interface Expense {
   user: User;
   workflowId?: number | null;
   expenseSteps: ExpenseStep[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 type ExpenseRow = Omit<Expense, "createdAt" | "updatedAt"> & {
-  createdAt: Date | string;
-  updatedAt: Date | string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 /** ========= Helpers ========= */
 
-const parseDate = (d: any): Date => {
+const parseDate = (d: any): string => {
   try {
-    return d ? new Date(d) : new Date();
+    return d ? d : "";
   } catch {
-    return new Date();
+    return "";
   }
 };
 
@@ -256,6 +256,8 @@ export default function FinanceDashboard() {
 
       const data = await response.json();
 
+      console.log(data);
+
       if (Array.isArray(data)) {
         const mapped = data.map((item: any): ExpenseRow => {
           // Map user
@@ -342,7 +344,7 @@ export default function FinanceDashboard() {
               "PENDING",
             isActive: Boolean(item.isActive ?? true),
             primaryAmount: Number(item.primaryAmount ?? 0),
-            exchangeRate: Number(item.exchangeRate ?? 0),
+            exchangeRateUsed: Number(item.exchangeRate ?? 0),
             payee: item.payee ?? "",
             payeeId: item.payeeId ?? "",
             payeeNumber: item.payeeNumber ?? null,
@@ -357,8 +359,8 @@ export default function FinanceDashboard() {
 
             expenseSteps: steps,
 
-            createdAt: item.createdAt ? parseDate(item.createdAt) : new Date(),
-            updatedAt: item.updatedAt ? parseDate(item.updatedAt) : new Date(),
+            createdAt: item.createdAt ? parseDate(item.createdAt) : "",
+            updatedAt: item.updatedAt ? parseDate(item.updatedAt) : "",
           };
         });
 
@@ -413,23 +415,10 @@ export default function FinanceDashboard() {
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  const formatDate = (date: Date | string | null | undefined): string => {
-    if (!date) return "N/A";
-    const d = typeof date === "string" ? new Date(date) : date;
-    if (isNaN(d.getTime())) return "N/A";
-
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    const dateToCheck = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
-    if (dateToCheck.getTime() === today.getTime()) {
-      return `Today, ${formatTime(d)}`;
-    } else if (dateToCheck.getTime() === yesterday.getTime()) {
-      return `Yesterday, ${formatTime(d)}`;
-    }
+  const formatDate = (iso?: string) => {
+    if (!iso) return "-";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
     return d.toLocaleDateString();
   };
 
@@ -519,7 +508,9 @@ export default function FinanceDashboard() {
         <Container fluid className="mt-5">
           <Card className="mb-4">
             <Card.Header className="bg-white border-bottom d-flex justify-content-between align-items-center mb-5">
-              <h6 className="mb-0 fw-bold text-muted">Your Expenses</h6>
+              <h6 className="mb-0 fw-bold text-secondary text-uppercase">
+                Your Expenses Dashboard
+              </h6>
               <div className="d-flex">
                 <div className="search-box me-2 d-flex d-wrap">
                   <Form.Control
@@ -551,18 +542,18 @@ export default function FinanceDashboard() {
                 <Card className="border-0 shadow-sm">
                   <Card.Body className="p-0">
                     <div className="table-responsive">
-                      <Table hover className="mb-0 transactions-table">
+                      <Table hover className="mb-0 transactions-table small">
                         <thead className="table-light">
                           <tr>
                             <th className="ps-4">#ID</th>
                             <th>Created</th>
+                            <th>Payee</th>
+                            <th>Payee Number</th>
                             <th>Description</th>
                             <th>Amount</th>
-                            <th>Converted</th>
-                            <th>Submitted By</th>
+                            <th>Owner</th>
                             <th>Status</th>
-                            <th style={{ minWidth: 260 }}>Approval Progress</th>
-                            <th className="pe-4"></th>
+                            <th style={{ minWidth: 120 }}>Approval Progress</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -593,43 +584,48 @@ export default function FinanceDashboard() {
                                 </td>
                                 <td>
                                   <div className="d-flex flex-column">
-                                    <span className="fw-medium">
-                                      {formatDate(expense.createdAt)}
-                                    </span>
-                                    <small className="text-muted">
-                                      {formatTime(expense.createdAt)}
-                                    </small>
+                                    <div className="">
+                                      Created: {formatDate(expense.createdAt)}
+                                    </div>
+                                    <div className="text-muted small">
+                                      Updated: {formatDate(expense.updatedAt)}
+                                    </div>
                                   </div>
                                 </td>
+                                <td>{expense.payee}</td>
+                                <td>{expense.payeeNumber}</td>
                                 <td>
                                   <div className="d-flex align-items-center">
-                                    <div className="transaction-icon me-3 bg-danger bg-opacity-10 p-2 rounded-3">
-                                      <ArrowDownCircle
-                                        className="text-danger"
-                                        size={20}
+                                    <div className="transaction-icon me-2 bg-light border bg-opacity-10 p-1 rounded-3">
+                                      <FaListAlt
+                                        className="text-success"
+                                        size={14}
                                       />
                                     </div>
                                     <div>
                                       <div
                                         className="fw-medium text-truncate"
-                                        style={{ maxWidth: "200px" }}
+                                        style={{ maxWidth: "300px" }}
                                         title={expense.description}
                                       >
                                         {expense.description}
                                       </div>
-                                      <small className="text-muted">
-                                        {formatDate(expense.updatedAt)}
-                                      </small>
+                                      <div className="text-muted small">
+                                        {expense.region?.name}
+                                      </div>
                                     </div>
                                   </div>
                                 </td>
-                                <td>
-                                  <div className="d-flex flex-column small">
-                                    <span className="text-danger fw-bold">
-                                      {expense?.primaryAmount?.toFixed(2) ||
-                                        "0.00"}
+                                <td className="text-success">
+                                  <div className="d-flex flex-column">
+                                    <span className="text-success fw-bold">
+                                      {expense?.amount?.toLocaleString() ||
+                                        "0.00"}{" "}
+                                      KES
                                     </span>
                                     <span className="text-muted small">
+                                      {expense?.primaryAmount?.toLocaleString() ||
+                                        "0.00"}{" "}
                                       {expense?.currency?.initials
                                         ? `${
                                             expense.currency.initials
@@ -640,15 +636,6 @@ export default function FinanceDashboard() {
                                     </span>
                                   </div>
                                 </td>
-                                <td className="text-success fw-bold small">
-                                  <div className="d-flex flex-column">
-                                    <span>
-                                      {expense?.amount?.toLocaleString() ||
-                                        "0.00"}{" "}
-                                      KES
-                                    </span>
-                                  </div>
-                                </td>
                                 <td>
                                   <div className="d-flex align-items-center">
                                     <div className="avatar-sm bg-primary bg-opacity-10 text-primary fw-medium d-flex align-items-center justify-content-center rounded-circle me-2">
@@ -656,10 +643,10 @@ export default function FinanceDashboard() {
                                       {expense.user.lastName.charAt(0)}
                                     </div>
                                     <div>
-                                      <small className="fw-medium">
+                                      <span className="fw-medium">
                                         {expense.user.firstName}{" "}
                                         {expense.user.lastName}
-                                      </small>
+                                      </span>
                                     </div>
                                   </div>
                                 </td>
@@ -716,9 +703,9 @@ export default function FinanceDashboard() {
                                         );
                                       })}
                                     </div>
-                                    <small className="text-muted fw-medium">
+                                    <span className="text-muted fw-medium">
                                       {approved}/{total}
-                                    </small>
+                                    </span>
                                   </div>
                                   <div>
                                     <ProgressBar
@@ -734,9 +721,9 @@ export default function FinanceDashboard() {
                                       style={{ height: "6px" }}
                                     />
                                     <div className="d-flex justify-content-between mt-1">
-                                      <small className="text-muted">
+                                      <span className="text-muted">
                                         {progress}% complete
-                                      </small>
+                                      </span>
                                       {progress === 100 && (
                                         <CheckCircleFill
                                           size={14}
@@ -744,16 +731,6 @@ export default function FinanceDashboard() {
                                         />
                                       )}
                                     </div>
-                                  </div>
-                                </td>
-                                <td className="pe-4">
-                                  <div className="d-flex justify-content-end">
-                                    <Button
-                                      variant="outline-light"
-                                      className="p-1 rounded-circle"
-                                    >
-                                      <ChevronRight className="text-muted" />
-                                    </Button>
                                   </div>
                                 </td>
                               </tr>
@@ -892,16 +869,36 @@ export default function FinanceDashboard() {
                             </span>
                           </div>
 
-                          {selectedExpense.referenceNumber && (
-                            <div className="detail-item">
-                              <span className="detail-label">Reference</span>
-                              <span className="detail-value">
+                          <div className="detail-item">
+                            <span className="detail-label">Payee ID</span>
+                            <span className="detail-value">
+                              {selectedExpense.payeeId || "N/A"}
+                            </span>
+                          </div>
+
+                          <div className="detail-item">
+                            <span className="detail-label">Exchange Rate</span>
+                            <span className="detail-value">
+                              {selectedExpense.exchangeRateUsed 
+                                ? Number(selectedExpense.exchangeRateUsed).toFixed(2)
+                                : "N/A"}
+                            </span>
+                          </div>
+
+                          <div className="detail-item">
+                            <span className="detail-label">
+                              Reference Number
+                            </span>
+                            <span className="detail-value">
+                              {selectedExpense.referenceNumber ? (
                                 <code className="bg-light px-2 py-1 rounded">
                                   {selectedExpense.referenceNumber}
                                 </code>
-                              </span>
-                            </div>
-                          )}
+                              ) : (
+                                "N/A"
+                              )}
+                            </span>
+                          </div>
                         </div>
                       </Card.Body>
                     </Card>
@@ -1180,8 +1177,8 @@ export default function FinanceDashboard() {
             cursor: pointer;
           }
           .transaction-icon {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import {
   Badge,
   Button,
@@ -18,17 +17,18 @@ import {
   Table,
   Alert,
 } from "react-bootstrap";
-import { 
-  FaFlag, 
-  FaInfoCircle, 
-  FaUser, 
-  FaClock, 
-  FaComment, 
-  FaHourglassHalf, 
-  FaCheck, 
-  FaTimes, 
-  FaMinus 
-} from 'react-icons/fa';
+import {
+  FaFlag,
+  FaInfoCircle,
+  FaUser,
+  FaClock,
+  FaComment,
+  FaHourglassHalf,
+  FaCheck,
+  FaTimes,
+  FaMinus,
+  FaListAlt,
+} from "react-icons/fa";
 import {
   Search,
   Filter,
@@ -45,6 +45,7 @@ import Navbar from "../components/Navbar";
 import { BASE_API_URL } from "../static/apiConfig";
 import { toast } from "react-toastify";
 import AuthProvider from "../authPages/tokenData";
+import { ArrowDownCircle, Tag } from "lucide-react";
 
 /**
  * TYPES aligned to your NestJS / Prisma backend
@@ -104,11 +105,17 @@ type Expense = {
   id: number;
   workflowId: number;
   description: string;
+  primaryAmount: number;
+  exchangeRate: number;
   amount: number;
   currency: string;
   category: Category;
   receiptUrl?: string | null;
   department: Department;
+  referenceNumber?: string | null;
+  payee: string;
+  payeeId: string;
+  payeeNumber?: string | null;
   paymentMethod: PaymentMethod;
   region: Region;
   currencyDetails: Currency;
@@ -146,8 +153,6 @@ const humanStatus = (s: string) =>
   s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 
 export default function ExpenseApprovalPage() {
-  const router = useRouter();
-
   // UI state
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | ExpenseStatus>(
@@ -373,7 +378,6 @@ export default function ExpenseApprovalPage() {
 
   /** Per-row actions */
   const handleApprove = (id: number) => approveExpense(id);
-  const handleReject = (id: number) => rejectExpense(id, rejectionReason);
 
   const handleViewDetails = (expense: Expense) => {
     setSelectedExpense(expense);
@@ -599,15 +603,13 @@ export default function ExpenseApprovalPage() {
                           className="mb-0"
                         />
                       </th>
-                      <th className="py-3">Date</th>
+                      <th className="py-3">#ID</th>
+                      <th className="py-3">Created</th>
+                      <th className="py-3">Description</th>
                       <th className="py-3">Employee</th>
                       <th className="py-3">Department</th>
                       <th className="py-3">Category</th>
-                      <th className="py-3">Region</th>
-                      <th className="py-3">Payment Method</th>
-                      <th className="py-3">Description</th>
                       <th className="text-end py-3">Amount</th>
-                      <th className="py-3">Receipt</th>
                       <th className="py-3">Status</th>
                       <th className="py-3" style={{ minWidth: 200 }}>
                         Progress
@@ -617,17 +619,6 @@ export default function ExpenseApprovalPage() {
                   </thead>
                   <tbody>
                     {currentExpenses.map((exp) => {
-                      const employee = `${exp.user?.firstName ?? ""} ${
-                        exp.user?.lastName ?? ""
-                      }`.trim();
-                      const department =
-                        exp.department?.name ||
-                        exp.user?.department?.name ||
-                        "-";
-                      const category = exp.category?.name || "-";
-                      const description = exp.description || "";
-                      const regionName = exp.region?.name || "";
-                      const paymentMethodName = exp.paymentMethod?.name || "";
                       const hasReceipt = !!exp.receiptUrl;
 
                       const totalSteps = exp.expenseSteps.length || 0;
@@ -657,15 +648,49 @@ export default function ExpenseApprovalPage() {
                             </Form.Check>
                           </td>
                           <td>
+                            <div className="d-flex align-items-center">
+                              <Tag size={14} className="me-1 text-primary" />
+                              <span>{exp.id}</span>
+                            </div>
+                          </td>
+                          <td>
                             <div className="text-muted small">
                               {formatDate(exp.createdAt)}
                             </div>
                           </td>
-                          <td className="fw-medium">{employee || "-"}</td>
+                          <td>
+                            <div className="d-flex align-items-center small">
+                              <div className="transaction-icon me-1 bg-light border bg-opacity-10 p-1 rounded-3">
+                                <FaListAlt className="text-success" size={14} />
+                              </div>
+                              <div>
+                                <div
+                                  className="fw-medium text-truncate"
+                                  style={{ maxWidth: "200px" }}
+                                  title={exp.description}
+                                >
+                                  {exp.description}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <div className="avatar-sm bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center rounded-circle me-2 small">
+                                {exp.user.firstName.charAt(0)}
+                                {exp.user.lastName.charAt(0)}
+                              </div>
+                              <div>
+                                <small className="fw-medium">
+                                  {exp.user.firstName} {exp.user.lastName}
+                                </small>
+                              </div>
+                            </div>
+                          </td>
                           <td>
                             <Badge
-                              bg="outline-dark"
-                              className="px-2 py-1 rounded"
+                              bg="success bg-opacity-10 text-success"
+                              className="px-2 py-1 rounded border"
                             >
                               {exp.department?.name || "-"}
                             </Badge>
@@ -674,51 +699,21 @@ export default function ExpenseApprovalPage() {
                             <Badge
                               bg="light"
                               text="dark"
-                              className="px-2 py-1 rounded text-uppercase"
+                              className="px-2 py-1 rounded border"
                             >
                               {exp.category?.name || "-"}
                             </Badge>
                           </td>
-                          <td>
-                            <Badge bg="info" className="px-2 py-1">
-                              {exp.region?.name || "-"}
-                            </Badge>
-                          </td>
-                          <td>
-                            <Badge bg="warning" className="px-2 py-1">
-                              {exp.paymentMethod?.name || "-"}
-                            </Badge>
-                          </td>
-                          <td className="small">{exp.description}</td>
-                          <td className="fw-bold text-end">
+                          <td className="small fw-bold text-end">
                             {formatMoney(
                               exp.amount,
                               exp.currencyDetails || exp.currency
                             )}
                           </td>
                           <td>
-                            {hasReceipt ? (
-                              <Badge
-                                bg="success"
-                                className="px-2 py-1 d-flex align-items-center gap-1"
-                              >
-                                <FileText size={13} />
-                                Attached
-                              </Badge>
-                            ) : (
-                              <Badge
-                                bg="secondary"
-                                className="px-2 py-1 d-flex align-items-center gap-1"
-                              >
-                                <FileText size={13} />
-                                Missing
-                              </Badge>
-                            )}
-                          </td>
-                          <td>
                             {exp.status === "PENDING" ? (
                               <Badge
-                                bg="warning"
+                                bg="danger bg-opacity-10 text-danger"
                                 className="px-2 py-1 d-flex align-items-center gap-1"
                               >
                                 <ClockHistory size={13} />
@@ -734,7 +729,7 @@ export default function ExpenseApprovalPage() {
                               </Badge>
                             ) : (
                               <Badge
-                                bg="danger"
+                                bg="danger bg-opacity-10 text-danger"
                                 className="px-2 py-1 d-flex align-items-center gap-1"
                               >
                                 <XLg size={13} />
@@ -868,8 +863,13 @@ export default function ExpenseApprovalPage() {
         >
           {selectedExpense && (
             <>
-              <Modal.Header closeButton className="border-bottom-0 pb-0">
-                <Modal.Title>Expense Details #{selectedExpense.id}</Modal.Title>
+              <Modal.Header
+                closeButton
+                className="border-bottom-0 pb-0 fw-bold"
+              >
+                <h4 className="fw-bold">
+                  Expense Details #{selectedExpense.id}
+                </h4>
               </Modal.Header>
               <Modal.Body>
                 <Row className="gy-4">
@@ -958,15 +958,15 @@ export default function ExpenseApprovalPage() {
                 <Row className="mt-4">
                   <Col>
                     <div className="detail-section border rounded-4 shadow-sm p-3 p-md-4 bg-white">
-                      <h6 className="section-title fw-bold mb-3 d-flex align-items-center">
+                      <h5 className="fw-bold mb-3 d-flex align-items-center">
                         <FaFlag className="me-2 text-primary" />
                         Approval Steps
-                      </h6>
-
+                      </h5>
+                      <br />
                       {selectedExpense.expenseSteps.length === 0 ? (
                         <div className="text-muted fst-italic ps-1">
-                          <FaInfoCircle className="me-2" />No steps
-                          configured.
+                          <FaInfoCircle className="me-2" />
+                          No steps configured.
                         </div>
                       ) : (
                         <div className="timeline">
@@ -989,7 +989,7 @@ export default function ExpenseApprovalPage() {
                                         ? "bg-danger text-white"
                                         : "bg-secondary text-white"
                                     }`}
-                                    style={{ width: '36px', height: '36px' }}
+                                    style={{ width: "36px", height: "36px" }}
                                   >
                                     {step.status === "PENDING" ? (
                                       <FaHourglassHalf />
@@ -1031,8 +1031,7 @@ export default function ExpenseApprovalPage() {
                                     {step.comments && (
                                       <>
                                         {" "}
-                                        •{" "}
-                                        <FaComment className="me-1" />
+                                        • <FaComment className="me-1" />
                                         {step.comments}
                                       </>
                                     )}
@@ -1066,8 +1065,10 @@ export default function ExpenseApprovalPage() {
                 {/* Approval actions */}
                 <Modal.Footer className="mt-4">
                   <Col>
-                    <div className="detail-section border-bottom small">
-                      <h6 className="section-title">Approval Actions</h6>
+                    <div className="detail-section small">
+                      <h5 className="fw-bold mb-3 d-flex align-items-center">
+                        Approval Actions
+                      </h5>
                       <Form.Group className="mb-3">
                         <Form.Label>Rejection Reason (if rejecting)</Form.Label>
                         <Form.Control
