@@ -163,7 +163,7 @@ export default function ExpenseApprovalPage() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 20;
 
   // Data state
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -195,11 +195,8 @@ export default function ExpenseApprovalPage() {
 
       const data: Expense[] = await res.json();
 
-      // Oldest → newest (your service already orders, this is a defensive sort)
-      data.sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      );
+      // Sort by ID in descending order (newest first)
+      data.sort((a, b) => b.id - a.id);
 
       setExpenses(data);
     } catch (e: any) {
@@ -589,7 +586,7 @@ export default function ExpenseApprovalPage() {
               </div>
             ) : (
               <div className="table-responsive rounded-3 overflow-hidden border">
-                <Table hover className="align-middle mb-0">
+                <Table hover className="align-middle mb-0 small">
                   <thead className="bg-light text-muted small">
                     <tr>
                       <th className="ps-4 py-3" style={{ width: "40px" }}>
@@ -605,12 +602,14 @@ export default function ExpenseApprovalPage() {
                       </th>
                       <th className="py-3">#ID</th>
                       <th className="py-3">Created</th>
+                      <th className="py-3">Payee</th>
+                      <th className="py-3">Payee Number</th>
                       <th className="py-3">Description</th>
+                      <th className="py-3">Amount</th>
                       <th className="py-3">Employee</th>
                       <th className="py-3">Department</th>
                       <th className="py-3">Category</th>
-                      <th className="text-end py-3">Amount</th>
-                      <th className="py-3">Status</th>
+                      <th className="py-3">Budget</th>
                       <th className="py-3" style={{ minWidth: 200 }}>
                         Progress
                       </th>
@@ -619,8 +618,6 @@ export default function ExpenseApprovalPage() {
                   </thead>
                   <tbody>
                     {currentExpenses.map((exp) => {
-                      const hasReceipt = !!exp.receiptUrl;
-
                       const totalSteps = exp.expenseSteps.length || 0;
                       const approvedSteps = exp.expenseSteps.filter(
                         (s) => s.status === "APPROVED"
@@ -654,12 +651,19 @@ export default function ExpenseApprovalPage() {
                             </div>
                           </td>
                           <td>
-                            <div className="text-muted small">
-                              {formatDate(exp.createdAt)}
+                            <div className="d-flex flex-column">
+                              <div className="">
+                                Created: {formatDate(exp.createdAt)}
+                              </div>
+                              <div className="text-muted small">
+                                Updated: {formatDate(exp.updatedAt)}
+                              </div>
                             </div>
                           </td>
+                          <td>{exp.payee}</td>
+                          <td>{exp.payeeNumber}</td>
                           <td>
-                            <div className="d-flex align-items-center small">
+                            <div className="d-flex align-items-center ">
                               <div className="transaction-icon me-1 bg-light border bg-opacity-10 p-1 rounded-3">
                                 <FaListAlt className="text-success" size={14} />
                               </div>
@@ -672,6 +676,23 @@ export default function ExpenseApprovalPage() {
                                   {exp.description}
                                 </div>
                               </div>
+                            </div>
+                          </td>
+                          <td className="text-success">
+                            <div className="d-flex flex-column">
+                              <span className="text-success fw-bold">
+                                {exp?.amount?.toLocaleString() || "0.00"} KES
+                              </span>
+                              <span className="text-muted small">
+                                {exp?.primaryAmount?.toLocaleString() || "0.00"}{" "}
+                                {exp?.currency?.initials
+                                  ? `${
+                                      exp.currency.initials
+                                        ? `${exp.currency.initials}`
+                                        : ""
+                                    }`
+                                  : "N/A"}
+                              </span>
                             </div>
                           </td>
                           <td>
@@ -699,43 +720,18 @@ export default function ExpenseApprovalPage() {
                             <Badge
                               bg="light"
                               text="dark"
-                              className="px-2 py-1 rounded border"
+                              className="px-2 py-1 rounded border bg-danger bg-opacity-10"
                             >
                               {exp.category?.name || "-"}
                             </Badge>
                           </td>
-                          <td className="small fw-bold text-end">
-                            {formatMoney(
-                              exp.amount,
-                              exp.currencyDetails || exp.currency
-                            )}
-                          </td>
                           <td>
-                            {exp.status === "PENDING" ? (
-                              <Badge
-                                bg="danger bg-opacity-10 text-danger"
-                                className="px-2 py-1 d-flex align-items-center gap-1"
-                              >
-                                <ClockHistory size={13} />
-                                Pending
-                              </Badge>
-                            ) : exp.status === "APPROVED" ? (
-                              <Badge
-                                bg="success"
-                                className="px-2 py-1 d-flex align-items-center gap-1"
-                              >
-                                <CheckCircle size={13} />
-                                Approved
-                              </Badge>
-                            ) : (
-                              <Badge
-                                bg="danger bg-opacity-10 text-danger"
-                                className="px-2 py-1 d-flex align-items-center gap-1"
-                              >
-                                <XLg size={13} />
-                                Rejected
-                              </Badge>
-                            )}
+                            <Badge
+                              text="danger"
+                              className="px-2 py-1 rounded border bg-danger bg-opacity-10"
+                            >
+                              100,000
+                            </Badge>
                           </td>
                           <td style={{ minWidth: 200 }}>
                             <div className="mb-1 small text-muted">
@@ -865,198 +861,241 @@ export default function ExpenseApprovalPage() {
             <>
               <Modal.Header
                 closeButton
-                className="border-bottom-0 pb-0 fw-bold"
+                className="border-bottom-0 pb-0 position-relative"
               >
-                <h4 className="fw-bold">
-                  Expense Details #{selectedExpense.id}
-                </h4>
+                <div
+                  className="position-absolute w-100 h-100 bg-light bg-opacity-10 rounded-top"
+                  style={{ borderBottom: "1px solid #dee2e6" }}
+                ></div>
+                <h6 className="position-relative">
+                  <div className="d-flex align-items-center">
+                    <div className="modal-icon-wrapper bg-danger bg-opacity-10 p-3 rounded-3 me-3">
+                      <ArrowDownCircle size={24} className="text-danger" />
+                    </div>
+                    <div>
+                      <h5 className="mb-0 fw-bold">Expense Details</h5>
+                      <small className="text-muted">
+                        ID: #{selectedExpense.id}
+                      </small>
+                    </div>
+                  </div>
+                </h6>
               </Modal.Header>
               <Modal.Body>
-                <Row className="gy-4">
-                  <Col md={6} className="small">
-                    <div className="detail-section border-bottom">
-                      <h6 className="section-title">Expense Information</h6>
-                      <dl className="row mb-0">
-                        <dt className="col-sm-5">Employee</dt>
-                        <dd className="col-sm-7">
-                          {(selectedExpense.user?.firstName || "") +
-                            " " +
-                            (selectedExpense.user?.lastName || "")}
-                        </dd>
-
-                        <dt className="col-sm-5">Department</dt>
-                        <dd className="col-sm-7">
-                          {selectedExpense.department?.name ||
-                            selectedExpense.user?.department?.name ||
-                            "-"}
-                        </dd>
-
-                        <dt className="col-sm-5">Category</dt>
-                        <dd className="col-sm-7">
-                          {selectedExpense.category?.name || "-"}
-                        </dd>
-
-                        <dt className="col-sm-5">Description</dt>
-                        <dd className="col-sm-7">
-                          {selectedExpense.description}
-                        </dd>
-                      </dl>
-                    </div>
-                  </Col>
-                  <Col md={6} className="small">
-                    <div className="detail-section border-bottom">
-                      <h6 className="section-title">Financial Details</h6>
-                      <dl className="row mb-0">
-                        <dt className="col-sm-5">Amount</dt>
-                        <dd className="col-sm-7 fw-bold">
-                          {formatMoney(
-                            selectedExpense.amount,
-                            selectedExpense.currencyDetails?.initials ||
-                              selectedExpense.currency ||
-                              "USD"
-                          )}
-                        </dd>
-
-                        <dt className="col-sm-5">Currency</dt>
-                        <dd className="col-sm-7">
-                          {selectedExpense.currencyDetails?.currency ||
-                            selectedExpense?.currencyDetails?.initials ||
-                            "N/A"}
-                          {selectedExpense.currencyDetails?.initials &&
-                            ` (${selectedExpense.currencyDetails.initials})`}
-                        </dd>
-
-                        <dt className="col-sm-5">Date Submitted</dt>
-                        <dd className="col-sm-7">
-                          {formatDate(selectedExpense.createdAt)}
-                        </dd>
-
-                        <dt className="col-sm-5">Receipt</dt>
-                        <dd className="col-sm-7">
-                          {selectedExpense.receiptUrl ? (
-                            <Button
-                              as="a"
-                              href={selectedExpense.receiptUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              variant="link"
-                              size="sm"
-                              className="p-0"
-                            >
-                              View Receipt
-                            </Button>
-                          ) : (
-                            "Not provided"
-                          )}
-                        </dd>
-                      </dl>
-                    </div>
-                  </Col>
-                </Row>
-
+                {/* Header with description and amount */}
+                <div
+                  className="d-flex justify-content-between align-items-start mb-4 p-3 bg-light bg-opacity-50 rounded-3"
+                  style={{ borderBottom: "1px solid #dee2e6" }}
+                >
+                  <div className="flex-grow-1 me-3">
+                    <h6 className="mb-1 fw-semibold">
+                      {selectedExpense.description}
+                    </h6>
+                    <small className="text-muted">
+                      Created on {formatDate(selectedExpense.createdAt)}
+                    </small>
+                  </div>
+                  <div className="text-end">
+                    <h5 className="mb-0 text-danger fw-bold">
+                      {selectedExpense.amount.toLocaleString()} KES
+                    </h5>
+                    <small className="text-muted">Total amount</small>
+                  </div>
+                </div>
                 {/* Steps timeline */}
-                <Row className="mt-4">
-                  <Col>
-                    <div className="detail-section border rounded-4 shadow-sm p-3 p-md-4 bg-white">
-                      <h5 className="fw-bold mb-3 d-flex align-items-center">
-                        <FaFlag className="me-2 text-primary" />
+                <Row className="gy-4">
+                  <Col md={6}>
+                    <Card className="h-100 border shadow-sm rounded-4">
+                      <Card.Body className="p-4">
+                        {/* Section Header */}
+                        <div className="d-flex align-items-center mb-4">
+                          <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                            <FileText size={22} className="text-primary" />
+                          </div>
+                          <h5 className="mb-0 fw-bold text-dark">
+                            Expense Information
+                          </h5>
+                        </div>
+
+                        {/* Info Rows */}
+                        <div className="d-flex flex-column gap-3 small">
+                          {/* Submission */}
+                          <div className="bg-light bg-opacity-50 p-3 rounded-3">
+                            <div className="fw-semibold text-uppercase text-muted mb-2 small">
+                              Submission
+                            </div>
+                            <div className="d-flex justify-content-between">
+                              <span className="text-muted">Submitted On</span>
+                              <span className="fw-semibold">
+                                {formatDate(selectedExpense.createdAt)}
+                              </span>
+                            </div>
+                            <div className="d-flex justify-content-between mt-1">
+                              <span className="text-muted">Last Updated</span>
+                              <span className="fw-semibold">
+                                {formatDate(selectedExpense.updatedAt)}
+                              </span>
+                            </div>
+                            <div className="d-flex justify-content-between mt-1">
+                              <span className="text-muted">
+                                Reference Number
+                              </span>
+                              <span className="fw-semibold">
+                                {selectedExpense.referenceNumber ? (
+                                  <code className="bg-white border px-2 py-1 rounded small">
+                                    {selectedExpense.referenceNumber}
+                                  </code>
+                                ) : (
+                                  "N/A"
+                                )}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Classification */}
+                          <div className="bg-light bg-opacity-50 p-3 rounded-3">
+                            <div className="fw-semibold text-uppercase text-muted mb-2 small">
+                              Classification
+                            </div>
+                            <div className="d-flex justify-content-between">
+                              <span className="text-muted">Category</span>
+                              <span className="fw-semibold">
+                                {selectedExpense.category?.name || "N/A"}
+                              </span>
+                            </div>
+                            <div className="d-flex justify-content-between mt-1">
+                              <span className="text-muted">Department</span>
+                              <span className="fw-semibold">
+                                {selectedExpense.department?.name || "N/A"}
+                              </span>
+                            </div>
+                            <div className="d-flex justify-content-between mt-1">
+                              <span className="text-muted">Region</span>
+                              <span className="fw-semibold">
+                                {selectedExpense.region?.name || "N/A"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Payment */}
+                          <div className="bg-light bg-opacity-50 p-3 rounded-3">
+                            <div className="fw-semibold text-uppercase text-muted mb-2 small">
+                              Payment
+                            </div>
+                            <div className="d-flex justify-content-between">
+                              <span className="text-muted">Payment Method</span>
+                              <span className="fw-semibold">
+                                {selectedExpense.paymentMethod?.name || "N/A"}
+                              </span>
+                            </div>
+                            <div className="d-flex justify-content-between mt-1">
+                              <span className="text-muted">Payee ID</span>
+                              <span className="fw-semibold">
+                                {selectedExpense.payeeId || "N/A"}
+                              </span>
+                            </div>
+                            <div className="d-flex justify-content-between mt-1">
+                              <span className="text-muted">Exchange Rate</span>
+                              <span className="fw-semibold">N/A</span>
+                            </div>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="detail-section border rounded-4 shadow-sm p-4 bg-white">
+                      <h5 className="fw-bold mb-4 d-flex align-items-center text-dark mb-4">
+                        <FaFlag size={16} className="me-2 text-primary fs-4" />
                         Approval Steps
                       </h5>
                       <br />
                       {selectedExpense.expenseSteps.length === 0 ? (
-                        <div className="text-muted fst-italic ps-1">
-                          <FaInfoCircle className="me-2" />
+                        <div className="text-muted fst-italic d-flex align-items-center bg-light p-3 rounded-3">
+                          <FaInfoCircle
+                            size={16}
+                            className="me-2 text-secondary"
+                          />
                           No steps configured.
                         </div>
                       ) : (
-                        <div className="timeline">
+                        <ul className="timeline list-unstyled position-relative ps-4">
                           {selectedExpense.expenseSteps
                             .sort((a, b) => a.order - b.order)
-                            .map((step, index) => (
-                              <div
+                            .map((step, idx) => (
+                              <li
                                 key={step.id}
-                                className="timeline-item d-flex align-items-start mb-4"
+                                className="mb-4 position-relative ps-3"
+                                style={{
+                                  borderLeft: "2px solid #dee2e6",
+                                }}
                               >
-                                {/* Timeline marker */}
-                                <div className="timeline-marker me-3 d-flex flex-column align-items-center">
-                                  <span
-                                    className={`rounded-circle p-2 shadow-sm d-flex align-items-center justify-content-center ${
+                                {/* Timeline dot */}
+                                <span
+                                  className="position-absolute top-0 start-0 translate-middle p-2 rounded-circle"
+                                  style={{
+                                    backgroundColor:
                                       step.status === "PENDING"
-                                        ? "bg-warning text-dark"
+                                        ? "#f0ad4e"
                                         : step.status === "APPROVED"
-                                        ? "bg-success text-white"
+                                        ? "#198754"
                                         : step.status === "REJECTED"
-                                        ? "bg-danger text-white"
-                                        : "bg-secondary text-white"
-                                    }`}
-                                    style={{ width: "36px", height: "36px" }}
-                                  >
-                                    {step.status === "PENDING" ? (
-                                      <FaHourglassHalf />
-                                    ) : step.status === "APPROVED" ? (
-                                      <FaCheck />
-                                    ) : step.status === "REJECTED" ? (
-                                      <FaTimes />
-                                    ) : (
-                                      <FaMinus />
-                                    )}
-                                  </span>
-                                  {index <
-                                    selectedExpense.expenseSteps.length - 1 && (
-                                    <div className="flex-grow-1 border-start border-2 mt-2"></div>
-                                  )}
-                                </div>
+                                        ? "#dc3545"
+                                        : "#6c757d",
+                                    boxShadow: "0 0 0 4px #fff",
+                                  }}
+                                ></span>
 
-                                {/* Step content */}
-                                <div className="flex-grow-1">
-                                  <div className="fw-semibold">
+                                <div className="d-flex justify-content-between align-items-start mb-1">
+                                  <div className="fw-semibold text-dark">
                                     Step {step.order}{" "}
                                     <span className="text-muted small">
                                       • {step.role?.name ?? "Unassigned role"}
                                     </span>
                                   </div>
+                                  <Badge
+                                    pill
+                                    bg={
+                                      step.status === "PENDING"
+                                        ? "warning"
+                                        : step.status === "APPROVED"
+                                        ? "success"
+                                        : step.status === "REJECTED"
+                                        ? "danger"
+                                        : "secondary"
+                                    }
+                                    className="px-3 py-2 fw-semibold"
+                                  >
+                                    {humanStatus(step.status)}
+                                  </Badge>
+                                </div>
 
-                                  <div className="small text-muted mt-1">
-                                    <FaUser className="me-1" />
+                                <div className="small text-muted d-flex flex-wrap gap-3">
+                                  <span className="d-flex align-items-center">
+                                    <FaUser className="me-1 text-secondary" />
                                     {step.approver
                                       ? `${step.approver.firstName} ${step.approver.lastName}`
                                       : "—"}
-                                    {step.updatedAt && (
-                                      <>
-                                        {" "}
-                                        • <FaClock className="me-1" />
-                                        {formatDate(step.updatedAt)}
-                                      </>
-                                    )}
-                                    {step.comments && (
-                                      <>
-                                        {" "}
-                                        • <FaComment className="me-1" />
-                                        {step.comments}
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
+                                  </span>
 
-                                {/* Status badge */}
-                                <Badge
-                                  pill
-                                  bg={
-                                    step.status === "PENDING"
-                                      ? "warning"
-                                      : step.status === "APPROVED"
-                                      ? "success"
-                                      : step.status === "REJECTED"
-                                      ? "danger"
-                                      : "secondary"
-                                  }
-                                  className="ms-3 px-3 py-2 fw-semibold"
-                                >
-                                  {humanStatus(step.status)}
-                                </Badge>
-                              </div>
+                                  {step.updatedAt && (
+                                    <span className="d-flex align-items-center">
+                                      <FaClock className="me-1 text-secondary" />
+                                      {formatDate(step.updatedAt)}
+                                    </span>
+                                  )}
+
+                                  {step.comments && (
+                                    <span className="d-flex align-items-center">
+                                      <FaComment className="me-1 text-secondary" />
+                                      {step.comments}
+                                    </span>
+                                  )}
+                                </div>
+                              </li>
                             ))}
-                        </div>
+                        </ul>
                       )}
                     </div>
                   </Col>

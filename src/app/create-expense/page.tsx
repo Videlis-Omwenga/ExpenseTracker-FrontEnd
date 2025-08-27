@@ -69,15 +69,10 @@ interface ExpenseStep {
   isOptional: boolean;
   status: ApprovalStatus;
   comments?: string | null;
-
   role?: Role | null;
   approver?: User | null;
-
-  // When included by API:
   workflowStep?: WorkflowStep | null;
-
-  // Convenience fields (derived)
-  level?: number; // alias for order
+  level?: number;
 }
 
 interface Currency {
@@ -668,69 +663,75 @@ export default function FinanceDashboard() {
                                   </Badge>
                                 </td>
                                 <td>
-                                  <div className="d-flex align-items-center mb-2">
-                                    <div className="step-strip me-3 d-flex gap-1">
-                                      {expense.expenseSteps.map((step) => {
-                                        const pill = stepPillStyle(step);
-                                        const label = `${step.order}${
-                                          step.isOptional ? " (opt)" : ""
-                                        }`;
-                                        const title = `${label} • ${normalizeStatus(
-                                          step.status
-                                        )}${
-                                          step.role?.name
-                                            ? " • " + step.role?.name
-                                            : ""
-                                        }`;
-                                        return (
-                                          <OverlayTrigger
-                                            key={step.id}
-                                            placement="top"
-                                            overlay={
-                                              <Tooltip id={`ts-${step.id}`}>
-                                                {title}
-                                              </Tooltip>
-                                            }
-                                          >
-                                            <span
-                                              className={`step-pill ${pill.className} rounded-pill`}
-                                              style={{
-                                                width: "16px",
-                                                height: "16px",
-                                              }}
-                                            ></span>
-                                          </OverlayTrigger>
-                                        );
-                                      })}
+                                  <div className="p-2 rounded-3 d-flex flex-column gap-2">
+                                    {/* Steps Row */}
+                                    <div className="d-flex align-items-center justify-content-between flex-row">
+                                      <div className="d-flex align-items-center flex-wrap gap-1">
+                                        {expense.expenseSteps.map((step) => {
+                                          const pill = stepPillStyle(step);
+                                          const label = `${step.order}${
+                                            step.isOptional ? " (opt)" : ""
+                                          }`;
+                                          const title = `${label} • ${normalizeStatus(
+                                            step.status
+                                          )}${
+                                            step.role?.name
+                                              ? " • " + step.role?.name
+                                              : ""
+                                          }`;
+
+                                          return (
+                                            <OverlayTrigger
+                                              key={step.id}
+                                              placement="top"
+                                              overlay={
+                                                <Tooltip id={`ts-${step.id}`}>
+                                                  {title}
+                                                </Tooltip>
+                                              }
+                                            >
+                                              <span
+                                                className={`step-pill ${pill.className} rounded-circle border`}
+                                                style={{
+                                                  width: "18px",
+                                                  height: "18px",
+                                                }}
+                                              ></span>
+                                            </OverlayTrigger>
+                                          );
+                                        })}
+                                      </div>
+                                      <span className="badge bg-secondary-subtle text-dark fw-semibold">
+                                        {approved}/{total}
+                                      </span>
+
+                                      {/* Progress Row */}
+                                      <div className="d-flex align-items-center justify-content-between">
+                                        <span className="text-muted small">
+                                          {progress}% complete
+                                        </span>
+                                        {progress === 100 && (
+                                          <CheckCircleFill
+                                            size={16}
+                                            className="text-success"
+                                          />
+                                        )}
+                                      </div>
                                     </div>
-                                    <span className="text-muted fw-medium">
-                                      {approved}/{total}
-                                    </span>
-                                  </div>
-                                  <div>
+
+                                    {/* Progress Bar */}
                                     <ProgressBar
                                       now={progress}
                                       variant={
-                                        progress === 100 ? "success" : "primary"
+                                        progress === 100 ? "success" : "info"
                                       }
                                       animated={
                                         normalizeStatus(expense.status) ===
                                         "PENDING"
                                       }
-                                      className="rounded-pill"
-                                      style={{ height: "6px" }}
+                                      className="rounded-pill shadow-sm"
+                                      style={{ height: "8px" }}
                                     />
-                                    <div className="d-flex justify-content-between mt-1">
-                                      <span className="text-muted">
-                                        {progress}% complete
-                                      </span>
-                                      {progress === 100 && (
-                                        <CheckCircleFill
-                                          size={14}
-                                          className="text-success"
-                                        />
-                                      )}
-                                    </div>
                                   </div>
                                 </td>
                               </tr>
@@ -817,6 +818,7 @@ export default function FinanceDashboard() {
                   <Col md={6}>
                     <Card className="border shadow-sm h-100">
                       <Card.Body>
+                        {/* Section Header */}
                         <div className="d-flex align-items-center mb-3 bg-primary bg-opacity-10 p-3 rounded-3">
                           <div className="bg-primary bg-opacity-10 p-2 rounded me-2">
                             <FileText size={18} className="text-primary" />
@@ -827,77 +829,95 @@ export default function FinanceDashboard() {
                         </div>
 
                         <div className="detail-list small">
-                          <div className="detail-item">
-                            <span className="detail-label">Submitted On</span>
-                            <span className="detail-value">
-                              {formatDate(selectedExpense.createdAt)}
-                            </span>
+                          {/* Submission Details */}
+                          <div className="mb-3">
+                            <h6 className="text-muted fw-semibold small mb-2">
+                              Submission
+                            </h6>
+                            <div className="detail-item">
+                              <span className="detail-label">Submitted On</span>
+                              <span className="detail-value">
+                                {formatDate(selectedExpense.createdAt)}
+                              </span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">Last Updated</span>
+                              <span className="detail-value">
+                                {formatDate(selectedExpense.updatedAt)}
+                              </span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">
+                                Reference Number
+                              </span>
+                              <span className="detail-value">
+                                {selectedExpense.referenceNumber ? (
+                                  <code className="bg-light px-2 py-1 rounded">
+                                    {selectedExpense.referenceNumber}
+                                  </code>
+                                ) : (
+                                  "N/A"
+                                )}
+                              </span>
+                            </div>
                           </div>
 
-                          <div className="detail-item">
-                            <span className="detail-label">Last Updated</span>
-                            <span className="detail-value">
-                              {formatDate(selectedExpense.updatedAt)}
-                            </span>
+                          {/* Classification */}
+                          <div className="mb-3">
+                            <h6 className="text-muted fw-semibold small mb-2">
+                              Classification
+                            </h6>
+                            <div className="detail-item">
+                              <span className="detail-label">Category</span>
+                              <span className="detail-value">
+                                {selectedExpense.category?.name || "N/A"}
+                              </span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">Department</span>
+                              <span className="detail-value">
+                                {selectedExpense.department?.name || "N/A"}
+                              </span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">Region</span>
+                              <span className="detail-value">
+                                {selectedExpense.region?.name || "N/A"}
+                              </span>
+                            </div>
                           </div>
 
-                          <div className="detail-item">
-                            <span className="detail-label">Category</span>
-                            <span className="detail-value">
-                              {selectedExpense.category?.name || "N/A"}
-                            </span>
-                          </div>
-
-                          <div className="detail-item">
-                            <span className="detail-label">Department</span>
-                            <span className="detail-value">
-                              {selectedExpense.department?.name || "N/A"}
-                            </span>
-                          </div>
-
-                          <div className="detail-item">
-                            <span className="detail-label">Region</span>
-                            <span className="detail-value">
-                              {selectedExpense.region?.name || "N/A"}
-                            </span>
-                          </div>
-
-                          <div className="detail-item">
-                            <span className="detail-label">Payment Method</span>
-                            <span className="detail-value">
-                              {selectedExpense.paymentMethod?.name || "N/A"}
-                            </span>
-                          </div>
-
-                          <div className="detail-item">
-                            <span className="detail-label">Payee ID</span>
-                            <span className="detail-value">
-                              {selectedExpense.payeeId || "N/A"}
-                            </span>
-                          </div>
-
-                          <div className="detail-item">
-                            <span className="detail-label">Exchange Rate</span>
-                            <span className="detail-value">
-                              {selectedExpense.exchangeRateUsed 
-                                ? Number(selectedExpense.exchangeRateUsed).toFixed(2)
-                                : "N/A"}
-                            </span>
-                          </div>
-
-                          <div className="detail-item">
-                            <span className="detail-label">
-                              Reference Number
-                            </span>
-                            <span className="detail-value">
-                              {selectedExpense.referenceNumber ? (
-                                <code className="bg-light px-2 py-1 rounded">
-                                  {selectedExpense.referenceNumber}
-                                </code>
-                              ) : (
-                                "N/A"
-                              )}
-                            </span>
+                          {/* Payment */}
+                          <div>
+                            <h6 className="text-muted fw-semibold small mb-2">
+                              Payment
+                            </h6>
+                            <div className="detail-item">
+                              <span className="detail-label">
+                                Payment Method
+                              </span>
+                              <span className="detail-value">
+                                {selectedExpense.paymentMethod?.name || "N/A"}
+                              </span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">Payee ID</span>
+                              <span className="detail-value">
+                                {selectedExpense.payeeId || "N/A"}
+                              </span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">
+                                Exchange Rate
+                              </span>
+                              <span className="detail-value">
+                                {selectedExpense.exchangeRateUsed
+                                  ? Number(
+                                      selectedExpense.exchangeRateUsed
+                                    ).toFixed(2)
+                                  : "N/A"}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </Card.Body>
@@ -924,7 +944,7 @@ export default function FinanceDashboard() {
                                   ? `${s.approver?.firstName ?? ""} ${
                                       s.approver?.lastName ?? ""
                                     }`.trim()
-                                  : "Unassigned";
+                                  : "Pending approval";
                               const role =
                                 s.role?.name ??
                                 s.workflowStep?.role?.name ??
@@ -972,7 +992,7 @@ export default function FinanceDashboard() {
                                     <div className="approver-info">
                                       <small className="text-muted">
                                         <User className="me-1" size={12} />
-                                        {name || "Unassigned"}
+                                        {name || "Pending approval"}
                                       </small>
                                     </div>
 
