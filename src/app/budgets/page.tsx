@@ -7,7 +7,6 @@ import {
   Col,
   Button,
   Table,
-  Modal,
   Form,
   InputGroup,
   Badge,
@@ -17,16 +16,12 @@ import {
 } from "react-bootstrap";
 import {
   PlusCircle,
-  Upload,
-  ArrowLeftRight,
   PencilSquare,
   Trash,
   Search,
-  Download,
   BarChart,
   Filter,
   Calendar,
-  ThreeDotsVertical,
   Tag,
   Wallet,
   Layers,
@@ -35,20 +30,71 @@ import {
 } from "react-bootstrap-icons";
 import AuthProvider from "../authPages/tokenData";
 import TopNavbar from "../components/Navbar";
+import { BASE_API_URL } from "../static/apiConfig";
+import { toast } from "react-toastify";
+import BudgetModalPage from "../components/modals/budget-creation-modal";
 
 interface Budget {
   id: number;
-  fromDate: string;
-  toDate: string;
-  initialAmount: number;
-  balanceAmount: number;
-  department: string;
+  createdAt: string;
+  updatedAt: string;
+  originalBudget: number;
+  remainingBudget: number;
+  departmentId: number;
   description: string;
   status: "Active" | "Expired" | "Upcoming";
 }
 
+interface Department {
+  id: number;
+  name: string;
+}
+
+interface Category {
+  id: number;
+  name: string;
+}
+
 export default function BudgetsPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  const fetchBudgets = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${BASE_API_URL}/budgets/get-budgets`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "expenseTrackerToken"
+          )}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setBudgets(data.budgets);
+        setDepartments(data.getDepartments);
+        setCategories(data.getExpenseCategories);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to fetch budgets");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBudgets();
+  }, []);
+
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
@@ -62,39 +108,6 @@ export default function BudgetsPage() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const [budgets] = useState<Budget[]>([
-    {
-      id: 1,
-      fromDate: "2025-01-01",
-      toDate: "2025-03-31",
-      initialAmount: 100000,
-      balanceAmount: 75000,
-      department: "Finance",
-      description: "Q1 Operating Budget",
-      status: "Expired",
-    },
-    {
-      id: 2,
-      fromDate: "2025-04-01",
-      toDate: "2025-06-30",
-      initialAmount: 120000,
-      balanceAmount: 110000,
-      department: "IT",
-      description: "Infrastructure Upgrades",
-      status: "Active",
-    },
-    {
-      id: 3,
-      fromDate: "2025-07-01",
-      toDate: "2025-09-30",
-      initialAmount: 90000,
-      balanceAmount: 90000,
-      department: "HR",
-      description: "Training & Development",
-      status: "Upcoming",
-    },
-  ]);
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<
@@ -133,7 +146,7 @@ export default function BudgetsPage() {
 
   // Calculate total remaining balance
   const totalBalance = budgets.reduce(
-    (sum, budget) => sum + budget.balanceAmount,
+    (sum, budget) => sum + budget.remainingBudget,
     0
   );
 
@@ -142,23 +155,20 @@ export default function BudgetsPage() {
       <TopNavbar />
       <Container
         fluid
-        className="p-4 bg-light min-vh-100"
+        className="p-4 min-vh-100"
         style={{ backgroundColor: "#f8f9fa" }}
       >
         {/* Page Header */}
         <Row className="align-items-center mb-4">
           <Col>
-            <div className="d-flex align-items-center">
+            <div className="d-flex align-items-center p-2">
               <div className="bg-primary bg-opacity-10 p-3 rounded-4 me-3">
                 <BarChart size={28} className="text-primary" />
               </div>
               <div>
-                <h1
-                  className="fw-bold mb-1 text-dark"
-                  style={{ fontSize: "1.75rem" }}
-                >
+                <h5 className="fw-bold mb-1 text-dark">
                   Budgets Dashboard
-                </h1>
+                </h5>
                 <div className="d-flex align-items-center">
                   <div className="d-flex align-items-center me-3">
                     <Tag size={16} className="me-2 text-muted" />
@@ -178,64 +188,10 @@ export default function BudgetsPage() {
             </div>
           </Col>
           <Col className="text-end">
-            <div className="d-flex gap-2 justify-content-end">
-              <Button
-                variant="primary"
-                className="rounded-pill shadow-sm px-3 d-inline-flex align-items-center"
-                onClick={() => handleShow("create")}
-                style={{ backgroundColor: "#4361ee", border: "none" }}
-              >
-                <PlusCircle className="me-2" /> New Budget
-              </Button>
-
-              <div className="position-relative" ref={menuRef}>
-                <Button
-                  variant="outline-light"
-                  className="rounded-pill shadow-sm px-3 d-inline-flex align-items-center"
-                  style={{ borderColor: "#dee2e6", color: "#495057" }}
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  aria-expanded={isMenuOpen}
-                  aria-haspopup="true"
-                >
-                  <ThreeDotsVertical />
-                </Button>
-
-                {isMenuOpen && (
-                  <div
-                    className="position-absolute end-0 mt-2 shadow-lg rounded-3 bg-white border"
-                    style={{ minWidth: "200px", zIndex: 1000 }}
-                  >
-                    <div className="p-2">
-                      <button
-                        className="w-100 btn btn-light rounded-2 text-start p-2 d-flex align-items-center"
-                        onClick={() => {
-                          handleShow("upload");
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <Upload className="me-2" /> Upload Budget
-                      </button>
-                      <button
-                        className="w-100 btn btn-light rounded-2 text-start p-2 d-flex align-items-center mt-1"
-                        onClick={() => {
-                          handleShow("move");
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <ArrowLeftRight className="me-2" /> Move Budget
-                      </button>
-                      <hr className="my-1" />
-                      <button className="w-100 btn btn-light rounded-2 text-start p-2 d-flex align-items-center">
-                        <Download className="me-2" /> Export as CSV
-                      </button>
-                      <button className="w-100 btn btn-light rounded-2 text-start p-2 d-flex align-items-center mt-1">
-                        <Download className="me-2" /> Export as PDF
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+            <BudgetModalPage
+              categories={categories}
+              departments={departments}
+              onBudgetCreated={fetchBudgets} />
           </Col>
         </Row>
         {/* Summary Cards */}
@@ -330,7 +286,7 @@ export default function BudgetsPage() {
                       Departments
                     </h6>
                     <h3 className="fw-bold mb-0" style={{ color: "#3730a3" }}>
-                      {new Set(budgets.map((b) => b.department)).size}
+                      {new Set(budgets.map((b) => b.departmentId)).size}
                     </h3>
                   </div>
                   <div
@@ -474,51 +430,57 @@ export default function BudgetsPage() {
                   ) : (
                     budgets.map((budget) => {
                       const usagePercentage = Math.round(
-                        (1 - budget.balanceAmount / budget.initialAmount) * 100
+                        (1 - budget.remainingBudget / budget.originalBudget) * 100
                       );
                       return (
                         <tr key={budget.id} className="border-top">
                           <td className="ps-4">
                             <div className="fw-semibold text-dark">
-                              {new Date(budget.fromDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                }
-                              )}
+                              {new Date().toLocaleDateString("en-US", {
+                                month: "long",
+                                year: "numeric"
+                              })}
                             </div>
                             <div className="text-muted small">
+                              {new Date(
+                                new Date().getFullYear(),
+                                new Date().getMonth(),
+                                1
+                              ).toLocaleDateString("en-US", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric"
+                              })}{' '}
                               to{" "}
-                              {new Date(budget.toDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                }
-                              )}
+                              {new Date(
+                                new Date().getFullYear(),
+                                new Date().getMonth() + 1,
+                                0
+                              ).toLocaleDateString("en-US", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric"
+                              })}
                             </div>
                           </td>
                           <td>
                             <span className="fw-semibold text-dark">
-                              ${budget.initialAmount.toLocaleString()}
+                              ${budget.originalBudget.toLocaleString()}
                             </span>
                           </td>
                           <td>
                             <span
                               className={`fw-semibold ${
-                                budget.balanceAmount <
-                                budget.initialAmount * 0.2
+                                budget.remainingBudget <
+                                budget.originalBudget * 0.2
                                   ? "text-danger"
-                                  : budget.balanceAmount <
-                                    budget.initialAmount * 0.5
+                                  : budget.remainingBudget <
+                                    budget.originalBudget * 0.5
                                   ? "text-warning"
                                   : "text-success"
                               }`}
                             >
-                              ${budget.balanceAmount.toLocaleString()}
+                              ${budget.remainingBudget.toLocaleString()}
                             </span>
                           </td>
                           <td style={{ width: "200px" }}>
@@ -546,7 +508,7 @@ export default function BudgetsPage() {
                               text="dark"
                               className="px-1 py-1 rounded-pill"
                             >
-                              {budget.department}
+                              {budget.departmentId}
                             </Badge>
                           </td>
                           <td>
@@ -629,141 +591,6 @@ export default function BudgetsPage() {
             </Col>
           </Row>
         )}
-
-        {/* Modal */}
-        <Modal show={showModal} onHide={handleClose} centered size="lg">
-          <Modal.Header closeButton className="border-0 pb-0">
-            <Modal.Title className="fw-bold">
-              {modalType === "create" && "Create New Budget"}
-              {modalType === "upload" && "Upload Budget File"}
-              {modalType === "move" && "Move Budget Between Departments"}
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body className="pt-0">
-            {modalType === "create" && (
-              <Form>
-                <Row>
-                  <Col md={6} className="mb-3">
-                    <Form.Label className="fw-semibold">From Date</Form.Label>
-                    <Form.Control
-                      type="date"
-                      className="rounded-3 border-0 bg-light"
-                    />
-                  </Col>
-                  <Col md={6} className="mb-3">
-                    <Form.Label className="fw-semibold">To Date</Form.Label>
-                    <Form.Control
-                      type="date"
-                      className="rounded-3 border-0 bg-light"
-                    />
-                  </Col>
-                </Row>
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-semibold">
-                    Initial Amount
-                  </Form.Label>
-                  <InputGroup>
-                    <InputGroup.Text className="rounded-start-3 border-0 bg-light">
-                      $
-                    </InputGroup.Text>
-                    <Form.Control
-                      type="number"
-                      placeholder="Enter amount"
-                      className="rounded-end-3 border-0 bg-light"
-                    />
-                  </InputGroup>
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-semibold">Department</Form.Label>
-                  <Form.Select className="rounded-3 border-0 bg-light">
-                    <option>Select department</option>
-                    <option>Finance</option>
-                    <option>IT</option>
-                    <option>HR</option>
-                  </Form.Select>
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-semibold">Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    className="rounded-3 border-0 bg-light"
-                    placeholder="Brief description of this budget"
-                  />
-                </Form.Group>
-              </Form>
-            )}
-
-            {modalType === "upload" && (
-              <Form>
-                <div className="border-dashed rounded-3 p-4 text-center bg-light">
-                  <Upload size={48} className="text-muted mb-3" />
-                  <h5>Drag & drop your file here</h5>
-                  <p className="text-muted mb-3">or</p>
-                  <Form.Group>
-                    <Form.Control
-                      type="file"
-                      className="d-none"
-                      id="file-upload"
-                    />
-                    <Button
-                      as="label"
-                      htmlFor="file-upload"
-                      variant="outline-primary"
-                      className="rounded-pill"
-                    >
-                      Browse Files
-                    </Button>
-                  </Form.Group>
-                  <p className="small text-muted mt-3">
-                    Supported formats: CSV, XLSX (max 5MB)
-                  </p>
-                </div>
-              </Form>
-            )}
-
-            {modalType === "move" && (
-              <Form>
-                <Form.Group className="mb-4">
-                  <Form.Label className="fw-semibold">Select Budget</Form.Label>
-                  <Form.Select className="rounded-3 border-0 bg-light">
-                    <option>Choose budget to move...</option>
-                    {budgets.map((b) => (
-                      <option key={b.id}>
-                        {b.department} ({b.fromDate} → {b.toDate})
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-                <Form.Group>
-                  <Form.Label className="fw-semibold">
-                    Move To Department
-                  </Form.Label>
-                  <Form.Select className="rounded-3 border-0 bg-light">
-                    <option>Select target department</option>
-                    <option>Finance</option>
-                    <option>IT</option>
-                    <option>HR</option>
-                  </Form.Select>
-                </Form.Group>
-              </Form>
-            )}
-          </Modal.Body>
-          <Modal.Footer className="border-0">
-            <Button variant="light" onClick={handleClose} className="rounded-2">
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              className="rounded-2 px-4"
-              style={{ backgroundColor: "#4361ee", border: "none" }}
-            >
-              {modalType === "create" && "Create Budget"}
-              {modalType === "upload" && "Upload File"}
-              {modalType === "move" && "Move Budget"}
-            </Button>
-          </Modal.Footer>
-        </Modal>
       </Container>
 
       <style jsx global>{`
