@@ -54,6 +54,8 @@ export default function BudgetModalPage({
   const [budgetComments, setBudgetComments] = useState<string>("");
   const [departmentId, setDepartmentId] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [amountToMove, setAmountToMove] = useState("");
 
   const handleShow = (type: "create" | "upload" | "move") => {
     setModalType(type);
@@ -99,6 +101,59 @@ export default function BudgetModalPage({
         toast.error(`${data.message}`);
       }
     } catch (error) {
+      toast.error(`${error}`);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleSubmitExcel = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!selectedFile) {
+      toast.error("Please select a file to upload");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    if (departmentId) {
+      const deptId = Number(departmentId);
+      if (!isNaN(deptId)) {
+        formData.append("departmentId", deptId.toString());
+      }
+    }
+    if (budgetComments) formData.append("comments", budgetComments);
+
+    try {
+      const res = await fetch(`${BASE_API_URL}/budgets/upload-bulk-budget`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem(
+            "expenseTrackerToken"
+          )}`,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success("Budget file uploaded successfully");
+        setShowModal(false);
+        setSelectedFile(null);
+        setBudgetComments("");
+        setDepartmentId("");
+        await onBudgetCreated();
+      } else {
+        toast.error(`${data.message}`);
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
       toast.error(`${error}`);
     }
   };
@@ -155,7 +210,7 @@ export default function BudgetModalPage({
           <h5 className="fw-bold text-primary">
             {modalType === "create" && "📝 Create New Budget"}
             {modalType === "upload" && "📂 Upload Budget File"}
-            {modalType === "move" && "🔀 Move Budget Between Departments"}
+            {modalType === "move" && "🔀 Move Budget"}
           </h5>
         </Modal.Header>
 
@@ -172,7 +227,7 @@ export default function BudgetModalPage({
                           Department
                         </Form.Label>
                         <Form.Select
-                          className="rounded-3 border-0 bg-light shadow-sm"
+                          className="rounded-3 shadow-sm"
                           required
                           value={departmentId}
                           onChange={(e) => setDepartmentId(e.target.value)}
@@ -198,7 +253,7 @@ export default function BudgetModalPage({
                           <Tags className="me-1 text-info" /> Category
                         </Form.Label>
                         <Form.Select
-                          className="rounded-3 border-0 bg-light shadow-sm"
+                          className="rounded-3 shadow-sm"
                           required
                           value={categoryId}
                           onChange={(e) => setCategoryId(e.target.value)}
@@ -224,12 +279,12 @@ export default function BudgetModalPage({
                           <CashStack className="me-1 text-success" /> Amount
                         </Form.Label>
                         <InputGroup>
-                          <InputGroup.Text className="rounded-start-3 border-0 bg-light shadow-sm">
+                          <InputGroup.Text className="rounded-start-3 shadow-sm">
                             $
                           </InputGroup.Text>
                           <Form.Control
                             type="number"
-                            className="rounded-end-3 border-0 bg-light shadow-sm"
+                            className="rounded-end-3 shadow-sm"
                             min="0"
                             step="0.01"
                             required
@@ -254,7 +309,7 @@ export default function BudgetModalPage({
                     <Form.Control
                       as="textarea"
                       rows={3}
-                      className="rounded-3 border-0 bg-light shadow-sm"
+                      className="rounded-3 shadow-sm"
                       required
                       value={budgetComments}
                       onChange={(e) => setBudgetComments(e.target.value)}
@@ -292,63 +347,191 @@ export default function BudgetModalPage({
           )}
 
           {modalType === "upload" && (
-            <Form>
-              <div className="border-dashed rounded-4 p-5 text-center bg-light shadow-sm">
-                <Upload size={48} className="text-muted mb-3" />
-                <h5 className="fw-bold text-secondary">
-                  Drag & drop your file here
-                </h5>
-                <p className="text-muted mb-3">or</p>
-                <Form.Group>
-                  <Form.Control
-                    type="file"
-                    className="d-none"
-                    id="file-upload"
-                  />
-                  <Button
-                    as="label"
-                    htmlFor="file-upload"
-                    variant="outline-primary"
-                    className="rounded-pill shadow-sm"
+            <Form onSubmit={handleSubmitExcel}>
+              <div className="mb-3 border p-4 rounded-4 shadow-sm">
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-semibold small text-muted">
+                    <Building className="me-1 text-secondary" /> Department
+                  </Form.Label>
+                  <Form.Select
+                    className="rounded-3 shadow-sm"
+                    required
+                    value={departmentId}
+                    onChange={(e) => setDepartmentId(e.target.value)}
                   >
-                    Browse Files
-                  </Button>
+                    <option value=""></option>
+                    {departments.map((department) => (
+                      <option key={department.id} value={department.id}>
+                        {department.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  <Form.Text className="text-muted small">
+                    Select the department this budget applies to
+                  </Form.Text>
+                  <Form.Control.Feedback type="invalid">
+                    Please select a department
+                  </Form.Control.Feedback>
                 </Form.Group>
-                <p className="small text-muted mt-3">
-                  Supported formats: CSV, XLSX (max 5MB)
-                </p>
+                <div className="border-dashed rounded-4 p-5 text-center bg-light mt-3">
+                  <Upload size={48} className="text-muted mb-3" />
+                  <h5 className="fw-bold text-secondary">
+                    Drag & drop your file here
+                  </h5>
+                  <p className="text-muted mb-3">or</p>
+                  <Form.Group>
+                    <Form.Control
+                      type="file"
+                      className="d-none"
+                      id="file-upload"
+                      accept=".xlsx"
+                      onChange={handleFileChange}
+                    />
+                    <Button
+                      as="label"
+                      htmlFor="file-upload"
+                      variant="outline-primary"
+                      className="rounded-pill shadow-sm"
+                    >
+                      Browse Files
+                    </Button>
+                  </Form.Group>
+                  <p className="small text-muted mt-3">
+                    Supported formats: XLSX (max 5MB)
+                    {selectedFile && (
+                      <span className="d-block text-success mt-1">
+                        Selected: {selectedFile.name}
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <Form.Group className="mt-3">
+                  <Form.Label className="fw-semibold small text-muted">
+                    <FileText className="me-1 text-muted" /> Comments
+                  </Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    className="rounded-3 shadow-sm"
+                    required
+                    value={budgetComments}
+                    onChange={(e) => setBudgetComments(e.target.value)}
+                  />
+                  <Form.Text className="text-muted small">
+                    Add any additional details about this budget (max 500
+                    characters)
+                  </Form.Text>
+                  <Form.Control.Feedback type="invalid">
+                    Please provide a description
+                  </Form.Control.Feedback>
+                </Form.Group>
               </div>
+              <Modal.Footer className="border-0">
+                <Button
+                  variant="light"
+                  onClick={handleClose}
+                  className="rounded-2"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="rounded-2 px-4 shadow-sm"
+                  style={{ backgroundColor: "#4361ee", border: "none" }}
+                >
+                  Upload Budget
+                </Button>
+              </Modal.Footer>
             </Form>
           )}
 
           {modalType === "move" && (
             <Form>
-              <Card className="border-0 shadow-sm mb-3 rounded-4">
+              <Card className="border shadow-sm mb-3 rounded-4">
                 <Card.Body>
-                  <Form.Group>
+                  <Form.Group className="mb-3">
                     <Form.Label className="fw-semibold small text-muted">
-                      <FileText className="me-1 text-muted" /> Select Budget
+                      <Building className="me-1 text-secondary" /> Department
                     </Form.Label>
-                    <Form.Select className="rounded-3 border-0 bg-light shadow-sm">
-                      <option>Choose budget to move...</option>
+                    <Form.Select
+                      className="rounded-3 shadow-sm"
+                      required
+                      value={departmentId}
+                      onChange={(e) => setDepartmentId(e.target.value)}
+                    >
+                      <option value=""></option>
+                      {departments.map((department) => (
+                        <option key={department.id} value={department.id}>
+                          {department.name}
+                        </option>
+                      ))}
                     </Form.Select>
+                    <Form.Text className="text-muted small">
+                      Select the department this budget applies to
+                    </Form.Text>
+                    <Form.Control.Feedback type="invalid">
+                      Please select a department
+                    </Form.Control.Feedback>
                   </Form.Group>
-                </Card.Body>
-              </Card>
-
-              <Card className="border-0 shadow-sm rounded-4">
-                <Card.Body>
-                  <Form.Group>
+                  <Form.Group className="mb-3">
                     <Form.Label className="fw-semibold small text-muted">
-                      <Building className="me-1 text-secondary" /> Move To
-                      Department
+                      <Tags className="me-1 text-info" /> Category
                     </Form.Label>
-                    <Form.Select className="rounded-3 border-0 bg-light shadow-sm">
-                      <option>Select target department</option>
-                      <option>Finance</option>
-                      <option>IT</option>
-                      <option>HR</option>
+                    <Form.Select
+                      className="rounded-3 shadow-sm"
+                      required
+                      value={categoryId}
+                      onChange={(e) => setCategoryId(e.target.value)}
+                    >
+                      <option value=""></option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
                     </Form.Select>
+                    <Form.Text className="text-muted small">
+                      Choose the appropriate category
+                    </Form.Text>
+                    <Form.Control.Feedback type="invalid">
+                      Please select a category
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold small text-muted">
+                      <FileText className="me-1 text-muted" /> Amount to move
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      className="rounded-3  shadow-sm"
+                      required
+                      value={amountToMove}
+                      onChange={(e) => setAmountToMove(e.target.value)}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      Please provide an amount
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold small text-muted">
+                      <FileText className="me-1 text-muted" /> Comments
+                    </Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      className="rounded-3 shadow-sm"
+                      required
+                      value={budgetComments}
+                      onChange={(e) => setBudgetComments(e.target.value)}
+                    />
+                    <Form.Text className="text-muted small">
+                      Add any additional details about this budget (max 500
+                      characters)
+                    </Form.Text>
+                    <Form.Control.Feedback type="invalid">
+                      Please provide a description
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </Card.Body>
               </Card>
