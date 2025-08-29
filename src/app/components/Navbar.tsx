@@ -19,11 +19,17 @@ import {
   BoxArrowRight,
   List,
   X,
-  CreditCard,
   GraphUp,
   FileText,
   People,
   ClipboardCheck,
+  CashStack,
+  Receipt,
+  Wallet2,
+  CreditCard,
+  Collection,
+  Building,
+  Server,
 } from "react-bootstrap-icons";
 
 export default function TopNavbar() {
@@ -47,7 +53,7 @@ export default function TopNavbar() {
           href="/create-expense"
           className="d-flex align-items-center fw-bold"
         >
-          <span className="brand-text">ExpenseTrack</span>
+          <span className="brand-text">ExpenseTracker</span>
         </Navbar.Brand>
 
         {/* Toggle button for mobile */}
@@ -96,6 +102,47 @@ export default function TopNavbar() {
               <People className="me-1" size={16} />
               Teams
             </Nav.Link>
+
+            {/* Finance Dropdown */}
+            <Dropdown as={Nav.Item} className="mx-2">
+              <Dropdown.Toggle
+                as={Nav.Link}
+                className="d-flex align-items-center"
+              >
+                <CashStack className="me-1" size={16} />
+                Finance
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="mt-2">
+                <Dropdown.Item
+                  onClick={() => handleNavigation("/qued-expenses")}
+                  className="d-flex align-items-center"
+                >
+                  <Collection className="me-2" size={16} />
+                  Manage expenses
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => handleNavigation("/pay-expenses")}
+                  className="d-flex align-items-center"
+                >
+                  <CreditCard className="me-2" size={16} />
+                  Pay expenses
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => handleNavigation("/budgets")}
+                  className="d-flex align-items-center"
+                >
+                  <Receipt className="me-2" size={16} />
+                  Budgets
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => handleNavigation("/finance/accounts")}
+                  className="d-flex align-items-center"
+                >
+                  <Wallet2 className="me-2" size={16} />
+                  All expenses
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
           </Nav>
 
           {/* Right side items */}
@@ -234,8 +281,17 @@ export default function TopNavbar() {
                   Settings
                 </Dropdown.Item>
                 <Dropdown.Divider />
-                <Dropdown.Item>
-                  <BoxArrowRight className="me-2" size={18} />
+                <Dropdown.Item onClick={() => handleNavigation("/company-admin")}>
+                  <Building className="me-2 text-primary" size={18} />
+                  Company admin
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleNavigation("/system-admin")}>
+                  <Server className="me-2 text-primary" size={18} />
+                  System admin
+                </Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item onClick={() => handleNavigation("/login")}>
+                  <BoxArrowRight className="me-2 text-danger" size={18} />
                   Logout
                 </Dropdown.Item>
               </Dropdown.Menu>
