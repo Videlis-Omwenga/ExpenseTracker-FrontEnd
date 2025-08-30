@@ -151,6 +151,7 @@ export default function BudgetModalPage({
         await onBudgetCreated();
       } else {
         toast.error(`${data.message}`);
+        setSelectedFile(null);
       }
     } catch (error) {
       console.error("Upload error:", error);
