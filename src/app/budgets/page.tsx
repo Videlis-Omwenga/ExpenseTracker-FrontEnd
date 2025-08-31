@@ -33,6 +33,7 @@ import TopNavbar from "../components/Navbar";
 import { BASE_API_URL } from "../static/apiConfig";
 import { toast } from "react-toastify";
 import BudgetModalPage from "../components/modals/budget-creation-modal";
+import { Plus } from "lucide-react";
 
 interface Budget {
   id: number;
@@ -42,7 +43,14 @@ interface Budget {
   remainingBudget: number;
   departmentId: number;
   description: string;
+  expenseCategory: ExpenseCategory;
+  department: Department;
   status: "Active" | "Expired" | "Upcoming";
+}
+
+interface ExpenseCategory {
+  id: number;
+  name: string;
 }
 
 interface Department {
@@ -166,9 +174,7 @@ export default function BudgetsPage() {
                 <BarChart size={28} className="text-primary" />
               </div>
               <div>
-                <h5 className="fw-bold mb-1 text-dark">
-                  Budgets Dashboard
-                </h5>
+                <h5 className="fw-bold mb-1 text-dark">Budgets Dashboard</h5>
                 <div className="d-flex align-items-center">
                   <div className="d-flex align-items-center me-3">
                     <Tag size={16} className="me-2 text-muted" />
@@ -191,7 +197,8 @@ export default function BudgetsPage() {
             <BudgetModalPage
               categories={categories}
               departments={departments}
-              onBudgetCreated={fetchBudgets} />
+              onBudgetCreated={fetchBudgets}
+            />
           </Col>
         </Row>
         {/* Summary Cards */}
@@ -396,9 +403,9 @@ export default function BudgetsPage() {
                     <th className="border-0">Initial Amount</th>
                     <th className="border-0">Balance</th>
                     <th className="border-0">Usage</th>
+                    <th className="border-0">Category</th>
                     <th className="border-0">Department</th>
                     <th className="border-0">Description</th>
-                    <th className="border-0">Status</th>
                     <th
                       className="border-0 text-end pe-4"
                       style={{ width: "100px" }}
@@ -430,7 +437,8 @@ export default function BudgetsPage() {
                   ) : (
                     budgets.map((budget) => {
                       const usagePercentage = Math.round(
-                        (1 - budget.remainingBudget / budget.originalBudget) * 100
+                        (1 - budget.remainingBudget / budget.originalBudget) *
+                          100
                       );
                       return (
                         <tr key={budget.id} className="border-top">
@@ -438,7 +446,7 @@ export default function BudgetsPage() {
                             <div className="fw-semibold text-dark">
                               {new Date().toLocaleDateString("en-US", {
                                 month: "long",
-                                year: "numeric"
+                                year: "numeric",
                               })}
                             </div>
                             <div className="text-muted small">
@@ -449,8 +457,8 @@ export default function BudgetsPage() {
                               ).toLocaleDateString("en-US", {
                                 day: "numeric",
                                 month: "short",
-                                year: "numeric"
-                              })}{' '}
+                                year: "numeric",
+                              })}{" "}
                               to{" "}
                               {new Date(
                                 new Date().getFullYear(),
@@ -459,7 +467,7 @@ export default function BudgetsPage() {
                               ).toLocaleDateString("en-US", {
                                 day: "numeric",
                                 month: "short",
-                                year: "numeric"
+                                year: "numeric",
                               })}
                             </div>
                           </td>
@@ -497,18 +505,25 @@ export default function BudgetsPage() {
                                 }
                                 style={{ height: "8px" }}
                               />
-                              <span className="text-muted small">
+                              <span className="text-muted">
                                 {usagePercentage}%
                               </span>
                             </div>
                           </td>
                           <td>
                             <Badge
-                              bg="light"
-                              text="dark"
-                              className="px-1 py-1 rounded-pill"
+                              text="primary"
+                              className="px-2 py-1 rounded-pill bg-primary bg-opacity-10"
                             >
-                              {budget.departmentId}
+                              {budget.expenseCategory?.name || "N/A"}
+                            </Badge>
+                          </td>
+                          <td>
+                            <Badge
+                              text="danger"
+                              className="px-2 py-1 rounded-pill bg-danger bg-opacity-10"
+                            >
+                              {budget.department?.name || "N/A"}
                             </Badge>
                           </td>
                           <td>
@@ -516,47 +531,40 @@ export default function BudgetsPage() {
                               className="text-truncate d-inline-block"
                               style={{ maxWidth: "200px" }}
                             >
-                              {budget.description}
+                              {budget.description ||
+                                "No description found for this budget"}
                             </span>
                           </td>
-                          <td>
-                            <Badge
-                              bg={
-                                budget.status === "Active"
-                                  ? "success-light" // Custom class in CSS
-                                  : budget.status === "Expired"
-                                  ? "secondary"
-                                  : "info-light" // Custom class in CSS
-                              }
-                              text={
-                                budget.status === "Active"
-                                  ? "success"
-                                  : budget.status === "Expired"
-                                  ? "light"
-                                  : "info"
-                              }
-                              className="px-3 py-2 rounded-pill"
-                            >
-                              {budget.status}
-                            </Badge>
-                          </td>
                           <td className="text-end pe-4">
-                            <Button
-                              variant="outline-light"
-                              size="sm"
-                              className="me-1 rounded-circle text-primary"
-                              style={{ width: "32px", height: "32px" }}
-                            >
-                              <PencilSquare size={14} />
-                            </Button>
-                            <Button
-                              variant="outline-light"
-                              size="sm"
-                              className="rounded-circle text-danger"
-                              style={{ width: "32px", height: "32px" }}
-                            >
-                              <Trash size={14} />
-                            </Button>
+                            <div className="d-flex d-wrap align-items-center">
+                              <Button
+                                variant="outline-light"
+                                size="sm"
+                                className="me-1 rounded-circle text-success border"
+                                style={{ width: "32px", height: "32px" }}
+                                title="Add Budget"
+                              >
+                                <Plus size={14} />
+                              </Button>
+                              <Button
+                                variant="outline-light"
+                                size="sm"
+                                className="me-1 rounded-circle text-primary border"
+                                style={{ width: "32px", height: "32px" }}
+                                title="Edit Budget"
+                              >
+                                <PencilSquare size={14} />
+                              </Button>
+                              <Button
+                                variant="outline-light"
+                                size="sm"
+                                className="rounded-circle text-danger border"
+                                style={{ width: "32px", height: "32px" }}
+                                title="Delete Budget"
+                              >
+                                <Trash size={14} />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       );

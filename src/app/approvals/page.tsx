@@ -101,6 +101,12 @@ type Department = {
   name: string;
 };
 
+type Budget = {
+  id: number;
+  originalBudget: number;
+  remainingBudget: number;
+};
+
 type Expense = {
   id: number;
   workflowId: number;
@@ -122,27 +128,11 @@ type Expense = {
   status: ExpenseStatus;
   user: UserLite;
   expenseSteps: ExpenseStep[];
+  budget: Budget;
   createdAt: string;
   updatedAt: string;
 };
 
-/** Utility formatters */
-const formatMoney = (amount: number, currency: string | Currency) => {
-  // Handle both string currency code and Currency object
-  const currencyCode =
-    typeof currency === "string" ? currency : currency?.initials || "USD";
-
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currencyCode,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  } catch (e) {
-    // Fallback if Intl.NumberFormat fails
-    return `${currencyCode} ${amount.toFixed(2)}`;
-  }
-};
 const formatDate = (iso?: string) => {
   if (!iso) return "-";
   const d = new Date(iso);
@@ -727,10 +717,18 @@ export default function ExpenseApprovalPage() {
                           </td>
                           <td>
                             <Badge
-                              text="danger"
-                              className="px-2 py-1 rounded border bg-danger bg-opacity-10"
+                              className={`px-2 py-1 rounded border ${
+                                exp.budget?.remainingBudget < exp.amount
+                                  ? "bg-danger bg-opacity-10 text-danger"
+                                  : "bg-success bg-opacity-10 text-success"
+                              }`}
+                              title={`Original Budget: ${
+                                exp.budget?.originalBudget?.toLocaleString() ||
+                                "N/A"
+                              }`}
                             >
-                              100,000
+                              {exp.budget?.remainingBudget?.toLocaleString() ||
+                                "N/A"}
                             </Badge>
                           </td>
                           <td style={{ minWidth: 200 }}>
@@ -1023,7 +1021,7 @@ export default function ExpenseApprovalPage() {
                         <ul className="timeline list-unstyled position-relative ps-4">
                           {selectedExpense.expenseSteps
                             .sort((a, b) => a.order - b.order)
-                            .map((step, idx) => (
+                            .map((step) => (
                               <li
                                 key={step.id}
                                 className="mb-4 position-relative ps-3"
