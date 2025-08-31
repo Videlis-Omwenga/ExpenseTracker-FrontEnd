@@ -205,17 +205,16 @@ const stepPillStyle = (step: ExpenseStep) => {
   }; // NOT_STARTED
 };
 
-const countApproved = (steps: ExpenseStep[]) =>
-  steps.filter((s) => normalizeStatus(s.status) === "APPROVED").length;
+const countCompletedSteps = (steps: ExpenseStep[]) =>
+  steps.filter((s) => 
+    ['APPROVED', 'REJECTED'].includes(normalizeStatus(s.status))
+  ).length;
 
 const getProgressPercent = (steps: ExpenseStep[]) => {
   if (!steps?.length) return 0;
   const total = steps.length;
-  const approved = countApproved(steps);
-  // If there is a REJECTED, we show 100% of "decision reached"
-  const rejected = steps.some((s) => normalizeStatus(s.status) === "REJECTED");
-  if (rejected) return 100;
-  return Math.floor((approved / total) * 100);
+  const completed = countCompletedSteps(steps);
+  return Math.floor((completed / total) * 100);
 };
 
 export default function FinanceDashboard() {
@@ -554,7 +553,7 @@ export default function FinanceDashboard() {
                         <tbody>
                           {filteredExpenses.map((expense) => {
                             const badge = statusBadge(expense.status);
-                            const approved = countApproved(
+                            const completed = countCompletedSteps(
                               expense.expenseSteps
                             );
                             const total = expense.expenseSteps.length;
@@ -702,7 +701,7 @@ export default function FinanceDashboard() {
                                         })}
                                       </div>
                                       <span className="badge bg-secondary-subtle text-dark fw-semibold">
-                                        {approved}/{total}
+                                        {completed}/{total}
                                       </span>
 
                                       {/* Progress Row */}
