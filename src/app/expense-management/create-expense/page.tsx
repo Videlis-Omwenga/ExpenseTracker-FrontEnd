@@ -248,47 +248,36 @@ export default function CreateExpensePage({
         fluid
         className="py-4 create-expense-page border p-4 rounded-3 mb-4"
       >
-        {/* Top Section with Breadcrumb + Back Button + Header */}
-        <div className="d-flex justify-content-between align-items-center mb-5">
-          {/* Header with Back Button */}
-          <div className="d-flex align-items-center">
-            <Button
-              variant="outline-primary"
-              className="me-3 rounded-circle d-flex align-items-center justify-content-center"
-              style={{ width: "40px", height: "40px" }}
-              onClick={() => window.history.back()}
-            >
-              <ArrowLeft size={18} />
-            </Button>
-            <div>
-              <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                <Receipt className="me-2 text-primary" /> Create New Expense
-              </h5>
-              <p className="text-muted mb-0">
-                Submit a new expense for reimbursement
-              </p>
-            </div>
-          </div>
-          {/* Breadcrumb Navigation */}
-          <Breadcrumb className="mb-0">
-            <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
-            <Breadcrumb.Item href="/expense-management/my-expenses">
-              Expenses
-            </Breadcrumb.Item>
-            <Breadcrumb.Item active>Create Expense</Breadcrumb.Item>
-          </Breadcrumb>
-        </div>
-
-        {/* Alert Info */}
         <Alert variant="info" className="mb-4">
-          <Alert.Heading className="h6">
-            <ClockHistory className="me-2" />
-            Important Information
-          </Alert.Heading>
-          <p className="mb-0 small">
-            Please ensure all information is accurate and supported with proper
-            documentation where neccessary
-          </p>
+          <div className="d-flex justify-content-between align-items-center">
+            {/* Header with Back Button */}
+            <div className="d-flex align-items-center">
+              <Button
+                variant="outline-primary"
+                className="me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "40px", height: "40px" }}
+                onClick={() => window.history.back()}
+              >
+                <ArrowLeft size={18} />
+              </Button>
+              <div>
+                <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                  <Receipt className="me-2 text-primary" /> Create New Expense
+                </h5>
+                <p className="text-muted mb-0">
+                  Submit a new expense for reimbursement
+                </p>
+              </div>
+            </div>
+            {/* Breadcrumb Navigation */}
+            <Breadcrumb className="mb-0">
+              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+              <Breadcrumb.Item href="/expense-management/my-expenses">
+                Expenses
+              </Breadcrumb.Item>
+              <Breadcrumb.Item active>Create Expense</Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
         </Alert>
 
         {/* Form */}
@@ -299,9 +288,9 @@ export default function CreateExpensePage({
               {/* Payee Information Card */}
               <Card className="shadow-sm border-0 mb-4">
                 <Card.Header className="bg-white py-3 border-bottom">
-                  <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                  <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <Person className="me-2 text-primary" /> Payee Information
-                  </h5>
+                  </h6>
                 </Card.Header>
                 <Card.Body className="p-4">
                   <Row>
@@ -362,9 +351,9 @@ export default function CreateExpensePage({
               {/* Expense Details Card */}
               <Card className="shadow-sm border-0 mb-4">
                 <Card.Header className="bg-white py-3 border-bottom">
-                  <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                  <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <Cash className="me-2 text-primary" /> Expense Details
-                  </h5>
+                  </h6>
                 </Card.Header>
                 <Card.Body className="p-4">
                   <Row className="mb-3">
@@ -426,9 +415,9 @@ export default function CreateExpensePage({
               {/* Categorization Card */}
               <Card className="shadow-sm border-0 mb-4">
                 <Card.Header className="bg-white py-3 border-bottom">
-                  <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                  <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <Tag className="me-2 text-primary" /> Categorization
-                  </h5>
+                  </h6>
                 </Card.Header>
                 <Card.Body className="p-4">
                   <Row>
@@ -500,10 +489,10 @@ export default function CreateExpensePage({
               {/* Payment Information Card */}
               <Card className="shadow-sm border-0 mb-4">
                 <Card.Header className="bg-white py-3 border-bottom">
-                  <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                  <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <CreditCard className="me-2 text-primary" /> Payment
                     Information
-                  </h5>
+                  </h6>
                 </Card.Header>
                 <Card.Body className="p-4">
                   <Row>
@@ -546,9 +535,9 @@ export default function CreateExpensePage({
               {/* Payment Information Card */}
               <Card className="shadow-sm border-0 mb-4">
                 <Card.Header className="bg-white py-3 border-bottom">
-                  <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                  <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <CreditCard className="me-2 text-primary" /> Expense Details
-                  </h5>
+                  </h6>
                 </Card.Header>
                 <Card.Body className="p-4">
                   <Row>
@@ -629,10 +618,10 @@ export default function CreateExpensePage({
               {/* Attachments Card */}
               <Card className="shadow-sm border-0 mb-4">
                 <Card.Header className="bg-white py-3 border-bottom">
-                  <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                  <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <FileEarmarkText className="me-2 text-primary" />{" "}
                     Attachments
-                  </h5>
+                  </h6>
                 </Card.Header>
                 <Card.Body className="p-4">
                   <div className="file-upload-area border rounded-3 p-4 text-center">
@@ -751,41 +740,41 @@ export default function CreateExpensePage({
                     </span>
                   </div>
                 </Card.Body>
-              </Card>
 
-              {/* Action Buttons Card */}
-              <Card className="shadow-sm border-0">
-                <Card.Body className="p-3">
-                  <div className="d-grid gap-2">
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      className="py-2 rounded-2 fw-semibold"
-                      disabled={submitting}
-                    >
-                      {submitting ? (
-                        <>
-                          <Spinner
-                            animation="border"
-                            size="sm"
-                            className="me-2"
-                          />{" "}
-                          Creating...
-                        </>
-                      ) : (
-                        "Create Expense"
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
-                      className="py-2 rounded-2"
-                      disabled={submitting}
-                      onClick={() => window.history.back()}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </Card.Body>
+                {/* Action Buttons Card */}
+                <Card className="shadow-sm border-0">
+                  <Card.Body className="p-3">
+                    <div className="d-grid gap-2">
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        className="py-2 rounded-2 fw-semibold"
+                        disabled={submitting}
+                      >
+                        {submitting ? (
+                          <>
+                            <Spinner
+                              animation="border"
+                              size="sm"
+                              className="me-2"
+                            />{" "}
+                            Creating...
+                          </>
+                        ) : (
+                          "Create Expense"
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline-secondary"
+                        className="py-2 rounded-2"
+                        disabled={submitting}
+                        onClick={() => window.history.back()}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </Card.Body>
+                </Card>
               </Card>
             </Col>
           </Row>

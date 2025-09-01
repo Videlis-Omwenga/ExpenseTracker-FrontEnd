@@ -16,6 +16,7 @@ import {
   OverlayTrigger,
   Tooltip,
   ProgressBar,
+  Alert,
 } from "react-bootstrap";
 import {
   ArrowDownCircle,
@@ -432,27 +433,30 @@ export default function FinanceDashboard() {
       <Container fluid className="dashboard-container px-4 py-3">
         {/* Header */}
         <Row className="align-items-center mb-4">
-          <div className="d-flex justify-content-between align-items-center w-100 mb-4 bg-primary bg-opacity-10 p-4 rounded-3">
-            <div>
-              <h5 className="fw-bold mb-1">Dashboard</h5>
-              <p className="text-muted mb-0 small">
-                Welcome back! Here's your expense management dashboard
-              </p>
+          <Alert variant="info" className="mb-4">
+            <div className="d-flex justify-content-between align-items-center">
+              <span>
+                {" "}
+                <h5 className="fw-bold mb-1">Dashboard</h5>
+                <p className="text-muted mb-0 small">
+                  Welcome back! Here's your expense management dashboard
+                </p>
+              </span>
+              <Button
+                variant="outline-primary"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={refreshing}
+              >
+                {refreshing ? (
+                  <Spinner animation="border" size="sm" className="me-1" />
+                ) : (
+                  <ArrowRepeat className="me-1" />
+                )}
+                Refresh
+              </Button>
             </div>
-            <Button
-              variant="outline-primary"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={refreshing}
-            >
-              {refreshing ? (
-                <Spinner animation="border" size="sm" className="me-1" />
-              ) : (
-                <ArrowRepeat className="me-1" />
-              )}
-              Refresh
-            </Button>
-          </div>
+          </Alert>
         </Row>
 
         {/* Main Content Area */}
