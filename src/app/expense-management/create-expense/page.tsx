@@ -30,6 +30,8 @@ import { BASE_API_URL } from "@/app/static/apiConfig";
 import { InputGroup } from "react-bootstrap";
 import { toast } from "react-toastify";
 import { Upload } from "lucide-react";
+import AuthProvider from "@/app/authPages/tokenData";
+import TopNavbar from "@/app/components/Navbar";
 
 interface Currency {
   id: number;
@@ -240,563 +242,581 @@ export default function CreateExpensePage({
   }
 
   return (
-    <Container fluid className="py-4 create-expense-page">
-      {/* Breadcrumb Navigation */}
-      <Breadcrumb className="mb-4">
-        <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
-        <Breadcrumb.Item href="/expenses">Expenses</Breadcrumb.Item>
-        <Breadcrumb.Item active>Create Expense</Breadcrumb.Item>
-      </Breadcrumb>
-
-      {/* Header */}
-      <div className="d-flex align-items-center mb-4">
-        <Button
-          variant="outline-primary"
-          className="me-3 rounded-circle d-flex align-items-center justify-content-center"
-          style={{ width: "40px", height: "40px" }}
-          onClick={() => window.history.back()}
-        >
-          <ArrowLeft size={18} />
-        </Button>
-        <div>
-          <h2 className="fw-bold text-dark mb-0 d-flex align-items-center">
-            <Receipt className="me-2 text-primary" /> Create New Expense
-          </h2>
-          <p className="text-muted">Submit a new expense for reimbursement</p>
-        </div>
-      </div>
-
-      {/* Alert Info */}
-      <Alert variant="info" className="mb-4">
-        <Alert.Heading className="h6">
-          <ClockHistory className="me-2" />
-          Important Information
-        </Alert.Heading>
-        <p className="mb-0 small">
-          Please ensure all information is accurate and supported with proper
-          documentation. Expenses typically take 5-7 business days to process
-          after approval.
-        </p>
-      </Alert>
-
-      {/* Form */}
-      <Form onSubmit={handleSubmit}>
-        <Row>
-          {/* Left Column - Expense Details */}
-          <Col lg={8}>
-            {/* Payee Information Card */}
-            <Card className="shadow-sm border-0 mb-4">
-              <Card.Header className="bg-white py-3 border-bottom">
-                <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                  <Person className="me-2 text-primary" /> Payee Information
-                </h5>
-              </Card.Header>
-              <Card.Body className="p-4">
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>
-                        <Person className="me-1" /> Payee Name
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={payee}
-                        onChange={(e) => setPayee(e.target.value)}
-                        required
-                        className="py-2"
-                      />
-                      <Form.Text className="text-muted">
-                        Enter payee name
-                      </Form.Text>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>
-                        <PersonBadge className="me-1" /> ID Number
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={payeeId}
-                        onChange={(e) => setPayeeId(e.target.value)}
-                        required
-                        className="py-2"
-                      />
-                      <Form.Text className="text-muted">
-                        Enter ID number
-                      </Form.Text>
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>
-                    <PersonBadge className="me-1" /> Payment Reference
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={payeeNumber}
-                    onChange={(e) => setPayeeNumber(e.target.value)}
-                    required
-                    className="py-2"
-                  />
-                  <Form.Text className="text-muted">
-                    Enter payment reference
-                  </Form.Text>
-                </Form.Group>
-              </Card.Body>
-            </Card>
-
-            {/* Expense Details Card */}
-            <Card className="shadow-sm border-0 mb-4">
-              <Card.Header className="bg-white py-3 border-bottom">
-                <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                  <Cash className="me-2 text-primary" /> Expense Details
-                </h5>
-              </Card.Header>
-              <Card.Body className="p-4">
-                <Row className="mb-3">
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>
-                        <CurrencyDollar className="me-1" /> Amount
-                      </Form.Label>
-                      <Form.Control
-                        type="number"
-                        value={primaryAmount}
-                        onChange={(e) => setPrimaryAmount(e.target.value)}
-                        step="0.01"
-                        min="0"
-                        required
-                        className="py-2"
-                      />
-                      <Form.Text className="text-muted">Enter amount</Form.Text>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Currency</Form.Label>
-                      <Form.Select
-                        value={currency}
-                        onChange={(e) => setCurrency(e.target.value)}
-                        required
-                        className="py-2"
-                      >
-                        <option value="">Select Currency</option>
-                        {currencies.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.initials} - {c.currency}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="py-2"
-                  />
-                  <Form.Text className="text-muted">
-                    Provide details about this expense
-                  </Form.Text>
-                </Form.Group>
-              </Card.Body>
-            </Card>
-
-            {/* Categorization Card */}
-            <Card className="shadow-sm border-0 mb-4">
-              <Card.Header className="bg-white py-3 border-bottom">
-                <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                  <Tag className="me-2 text-primary" /> Categorization
-                </h5>
-              </Card.Header>
-              <Card.Body className="p-4">
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>
-                        <Building className="me-1" /> Department
-                      </Form.Label>
-                      <Form.Select
-                        value={department}
-                        onChange={(e) => setDepartment(e.target.value)}
-                        required
-                        className="py-2"
-                      >
-                        <option value="">Select Department</option>
-                        {departments.map((dept) => (
-                          <option key={dept.id} value={dept.id}>
-                            {dept.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Category</Form.Label>
-                      <Form.Select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        required
-                        className="py-2"
-                      >
-                        <option value="">Select Category</option>
-                        {categories.map((cat) => (
-                          <option key={cat.id} value={cat.id}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>
-                        <GeoAlt className="me-1" /> Region
-                      </Form.Label>
-                      <Form.Select
-                        value={region}
-                        onChange={(e) => setRegion(e.target.value)}
-                        required
-                        className="py-2"
-                      >
-                        <option value="">Select Region</option>
-                        {regions.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-
-            {/* Payment Information Card */}
-            <Card className="shadow-sm border-0 mb-4">
-              <Card.Header className="bg-white py-3 border-bottom">
-                <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                  <CreditCard className="me-2 text-primary" /> Payment
-                  Information
-                </h5>
-              </Card.Header>
-              <Card.Body className="p-4">
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Payment Method</Form.Label>
-                      <Form.Select
-                        value={paymentMethod}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                        required
-                        className="py-2"
-                      >
-                        <option value="">Select Method</option>
-                        {paymentMethods.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Reference Number (Optional)</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={referenceNumber}
-                        onChange={(e) => setReferenceNumber(e.target.value)}
-                        className="py-2"
-                      />
-                      <Form.Text className="text-muted">
-                        Internal reference number
-                      </Form.Text>
-                    </Form.Group>
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-
-            {/* Payment Information Card */}
-            <Card className="shadow-sm border-0 mb-4">
-              <Card.Header className="bg-white py-3 border-bottom">
-                <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                  <CreditCard className="me-2 text-primary" /> Expense Details
-                </h5>
-              </Card.Header>
-              <Card.Body className="p-4">
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <div className="d-flex align-items-center">
-                        <Form.Check
-                          type="checkbox"
-                          id="is-supplier-payment"
-                          label="This is an advance request"
-                          checked={isAdvance}
-                          onChange={(e) => setIsAdvance(e.target.checked)}
-                          className="py-1"
-                        />
-                      </div>
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                {isAdvance && (
-                  <div className="mt-4 p-3 border rounded">
-                    <h6 className="mb-3 fw-semibold">Advance Allocation</h6>
-                    <Row>
-                      {categories.map((cat) => (
-                        <Col md={6} className="mb-3" key={cat.id}>
-                          <Form.Group>
-                            <Form.Label>{cat.name}</Form.Label>
-                            <InputGroup>
-                              <InputGroup.Text>
-                                {currencies.find(
-                                  (c) => c.id === Number(currency)
-                                )?.initials || "N/A"}
-                              </InputGroup.Text>
-                              <Form.Control
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={
-                                  allocations[cat.id] === 0
-                                    ? ""
-                                    : allocations[cat.id]?.toString() || ""
-                                }
-                                onChange={(e) =>
-                                  handleAllocationChange(cat.id, e.target.value)
-                                }
-                              />
-                            </InputGroup>
-                          </Form.Group>
-                        </Col>
-                      ))}
-                      <Col md={12}>
-                        <div className="d-flex justify-content-between align-items-center p-2 bg-light rounded">
-                          <span>Total Allocated:</span>
-                          <span className="fw-bold">
-                            {currencies.find((c) => c.id === Number(currency))
-                              ?.initials || "N/A"}{" "}
-                            {Object.values(allocations).length > 0
-                              ? Object.values(allocations)
-                                  .reduce(
-                                    (sum, amount) =>
-                                      sum + (parseFloat(amount as any) || 0),
-                                    0
-                                  )
-                                  .toFixed(2)
-                              : "0.00"}
-                          </span>
-                        </div>
-                      </Col>
-                    </Row>
-                  </div>
-                )}
-              </Card.Body>
-            </Card>
-
-            {/* Attachments Card */}
-            <Card className="shadow-sm border-0 mb-4">
-              <Card.Header className="bg-white py-3 border-bottom">
-                <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                  <FileEarmarkText className="me-2 text-primary" /> Attachments
-                </h5>
-              </Card.Header>
-              <Card.Body className="p-4">
-                <div className="file-upload-area border rounded-3 p-4 text-center">
-                  <input
-                    type="file"
-                    id="file-upload"
-                    accept="image/*,.pdf"
-                    className="d-none"
-                    onChange={handleFileChange}
-                  />
-
-                  <div className="mb-3">
-                    <Upload size={32} className="text-muted" />
-                  </div>
-
-                  <label
-                    htmlFor="file-upload"
-                    className="btn btn-primary rounded-pill mb-2 px-4"
-                  >
-                    Choose File
-                  </label>
-
-                  {fileName ? (
-                    <div className="mt-3">
-                      <span className="text-success small fw-semibold">
-                        <Receipt className="me-1" /> {fileName}
-                      </span>
-                      <Button
-                        variant="link"
-                        className="text-danger p-0 small d-block"
-                        onClick={() => {
-                          setSelectedFile(null);
-                          setFileName("");
-                        }}
-                      >
-                        Remove File
-                      </Button>
-                    </div>
-                  ) : (
-                    <p className="small text-muted mt-3 mb-0">
-                      Upload receipts, invoices, or supporting documents (PDF,
-                      JPG, PNG)
-                    </p>
-                  )}
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-
-          {/* Right Column - Summary and Actions */}
-          <Col lg={4}>
-            {/* Summary Card */}
-            <Card
-              className="shadow-sm border-0 mb-4 sticky-top"
-              style={{ top: "20px" }}
+    <AuthProvider>
+      <TopNavbar />
+      <Container
+        fluid
+        className="py-4 create-expense-page border p-4 rounded-3 mb-4"
+      >
+        {/* Top Section with Breadcrumb + Back Button + Header */}
+        <div className="d-flex justify-content-between align-items-center mb-5">
+          {/* Header with Back Button */}
+          <div className="d-flex align-items-center">
+            <Button
+              variant="outline-primary"
+              className="me-3 rounded-circle d-flex align-items-center justify-content-center"
+              style={{ width: "40px", height: "40px" }}
+              onClick={() => window.history.back()}
             >
-              <Card.Header className="bg-light py-3 border-bottom">
-                <h6 className="fw-bold text-dark mb-0">Expense Summary</h6>
-              </Card.Header>
-              <Card.Body>
-                <div className="d-flex justify-content-between mb-2">
-                  <span className="text-muted">Payee:</span>
-                  <span className="fw-semibold text-end">
-                    {payee || "Not specified"}
-                  </span>
-                </div>
-                <div className="d-flex justify-content-between mb-2">
-                  <span className="text-muted">ID Number:</span>
-                  <span>{payeeId || "Not specified"}</span>
-                </div>
-                <div className="d-flex justify-content-between mb-2">
-                  <span className="text-muted">Amount:</span>
-                  <span>
-                    {primaryAmount
-                      ? `${primaryAmount} ${
-                          currencies.find((c) => c.id === Number(currency))
-                            ?.initials || ""
-                        }`
-                      : "Not specified"}
-                  </span>
-                </div>
-                <div className="d-flex justify-content-between mb-2">
-                  <span className="text-muted">Category:</span>
-                  <span>
-                    {category
-                      ? categories.find((c) => c.id === Number(category))?.name
-                      : "Not specified"}
-                  </span>
-                </div>
-                <div className="d-flex justify-content-between mb-2">
-                  <span className="text-muted">Department:</span>
-                  <span>
-                    {department
-                      ? departments.find((d) => d.id === Number(department))
-                          ?.name
-                      : "Not specified"}
-                  </span>
-                </div>
-                <div className="d-flex justify-content-between mb-2">
-                  <span className="text-muted">Region:</span>
-                  <span>
-                    {region
-                      ? regions.find((r) => r.id === Number(region))?.name
-                      : "Not specified"}
-                  </span>
-                </div>
-                <div className="d-flex justify-content-between">
-                  <span className="text-muted">Payment Method:</span>
-                  <span>
-                    {paymentMethod
-                      ? paymentMethods.find(
-                          (p) => p.id === Number(paymentMethod)
-                        )?.name
-                      : "Not specified"}
-                  </span>
-                </div>
-              </Card.Body>
-            </Card>
+              <ArrowLeft size={18} />
+            </Button>
+            <div>
+              <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                <Receipt className="me-2 text-primary" /> Create New Expense
+              </h5>
+              <p className="text-muted mb-0">
+                Submit a new expense for reimbursement
+              </p>
+            </div>
+          </div>
+          {/* Breadcrumb Navigation */}
+          <Breadcrumb className="mb-0">
+            <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+            <Breadcrumb.Item href="/expense-management/my-expenses">
+              Expenses
+            </Breadcrumb.Item>
+            <Breadcrumb.Item active>Create Expense</Breadcrumb.Item>
+          </Breadcrumb>
+        </div>
 
-            {/* Action Buttons Card */}
-            <Card className="shadow-sm border-0">
-              <Card.Body className="p-3">
-                <div className="d-grid gap-2">
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    className="py-2 rounded-2 fw-semibold"
-                    disabled={submitting}
-                  >
-                    {submitting ? (
-                      <>
-                        <Spinner
-                          animation="border"
-                          size="sm"
-                          className="me-2"
-                        />{" "}
-                        Creating...
-                      </>
+        {/* Alert Info */}
+        <Alert variant="info" className="mb-4">
+          <Alert.Heading className="h6">
+            <ClockHistory className="me-2" />
+            Important Information
+          </Alert.Heading>
+          <p className="mb-0 small">
+            Please ensure all information is accurate and supported with proper
+            documentation where neccessary
+          </p>
+        </Alert>
+
+        {/* Form */}
+        <Form onSubmit={handleSubmit}>
+          <Row>
+            {/* Left Column - Expense Details */}
+            <Col lg={8}>
+              {/* Payee Information Card */}
+              <Card className="shadow-sm border-0 mb-4">
+                <Card.Header className="bg-white py-3 border-bottom">
+                  <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                    <Person className="me-2 text-primary" /> Payee Information
+                  </h5>
+                </Card.Header>
+                <Card.Body className="p-4">
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>
+                          <Person className="me-1" /> Payee Name
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={payee}
+                          onChange={(e) => setPayee(e.target.value)}
+                          required
+                          className="py-2"
+                        />
+                        <Form.Text className="text-muted">
+                          Enter payee name
+                        </Form.Text>
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>
+                          <PersonBadge className="me-1" /> ID Number
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={payeeId}
+                          onChange={(e) => setPayeeId(e.target.value)}
+                          required
+                          className="py-2"
+                        />
+                        <Form.Text className="text-muted">
+                          Enter ID number
+                        </Form.Text>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>
+                      <PersonBadge className="me-1" /> Payment Reference
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={payeeNumber}
+                      onChange={(e) => setPayeeNumber(e.target.value)}
+                      required
+                      className="py-2"
+                    />
+                    <Form.Text className="text-muted">
+                      Enter payment reference
+                    </Form.Text>
+                  </Form.Group>
+                </Card.Body>
+              </Card>
+
+              {/* Expense Details Card */}
+              <Card className="shadow-sm border-0 mb-4">
+                <Card.Header className="bg-white py-3 border-bottom">
+                  <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                    <Cash className="me-2 text-primary" /> Expense Details
+                  </h5>
+                </Card.Header>
+                <Card.Body className="p-4">
+                  <Row className="mb-3">
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>
+                          <CurrencyDollar className="me-1" /> Amount
+                        </Form.Label>
+                        <Form.Control
+                          type="number"
+                          value={primaryAmount}
+                          onChange={(e) => setPrimaryAmount(e.target.value)}
+                          step="0.01"
+                          min="0"
+                          required
+                          className="py-2"
+                        />
+                        <Form.Text className="text-muted">
+                          Enter amount
+                        </Form.Text>
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Currency</Form.Label>
+                        <Form.Select
+                          value={currency}
+                          onChange={(e) => setCurrency(e.target.value)}
+                          required
+                          className="py-2"
+                        >
+                          <option value="">Select Currency</option>
+                          {currencies.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.initials} - {c.currency}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Description</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="py-2"
+                    />
+                    <Form.Text className="text-muted">
+                      Provide details about this expense
+                    </Form.Text>
+                  </Form.Group>
+                </Card.Body>
+              </Card>
+
+              {/* Categorization Card */}
+              <Card className="shadow-sm border-0 mb-4">
+                <Card.Header className="bg-white py-3 border-bottom">
+                  <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                    <Tag className="me-2 text-primary" /> Categorization
+                  </h5>
+                </Card.Header>
+                <Card.Body className="p-4">
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>
+                          <Building className="me-1" /> Department
+                        </Form.Label>
+                        <Form.Select
+                          value={department}
+                          onChange={(e) => setDepartment(e.target.value)}
+                          required
+                          className="py-2"
+                        >
+                          <option value="">Select Department</option>
+                          {departments.map((dept) => (
+                            <option key={dept.id} value={dept.id}>
+                              {dept.name}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Category</Form.Label>
+                        <Form.Select
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          required
+                          className="py-2"
+                        >
+                          <option value="">Select Category</option>
+                          {categories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>
+                          <GeoAlt className="me-1" /> Region
+                        </Form.Label>
+                        <Form.Select
+                          value={region}
+                          onChange={(e) => setRegion(e.target.value)}
+                          required
+                          className="py-2"
+                        >
+                          <option value="">Select Region</option>
+                          {regions.map((r) => (
+                            <option key={r.id} value={r.id}>
+                              {r.name}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+
+              {/* Payment Information Card */}
+              <Card className="shadow-sm border-0 mb-4">
+                <Card.Header className="bg-white py-3 border-bottom">
+                  <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                    <CreditCard className="me-2 text-primary" /> Payment
+                    Information
+                  </h5>
+                </Card.Header>
+                <Card.Body className="p-4">
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Payment Method</Form.Label>
+                        <Form.Select
+                          value={paymentMethod}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                          required
+                          className="py-2"
+                        >
+                          <option value="">Select Method</option>
+                          {paymentMethods.map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {m.name}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Reference Number (Optional)</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={referenceNumber}
+                          onChange={(e) => setReferenceNumber(e.target.value)}
+                          className="py-2"
+                        />
+                        <Form.Text className="text-muted">
+                          Internal reference number
+                        </Form.Text>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+
+              {/* Payment Information Card */}
+              <Card className="shadow-sm border-0 mb-4">
+                <Card.Header className="bg-white py-3 border-bottom">
+                  <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                    <CreditCard className="me-2 text-primary" /> Expense Details
+                  </h5>
+                </Card.Header>
+                <Card.Body className="p-4">
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <div className="d-flex align-items-center">
+                          <Form.Check
+                            type="checkbox"
+                            id="is-supplier-payment"
+                            label="This is an advance request"
+                            checked={isAdvance}
+                            onChange={(e) => setIsAdvance(e.target.checked)}
+                            className="py-1"
+                          />
+                        </div>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  {isAdvance && (
+                    <div className="mt-4 p-3 border rounded">
+                      <h6 className="mb-3 fw-semibold">Advance Allocation</h6>
+                      <Row>
+                        {categories.map((cat) => (
+                          <Col md={6} className="mb-3" key={cat.id}>
+                            <Form.Group>
+                              <Form.Label>{cat.name}</Form.Label>
+                              <InputGroup>
+                                <InputGroup.Text>
+                                  {currencies.find(
+                                    (c) => c.id === Number(currency)
+                                  )?.initials || "N/A"}
+                                </InputGroup.Text>
+                                <Form.Control
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  value={
+                                    allocations[cat.id] === 0
+                                      ? ""
+                                      : allocations[cat.id]?.toString() || ""
+                                  }
+                                  onChange={(e) =>
+                                    handleAllocationChange(
+                                      cat.id,
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </InputGroup>
+                            </Form.Group>
+                          </Col>
+                        ))}
+                        <Col md={12}>
+                          <div className="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                            <span>Total Allocated:</span>
+                            <span className="fw-bold">
+                              {currencies.find((c) => c.id === Number(currency))
+                                ?.initials || "N/A"}{" "}
+                              {Object.values(allocations).length > 0
+                                ? Object.values(allocations)
+                                    .reduce(
+                                      (sum, amount) =>
+                                        sum + (parseFloat(amount as any) || 0),
+                                      0
+                                    )
+                                    .toFixed(2)
+                                : "0.00"}
+                            </span>
+                          </div>
+                        </Col>
+                      </Row>
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+
+              {/* Attachments Card */}
+              <Card className="shadow-sm border-0 mb-4">
+                <Card.Header className="bg-white py-3 border-bottom">
+                  <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                    <FileEarmarkText className="me-2 text-primary" />{" "}
+                    Attachments
+                  </h5>
+                </Card.Header>
+                <Card.Body className="p-4">
+                  <div className="file-upload-area border rounded-3 p-4 text-center">
+                    <input
+                      type="file"
+                      id="file-upload"
+                      accept="image/*,.pdf"
+                      className="d-none"
+                      onChange={handleFileChange}
+                    />
+
+                    <div className="mb-3">
+                      <Upload size={32} className="text-muted" />
+                    </div>
+
+                    <label
+                      htmlFor="file-upload"
+                      className="btn btn-primary rounded-pill mb-2 px-4"
+                    >
+                      Choose File
+                    </label>
+
+                    {fileName ? (
+                      <div className="mt-3">
+                        <span className="text-success small fw-semibold">
+                          <Receipt className="me-1" /> {fileName}
+                        </span>
+                        <Button
+                          variant="link"
+                          className="text-danger p-0 small d-block"
+                          onClick={() => {
+                            setSelectedFile(null);
+                            setFileName("");
+                          }}
+                        >
+                          Remove File
+                        </Button>
+                      </div>
                     ) : (
-                      "Create Expense"
+                      <p className="small text-muted mt-3 mb-0">
+                        Upload receipts, invoices, or supporting documents (PDF,
+                        JPG, PNG)
+                      </p>
                     )}
-                  </Button>
-                  <Button
-                    variant="outline-secondary"
-                    className="py-2 rounded-2"
-                    disabled={submitting}
-                    onClick={() => window.history.back()}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Form>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
 
-      <style jsx global>{`
-        .create-expense-page {
-          background-color: #f9faff;
-          min-height: 100vh;
-        }
-        .file-upload-area {
-          border: 2px dashed #dee2e6 !important;
-          transition: all 0.3s ease;
-          background-color: #fafafa;
-        }
-        .file-upload-area:hover {
-          border-color: #4e54c8 !important;
-          background-color: #f8f9ff;
-        }
-        .card {
-          border-radius: 0.75rem;
-        }
-        .form-control,
-        .form-select {
-          border-radius: 0.5rem;
-        }
-        .btn {
-          border-radius: 0.5rem;
-        }
-      `}</style>
-    </Container>
+            {/* Right Column - Summary and Actions */}
+            <Col lg={4}>
+              {/* Summary Card */}
+              <Card
+                className="shadow-sm border-0 mb-4 sticky-top"
+                style={{ top: "20px" }}
+              >
+                <Card.Header className="bg-light py-3 border-bottom">
+                  <h6 className="fw-bold text-dark mb-0">Expense Summary</h6>
+                </Card.Header>
+                <Card.Body>
+                  <div className="d-flex justify-content-between mb-2">
+                    <span className="text-muted">Payee:</span>
+                    <span className="fw-semibold text-end">
+                      {payee || "Not specified"}
+                    </span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-2">
+                    <span className="text-muted">ID Number:</span>
+                    <span>{payeeId || "Not specified"}</span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-2">
+                    <span className="text-muted">Amount:</span>
+                    <span>
+                      {primaryAmount
+                        ? `${primaryAmount} ${
+                            currencies.find((c) => c.id === Number(currency))
+                              ?.initials || ""
+                          }`
+                        : "Not specified"}
+                    </span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-2">
+                    <span className="text-muted">Category:</span>
+                    <span>
+                      {category
+                        ? categories.find((c) => c.id === Number(category))
+                            ?.name
+                        : "Not specified"}
+                    </span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-2">
+                    <span className="text-muted">Department:</span>
+                    <span>
+                      {department
+                        ? departments.find((d) => d.id === Number(department))
+                            ?.name
+                        : "Not specified"}
+                    </span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-2">
+                    <span className="text-muted">Region:</span>
+                    <span>
+                      {region
+                        ? regions.find((r) => r.id === Number(region))?.name
+                        : "Not specified"}
+                    </span>
+                  </div>
+                  <div className="d-flex justify-content-between">
+                    <span className="text-muted">Payment Method:</span>
+                    <span>
+                      {paymentMethod
+                        ? paymentMethods.find(
+                            (p) => p.id === Number(paymentMethod)
+                          )?.name
+                        : "Not specified"}
+                    </span>
+                  </div>
+                </Card.Body>
+              </Card>
+
+              {/* Action Buttons Card */}
+              <Card className="shadow-sm border-0">
+                <Card.Body className="p-3">
+                  <div className="d-grid gap-2">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      className="py-2 rounded-2 fw-semibold"
+                      disabled={submitting}
+                    >
+                      {submitting ? (
+                        <>
+                          <Spinner
+                            animation="border"
+                            size="sm"
+                            className="me-2"
+                          />{" "}
+                          Creating...
+                        </>
+                      ) : (
+                        "Create Expense"
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline-secondary"
+                      className="py-2 rounded-2"
+                      disabled={submitting}
+                      onClick={() => window.history.back()}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Form>
+
+        <style jsx global>{`
+          .create-expense-page {
+            background-color: #f9faff;
+            min-height: 100vh;
+          }
+          .file-upload-area {
+            border: 2px dashed #dee2e6 !important;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+          }
+          .file-upload-area:hover {
+            border-color: #4e54c8 !important;
+            background-color: #f8f9ff;
+          }
+          .card {
+            border-radius: 0.75rem;
+          }
+          .form-control,
+          .form-select {
+            border-radius: 0.5rem;
+          }
+          .btn {
+            border-radius: 0.5rem;
+          }
+        `}</style>
+      </Container>
+    </AuthProvider>
   );
 }

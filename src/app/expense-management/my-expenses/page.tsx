@@ -39,6 +39,7 @@ import { BASE_API_URL } from "../../static/apiConfig";
 import AuthProvider from "../../authPages/tokenData";
 import { User } from "lucide-react";
 import { FaListAlt } from "react-icons/fa";
+import TopNavbar from "../../components/Navbar";
 
 /** ========= Types aligned to your Prisma schema ========= */
 
@@ -206,8 +207,8 @@ const stepPillStyle = (step: ExpenseStep) => {
 };
 
 const countCompletedSteps = (steps: ExpenseStep[]) =>
-  steps.filter((s) => 
-    ['APPROVED', 'REJECTED'].includes(normalizeStatus(s.status))
+  steps.filter((s) =>
+    ["APPROVED", "REJECTED"].includes(normalizeStatus(s.status))
   ).length;
 
 const getProgressPercent = (steps: ExpenseStep[]) => {
@@ -402,13 +403,6 @@ export default function FinanceDashboard() {
     });
   }, [expenses, searchQuery]);
 
-  const formatTime = (date: Date | string | null | undefined): string => {
-    if (!date) return "";
-    const d = typeof date === "string" ? new Date(date) : date;
-    if (isNaN(d.getTime())) return "";
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
-
   const formatDate = (iso?: string) => {
     if (!iso) return "-";
     const d = new Date(iso);
@@ -434,7 +428,7 @@ export default function FinanceDashboard() {
 
   return (
     <AuthProvider>
-      <Navbar />
+      <TopNavbar />
       <Container fluid className="dashboard-container px-4 py-3">
         {/* Header */}
         <Row className="align-items-center mb-4">
@@ -465,7 +459,9 @@ export default function FinanceDashboard() {
         <Row className="mb-4">
           <Col sm={4}>
             <Button
-              onClick={() => {handleNavigation("create-expense")}}
+              onClick={() => {
+                handleNavigation("create-expense");
+              }}
               variant="light"
               className="w-100 text-start py-3 border"
             >
