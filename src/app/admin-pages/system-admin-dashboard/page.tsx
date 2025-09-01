@@ -29,13 +29,13 @@ import {
   Eye,
   Wallet,
 } from "react-bootstrap-icons";
-import AuthProvider from "../authPages/tokenData";
+import AuthProvider from "../../authPages/tokenData";
 import { toast } from "react-toastify";
-import { BASE_API_URL } from "../static/apiConfig";
-import TopNavbar from "../components/Navbar";
-import RoleCreationModal from "../components/modals/admin-role-creation";
-import InstitutionCreationModal from "../components/modals/create-institution";
-import AdminCreateUserModal from "../components/modals/admin-create-user-modal";
+import { BASE_API_URL } from "../../static/apiConfig";
+import TopNavbar from "../../components/Navbar";
+import RoleCreationModal from "../../components/modals/admin-role-creation";
+import InstitutionCreationModal from "../../components/modals/create-institution";
+import AdminCreateUserModal from "../../components/modals/admin-create-user-modal";
 
 interface User {
   id: number;

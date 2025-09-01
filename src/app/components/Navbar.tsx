@@ -74,6 +74,31 @@ export default function TopNavbar() {
               <GraphUp className="me-1" size={16} />
               Dashboard
             </Nav.Link>
+            <Dropdown as={Nav.Item} className="mx-2">
+              <Dropdown.Toggle
+                as={Nav.Link}
+                className="d-flex align-items-center"
+              >
+                <CashStack className="me-1" size={16} />
+                Expenses
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="mt-2">
+                <Dropdown.Item
+                  onClick={() => handleNavigation("/expense-management/create-expense")}
+                  className="d-flex align-items-center"
+                >
+                  <Collection className="me-2" size={16} />
+                  Create expense
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => handleNavigation("/expense-management/my-expenses")}
+                  className="d-flex align-items-center"
+                >
+                  <CreditCard className="me-2" size={16} />
+                  My expenses
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
             <Nav.Link
               onClick={() => handleNavigation("/create-expense")}
               className="mx-2"
@@ -281,11 +306,15 @@ export default function TopNavbar() {
                   Settings
                 </Dropdown.Item>
                 <Dropdown.Divider />
-                <Dropdown.Item onClick={() => handleNavigation("/company-admin")}>
+                <Dropdown.Item
+                  onClick={() => handleNavigation("/company-admin")}
+                >
                   <Building className="me-2 text-primary" size={18} />
                   Company admin
                 </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleNavigation("/system-admin")}>
+                <Dropdown.Item
+                  onClick={() => handleNavigation("/system-admin")}
+                >
                   <Server className="me-2 text-primary" size={18} />
                   System admin
                 </Dropdown.Item>

@@ -31,12 +31,12 @@ import {
   FileEarmarkX,
   PencilSquare,
   Tag,
+  ArrowUpCircle,
 } from "react-bootstrap-icons";
-import CreateExpenseModal from "../components/modals/create-expense-modal";
-import Navbar from "../components/Navbar";
+import Navbar from "../../components/Navbar";
 import { toast } from "react-toastify";
-import { BASE_API_URL } from "../static/apiConfig";
-import AuthProvider from "../authPages/tokenData";
+import { BASE_API_URL } from "../../static/apiConfig";
+import AuthProvider from "../../authPages/tokenData";
 import { User } from "lucide-react";
 import { FaListAlt } from "react-icons/fa";
 
@@ -464,7 +464,27 @@ export default function FinanceDashboard() {
         {/* Main Content Area */}
         <Row className="mb-4">
           <Col sm={4}>
-            <CreateExpenseModal onSuccess={fetchExpenses} />
+            <Button
+              onClick={() => {handleNavigation("create-expense")}}
+              variant="light"
+              className="w-100 text-start py-3 border"
+            >
+              {" "}
+              <div className="d-flex align-items-center">
+                {" "}
+                <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
+                  {" "}
+                  <ArrowUpCircle size={20} className="text-primary" />{" "}
+                </div>{" "}
+                <div>
+                  {" "}
+                  <div className="fw-medium text-primary">
+                    Create expenses
+                  </div>{" "}
+                  <small className="text-muted d-block">Add new expenses</small>{" "}
+                </div>{" "}
+              </div>{" "}
+            </Button>
           </Col>
           <Col sm={4}>
             <Button variant="light" className="w-100 text-start py-3 border">

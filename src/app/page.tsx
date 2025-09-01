@@ -17,11 +17,9 @@ import {
   EyeSlash,
   Envelope,
   Lock,
-  Building,
   Bank,
   ArrowRight,
   ShieldLock,
-  GraphUp,
   CloudCheck,
   CurrencyExchange,
   FileEarmarkText,
@@ -73,7 +71,7 @@ export default function LoginPage() {
       if (response.ok) {
         const { access_token } = data.token;
         localStorage.setItem("expenseTrackerToken", access_token);
-        window.location.href = "/create-expense";
+        window.location.href = "/dashboard";
       } else {
         toast.error(`${statusCode} - ${message}`);
       }

@@ -26,6 +26,7 @@ import {
   FaListAlt,
 } from "react-icons/fa";
 import {
+  Search,
   Filter,
   CheckCircle,
   ClockHistory,
@@ -35,15 +36,16 @@ import {
   CheckLg,
   XLg,
   ExclamationTriangle,
+  CashCoin,
   Check2Circle,
   ShieldCheck,
 } from "react-bootstrap-icons";
-import Navbar from "../components/Navbar";
-import { BASE_API_URL } from "../static/apiConfig";
+import Navbar from "../../components/Navbar";
+import { BASE_API_URL } from "../../static/apiConfig";
 import { toast } from "react-toastify";
-import AuthProvider from "../authPages/tokenData";
-import { ArrowDownCircle, DollarSign, Tag, ListChecks } from "lucide-react";
-import TopNavbar from "../components/Navbar";
+import AuthProvider from "../../authPages/tokenData";
+import { ArrowDownCircle, DollarSign, Tag } from "lucide-react";
+import TopNavbar from "../../components/Navbar";
 
 /**
  * TYPES aligned to your NestJS / Prisma backend
@@ -122,11 +124,25 @@ type Expense = {
   expenseSteps: ExpenseStep[];
   createdAt: string;
   updatedAt: string;
-  categories: Category[];
-  paymentMethods: PaymentMethod[];
-  regions: Region[];
 };
 
+/** Utility formatters */
+const formatMoney = (amount: number, currency: string | Currency) => {
+  // Handle both string currency code and Currency object
+  const currencyCode =
+    typeof currency === "string" ? currency : currency?.initials || "USD";
+
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: currencyCode,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch (e) {
+    // Fallback if Intl.NumberFormat fails
+    return `${currencyCode} ${amount.toFixed(2)}`;
+  }
+};
 const formatDate = (iso?: string) => {
   if (!iso) return "-";
   const d = new Date(iso);
@@ -148,9 +164,6 @@ export default function ExpenseApprovalPage() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [regions, setRegions] = useState<Region[]>([]);
 
   // Data state
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -162,7 +175,7 @@ export default function ExpenseApprovalPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${BASE_API_URL}/finance/expenses-to-review`, {
+      const res = await fetch(`${BASE_API_URL}/finance/expenses-to-pay`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -178,50 +191,6 @@ export default function ExpenseApprovalPage() {
       }
 
       const data: Expense[] = await res.json();
-
-      // Extract unique categories from the expenses
-      const uniqueCategories = Array.from(
-        data
-          .flatMap((expense) => expense.categories || [])
-          .reduce((map, category) => {
-            if (category?.id) {
-              map.set(category.id, category);
-            }
-            return map;
-          }, new Map<number, Category>())
-          .values()
-      );
-
-      // Extract unique payment methods from the expenses
-      const uniquePaymentMethods = Array.from(
-        data
-          .flatMap((expense) => expense.paymentMethods || [])
-          .reduce((map, method) => {
-            if (method?.id) {
-              map.set(method.id, method);
-            }
-            return map;
-          }, new Map<number, PaymentMethod>())
-          .values()
-      );
-
-      // Extract unique regions from the expenses
-      const uniqueRegions = Array.from(
-        data
-          .flatMap((expense) => expense.regions || [])
-          .reduce((map, region) => {
-            if (region?.id) {
-              map.set(region.id, region);
-            }
-            return map;
-          }, new Map<number, Region>())
-          .values()
-      );
-
-      // Update the state with the extracted data
-      setCategories(uniqueCategories);
-      setPaymentMethods(uniquePaymentMethods);
-      setRegions(uniqueRegions);
 
       // Sort by ID in descending order (newest first)
       data.sort((a, b) => b.id - a.id);
@@ -419,14 +388,12 @@ export default function ExpenseApprovalPage() {
             {/* Title and Subtitle */}
             <div className="d-flex align-items-center mb-3 bg-primary bg-opacity-10 p-3 rounded-4">
               <div className="p-3 rounded-3 bg-gradient-primary bg-opacity-10 me-3 shadow-sm">
-                <ListChecks className="text-primary" size={24} />
+                <CashCoin className="text-primary" size={24} />
               </div>
               <div>
-                <h5 className="fw-bold mb-1 text-dark">
-                  Queued Expenses for checks
-                </h5>
+                <h5 className="fw-bold mb-1 text-dark">Expenses to pay</h5>
                 <p className="text-muted mb-0 small">
-                  Review, validate, and approve expenses prior to payment.
+                  Review, validate, and approve expenses before payment.
                 </p>
               </div>
             </div>
@@ -435,8 +402,9 @@ export default function ExpenseApprovalPage() {
               <Col md={6} className="mb-4">
                 <div className="bg-white p-4 rounded-4 shadow-sm border">
                   <p className="small text-secondary mb-4">
-                    Every submitted expense goes through this check to ensure
-                    compliance and readiness for payment:
+                    Every submitted expense goes through checks to ensure
+                    compliance and then submitted here for payment. Please
+                    review every expense before payment to ensure:
                   </p>
 
                   <div className="d-flex flex-column gap-3 small text-secondary">
@@ -617,6 +585,7 @@ export default function ExpenseApprovalPage() {
             <h5 className="mb-0 me-3">Expense Requests</h5>
             <div className="d-flex flex-wrap gap-2 mt-2 mt-md-0">
               <div className="search-box d-flex">
+                <Search className="search-icon" />
                 <Form.Control
                   type="search"
                   placeholder="Search expenses..."
@@ -1149,7 +1118,7 @@ export default function ExpenseApprovalPage() {
                         <ul className="timeline list-unstyled position-relative ps-4">
                           {selectedExpense.expenseSteps
                             .sort((a, b) => a.order - b.order)
-                            .map((step) => (
+                            .map((step, idx) => (
                               <li
                                 key={step.id}
                                 className="mb-4 position-relative ps-3"
@@ -1235,85 +1204,6 @@ export default function ExpenseApprovalPage() {
                         Payment Actions
                       </h5>
                       <Form.Group className="mb-3">
-                        <Form.Label>Category</Form.Label>
-                        <Form.Select
-                          value={selectedExpense?.category?.id || ""}
-                          onChange={(e) => {
-                            const category = categories.find(
-                              (c) => c.id === Number(e.target.value)
-                            );
-                            if (category && selectedExpense) {
-                              setSelectedExpense({
-                                ...selectedExpense,
-                                category,
-                              });
-                            }
-                          }}
-                        >
-                          <option value="">Select category...</option>
-                          {categories.map((category) => (
-                            <option key={category.id} value={category.id}>
-                              {category.name}
-                            </option>
-                          ))}
-                        </Form.Select>
-                      </Form.Group>
-
-                      <Form.Group className="mb-3">
-                        <Form.Label>Payment Method</Form.Label>
-                        <Form.Select
-                          value={selectedExpense?.paymentMethod?.id || ""}
-                          onChange={(e) => {
-                            const paymentMethod = paymentMethods.find(
-                              (pm) => pm.id === Number(e.target.value)
-                            );
-                            if (paymentMethod && selectedExpense) {
-                              setSelectedExpense({
-                                ...selectedExpense,
-                                paymentMethod,
-                              });
-                            }
-                          }}
-                        >
-                          <option value="">Select payment method...</option>
-                          {paymentMethods.map((method) => (
-                            <option key={method.id} value={method.id}>
-                              {method.name}
-                            </option>
-                          ))}
-                        </Form.Select>
-                      </Form.Group>
-
-                      <Form.Group className="mb-3">
-                        <Form.Label>Region</Form.Label>
-                        <Form.Select
-                          value={selectedExpense?.region?.id?.toString() || ""}
-                          onChange={(e) => {
-                            const selectedId = Number(e.target.value);
-                            if (!selectedId) return;
-                            
-                            const region = regions.find((r) => r.id === selectedId);
-                            if (region && selectedExpense) {
-                              setSelectedExpense(prev => ({
-                                ...prev,
-                                region,
-                              }));
-                            }
-                          }}
-                          disabled={!regions.length}
-                        >
-                          <option value="">
-                            {regions.length ? 'Select region...' : 'Loading regions...'}
-                          </option>
-                          {regions.map((region) => (
-                            <option key={`region-${region.id}`} value={region.id}>
-                              {region.name}
-                            </option>
-                          ))}
-                        </Form.Select>
-                      </Form.Group>
-
-                      <Form.Group className="mb-3">
                         <Form.Label>Rejection Reason (if rejecting)</Form.Label>
                         <Form.Control
                           as="textarea"
@@ -1321,7 +1211,7 @@ export default function ExpenseApprovalPage() {
                           value={rejectionReason}
                           onChange={(e) => setRejectionReason(e.target.value)}
                         />
-                        <Form.Text>Provide reason...</Form.Text>
+                        <Form.Text> Provide reason...</Form.Text>
                       </Form.Group>
                       <div className="d-flex gap-2">
                         <Button

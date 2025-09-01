@@ -35,7 +35,7 @@ import {
   Grid3x3Gap,
   ClockHistory,
 } from "react-bootstrap-icons";
-import AuthProvider from "../authPages/tokenData";
+import AuthProvider from "../../authPages/tokenData";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("users");
