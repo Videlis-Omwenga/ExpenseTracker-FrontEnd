@@ -246,9 +246,10 @@ export default function CreateExpensePage({
       <TopNavbar />
       <Container
         fluid
-        className="py-4 create-expense-page border p-4 rounded-3 mb-4"
+        className="create-expense-page rounded-3 mb-4"
+        style={{ maxWidth: "1500px" }}
       >
-        <Alert variant="info" className="mb-4">
+        <Alert variant="info" className="mb-4 mt-5">
           <div className="d-flex justify-content-between align-items-center">
             {/* Header with Back Button */}
             <div className="d-flex align-items-center">
@@ -261,10 +262,10 @@ export default function CreateExpensePage({
                 <ArrowLeft size={18} />
               </Button>
               <div>
-                <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                   <Receipt className="me-2 text-primary" /> Create New Expense
-                </h5>
-                <p className="text-muted mb-0">
+                </h6>
+                <p className="text-muted mb-0 small">
                   Submit a new expense for reimbursement
                 </p>
               </div>
@@ -279,15 +280,14 @@ export default function CreateExpensePage({
             </Breadcrumb>
           </div>
         </Alert>
-
         {/* Form */}
         <Form onSubmit={handleSubmit}>
           <Row>
             {/* Left Column - Expense Details */}
-            <Col lg={8}>
+            <Col lg={8} className="border rounded-3 p-4">
               {/* Payee Information Card */}
-              <Card className="shadow-sm border-0 mb-4">
-                <Card.Header className="bg-white py-3 border-bottom">
+              <Card className="border-0 mb-4 bg-light">
+                <Card.Header className="bg-white py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <Person className="me-2 text-primary" /> Payee Information
                   </h6>
@@ -349,13 +349,13 @@ export default function CreateExpensePage({
               </Card>
 
               {/* Expense Details Card */}
-              <Card className="shadow-sm border-0 mb-4">
-                <Card.Header className="bg-white py-3 border-bottom">
+              <Card className="border-0 mb-4 bg-light">
+                <Card.Header className="bg-white py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <Cash className="me-2 text-primary" /> Expense Details
                   </h6>
                 </Card.Header>
-                <Card.Body className="p-4">
+                <Card.Body className="p-4 rounded-3">
                   <Row className="mb-3">
                     <Col md={6}>
                       <Form.Group className="mb-3">
@@ -372,7 +372,7 @@ export default function CreateExpensePage({
                           className="py-2"
                         />
                         <Form.Text className="text-muted">
-                          Enter amount
+                          Enter payment amount
                         </Form.Text>
                       </Form.Group>
                     </Col>
@@ -385,13 +385,14 @@ export default function CreateExpensePage({
                           required
                           className="py-2"
                         >
-                          <option value="">Select Currency</option>
+                          <option value=""></option>
                           {currencies.map((c) => (
                             <option key={c.id} value={c.id}>
                               {c.initials} - {c.currency}
                             </option>
                           ))}
                         </Form.Select>
+                        <Form.Text>Select currency for this expense</Form.Text>
                       </Form.Group>
                     </Col>
                   </Row>
@@ -413,8 +414,8 @@ export default function CreateExpensePage({
               </Card>
 
               {/* Categorization Card */}
-              <Card className="shadow-sm border-0 mb-4">
-                <Card.Header className="bg-white py-3 border-bottom">
+              <Card className="border-0 mb-4 bg-light">
+                <Card.Header className="bg-white py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <Tag className="me-2 text-primary" /> Categorization
                   </h6>
@@ -432,13 +433,16 @@ export default function CreateExpensePage({
                           required
                           className="py-2"
                         >
-                          <option value="">Select Department</option>
+                          <option value=""></option>
                           {departments.map((dept) => (
                             <option key={dept.id} value={dept.id}>
                               {dept.name}
                             </option>
                           ))}
                         </Form.Select>
+                        <Form.Text>
+                          Select the department for this expense
+                        </Form.Text>
                       </Form.Group>
                     </Col>
                     <Col md={6}>
@@ -450,13 +454,16 @@ export default function CreateExpensePage({
                           required
                           className="py-2"
                         >
-                          <option value="">Select Category</option>
+                          <option value=""></option>
                           {categories.map((cat) => (
                             <option key={cat.id} value={cat.id}>
                               {cat.name}
                             </option>
                           ))}
                         </Form.Select>
+                        <Form.Text>
+                          Select expense category for this expense
+                        </Form.Text>
                       </Form.Group>
                     </Col>
                   </Row>
@@ -473,13 +480,14 @@ export default function CreateExpensePage({
                           required
                           className="py-2"
                         >
-                          <option value="">Select Region</option>
+                          <option value=""></option>
                           {regions.map((r) => (
                             <option key={r.id} value={r.id}>
                               {r.name}
                             </option>
                           ))}
                         </Form.Select>
+                        <Form.Text>Select region for this expense</Form.Text>
                       </Form.Group>
                     </Col>
                   </Row>
@@ -487,8 +495,8 @@ export default function CreateExpensePage({
               </Card>
 
               {/* Payment Information Card */}
-              <Card className="shadow-sm border-0 mb-4">
-                <Card.Header className="bg-white py-3 border-bottom">
+              <Card className="border-0 mb-4 bg-light">
+                <Card.Header className="bg-white py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <CreditCard className="me-2 text-primary" /> Payment
                     Information
@@ -505,13 +513,16 @@ export default function CreateExpensePage({
                           required
                           className="py-2"
                         >
-                          <option value="">Select Method</option>
+                          <option value=""></option>
                           {paymentMethods.map((m) => (
                             <option key={m.id} value={m.id}>
                               {m.name}
                             </option>
                           ))}
                         </Form.Select>
+                        <Form.Text>
+                          Select how you prefer this expense to be paid
+                        </Form.Text>
                       </Form.Group>
                     </Col>
                     <Col md={6}>
@@ -533,8 +544,8 @@ export default function CreateExpensePage({
               </Card>
 
               {/* Payment Information Card */}
-              <Card className="shadow-sm border-0 mb-4">
-                <Card.Header className="bg-white py-3 border-bottom">
+              <Card className="border-0 mb-4 bg-light">
+                <Card.Header className="bg-white py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <CreditCard className="me-2 text-primary" /> Expense Details
                   </h6>
@@ -616,8 +627,8 @@ export default function CreateExpensePage({
               </Card>
 
               {/* Attachments Card */}
-              <Card className="shadow-sm border-0 mb-4">
-                <Card.Header className="bg-white py-3 border-bottom">
+              <Card className="border-0 mb-4">
+                <Card.Header className="bg-white py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <FileEarmarkText className="me-2 text-primary" />{" "}
                     Attachments
@@ -675,10 +686,10 @@ export default function CreateExpensePage({
             <Col lg={4}>
               {/* Summary Card */}
               <Card
-                className="shadow-sm border-0 mb-4 sticky-top"
+                className="border-0 mb-4 sticky-top"
                 style={{ top: "20px" }}
               >
-                <Card.Header className="bg-light py-3 border-bottom">
+                <Card.Header className="bg-light py-3">
                   <h6 className="fw-bold text-dark mb-0">Expense Summary</h6>
                 </Card.Header>
                 <Card.Body>
@@ -742,7 +753,7 @@ export default function CreateExpensePage({
                 </Card.Body>
 
                 {/* Action Buttons Card */}
-                <Card className="shadow-sm border-0">
+                <Card className="border-0">
                   <Card.Body className="p-3">
                     <div className="d-grid gap-2">
                       <Button
@@ -782,7 +793,6 @@ export default function CreateExpensePage({
 
         <style jsx global>{`
           .create-expense-page {
-            background-color: #f9faff;
             min-height: 100vh;
           }
           .file-upload-area {

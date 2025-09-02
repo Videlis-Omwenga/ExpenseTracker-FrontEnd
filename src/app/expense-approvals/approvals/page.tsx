@@ -862,7 +862,7 @@ export default function ExpenseApprovalPage() {
                 className="border-bottom-0 pb-0 position-relative"
               >
                 <div
-                  className="position-absolute w-100 h-100 bg-light bg-opacity-10 rounded-top"
+                  className="position-absolute h-100 bg-light bg-opacity-10 rounded-top"
                   style={{ borderBottom: "1px solid #dee2e6" }}
                 ></div>
                 <h6 className="position-relative">

@@ -439,7 +439,7 @@ export default function FinanceDashboard() {
                 {" "}
                 <h5 className="fw-bold mb-1">Dashboard</h5>
                 <p className="text-muted mb-0 small">
-                  Welcome back! Here's your expense management dashboard
+                  Welcome back! Here are your expenses
                 </p>
               </span>
               <Button
@@ -466,28 +466,21 @@ export default function FinanceDashboard() {
               onClick={() => {
                 handleNavigation("create-expense");
               }}
-              variant="light"
-              className="w-100 text-start py-3 border"
+              className="w-100 text-start py-3 border bg-primary bg-opacity-10"
             >
-              {" "}
               <div className="d-flex align-items-center">
-                {" "}
                 <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
-                  {" "}
-                  <ArrowUpCircle size={20} className="text-primary" />{" "}
-                </div>{" "}
+                  <ArrowUpCircle size={20} className="text-primary" />
+                </div>
                 <div>
-                  {" "}
-                  <div className="fw-medium text-primary">
-                    Create expenses
-                  </div>{" "}
-                  <small className="text-muted d-block">Add new expenses</small>{" "}
-                </div>{" "}
-              </div>{" "}
+                  <div className="fw-medium text-primary">Create expenses</div>
+                  <small className="text-muted d-block">Add new expenses</small>
+                </div>
+              </div>
             </Button>
           </Col>
           <Col sm={4}>
-            <Button variant="light" className="w-100 text-start py-3 border">
+            <Button className="w-100 text-start py-3 border bg-danger bg-opacity-10">
               <div className="d-flex align-items-center">
                 <div className="bg-danger bg-opacity-10 p-2 rounded me-3">
                   <ArrowDownCircle size={20} className="text-danger" />
@@ -502,7 +495,7 @@ export default function FinanceDashboard() {
             </Button>
           </Col>
           <Col sm={4}>
-            <Button variant="light" className="w-100 text-start py-3 border">
+            <Button className="w-100 text-start py-3 border bg-success bg-opacity-10">
               <div className="d-flex align-items-center">
                 <div className="bg-success bg-opacity-10 p-2 rounded me-3">
                   <FileText size={20} className="text-success" />
@@ -522,9 +515,7 @@ export default function FinanceDashboard() {
         <Container fluid className="mt-5">
           <Card className="mb-4">
             <Card.Header className="bg-white border-bottom d-flex justify-content-between align-items-center mb-5">
-              <h6 className="mb-0 fw-bold text-secondary text-uppercase">
-                Your Expenses Dashboard
-              </h6>
+              <h6 className="mb-0 fw-bold text-secondary">Expenses table</h6>
               <div className="d-flex">
                 <div className="search-box me-2 d-flex d-wrap">
                   <Form.Control
@@ -792,7 +783,7 @@ export default function FinanceDashboard() {
                 className="border-bottom-0 pb-0 position-relative"
               >
                 <div
-                  className="position-absolute w-100 h-100 bg-light bg-opacity-10 rounded-top"
+                  className="position-absolute h-100 bg-light bg-opacity-10 rounded-top"
                   style={{ borderBottom: "1px solid #dee2e6" }}
                 ></div>
                 <h6 className="position-relative">
