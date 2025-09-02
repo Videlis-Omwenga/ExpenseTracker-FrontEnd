@@ -84,48 +84,38 @@ export default function TopNavbar() {
               </Dropdown.Toggle>
               <Dropdown.Menu className="mt-2">
                 <Dropdown.Item
-                  onClick={() => handleNavigation("/expense-management/create-expense")}
-                  className="d-flex align-items-center"
-                >
-                  <Collection className="me-2" size={16} />
-                  Create expense
-                </Dropdown.Item>
-                <Dropdown.Item
-                  onClick={() => handleNavigation("/expense-management/my-expenses")}
+                  onClick={() =>
+                    handleNavigation("/expense-management/my-expenses")
+                  }
                   className="d-flex align-items-center"
                 >
                   <CreditCard className="me-2" size={16} />
                   My expenses
                 </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() =>
+                    handleNavigation("/expense-management/create-expense")
+                  }
+                  className="d-flex align-items-center"
+                >
+                  <Collection className="me-2" size={16} />
+                  Create expense
+                </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
             <Nav.Link
-              onClick={() => handleNavigation("/create-expense")}
-              className="mx-2"
-            >
-              <CreditCard className="me-1" size={16} />
-              Create expense
-            </Nav.Link>
-            <Nav.Link
-              onClick={() => handleNavigation("/workflows")}
+              onClick={() => handleNavigation("/expense-approvals/workflows")}
               className="mx-2"
             >
               <FileText className="me-1" size={16} />
               Workflows
             </Nav.Link>
             <Nav.Link
-              onClick={() => handleNavigation("/approvals")}
+              onClick={() => handleNavigation("/expense-approvals/approvals")}
               className="mx-2"
             >
               <ClipboardCheck className="me-1" size={16} />
               Approvals
-            </Nav.Link>
-            <Nav.Link
-              onClick={() => handleNavigation("/teams")}
-              className="mx-2"
-            >
-              <People className="me-1" size={16} />
-              Teams
             </Nav.Link>
 
             {/* Finance Dropdown */}
@@ -139,21 +129,21 @@ export default function TopNavbar() {
               </Dropdown.Toggle>
               <Dropdown.Menu className="mt-2">
                 <Dropdown.Item
-                  onClick={() => handleNavigation("/qued-expenses")}
+                  onClick={() => handleNavigation("/finance/qued-expenses")}
                   className="d-flex align-items-center"
                 >
                   <Collection className="me-2" size={16} />
                   Manage expenses
                 </Dropdown.Item>
                 <Dropdown.Item
-                  onClick={() => handleNavigation("/pay-expenses")}
+                  onClick={() => handleNavigation("/finance/pay-expenses")}
                   className="d-flex align-items-center"
                 >
                   <CreditCard className="me-2" size={16} />
                   Pay expenses
                 </Dropdown.Item>
                 <Dropdown.Item
-                  onClick={() => handleNavigation("/budgets")}
+                  onClick={() => handleNavigation("/finance/budgets")}
                   className="d-flex align-items-center"
                 >
                   <Receipt className="me-2" size={16} />
@@ -165,6 +155,31 @@ export default function TopNavbar() {
                 >
                   <Wallet2 className="me-2" size={16} />
                   All expenses
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+            <Dropdown as={Nav.Item} className="mx-2">
+              <Dropdown.Toggle
+                as={Nav.Link}
+                className="d-flex align-items-center"
+              >
+                <CashStack className="me-1" size={16} />
+                Data inputs
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="mt-2">
+                <Dropdown.Item
+                  onClick={() => handleNavigation("/data-inputs/categories")}
+                  className="d-flex align-items-center"
+                >
+                  <Collection className="me-2" size={16} />
+                  Categories
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => handleNavigation("/data-inputs/departments")}
+                  className="d-flex align-items-center"
+                >
+                  <CreditCard className="me-2" size={16} />
+                  Departments
                 </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>

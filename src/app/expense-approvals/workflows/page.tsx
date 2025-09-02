@@ -32,10 +32,10 @@ import {
   FaCheckCircle,
   FaPlusCircle,
 } from "react-icons/fa";
-import Navbar from "../components/Navbar";
-import { BASE_API_URL } from "../static/apiConfig";
-import WorkflowCreatorModal from "../components/modals/workflowModal";
-import AuthProvider from "../authPages/tokenData";
+import Navbar from "../../components/Navbar";
+import { BASE_API_URL } from "../../static/apiConfig";
+import WorkflowCreatorModal from "../../components/modals/workflowModal";
+import AuthProvider from "../../authPages/tokenData";
 
 interface WorkflowStep {
   id?: number;

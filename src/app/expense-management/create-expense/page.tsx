@@ -23,7 +23,6 @@ import {
   CurrencyDollar,
   FileEarmarkText,
   Tag,
-  ClockHistory,
   PersonBadge,
 } from "react-bootstrap-icons";
 import { BASE_API_URL } from "@/app/static/apiConfig";
@@ -284,10 +283,10 @@ export default function CreateExpensePage({
         <Form onSubmit={handleSubmit}>
           <Row>
             {/* Left Column - Expense Details */}
-            <Col lg={8} className="border rounded-3 p-4">
+            <Col lg={8} className="rounded-3">
               {/* Payee Information Card */}
-              <Card className="border-0 mb-4 bg-light">
-                <Card.Header className="bg-white py-3">
+              <Card className="border-0 mb-4 bg-light shadow-sm">
+                <Card.Header className="bg-secondary bg-opacity-10 py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <Person className="me-2 text-primary" /> Payee Information
                   </h6>
@@ -349,8 +348,8 @@ export default function CreateExpensePage({
               </Card>
 
               {/* Expense Details Card */}
-              <Card className="border-0 mb-4 bg-light">
-                <Card.Header className="bg-white py-3">
+              <Card className="border-0 mb-4 bg-light shadow-sm">
+                <Card.Header className="bg-secondary bg-opacity-10 py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <Cash className="me-2 text-primary" /> Expense Details
                   </h6>
@@ -414,8 +413,8 @@ export default function CreateExpensePage({
               </Card>
 
               {/* Categorization Card */}
-              <Card className="border-0 mb-4 bg-light">
-                <Card.Header className="bg-white py-3">
+              <Card className="border-0 mb-4 bg-light shadow-sm">
+                <Card.Header className="bg-secondary bg-opacity-10 py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <Tag className="me-2 text-primary" /> Categorization
                   </h6>
@@ -495,8 +494,8 @@ export default function CreateExpensePage({
               </Card>
 
               {/* Payment Information Card */}
-              <Card className="border-0 mb-4 bg-light">
-                <Card.Header className="bg-white py-3">
+              <Card className="border-0 mb-4 bg-light shadow-sm">
+                <Card.Header className="bg-secondary bg-opacity-10 py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <CreditCard className="me-2 text-primary" /> Payment
                     Information
@@ -544,8 +543,8 @@ export default function CreateExpensePage({
               </Card>
 
               {/* Payment Information Card */}
-              <Card className="border-0 mb-4 bg-light">
-                <Card.Header className="bg-white py-3">
+              <Card className="border-0 mb-4 bg-light shadow-sm">
+                <Card.Header className="bg-secondary bg-opacity-10 py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <CreditCard className="me-2 text-primary" /> Expense Details
                   </h6>
@@ -627,8 +626,8 @@ export default function CreateExpensePage({
               </Card>
 
               {/* Attachments Card */}
-              <Card className="border-0 mb-4">
-                <Card.Header className="bg-white py-3">
+              <Card className="border-0 mb-4 shadow-sm">
+                <Card.Header className="bg-secondary bg-opacity-10 py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <FileEarmarkText className="me-2 text-primary" />{" "}
                     Attachments
@@ -689,7 +688,7 @@ export default function CreateExpensePage({
                 className="border-0 mb-4 sticky-top"
                 style={{ top: "20px" }}
               >
-                <Card.Header className="bg-light py-3">
+                <Card.Header className="bg-secondary bg-opacity-10 py-3">
                   <h6 className="fw-bold text-dark mb-0">Expense Summary</h6>
                 </Card.Header>
                 <Card.Body>
@@ -753,10 +752,11 @@ export default function CreateExpensePage({
                 </Card.Body>
 
                 {/* Action Buttons Card */}
-                <Card className="border-0">
+                <Card className="border-0 shadow-sm">
                   <Card.Body className="p-3">
                     <div className="d-grid gap-2">
                       <Button
+                        size="sm"
                         type="submit"
                         variant="primary"
                         className="py-2 rounded-2 fw-semibold"
@@ -776,6 +776,7 @@ export default function CreateExpensePage({
                         )}
                       </Button>
                       <Button
+                        size="sm"
                         variant="outline-secondary"
                         className="py-2 rounded-2"
                         disabled={submitting}

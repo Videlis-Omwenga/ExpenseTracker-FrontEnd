@@ -41,11 +41,11 @@ import {
   XLg,
   ExclamationTriangle,
 } from "react-bootstrap-icons";
-import Navbar from "../components/Navbar";
-import { BASE_API_URL } from "../static/apiConfig";
 import { toast } from "react-toastify";
-import AuthProvider from "../authPages/tokenData";
 import { ArrowDownCircle, Tag } from "lucide-react";
+import TopNavbar from "@/app/components/Navbar";
+import AuthProvider from "@/app/authPages/tokenData";
+import { BASE_API_URL } from "@/app/static/apiConfig";
 
 /**
  * TYPES aligned to your NestJS / Prisma backend
@@ -376,7 +376,7 @@ export default function ExpenseApprovalPage() {
 
   return (
     <AuthProvider>
-      <Navbar />
+      <TopNavbar />
       <Container fluid className="py-4">
         {/* Header */}
         <Row className="align-items-center mb-4">

@@ -28,12 +28,12 @@ import {
   Building,
   CheckCircle,
 } from "react-bootstrap-icons";
-import AuthProvider from "../authPages/tokenData";
-import TopNavbar from "../components/Navbar";
-import { BASE_API_URL } from "../static/apiConfig";
 import { toast } from "react-toastify";
-import BudgetModalPage from "../components/modals/budget-creation-modal";
 import { Plus } from "lucide-react";
+import BudgetModalPage from "@/app/components/modals/budget-creation-modal";
+import AuthProvider from "@/app/authPages/tokenData";
+import TopNavbar from "@/app/components/Navbar";
+import { BASE_API_URL } from "@/app/static/apiConfig";
 
 interface Budget {
   id: number;

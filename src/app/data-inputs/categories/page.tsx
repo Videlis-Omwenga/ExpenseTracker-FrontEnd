@@ -19,6 +19,8 @@ import {
   Dropdown,
   Pagination,
   Alert,
+  OverlayTrigger,
+  Tooltip,
 } from "react-bootstrap";
 import {
   PencilSquare,
@@ -54,6 +56,8 @@ interface Category {
   institution?: string;
   region?: string;
   exemptedFromBudgetChecks: boolean;
+  description: string;
+  comments: string;
 }
 
 export default function CategoriesPage() {
@@ -75,6 +79,9 @@ export default function CategoriesPage() {
   const [editedExemptedFromBudgetChecks, setEditedExemptedFromBudgetChecks] =
     useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [comments, setComments] = useState("");
+  const [description, setDescription] = useState("");
+  const [editedDescription, setEditedDescription] = useState("");
 
   /** Fetch "expenses to approve" */
   const fetchExpensesToApprove = async () => {
@@ -118,6 +125,7 @@ export default function CategoriesPage() {
         canBeUsedForAccounting,
         canBeUsedByAnyUser,
         exemptedFromBudgetChecks,
+        description,
       };
       const res = await fetch(`${BASE_API_URL}/data-inputs/create-category`, {
         method: "POST",
@@ -135,13 +143,87 @@ export default function CategoriesPage() {
       if (res.ok) {
         setCategories(data);
         setShowModal(false);
-        setName("");
-        setCanBeUsedForAdvance(false);
-        setCanBeUsedForAccounting(false);
-        setCanBeUsedByAnyUser(false);
-        setExemptedFromBudgetChecks(false);
       } else {
-        toast.error(data.message);
+        toast.error(`${data.message}`);
+      }
+    } catch (error) {
+      toast.error(`${error}`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEditData = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const payload = {
+        name: editedName,
+        canBeUsedForAdvance: editedCanBeUsedForAdvance,
+        canBeUsedForAccounting: editedCanBeUsedForAccounting,
+        canBeUsedByAnyUser: editedCanBeUsedByAnyUser,
+        exemptedFromBudgetChecks: editedExemptedFromBudgetChecks,
+        description: editedDescription,
+      };
+      const res = await fetch(
+        `${BASE_API_URL}/data-inputs/update-category/${itemId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(
+              "expenseTrackerToken"
+            )}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success(`${editedName} updated successfully`);
+        setCategories(data);
+        setEditModal(false);
+      } else {
+        toast.error(`${data.message}`);
+      }
+    } catch (error) {
+      toast.error(`${error}`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteConfirm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const payload = {
+        comments,
+      };
+      const res = await fetch(
+        `${BASE_API_URL}/data-inputs/delete-category/${itemId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(
+              "expenseTrackerToken"
+            )}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success(`${selectedCategory?.name} deleted successfully`);
+        setCategories(data);
+        setDeleteModal(false);
+      } else {
+        toast.error(`${data.message}`);
       }
     } catch (error) {
       toast.error(`${error}`);
@@ -151,8 +233,6 @@ export default function CategoriesPage() {
   };
 
   const [showModal, setShowModal] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteCategory, setDeleteCategory] = useState<Category | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({
     key: "",
@@ -174,33 +254,33 @@ export default function CategoriesPage() {
       setEditedExemptedFromBudgetChecks(
         selectedCategory.exemptedFromBudgetChecks
       );
+      setEditedDescription(selectedCategory.description);
     }
   }, [selectedCategory]);
 
   const handleClose = () => {
     setShowModal(false);
+    setName("");
+    setDescription("");
+    setCanBeUsedForAdvance(false);
+    setCanBeUsedForAccounting(false);
+    setCanBeUsedByAnyUser(false);
+    setExemptedFromBudgetChecks(false);
   };
 
   const handleShow = () => {
     setShowModal(true);
   };
 
-  const handleDeleteClick = (category: Category) => {
-    setDeleteCategory(category);
-    setShowDeleteConfirm(true);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const handleDelete = (id: number) => {
+    setItemId(id);
+    setDeleteModal(true);
   };
 
-  const handleDeleteConfirm = () => {
-    if (deleteCategory) {
-      setCategories(categories.filter((c) => c.id !== deleteCategory.id));
-      setShowDeleteConfirm(false);
-      setDeleteCategory(null);
-    }
-  };
-
-  const handleDeleteCancel = () => {
-    setShowDeleteConfirm(false);
-    setDeleteCategory(null);
+  const handleDeleteClose = () => {
+    setDeleteModal(false);
+    setComments("");
   };
 
   const [editModal, setEditModal] = useState(false);
@@ -211,6 +291,12 @@ export default function CategoriesPage() {
 
   const handleEditClose = () => {
     setEditModal(false);
+    setEditedName("");
+    setEditedCanBeUsedForAdvance(false);
+    setEditedCanBeUsedForAccounting(false);
+    setEditedCanBeUsedByAnyUser(false);
+    setEditedExemptedFromBudgetChecks(false);
+    setEditedDescription("");
   };
 
   const handleSort = (key: string) => {
@@ -391,13 +477,19 @@ export default function CategoriesPage() {
                       >
                         <td>{cat.id}</td>
                         <td>
-                          <div className="d-flex align-items-center">
-                            {cat.name}
-                            {!cat.isActive && (
-                              <Badge bg="danger" className="ms-2">
-                                Inactive
-                              </Badge>
-                            )}
+                          <div className="d-flex flex-column">
+                            <span>{cat.name}</span>
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={<Tooltip>{cat.description}</Tooltip>}
+                            >
+                              <span
+                                className="text-truncate text-muted small"
+                                style={{ maxWidth: "200px", cursor: "pointer" }}
+                              >
+                                {cat.description}
+                              </span>
+                            </OverlayTrigger>
                           </div>
                         </td>
                         <td>
@@ -463,22 +555,35 @@ export default function CategoriesPage() {
                           </Badge>
                         </td>
                         <td>
-                          <ButtonGroup size="sm">
-                            <Button
-                              variant="outline-primary"
-                              onClick={() => handleEdit(cat.id)}
-                              title="Edit category"
+                          { }
+                          <div className="d-flex gap-2">
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={<Tooltip>Edit</Tooltip>}
                             >
-                              <PencilSquare />
-                            </Button>
-                            <Button
-                              variant="outline-danger"
-                              onClick={() => handleDeleteClick(cat)}
-                              title="Delete category"
+                              <Button
+                                size="sm"
+                                className="rounded-circle shadow-lg border-0"
+                                variant="outline-primary"
+                                onClick={() => handleEdit(cat.id)}
+                              >
+                                <PencilSquare size={16} />
+                              </Button>
+                            </OverlayTrigger>
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={<Tooltip>Delete</Tooltip>}
                             >
-                              <Trash />
-                            </Button>
-                          </ButtonGroup>
+                              <Button
+                                size="sm"
+                                className="rounded-circle shadow-lg border-0"
+                                variant="outline-danger"
+                                onClick={() => handleDelete(cat.id)}
+                              >
+                                <Trash size={16} />
+                              </Button>
+                            </OverlayTrigger>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -553,6 +658,27 @@ export default function CategoriesPage() {
                   </Col>
                 </Row>
 
+                <Row>
+                  <Col md={12}>
+                    <Form.Group controlId="description" className="mb-3">
+                      <Form.Label className="form-label fw-bold">
+                        Description
+                      </Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        name="description"
+                        required
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                      />
+                      <Form.Text className="text-muted">
+                        Description of the category.
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <br />
                 <h6 className="mb-3 fw-bold">Usage permissions</h6>
                 <Row>
                   <Col md={12}>
@@ -609,13 +735,19 @@ export default function CategoriesPage() {
 
             <Modal.Footer>
               <Button
+                size="sm"
                 variant="outline-secondary"
                 disabled={submitting}
                 onClick={handleClose}
               >
-                Cancel
+                Cancel creation
               </Button>
-              <Button type="submit" variant="primary" disabled={submitting}>
+              <Button
+                size="sm"
+                type="submit"
+                variant="primary"
+                disabled={submitting}
+              >
                 Create category
               </Button>
             </Modal.Footer>
@@ -625,9 +757,11 @@ export default function CategoriesPage() {
         {/* Edit Modal */}
         <Modal show={editModal} onHide={handleEditClose} size="xl">
           <Modal.Header closeButton className="bg-secondary bg-opacity-10">
-            <h5 className="modal-title fw-bold">Edit Category</h5>
+            <h5 className="modal-title fw-bold">
+              Edit {selectedCategory?.name}
+            </h5>
           </Modal.Header>
-          <Form onSubmit={handleCreate}>
+          <Form onSubmit={handleEditData}>
             <Modal.Body>
               <div className="mb-3 border rounded-3 p-3">
                 <Row className="mb-3">
@@ -649,6 +783,28 @@ export default function CategoriesPage() {
                     </Form.Group>
                   </Col>
                 </Row>
+
+                <Row>
+                  <Col md={12}>
+                    <Form.Group controlId="description" className="mb-3">
+                      <Form.Label className="form-label fw-bold">
+                        Description
+                      </Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        name="description"
+                        required
+                        value={editedDescription}
+                        onChange={(e) => setEditedDescription(e.target.value)}
+                      />
+                      <Form.Text className="text-muted">
+                        Description of the category.
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <br />
 
                 <h6 className="mb-3 fw-bold">Usage permissions</h6>
                 <Row>
@@ -710,44 +866,70 @@ export default function CategoriesPage() {
 
             <Modal.Footer>
               <Button
+                size="sm"
                 variant="outline-secondary"
                 disabled={submitting}
                 onClick={handleEditClose}
               >
-                Cancel
+                Close update
               </Button>
-              <Button type="submit" variant="primary" disabled={submitting}>
-                Create category
+              <Button
+                type="submit"
+                variant="primary"
+                size="sm"
+                disabled={submitting}
+              >
+                Update {selectedCategory?.name}
               </Button>
             </Modal.Footer>
           </Form>
         </Modal>
 
         {/* Delete Confirmation Modal */}
-        <Modal show={showDeleteConfirm} onHide={handleDeleteCancel} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>Confirm Delete</Modal.Title>
-          </Modal.Header>
+        <Modal show={deleteModal} onHide={handleDeleteClose}>
+          <div className="modal-header text-danger">
+            <h5 className="modal-title fw-bold">Confirm Delete</h5>
+          </div>
           <Modal.Body>
-            Are you sure you want to delete the category "{deleteCategory?.name}
-            "? This action cannot be undone.
+            <Form onSubmit={handleDeleteConfirm}>
+              <div className="mb-3 rounded-3 p-3 border">
+                Are you sure you want to delete "{selectedCategory?.name}
+                "? This action cannot be undone. Proceed with caution.
+                <Form.Label className="form-label fw-bold mt-5">
+                  Reason for deletion *
+                </Form.Label>
+                <Form.Control
+                  as="textarea"
+                  name="name"
+                  required
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                />
+                <Form.Text className="text-muted">
+                  Reason for deletion is required.
+                </Form.Text>
+              </div>
+
+              <Modal.Footer>
+                <Button
+                  size="sm"
+                  variant="outline-secondary"
+                  disabled={submitting}
+                  onClick={handleDeleteClose}
+                >
+                  Cancel deleting
+                </Button>
+                <Button
+                  size="sm"
+                  variant="danger"
+                  disabled={submitting}
+                  type="submit"
+                >
+                  Delete {selectedCategory?.name}
+                </Button>
+              </Modal.Footer>
+            </Form>
           </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant="outline-secondary"
-              disabled={submitting}
-              onClick={handleDeleteCancel}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              disabled={submitting}
-              onClick={handleDeleteConfirm}
-            >
-              Delete
-            </Button>
-          </Modal.Footer>
         </Modal>
       </Container>
     </AuthProvider>
