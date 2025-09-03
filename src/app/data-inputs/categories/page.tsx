@@ -555,7 +555,6 @@ export default function CategoriesPage() {
                           </Badge>
                         </td>
                         <td>
-                          { }
                           <div className="d-flex gap-2">
                             <OverlayTrigger
                               placement="top"
