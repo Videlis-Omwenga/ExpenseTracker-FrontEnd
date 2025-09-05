@@ -1,207 +1,955 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Badge, Table, Button } from 'react-bootstrap';
-import { FileText, Clock, CheckCircle, XCircle, ArrowClockwise } from 'react-bootstrap-icons';
-import { format } from 'date-fns';
-import Navbar from '../components/Navbar';
-import { DollarSign, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Badge,
+  Table,
+  ListGroup,
+  Button,
+  ButtonGroup,
+  Form,
+  Spinner,
+  Alert,
+} from "react-bootstrap";
+import { format } from "date-fns";
+import {
+  DollarSign,
+  Clock,
+  CheckCircle,
+  XCircle,
+  TrendingUp,
+  Filter,
+  Download,
+  RefreshCw,
+  Eye,
+  BarChart3,
+  PieChart as PieChartIcon,
+  Users,
+  FolderOpen,
+  FileText,
+} from "lucide-react";
+import { BASE_API_URL } from "../static/apiConfig";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Legend,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  CartesianGrid,
+  LineChart,
+  Line,
+} from "recharts";
+import { toast } from "react-toastify";
+import DateTimeDisplay from "../components/DateTimeDisplay";
+import TopNavbar from "../components/Navbar";
+import PageLoader from "../components/PageLoader";
+import AuthProvider from "../authPages/tokenData";
 
-type Expense = {
-  id: number;
-  description: string;
-  amount: number;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID';
-  date: string;
-  category: string;
+type ExpenseSummary = {
+  summary: {
+    totalExpenses: number;
+    totalAmount: number;
+    averageAmount: number | null;
+    minAmount: number | null;
+    maxAmount: number | null;
+    pendingApprovals: number;
+  };
+  breakdown: {
+    statuses: Record<string, number>;
+    paymentStatuses: Record<string, number>;
+    categories: { categoryId: number; count: number; totalAmount: number }[];
+    departments: { departmentId: number; count: number; totalAmount: number }[];
+    approvalSteps: Record<string, number>;
+  };
+  recentExpenses: {
+    id: number;
+    description: string;
+    amount: number;
+    status: string;
+    createdAt: string;
+  }[];
+  categoryDetails: {
+    id: number;
+    name: string;
+    count: number;
+    totalAmount: number;
+    averageAmount: number;
+  }[];
+  dateRange: {
+    startDate?: string;
+    endDate?: string;
+  };
 };
 
-const DashboardPage = () => {
-  const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
+// Enhanced color palette
+const COLORS = [
+  "#4F46E5",
+  "#10B981",
+  "#F59E0B",
+  "#EF4444",
+  "#8B5CF6",
+  "#EC4899",
+  "#06B6D4",
+  "#F97316",
+];
+const STATUS_COLORS: Record<string, string> = {
+  APPROVED: "#10B981",
+  PENDING: "#F59E0B",
+  REJECTED: "#EF4444",
+  DRAFT: "#6B7280",
+  PROCESSING: "#3B82F6",
+};
+
+const PAYMENT_STATUS_COLORS: Record<string, string> = {
+  PAID: "#10B981",
+  UNPAID: "#EF4444",
+  PENDING: "#F59E0B",
+  PROCESSING: "#3B82F6",
+};
+
+export default function Dashboard() {
+  const [data, setData] = useState<ExpenseSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [userName, setUserName] = useState('User');
+  const [timeFilter, setTimeFilter] = useState("month");
+  const [chartView, setChartView] = useState("bar");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Simulate API call
-        setTimeout(() => {
-          const userData = { name: 'John' };
-          setUserName(userData.name);
-          
-          const mockExpenses: Expense[] = [
-            { id: 1, description: 'Office Supplies', amount: 245.67, status: 'APPROVED', date: '2023-06-15T10:30:00Z', category: 'Office' },
-            { id: 2, description: 'Team Lunch', amount: 189.50, status: 'PENDING', date: '2023-06-14T14:15:00Z', category: 'Food' },
-            { id: 3, description: 'Flight to Conference', amount: 1200.00, status: 'APPROVED', date: '2023-06-10T08:45:00Z', category: 'Travel' },
-            { id: 4, description: 'Software Subscription', amount: 99.99, status: 'REJECTED', date: '2023-06-05T16:20:00Z', category: 'Software' },
-            { id: 5, description: 'Hotel Accommodation', amount: 450.00, status: 'PAID', date: '2023-06-01T19:30:00Z', category: 'Travel' }
-          ];
-          
-          setRecentExpenses(mockExpenses);
-          setIsLoading(false);
-        }, 1000);
-      } catch (error) {
-        console.error('Error:', error);
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
-  }, []);
+  }, [timeFilter]);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'APPROVED': return <Badge bg="success">Approved</Badge>;
-      case 'PENDING': return <Badge bg="warning" text="dark">Pending</Badge>;
-      case 'REJECTED': return <Badge bg="danger">Rejected</Badge>;
-      case 'PAID': return <Badge bg="info">Paid</Badge>;
-      default: return <Badge bg="secondary">{status}</Badge>;
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const res = await fetch(
+        `${BASE_API_URL}/dashboard/get-data?period=${timeFilter}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(
+              "expenseTrackerToken"
+            )}`,
+          },
+        }
+      );
+
+      const response = await res.json();
+
+      if (res.ok) {
+        setData(response as ExpenseSummary);
+      } else {
+        toast.error(`${response.message}`);
+      }
+    } catch (err) {
+      toast.error(`${err}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+  const refreshData = () => {
+    fetchData();
+    toast.info("Refreshing data...");
   };
 
-  const totalExpenses = recentExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-  const pendingExpenses = recentExpenses.filter(exp => exp.status === 'PENDING').length;
-  const approvedExpenses = recentExpenses.filter(exp => exp.status === 'APPROVED').length;
-  const rejectedExpenses = recentExpenses.filter(exp => exp.status === 'REJECTED').length;
+  const exportData = () => {
+    // Implementation for exporting data
+    toast.info("Exporting data...");
+  };
 
-  const SummaryCard = ({ title, value, icon, variant = 'primary' }: { title: string; value: string | number; icon: React.ReactNode; variant?: string }) => (
-    <Card className="h-100 shadow-sm border-0 rounded-3">
-      <Card.Body className="d-flex align-items-center">
-        <div className={`bg-${variant} bg-opacity-10 p-3 rounded-circle me-3`}>
-          <div className={`text-${variant}`}>
-            {icon}
+  if (isLoading) return <PageLoader />;
+
+  if (error)
+    return (
+      <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+        <div className="text-center">
+          <div className="mb-3" style={{ fontSize: "3rem" }}>
+            📊
           </div>
+          <h4>Unable to load dashboard data</h4>
+          <p className="text-muted mb-3">{error}</p>
+          <Button variant="primary" onClick={fetchData}>
+            Try Again
+          </Button>
         </div>
-        <div>
-          <h4 className="mb-0">{value}</h4>
-          <p className="text-muted mb-0">{title}</p>
+      </div>
+    );
+
+  if (!data)
+    return (
+      <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+        <div className="text-center">
+          <div className="mb-3" style={{ fontSize: "3rem" }}>
+            📊
+          </div>
+          <h4>No data available</h4>
+          <p className="text-muted mb-3">
+            There's no expense data to display yet
+          </p>
+          <Button variant="primary" onClick={fetchData}>
+            Refresh
+          </Button>
         </div>
-      </Card.Body>
-    </Card>
+      </div>
+    );
+
+  // Prepare data for charts
+  const statusChartData = Object.entries(data.breakdown.statuses).map(
+    ([status, count]) => ({
+      name: status,
+      value: count,
+    })
+  );
+
+  const paymentStatusChartData = Object.entries(
+    data.breakdown.paymentStatuses
+  ).map(([status, count]) => ({
+    name: status,
+    value: count,
+  }));
+
+  const categoryChartData = data.breakdown.categories.map((cat) => ({
+    name: `Category ${cat.categoryId}`,
+    count: cat.count,
+    totalAmount: cat.totalAmount,
+  }));
+
+  const departmentChartData = data.breakdown.departments.map((dept) => ({
+    name: `Department ${dept.departmentId}`,
+    count: dept.count,
+    totalAmount: dept.totalAmount,
+  }));
+
+  const approvalStepsData = Object.entries(data.breakdown.approvalSteps).map(
+    ([status, count]) => ({
+      name: status,
+      count: count,
+    })
   );
 
   return (
-    <div className="min-vh-100 bg-light">
-      <Navbar />
-      <Container fluid className="py-4">
-        {/* Welcome Section */}
-        <Row className="mb-4">
-          <Col>
-            <Card className="border-0 shadow-sm">
-              <Card.Body className="p-4">
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h2 className="mb-1">Welcome back, {userName}!</h2>
-                    <p className="text-muted mb-0">Here's what's happening with your expenses today.</p>
-                  </div>
-                  <Button variant="primary" className="d-flex align-items-center">
-                    <FileText className="me-2" /> New Expense
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+    <AuthProvider>
+      <TopNavbar />
+      <div className="bg-light min-vh-100">
+        <Container fluid className="py-4">
+          {/* Header with title and controls */}
+          <Row className="mb-4 align-items-center">
+            <Col>
+              <h1 className="h3 mb-0">Expense Dashboard</h1>
+              <p className="text-muted mb-0">
+                Overview of all expense activities
+              </p>
+            </Col>
+            <Col xs="auto">
+              <ButtonGroup>
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  onClick={refreshData}
+                >
+                  <RefreshCw size={16} className="me-1" /> Refresh
+                </Button>
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  onClick={exportData}
+                >
+                  <Download size={16} className="me-1" /> Export
+                </Button>
+              </ButtonGroup>
+            </Col>
+          </Row>
 
-        {/* Summary Cards */}
-        <Row className="g-4 mb-4">
-          <Col md={6} lg={3}>
-            <SummaryCard 
-              title="Total Expenses" 
-              value={formatCurrency(totalExpenses)}
-              icon={<DollarSign size={24} />}
-              variant="primary"
-            />
-          </Col>
-          <Col md={6} lg={3}>
-            <SummaryCard 
-              title="Pending Approval" 
-              value={pendingExpenses}
-              icon={<Clock size={24} />}
-              variant="warning"
-            />
-          </Col>
-          <Col md={6} lg={3}>
-            <SummaryCard 
-              title="Approved" 
-              value={approvedExpenses}
-              icon={<CheckCircle size={24} />}
-              variant="success"
-            />
-          </Col>
-          <Col md={6} lg={3}>
-            <SummaryCard 
-              title="Rejected" 
-              value={rejectedExpenses}
-              icon={<XCircle size={24} />}
-              variant="danger"
-            />
-          </Col>
-        </Row>
-
-        {/* Recent Expenses */}
-        <Row>
-          <Col lg={12}>
-            <Card className="border-0 shadow-sm">
-              <Card.Header className="bg-white border-0 py-3">
-                <div className="d-flex justify-content-between align-items-center">
-                  <h5 className="mb-0">Recent Expenses</h5>
-                  <Button variant="light" size="sm" className="d-flex align-items-center">
-                    <RefreshCw size={14} className="me-1" /> Refresh
-                  </Button>
-                </div>
-              </Card.Header>
-              <Card.Body className="p-0">
-                {isLoading ? (
-                  <div className="text-center p-5">
-                    <div className="spinner-border text-primary" role="status">
-                      <span className="visually-hidden">Loading...</span>
+          {/* Time filter controls */}
+          <Row className="mb-4">
+            <Col>
+              <Card>
+                <Card.Body className="py-2">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div className="d-flex align-items-center">
+                      <Filter size={16} className="me-2 text-muted" />
+                      <span className="me-2 text-muted">Time Period:</span>
+                      <Form.Select
+                        size="sm"
+                        style={{ width: "auto" }}
+                        value={timeFilter}
+                        onChange={(e) => setTimeFilter(e.target.value)}
+                      >
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="quarter">This Quarter</option>
+                        <option value="year">This Year</option>
+                        <option value="all">All Time</option>
+                      </Form.Select>
+                    </div>
+                    <div className="text-muted small">
+                      {data.dateRange.startDate && data.dateRange.endDate
+                        ? `Data from ${format(
+                            new Date(data.dateRange.startDate),
+                            "MMM d, yyyy"
+                          )} to ${format(
+                            new Date(data.dateRange.endDate),
+                            "MMM d, yyyy"
+                          )}`
+                        : "No date range available"}
                     </div>
                   </div>
-                ) : (
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* SUMMARY CARDS */}
+          <Row className="mb-4">
+            <Col xxl={2} lg={4} md={6} className="mb-3">
+              <Card className="h-100 shadow-sm border-0">
+                <Card.Body className="p-3">
+                  <div className="d-flex align-items-center">
+                    <div className="flex-grow-1">
+                      <h6 className="card-title text-muted mb-1">
+                        Total Expenses
+                      </h6>
+                      <h4 className="fw-bold mb-0">
+                        {data.summary.totalExpenses ?? 0}
+                      </h4>
+                    </div>
+                    <div className="bg-primary bg-opacity-10 p-3 rounded">
+                      <FileText size={24} className="text-primary" />
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col xxl={2} lg={4} md={6} className="mb-3">
+              <Card className="h-100 shadow-sm border-0">
+                <Card.Body className="p-3">
+                  <div className="d-flex align-items-center">
+                    <div className="flex-grow-1">
+                      <h6 className="card-title text-muted mb-1">
+                        Total Amount
+                      </h6>
+                      <h4 className="fw-bold mb-0">
+                        <DollarSign size={16} className="me-1" />
+                        {data.summary.totalAmount?.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }) ?? 0}
+                      </h4>
+                    </div>
+                    <div className="bg-success bg-opacity-10 p-3 rounded">
+                      <TrendingUp size={24} className="text-success" />
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col xxl={2} lg={4} md={6} className="mb-3">
+              <Card className="h-100 shadow-sm border-0">
+                <Card.Body className="p-3">
+                  <div className="d-flex align-items-center">
+                    <div className="flex-grow-1">
+                      <h6 className="card-title text-muted mb-1">
+                        Average Amount
+                      </h6>
+                      <h4 className="fw-bold mb-0">
+                        $
+                        {data.summary.averageAmount?.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }) ?? 0}
+                      </h4>
+                    </div>
+                    <div className="bg-info bg-opacity-10 p-3 rounded">
+                      <BarChart3 size={24} className="text-info" />
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col xxl={2} lg={4} md={6} className="mb-3">
+              <Card className="h-100 shadow-sm border-0">
+                <Card.Body className="p-3">
+                  <div className="d-flex align-items-center">
+                    <div className="flex-grow-1">
+                      <h6 className="card-title text-muted mb-1">
+                        Pending Approvals
+                      </h6>
+                      <h4 className="fw-bold mb-0">
+                        {data.summary.pendingApprovals ?? 0}
+                      </h4>
+                    </div>
+                    <div className="bg-warning bg-opacity-10 p-3 rounded">
+                      <Clock size={24} className="text-warning" />
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col xxl={2} lg={4} md={6} className="mb-3">
+              <Card className="h-100 shadow-sm border-0">
+                <Card.Body className="p-3">
+                  <div className="d-flex align-items-center">
+                    <div className="flex-grow-1">
+                      <h6 className="card-title text-muted mb-1">Min Amount</h6>
+                      <h4 className="fw-bold mb-0">
+                        $
+                        {data.summary.minAmount?.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }) ?? 0}
+                      </h4>
+                    </div>
+                    <div className="bg-secondary bg-opacity-10 p-3 rounded">
+                      <DollarSign size={24} className="text-secondary" />
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col xxl={2} lg={4} md={6} className="mb-3">
+              <Card className="h-100 shadow-sm border-0">
+                <Card.Body className="p-3">
+                  <div className="d-flex align-items-center">
+                    <div className="flex-grow-1">
+                      <h6 className="card-title text-muted mb-1">Max Amount</h6>
+                      <h4 className="fw-bold mb-0">
+                        $
+                        {data.summary.maxAmount?.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }) ?? 0}
+                      </h4>
+                    </div>
+                    <div className="bg-danger bg-opacity-10 p-3 rounded">
+                      <DollarSign size={24} className="text-danger" />
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* CHARTS ROW */}
+          <Row className="mb-4">
+            <Col xl={6} className="mb-4">
+              <Card className="h-100 shadow-sm border-0">
+                <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
+                  <h6 className="mb-0">Expense Status Distribution</h6>
+                  <ButtonGroup size="sm">
+                    <Button
+                      variant={
+                        chartView === "pie" ? "primary" : "outline-primary"
+                      }
+                      onClick={() => setChartView("pie")}
+                    >
+                      <PieChartIcon size={14} />
+                    </Button>
+                    <Button
+                      variant={
+                        chartView === "bar" ? "primary" : "outline-primary"
+                      }
+                      onClick={() => setChartView("bar")}
+                    >
+                      <BarChart3 size={14} />
+                    </Button>
+                  </ButtonGroup>
+                </Card.Header>
+                <Card.Body>
+                  <Row>
+                    <Col md={6}>
+                      <ListGroup variant="flush" className="small">
+                        {Object.entries(data.breakdown.statuses).map(
+                          ([status, count]) => (
+                            <ListGroup.Item
+                              key={status}
+                              className="d-flex justify-content-between align-items-center px-0 py-2"
+                            >
+                              <div className="d-flex align-items-center">
+                                <span
+                                  className="d-inline-block rounded-circle me-2"
+                                  style={{
+                                    width: "10px",
+                                    height: "10px",
+                                    backgroundColor:
+                                      STATUS_COLORS[status] || COLORS[0],
+                                  }}
+                                ></span>
+                                <span>{status}</span>
+                              </div>
+                              <Badge bg="light" text="dark">
+                                {count}
+                              </Badge>
+                            </ListGroup.Item>
+                          )
+                        )}
+                      </ListGroup>
+                    </Col>
+                    <Col md={6} style={{ height: "200px" }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        {chartView === "pie" ? (
+                          <PieChart>
+                            <Pie
+                              data={statusChartData}
+                              dataKey="value"
+                              nameKey="name"
+                              outerRadius={80}
+                              label
+                            >
+                              {statusChartData.map((entry, index) => (
+                                <Cell
+                                  key={`cell-${index}`}
+                                  fill={
+                                    STATUS_COLORS[entry.name] ||
+                                    COLORS[index % COLORS.length]
+                                  }
+                                />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                          </PieChart>
+                        ) : (
+                          <BarChart data={statusChartData}>
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              stroke="#eee"
+                            />
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar
+                              dataKey="value"
+                              fill="#4F46E5"
+                              radius={[4, 4, 0, 0]}
+                            />
+                          </BarChart>
+                        )}
+                      </ResponsiveContainer>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col xl={6} className="mb-4">
+              <Card className="h-100 shadow-sm border-0">
+                <Card.Header className="bg-white py-3">
+                  <h6 className="mb-0">Payment Status Distribution</h6>
+                </Card.Header>
+                <Card.Body>
+                  <Row>
+                    <Col md={6}>
+                      <ListGroup variant="flush" className="small">
+                        {Object.entries(data.breakdown.paymentStatuses).map(
+                          ([status, count]) => (
+                            <ListGroup.Item
+                              key={status}
+                              className="d-flex justify-content-between align-items-center px-0 py-2"
+                            >
+                              <div className="d-flex align-items-center">
+                                <span
+                                  className="d-inline-block rounded-circle me-2"
+                                  style={{
+                                    width: "10px",
+                                    height: "10px",
+                                    backgroundColor:
+                                      PAYMENT_STATUS_COLORS[status] ||
+                                      COLORS[0],
+                                  }}
+                                ></span>
+                                <span>{status}</span>
+                              </div>
+                              <Badge bg="light" text="dark">
+                                {count}
+                              </Badge>
+                            </ListGroup.Item>
+                          )
+                        )}
+                      </ListGroup>
+                    </Col>
+                    <Col md={6} style={{ height: "200px" }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={paymentStatusChartData}
+                            dataKey="value"
+                            nameKey="name"
+                            outerRadius={80}
+                            label
+                          >
+                            {paymentStatusChartData.map((entry, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={
+                                  PAYMENT_STATUS_COLORS[entry.name] ||
+                                  COLORS[index % COLORS.length]
+                                }
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* CATEGORIES AND DEPARTMENTS */}
+          <Row className="mb-4">
+            <Col lg={6} className="mb-4">
+              <Card className="h-100 shadow-sm border-0">
+                <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
+                  <h6 className="mb-0">Expenses by Category</h6>
+                  <Button variant="outline-primary" size="sm">
+                    <Eye size={14} className="me-1" /> View All
+                  </Button>
+                </Card.Header>
+                <Card.Body className="p-0">
                   <div className="table-responsive">
                     <Table hover className="mb-0">
-                      <thead className="bg-light">
+                      <thead className="table-light">
                         <tr>
-                          <th>Description</th>
                           <th>Category</th>
-                          <th>Date</th>
-                          <th className="text-end">Amount</th>
-                          <th className="text-center">Status</th>
+                          <th className="text-end">Count</th>
+                          <th className="text-end">Total Amount</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {recentExpenses.map((expense) => (
-                          <tr key={expense.id} className="cursor-pointer">
-                            <td>{expense.description}</td>
-                            <td>
-                              <Badge bg="light" text="dark" className="text-uppercase">
-                                {expense.category}
-                              </Badge>
+                        {data.breakdown.categories.length > 0 ? (
+                          data.breakdown.categories.map((c) => (
+                            <tr key={c.categoryId}>
+                              <td>Category {c.categoryId}</td>
+                              <td className="text-end">{c.count}</td>
+                              <td className="text-end fw-bold">
+                                $
+                                {c.totalAmount.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={3}
+                              className="text-center text-muted py-4"
+                            >
+                              No category data available
                             </td>
-                            <td>{format(new Date(expense.date), 'MMM dd, yyyy')}</td>
-                            <td className="text-end fw-medium">{formatCurrency(expense.amount)}</td>
-                            <td className="text-center">{getStatusBadge(expense.status)}</td>
                           </tr>
-                        ))}
+                        )}
                       </tbody>
                     </Table>
                   </div>
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    </div>
-  );
-};
+                </Card.Body>
+                <Card.Footer className="bg-white">
+                  <div style={{ height: "200px" }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={categoryChartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip
+                          formatter={(value) => [
+                            `$${Number(value).toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}`,
+                            "Amount",
+                          ]}
+                        />
+                        <Legend />
+                        <Bar
+                          dataKey="totalAmount"
+                          fill="#4F46E5"
+                          radius={[4, 4, 0, 0]}
+                          name="Total Amount"
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card.Footer>
+              </Card>
+            </Col>
+            <Col lg={6} className="mb-4">
+              <Card className="h-100 shadow-sm border-0">
+                <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
+                  <h6 className="mb-0">Expenses by Department</h6>
+                  <Button variant="outline-primary" size="sm">
+                    <Eye size={14} className="me-1" /> View All
+                  </Button>
+                </Card.Header>
+                <Card.Body className="p-0">
+                  <div className="table-responsive">
+                    <Table hover className="mb-0">
+                      <thead className="table-light">
+                        <tr>
+                          <th>Department</th>
+                          <th className="text-end">Count</th>
+                          <th className="text-end">Total Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.breakdown.departments.length > 0 ? (
+                          data.breakdown.departments.map((d) => (
+                            <tr key={d.departmentId}>
+                              <td>Department {d.departmentId}</td>
+                              <td className="text-end">{d.count}</td>
+                              <td className="text-end fw-bold">
+                                $
+                                {d.totalAmount.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={3}
+                              className="text-center text-muted py-4"
+                            >
+                              No department data available
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </Table>
+                  </div>
+                </Card.Body>
+                <Card.Footer className="bg-white">
+                  <div style={{ height: "200px" }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={departmentChartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip
+                          formatter={(value) => [
+                            `$${Number(value).toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}`,
+                            "Amount",
+                          ]}
+                        />
+                        <Legend />
+                        <Bar
+                          dataKey="totalAmount"
+                          fill="#10B981"
+                          radius={[4, 4, 0, 0]}
+                          name="Total Amount"
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card.Footer>
+              </Card>
+            </Col>
+          </Row>
 
-export default DashboardPage;
+          {/* APPROVAL STEPS AND CATEGORY DETAILS */}
+          <Row className="mb-4">
+            <Col md={6} className="mb-4">
+              <Card className="h-100 shadow-sm border-0">
+                <Card.Header className="bg-white py-3">
+                  <h6 className="mb-0">Approval Steps</h6>
+                </Card.Header>
+                <Card.Body>
+                  {Object.entries(data.breakdown.approvalSteps).length > 0 ? (
+                    <ListGroup variant="flush">
+                      {Object.entries(data.breakdown.approvalSteps).map(
+                        ([status, count]) => (
+                          <ListGroup.Item
+                            key={status}
+                            className="d-flex justify-content-between align-items-center px-0 py-2"
+                          >
+                            <span>{status}</span>
+                            <Badge bg="primary" pill>
+                              {count}
+                            </Badge>
+                          </ListGroup.Item>
+                        )
+                      )}
+                    </ListGroup>
+                  ) : (
+                    <div className="text-center text-muted py-4">
+                      No approval step data available
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={6} className="mb-4">
+              <Card className="h-100 shadow-sm border-0">
+                <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
+                  <h6 className="mb-0">Top Categories</h6>
+                  <Button variant="outline-primary" size="sm">
+                    <Eye size={14} className="me-1" /> View All
+                  </Button>
+                </Card.Header>
+                <Card.Body className="p-0">
+                  <div className="table-responsive">
+                    <Table hover className="mb-0">
+                      <thead className="table-light">
+                        <tr>
+                          <th>Category Name</th>
+                          <th className="text-end">Count</th>
+                          <th className="text-end">Total Amount</th>
+                          <th className="text-end">Average</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.categoryDetails.length > 0 ? (
+                          data.categoryDetails.map((cat) => (
+                            <tr key={cat.id}>
+                              <td>{cat.name}</td>
+                              <td className="text-end">{cat.count}</td>
+                              <td className="text-end fw-bold">
+                                $
+                                {cat.totalAmount.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </td>
+                              <td className="text-end">
+                                $
+                                {cat.averageAmount.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={4}
+                              className="text-center text-muted py-4"
+                            >
+                              No category details available
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </Table>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* RECENT EXPENSES */}
+          <Row className="mb-4">
+            <Col>
+              <Card className="shadow-sm border-0">
+                <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
+                  <h6 className="mb-0">Recent Expenses</h6>
+                  <Button variant="outline-primary" size="sm">
+                    <Eye size={14} className="me-1" /> View All
+                  </Button>
+                </Card.Header>
+                <Card.Body className="p-0">
+                  <div className="table-responsive">
+                    <Table hover className="mb-0">
+                      <thead className="table-light">
+                        <tr>
+                          <th>ID</th>
+                          <th>Description</th>
+                          <th className="text-end">Amount</th>
+                          <th>Status</th>
+                          <th>Date</th>
+                          <th className="text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.recentExpenses.length > 0 ? (
+                          data.recentExpenses.map((exp) => (
+                            <tr key={exp.id}>
+                              <td className="fw-bold">#{exp.id}</td>
+                              <td>
+                                <div
+                                  className="text-truncate"
+                                  style={{ maxWidth: "200px" }}
+                                >
+                                  {exp.description}
+                                </div>
+                              </td>
+                              <td className="text-end fw-bold">
+                                $
+                                {exp.amount.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </td>
+                              <td>
+                                <Badge
+                                  bg={
+                                    exp.status === "APPROVED"
+                                      ? "success"
+                                      : exp.status === "REJECTED"
+                                      ? "danger"
+                                      : exp.status === "PENDING"
+                                      ? "warning"
+                                      : "secondary"
+                                  }
+                                  className="d-inline-flex align-items-center"
+                                >
+                                  {exp.status === "APPROVED" ? (
+                                    <CheckCircle size={14} className="me-1" />
+                                  ) : exp.status === "REJECTED" ? (
+                                    <XCircle size={14} className="me-1" />
+                                  ) : (
+                                    <Clock size={14} className="me-1" />
+                                  )}
+                                  {exp.status}
+                                </Badge>
+                              </td>
+                              <td>
+                                <DateTimeDisplay date={exp.createdAt} />
+                              </td>
+                              <td className="text-center">
+                                <Button variant="outline-primary" size="sm">
+                                  View
+                                </Button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={6}
+                              className="text-center text-muted py-4"
+                            >
+                              No recent expenses found
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </Table>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
+      </div>
+    </AuthProvider>
+  );
+}

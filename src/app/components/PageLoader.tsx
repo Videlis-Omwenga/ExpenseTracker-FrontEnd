@@ -43,7 +43,7 @@ const PageLoader: React.FC = () => {
       </div>
 
       {/* Text branding */}
-      <h5 className="fw-bold text-dark mb-2">Processing Expenses...</h5>
+      <h5 className="fw-bold text-dark mb-2">Fetching data. Please wait...</h5>
       <p className="text-muted small">Securing and balancing accounts</p>
 
       {/* CSS keyframes */}
