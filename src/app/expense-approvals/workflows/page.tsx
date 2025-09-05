@@ -9,19 +9,15 @@ import {
   Form,
   Button,
   Table,
-  InputGroup,
   Badge,
   Alert,
   Modal,
-  ListGroup,
   Spinner,
 } from "react-bootstrap";
 import { toast } from "react-toastify";
 import {
   FaExclamationTriangle,
   FaPencilAlt,
-  FaSitemap,
-  FaSearch,
   FaBoxes,
   FaTrash,
   FaInfoCircle,
@@ -34,7 +30,6 @@ import {
 } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import { BASE_API_URL } from "../../static/apiConfig";
-import WorkflowCreatorModal from "../../components/modals/workflowModal";
 import AuthProvider from "../../authPages/tokenData";
 
 interface WorkflowStep {
@@ -62,98 +57,61 @@ interface Role {
 }
 
 export default function WorkflowEditor() {
-  const [workflows, setWorkflows] = useState<Workflow[]>([]);
-  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(
-    null
-  );
+  const [workflow, setWorkflow] = useState<Workflow | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filteredWorkflows, setFilteredWorkflows] = useState<Workflow[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [workflowToDelete, setWorkflowToDelete] = useState<number | null>(null);
   const [stepToDelete, setStepToDelete] = useState<number | null>(null);
   const [showStepDeleteModal, setShowStepDeleteModal] = useState(false);
   const [newStepRoleId, setNewStepRoleId] = useState("");
 
-  const [showModal, setShowModal] = useState(false);
-
   // Fetch data
-  const fetchWorkflows = async () => {
+  const fetchWorkflow = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${BASE_API_URL}/workflows/institution/${1}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem(
-              "expenseTrackerToken"
-            )}`,
-          },
-        }
-      );
+      const response = await fetch(`${BASE_API_URL}/workflows/institution`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "expenseTrackerToken"
+          )}`,
+        },
+      });
 
       const data = await response.json();
 
       if (response.ok) {
-        setWorkflows(data.workflows);
+        setWorkflow(data.workflows); // single workflow
         setRoles(data.roles);
-        setFilteredWorkflows(data.workflows);
       } else {
         toast.error(`${data.message}`);
       }
     } catch (error) {
-      toast.error(`Failed to fetch workflows: ${error}`);
-      throw error;
+      toast.error(`Failed to fetch workflow: ${error}`);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchWorkflows();
+    fetchWorkflow();
   }, []);
 
-  // Filter workflows based on search term
-  useEffect(() => {
-    if (searchTerm) {
-      const filtered = workflows.filter(
-        (workflow) =>
-          workflow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          workflow.institutionId.toString().includes(searchTerm)
-      );
-      setFilteredWorkflows(filtered);
-    } else {
-      setFilteredWorkflows(workflows);
-    }
-  }, [searchTerm, workflows]);
-
-  const handleSelectWorkflow = (workflow: Workflow) => {
-    setSelectedWorkflow(workflow);
-  };
-
   const handleUpdateWorkflow = (field: string, value: string | number) => {
-    if (!selectedWorkflow) return;
-
-    setSelectedWorkflow({
-      ...selectedWorkflow,
-      [field]: value,
-    });
+    if (!workflow) return;
+    setWorkflow({ ...workflow, [field]: value });
   };
 
   const handleSaveWorkflow = async () => {
-    if (!selectedWorkflow) return;
-
+    if (!workflow) return;
     setIsSubmitting(true);
 
     try {
-      // Prepare payload
       const payload = {
-        name: selectedWorkflow.name,
-        steps: selectedWorkflow.steps.map((step) => ({
+        name: workflow.name,
+        steps: workflow.steps.map((step) => ({
           id: step.id ?? null,
           order: step.order,
           roleId: step.roleId,
@@ -161,9 +119,8 @@ export default function WorkflowEditor() {
         })),
       };
 
-      // Send update to backend
       const response = await fetch(
-        `${BASE_API_URL}/workflows/update/${selectedWorkflow.id}`,
+        `${BASE_API_URL}/workflows/update/${workflow.id}`,
         {
           method: "POST",
           headers: {
@@ -180,7 +137,7 @@ export default function WorkflowEditor() {
 
       if (response.ok) {
         toast.success("Workflow updated successfully!");
-        fetchWorkflows();
+        fetchWorkflow();
       } else {
         toast.error(`${data.message}`);
       }
@@ -192,34 +149,33 @@ export default function WorkflowEditor() {
   };
 
   const handleAddStep = () => {
-    if (!selectedWorkflow || !newStepRoleId) return;
-
+    if (!workflow || !newStepRoleId) return;
     const selectedRole = roles.find(
       (role) => role.id === Number(newStepRoleId)
     );
     if (!selectedRole) return;
 
     const newStep: WorkflowStep = {
-      order: selectedWorkflow.steps.length + 1,
+      order: workflow.steps.length + 1,
       roleId: Number(newStepRoleId),
       roleName: selectedRole.name,
       isOptional: false,
     };
 
-    setSelectedWorkflow({
-      ...selectedWorkflow,
-      steps: [...selectedWorkflow.steps, newStep],
+    setWorkflow({
+      ...workflow,
+      steps: [...workflow.steps, newStep],
     });
 
     setNewStepRoleId("");
   };
 
   const handleDeleteStep = (stepId: number) => {
-    if (!selectedWorkflow) return;
+    if (!workflow) return;
 
-    setSelectedWorkflow({
-      ...selectedWorkflow,
-      steps: selectedWorkflow.steps
+    setWorkflow({
+      ...workflow,
+      steps: workflow.steps
         .filter((step) => step.id !== stepId)
         .map((step, index) => ({ ...step, order: index + 1 })),
     });
@@ -228,15 +184,13 @@ export default function WorkflowEditor() {
     setStepToDelete(null);
   };
 
-  const handleDeleteWorkflow = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!workflowToDelete) return;
-
+  const handleDeleteWorkflow = async () => {
+    if (!workflow) return;
     setIsSubmitting(true);
 
     try {
       const workflowRes = await fetch(
-        `${BASE_API_URL}/workflows/void/${workflowToDelete}`,
+        `${BASE_API_URL}/workflows/void/${workflow.id}`,
         {
           method: "POST",
           headers: {
@@ -252,10 +206,7 @@ export default function WorkflowEditor() {
 
       if (workflowRes.ok) {
         toast.success("Workflow deleted successfully!");
-        setShowDeleteModal(false);
-        setWorkflowToDelete(null);
-        setSelectedWorkflow(null);
-        fetchWorkflows();
+        setWorkflow(null);
       } else {
         toast.error(`${workflowData.message}`);
       }
@@ -263,6 +214,7 @@ export default function WorkflowEditor() {
       toast.error("An unexpected error occurred" + error);
     } finally {
       setIsSubmitting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -271,26 +223,21 @@ export default function WorkflowEditor() {
     setShowStepDeleteModal(true);
   };
 
-  const confirmDeleteWorkflow = (workflowId: number) => {
-    setWorkflowToDelete(workflowId);
-    setShowDeleteModal(true);
-  };
-
   const toggleStepOptional = (stepId: number) => {
-    if (!selectedWorkflow) return;
+    if (!workflow) return;
 
-    setSelectedWorkflow({
-      ...selectedWorkflow,
-      steps: selectedWorkflow.steps.map((step) =>
+    setWorkflow({
+      ...workflow,
+      steps: workflow.steps.map((step) =>
         step.id === stepId ? { ...step, isOptional: !step.isOptional } : step
       ),
     });
   };
 
   const moveStep = (stepId: number, direction: "up" | "down") => {
-    if (!selectedWorkflow) return;
+    if (!workflow) return;
 
-    const steps = [...selectedWorkflow.steps];
+    const steps = [...workflow.steps];
     const index = steps.findIndex((step) => step.id === stepId);
 
     if (
@@ -305,8 +252,8 @@ export default function WorkflowEditor() {
 
     const reorderedSteps = steps.map((step, i) => ({ ...step, order: i + 1 }));
 
-    setSelectedWorkflow({
-      ...selectedWorkflow,
+    setWorkflow({
+      ...workflow,
       steps: reorderedSteps,
     });
   };
@@ -335,103 +282,15 @@ export default function WorkflowEditor() {
       <Navbar />
       <Container className="my-5">
         <Row>
-          <Col lg={4}>
-            <Card className="shadow-sm border-0 rounded-3 h-100">
-              <Card.Header className="bg-primary text-white py-3 rounded-top-3 d-flex d-wrap justify-content-between align-items-center">
-                <h5 className="mb-0 d-flex align-items-center">
-                  <FaSitemap className="me-2" />
-                  Workflows
-                </h5>
-                <Button variant="light" onClick={() => setShowModal(true)}>
-                  Create Workflow
-                </Button>
-                <WorkflowCreatorModal
-                  show={showModal}
-                  onHide={() => {
-                    setShowModal(false);
-                    fetchWorkflows();
-                  }}
-                />
-              </Card.Header>
-              <Card.Body className="p-3">
-                <div className="mb-3">
-                  <InputGroup>
-                    <InputGroup.Text>
-                      <FaSearch />
-                    </InputGroup.Text>
-                    <Form.Control
-                      type="text"
-                      placeholder="Search workflows..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </InputGroup>
-                </div>
-
-                {filteredWorkflows.length === 0 ? (
-                  <div className="text-center py-4">
-                    <FaBoxes className="display-4 text-muted" />
-                    <p className="mt-3 text-muted">No workflows found</p>
-                  </div>
-                ) : (
-                  <ListGroup variant="flush" className="rounded">
-                    {filteredWorkflows.map((workflow) => (
-                      <ListGroup.Item
-                        key={workflow.id}
-                        action
-                        active={false}
-                        onClick={() => handleSelectWorkflow(workflow)}
-                        className={`d-flex justify-content-between align-items-center py-3 ${
-                          selectedWorkflow?.id === workflow.id
-                            ? "bg-info bg-opacity-10"
-                            : ""
-                        }`}
-                        style={
-                          {
-                            "--bs-list-group-action-hover-bg":
-                              "rgba(var(--bs-info-rgb), 0.1)",
-                            "--bs-list-group-action-hover-color": "inherit",
-                          } as React.CSSProperties
-                        }
-                      >
-                        <div className="d-flex flex-column">
-                          <span className="fw-semibold">{workflow.name}</span>
-                          <small className="text-muted">
-                            Inst. ID: {workflow.institutionId} • Steps:{" "}
-                            {workflow.steps.length}
-                          </small>
-                        </div>
-                        <Badge
-                          bg={
-                            selectedWorkflow?.id === workflow.id
-                              ? "warning"
-                              : "secondary"
-                          }
-                          text={
-                            selectedWorkflow?.id === workflow.id
-                              ? "dark"
-                              : undefined
-                          }
-                        >
-                          {workflow.steps.length}
-                        </Badge>
-                      </ListGroup.Item>
-                    ))}
-                  </ListGroup>
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
-
-          <Col lg={8}>
-            {selectedWorkflow ? (
+          <Col lg={12}>
+            {workflow ? (
               <Card className="shadow-sm border-0 rounded-3">
                 <Card.Header className="bg-light py-3 rounded-top-3 d-flex justify-content-between align-items-center">
                   <h5 className="mb-0">Edit Workflow</h5>
                   <Button
                     variant="danger"
                     size="sm"
-                    onClick={() => confirmDeleteWorkflow(selectedWorkflow.id)}
+                    onClick={() => setShowDeleteModal(true)}
                   >
                     <FaTrash className="me-1" /> Delete
                   </Button>
@@ -442,8 +301,7 @@ export default function WorkflowEditor() {
                       <FaInfoCircle className="text-info me-2 fs-5 mt-1" />
                       <div>
                         <h6 className="alert-heading mb-1">Editing Workflow</h6>
-                        Modify the workflow details and steps below. Changes are
-                        saved automatically when you click the Save button.
+                        Modify the workflow details and steps below.
                       </div>
                     </div>
                   </Alert>
@@ -456,7 +314,7 @@ export default function WorkflowEditor() {
                           Workflow Name
                         </Form.Label>
                         <Form.Control
-                          value={selectedWorkflow.name}
+                          value={workflow.name}
                           onChange={(e) =>
                             handleUpdateWorkflow("name", e.target.value)
                           }
@@ -471,7 +329,7 @@ export default function WorkflowEditor() {
                         </Form.Label>
                         <Form.Control
                           type="number"
-                          value={selectedWorkflow.institutionId}
+                          value={workflow.institutionId}
                           onChange={(e) =>
                             handleUpdateWorkflow(
                               "institutionId",
@@ -490,11 +348,11 @@ export default function WorkflowEditor() {
                       <FaListOl className="me-2 text-primary" />
                       Workflow Steps
                       <Badge bg="primary" className="ms-2">
-                        {selectedWorkflow.steps.length}
+                        {workflow.steps.length}
                       </Badge>
                     </h6>
 
-                    {selectedWorkflow.steps.length > 0 ? (
+                    {workflow.steps.length > 0 ? (
                       <div className="table-responsive">
                         <Table hover className="align-middle">
                           <thead className="table-light">
@@ -507,13 +365,8 @@ export default function WorkflowEditor() {
                             </tr>
                           </thead>
                           <tbody>
-                            {selectedWorkflow.steps.map((step) => (
-                              <tr
-                                key={
-                                  step.id ?? `step-${step.order}-${step.roleId}`
-                                }
-                                className="border-top"
-                              >
+                            {workflow.steps.map((step) => (
+                              <tr key={step.id ?? `step-${step.order}`}>
                                 <td>{step.id}</td>
                                 <td className="ps-4">
                                   <Badge
@@ -557,7 +410,6 @@ export default function WorkflowEditor() {
                                       size="sm"
                                       onClick={() => moveStep(step.id!, "up")}
                                       disabled={step.order === 1}
-                                      title="Move Up"
                                     >
                                       <FaArrowUp />
                                     </Button>
@@ -566,10 +418,8 @@ export default function WorkflowEditor() {
                                       size="sm"
                                       onClick={() => moveStep(step.id!, "down")}
                                       disabled={
-                                        step.order ===
-                                        selectedWorkflow.steps.length
+                                        step.order === workflow.steps.length
                                       }
-                                      title="Move Down"
                                     >
                                       <FaArrowDown />
                                     </Button>
@@ -579,7 +429,6 @@ export default function WorkflowEditor() {
                                       onClick={() =>
                                         confirmDeleteStep(step.id!)
                                       }
-                                      title="Delete Step"
                                     >
                                       <FaTrash />
                                     </Button>
@@ -601,6 +450,7 @@ export default function WorkflowEditor() {
                         </p>
                       </div>
                     )}
+
                     <Card className="bg-info bg-opacity-10 border-0 mt-3">
                       <Card.Body className="p-3">
                         <Form.Label className="fw-semibold">
@@ -636,14 +486,7 @@ export default function WorkflowEditor() {
                     </Card>
                   </div>
 
-                  <div className="d-flex justify-content-between pt-3 border-top">
-                    <Button
-                      variant="secondary"
-                      onClick={() => setSelectedWorkflow(null)}
-                    >
-                      <FaArrowLeft className="me-2" /> Back to List
-                    </Button>
-
+                  <div className="d-flex justify-content-end pt-3 border-top">
                     <Button
                       onClick={handleSaveWorkflow}
                       variant="primary"
@@ -677,7 +520,7 @@ export default function WorkflowEditor() {
                         <div className="d-flex flex-column">
                           <small className="text-muted">Created At</small>
                           <span className="fw-semibold">
-                            {formatDate(selectedWorkflow.createdAt)}
+                            {formatDate(workflow.createdAt)}
                           </span>
                         </div>
                       </Col>
@@ -685,7 +528,7 @@ export default function WorkflowEditor() {
                         <div className="d-flex flex-column">
                           <small className="text-muted">Last Updated</small>
                           <span className="fw-semibold">
-                            {formatDate(selectedWorkflow.updatedAt)}
+                            {formatDate(workflow.updatedAt)}
                           </span>
                         </div>
                       </Col>
@@ -697,9 +540,9 @@ export default function WorkflowEditor() {
               <Card className="rounded-3 text-center h-100 bg-light border">
                 <Card.Body className="d-flex flex-column justify-content-center align-items-center py-5">
                   <FaPencilAlt className="display-4 text-muted opacity-50" />
-                  <h5 className="mt-3 text-muted">Select a Workflow</h5>
+                  <h5 className="mt-3 text-muted">No Workflow Found</h5>
                   <p className="text-muted mb-0">
-                    Choose a workflow from the list to view and edit its details
+                    Please create a workflow in the system first.
                   </p>
                 </Card.Body>
               </Card>
@@ -735,7 +578,7 @@ export default function WorkflowEditor() {
           <Button
             variant="danger"
             onClick={handleDeleteWorkflow}
-            disabled={isSubmitting || !workflowToDelete}
+            disabled={isSubmitting}
           >
             {isSubmitting ? "Deleting..." : "Delete Workflow"}
           </Button>
