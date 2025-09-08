@@ -41,7 +41,7 @@ export default function TopNavbar() {
   };
 
   return (
-    <div className="mb-4">
+    <div className="mb-0">
       <Navbar
         expand="lg"
         expanded={expanded}

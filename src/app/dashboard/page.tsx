@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import RecentExpensesTable from "./RecentExpensesTable";
 import {
   Container,
   Row,
@@ -10,22 +11,16 @@ import {
   Table,
   ListGroup,
   Button,
-  ButtonGroup,
   Form,
 } from "react-bootstrap";
 import { format } from "date-fns";
 import {
-  DollarSign,
   Clock,
-  CheckCircle,
-  XCircle,
   TrendingUp,
   Filter,
   Download,
   RefreshCw,
-  Eye,
   BarChart3,
-  PieChart as PieChartIcon,
   FileText,
 } from "lucide-react";
 import { BASE_API_URL } from "../static/apiConfig";
@@ -43,10 +38,12 @@ import {
   CartesianGrid,
 } from "recharts";
 import { toast } from "react-toastify";
-import DateTimeDisplay from "../components/DateTimeDisplay";
 import TopNavbar from "../components/Navbar";
 import PageLoader from "../components/PageLoader";
 import AuthProvider from "../authPages/tokenData";
+import { useRouter } from "next/navigation";
+import { FaPlus } from "react-icons/fa";
+import { CashStack } from "react-bootstrap-icons";
 
 type ExpenseSummary = {
   summary: {
@@ -70,6 +67,31 @@ type ExpenseSummary = {
     amount: number;
     status: string;
     createdAt: string;
+    updatedAt: string;
+    category?: {
+      id: number;
+      name: string;
+    };
+    department?: {
+      id: number;
+      name: string;
+    };
+    pendingApprovalSteps?: {
+      id: number;
+      order: number;
+      isOptional: boolean;
+      status: string;
+      comments: string | null;
+      role: {
+        name: string;
+      } | null;
+      approver: {
+        firstName: string;
+        lastName: string;
+        email: string;
+      } | null;
+      workflowStepId: number;
+    }[];
   }[];
   categoryDetails: {
     id: number;
@@ -111,11 +133,16 @@ const PAYMENT_STATUS_COLORS: Record<string, string> = {
 };
 
 export default function Dashboard() {
+  const [expandedRows, setExpandedRows] = useState<number[]>([]);
   const [data, setData] = useState<ExpenseSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState("month");
-  const [chartView, setChartView] = useState("bar");
-  const [error, setError] = useState<string | null>(null);
+
+  const router = useRouter();
+
+  const handleNavigation = (path: string) => {
+    router.push(path);
+  };
 
   useEffect(() => {
     fetchData();
@@ -124,7 +151,6 @@ export default function Dashboard() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      setError(null);
       const res = await fetch(
         `${BASE_API_URL}/dashboard/get-data?period=${timeFilter}`,
         {
@@ -139,6 +165,8 @@ export default function Dashboard() {
       );
 
       const response = await res.json();
+
+      console.log(response);
 
       if (res.ok) {
         setData(response as ExpenseSummary);
@@ -163,22 +191,6 @@ export default function Dashboard() {
   };
 
   if (isLoading) return <PageLoader />;
-
-  if (error)
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
-        <div className="text-center">
-          <div className="mb-3" style={{ fontSize: "3rem" }}>
-            📊
-          </div>
-          <h4>Unable to load dashboard data</h4>
-          <p className="text-muted mb-3">{error}</p>
-          <Button variant="primary" onClick={fetchData}>
-            Try Again
-          </Button>
-        </div>
-      </div>
-    );
 
   if (!data)
     return (
@@ -225,26 +237,40 @@ export default function Dashboard() {
     totalAmount: dept.totalAmount,
   }));
 
-
   return (
     <AuthProvider>
       <TopNavbar />
-      <div className="min-vh-100">
-        <Container fluid className="py-4">
-          {/* Header with title and controls */}
-          <Row className="mb-4 align-items-center">
-            <Col>
-              <h1 className="h3 mb-0">Expense Dashboard</h1>
-              <p className="text-muted mb-0">
-                Overview of all expense activities
-              </p>
-            </Col>
-            <Col xs="auto">
-              <ButtonGroup>
+      <div className="min-vh-100 small mt-3">
+        <Container fluid className="">
+          <Container fluid className="">
+            <Row className="mb-4 align-items-center shadow-sm border rounded bg-primary bg-opacity-10 p-3">
+              <Col>
+                <h5 className="mb-1 fw-bold mb-4">Expense Dashboard</h5>
+                <p className="text-muted mb-0">
+                  Overview of all expense activities
+                </p>
+                <p className="text-muted mb-0">
+                  Track, analyze, and manage expenses efficiently with real-time
+                  insights.
+                  <br />
+                  Get a clear view of approvals, pending requests, and payment
+                  statuses in one place.
+                </p>
+              </Col>
+              <Col xs="auto">
+                <Button variant="primary" size="sm" className="me-2">
+                  <FaPlus
+                    size={16}
+                    className="me-1"
+                    onClick={() => handleNavigation("/create-expense")}
+                  />
+                  Create Expense
+                </Button>
                 <Button
-                  variant="outline-primary"
+                  variant="primary"
                   size="sm"
                   onClick={refreshData}
+                  className="me-2"
                 >
                   <RefreshCw size={16} className="me-1" /> Refresh
                 </Button>
@@ -255,10 +281,11 @@ export default function Dashboard() {
                 >
                   <Download size={16} className="me-1" /> Export
                 </Button>
-              </ButtonGroup>
-            </Col>
-          </Row>
-
+              </Col>
+            </Row>
+          </Container>
+          <br />
+          <br />
           {/* Time filter controls */}
           <Row className="mb-4">
             <Col>
@@ -281,7 +308,7 @@ export default function Dashboard() {
                         <option value="all">All Time</option>
                       </Form.Select>
                     </div>
-                    <div className="text-muted small">
+                    <div className="text-danger small">
                       {data.dateRange.startDate && data.dateRange.endDate
                         ? `Data from ${format(
                             new Date(data.dateRange.startDate),
@@ -301,16 +328,16 @@ export default function Dashboard() {
           {/* SUMMARY CARDS */}
           <Row className="mb-4">
             <Col xxl={2} lg={4} md={6} className="mb-3">
-              <Card className="h-100 shadow-sm border-0">
+              <Card className="h-100 shadow-sm border-0 bg-primary bg-opacity-10">
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">
                       <h6 className="card-title text-muted mb-1">
                         Total Expenses
                       </h6>
-                      <h4 className="fw-bold mb-0">
+                      <h6 className="fw-bold mb-0">
                         {data.summary.totalExpenses ?? 0}
-                      </h4>
+                      </h6>
                     </div>
                     <div className="bg-primary bg-opacity-10 p-3 rounded">
                       <FileText size={24} className="text-primary" />
@@ -320,20 +347,20 @@ export default function Dashboard() {
               </Card>
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
-              <Card className="h-100 shadow-sm border-0">
+              <Card className="h-100 shadow-sm border-0 bg-success bg-opacity-10">
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">
                       <h6 className="card-title text-muted mb-1">
                         Total Amount
                       </h6>
-                      <h4 className="fw-bold mb-0">
-                        <DollarSign size={16} className="me-1" />
+                      <h6 className="fw-bold mb-0">
+                        <CashStack size={16} className="me-1" />
                         {data.summary.totalAmount?.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         }) ?? 0}
-                      </h4>
+                      </h6>
                     </div>
                     <div className="bg-success bg-opacity-10 p-3 rounded">
                       <TrendingUp size={24} className="text-success" />
@@ -343,20 +370,19 @@ export default function Dashboard() {
               </Card>
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
-              <Card className="h-100 shadow-sm border-0">
+              <Card className="h-100 shadow-sm border-0 bg-info bg-opacity-10">
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">
                       <h6 className="card-title text-muted mb-1">
                         Average Amount
                       </h6>
-                      <h4 className="fw-bold mb-0">
-                        $
+                      <h6 className="fw-bold mb-0">
                         {data.summary.averageAmount?.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         }) ?? 0}
-                      </h4>
+                      </h6>
                     </div>
                     <div className="bg-info bg-opacity-10 p-3 rounded">
                       <BarChart3 size={24} className="text-info" />
@@ -366,7 +392,7 @@ export default function Dashboard() {
               </Card>
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
-              <Card className="h-100 shadow-sm border-0">
+              <Card className="h-100 shadow-sm border-0 bg-warning bg-opacity-10">
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">
@@ -374,9 +400,9 @@ export default function Dashboard() {
                         Pending Approvals{" "}
                         <span className="text-muted small">(steps)</span>
                       </h6>
-                      <h4 className="fw-bold mb-0">
+                      <h6 className="fw-bold mb-0">
                         {data.summary.pendingApprovals ?? 0}
-                      </h4>
+                      </h6>
                     </div>
                     <div className="bg-warning bg-opacity-10 p-3 rounded">
                       <Clock size={24} className="text-warning" />
@@ -386,42 +412,40 @@ export default function Dashboard() {
               </Card>
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
-              <Card className="h-100 shadow-sm border-0">
+              <Card className="h-100 shadow-sm border-0 bg-secondary bg-opacity-10">
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">
                       <h6 className="card-title text-muted mb-1">Min Amount</h6>
-                      <h4 className="fw-bold mb-0">
-                        $
+                      <h6 className="fw-bold mb-0">
                         {data.summary.minAmount?.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         }) ?? 0}
-                      </h4>
+                      </h6>
                     </div>
                     <div className="bg-secondary bg-opacity-10 p-3 rounded">
-                      <DollarSign size={24} className="text-secondary" />
+                      <CashStack size={24} className="text-secondary" />
                     </div>
                   </div>
                 </Card.Body>
               </Card>
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
-              <Card className="h-100 shadow-sm border-0">
+              <Card className="h-100 shadow-sm border-0 bg-danger bg-opacity-10">
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">
                       <h6 className="card-title text-muted mb-1">Max Amount</h6>
-                      <h4 className="fw-bold mb-0">
-                        $
+                      <h6 className="fw-bold mb-0">
                         {data.summary.maxAmount?.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         }) ?? 0}
-                      </h4>
+                      </h6>
                     </div>
                     <div className="bg-danger bg-opacity-10 p-3 rounded">
-                      <DollarSign size={24} className="text-danger" />
+                      <CashStack size={24} className="text-danger" />
                     </div>
                   </div>
                 </Card.Body>
@@ -434,14 +458,19 @@ export default function Dashboard() {
             <Col xl={6} className="mb-4">
               <Card className="h-100 shadow-sm border-0">
                 <Card.Header className="bg-white py-3">
-                  <h6 className="mb-0">Expense Status Distribution</h6>
+                  <h6 className="mb-0 fw-bold">Expense Status Distribution</h6>
                 </Card.Header>
                 <Card.Body>
                   <Row className="g-3">
                     <Col md={4}>
                       <div className="d-flex flex-column h-100">
-                        <h6 className="small text-muted mb-3">Status Breakdown</h6>
-                        <ListGroup variant="flush" className="small flex-grow-1">
+                        <h6 className="small text-muted mb-3">
+                          Status Breakdown
+                        </h6>
+                        <ListGroup
+                          variant="flush"
+                          className="small flex-grow-1"
+                        >
                           {Object.entries(data.breakdown.statuses).map(
                             ([status, count]) => (
                               <ListGroup.Item
@@ -460,9 +489,9 @@ export default function Dashboard() {
                                   ></span>
                                   <span>{status}</span>
                                 </div>
-                                <Badge bg="light" text="dark">
+                                <span className="bg-danger bg-opacity-50 text-light p-1 rounded">
                                   {count}
-                                </Badge>
+                                </span>
                               </ListGroup.Item>
                             )
                           )}
@@ -470,7 +499,9 @@ export default function Dashboard() {
                       </div>
                     </Col>
                     <Col md={4} className="d-flex flex-column">
-                      <h6 className="small text-muted text-center mb-3">Pie Chart</h6>
+                      <h6 className="small text-muted text-center mb-3">
+                        Pie Chart
+                      </h6>
                       <div style={{ height: "220px" }} className="flex-grow-1">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
@@ -479,7 +510,11 @@ export default function Dashboard() {
                               dataKey="value"
                               nameKey="name"
                               outerRadius={70}
-                              label={({ percent }) => percent !== undefined ? `${(percent * 100).toFixed(0)}%` : ''}
+                              label={({ percent }) =>
+                                percent !== undefined
+                                  ? `${(percent * 100).toFixed(0)}%`
+                                  : ""
+                              }
                             >
                               {statusChartData.map((entry, index) => (
                                 <Cell
@@ -491,21 +526,28 @@ export default function Dashboard() {
                                 />
                               ))}
                             </Pie>
-                            <Tooltip formatter={(value, name) => [`${value}`, name]} />
+                            <Tooltip
+                              formatter={(value, name) => [`${value}`, name]}
+                            />
                             <Legend />
                           </PieChart>
                         </ResponsiveContainer>
                       </div>
                     </Col>
                     <Col md={4} className="d-flex flex-column">
-                      <h6 className="small text-muted text-center mb-3">Bar Chart</h6>
+                      <h6 className="small text-muted text-center mb-3">
+                        Bar Chart
+                      </h6>
                       <div style={{ height: "220px" }} className="flex-grow-1">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart
                             data={statusChartData}
                             margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
                           >
-                            <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              stroke="#eee"
+                            />
                             <XAxis dataKey="name" />
                             <YAxis />
                             <Tooltip />
@@ -535,7 +577,7 @@ export default function Dashboard() {
             <Col xl={6} className="mb-4">
               <Card className="h-100 shadow-sm border-0">
                 <Card.Header className="bg-white py-3">
-                  <h6 className="mb-0">Payment Status Distribution</h6>
+                  <h6 className="mb-0 fw-bold">Payment Status Distribution</h6>
                 </Card.Header>
                 <Card.Body>
                   <Row>
@@ -560,9 +602,9 @@ export default function Dashboard() {
                                 ></span>
                                 <span>{status}</span>
                               </div>
-                              <Badge bg="light" text="dark">
+                              <span className="bg-danger bg-opacity-50 text-light p-1 rounded">
                                 {count}
-                              </Badge>
+                              </span>
                             </ListGroup.Item>
                           )
                         )}
@@ -604,9 +646,6 @@ export default function Dashboard() {
               <Card className="h-100 shadow-sm border-0">
                 <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
                   <h6 className="mb-0">Expenses by Category</h6>
-                  <Button variant="outline-primary" size="sm">
-                    <Eye size={14} className="me-1" /> View All
-                  </Button>
                 </Card.Header>
                 <Card.Body className="p-0">
                   <div className="table-responsive">
@@ -625,7 +664,7 @@ export default function Dashboard() {
                               <td>Category {c.categoryId}</td>
                               <td className="text-end">{c.count}</td>
                               <td className="text-end fw-bold">
-                                $
+                                <CashStack size={16} className="me-1" />
                                 {c.totalAmount.toLocaleString(undefined, {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
@@ -680,9 +719,6 @@ export default function Dashboard() {
               <Card className="h-100 shadow-sm border-0">
                 <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
                   <h6 className="mb-0">Expenses by Department</h6>
-                  <Button variant="outline-primary" size="sm">
-                    <Eye size={14} className="me-1" /> View All
-                  </Button>
                 </Card.Header>
                 <Card.Body className="p-0">
                   <div className="table-responsive">
@@ -790,9 +826,6 @@ export default function Dashboard() {
               <Card className="h-100 shadow-sm border-0">
                 <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
                   <h6 className="mb-0">Top Categories</h6>
-                  <Button variant="outline-primary" size="sm">
-                    <Eye size={14} className="me-1" /> View All
-                  </Button>
                 </Card.Header>
                 <Card.Body className="p-0">
                   <div className="table-responsive">
@@ -812,14 +845,12 @@ export default function Dashboard() {
                               <td>{cat.name}</td>
                               <td className="text-end">{cat.count}</td>
                               <td className="text-end fw-bold">
-                                $
                                 {cat.totalAmount.toLocaleString(undefined, {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
                                 })}
                               </td>
                               <td className="text-end">
-                                $
                                 {cat.averageAmount.toLocaleString(undefined, {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
@@ -851,89 +882,9 @@ export default function Dashboard() {
               <Card className="shadow-sm border-0">
                 <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
                   <h6 className="mb-0">Recent Expenses</h6>
-                  <Button variant="outline-primary" size="sm">
-                    <Eye size={14} className="me-1" /> View All
-                  </Button>
                 </Card.Header>
                 <Card.Body className="p-0">
-                  <div className="table-responsive">
-                    <Table hover className="mb-0">
-                      <thead className="table-light">
-                        <tr>
-                          <th>ID</th>
-                          <th>Description</th>
-                          <th className="text-end">Amount</th>
-                          <th>Status</th>
-                          <th>Date</th>
-                          <th className="text-center">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {data.recentExpenses.length > 0 ? (
-                          data.recentExpenses.map((exp) => (
-                            <tr key={exp.id}>
-                              <td className="fw-bold">#{exp.id}</td>
-                              <td>
-                                <div
-                                  className="text-truncate"
-                                  style={{ maxWidth: "200px" }}
-                                >
-                                  {exp.description}
-                                </div>
-                              </td>
-                              <td className="text-end fw-bold">
-                                $
-                                {exp.amount.toLocaleString(undefined, {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                                })}
-                              </td>
-                              <td>
-                                <Badge
-                                  bg={
-                                    exp.status === "APPROVED"
-                                      ? "success"
-                                      : exp.status === "REJECTED"
-                                      ? "danger"
-                                      : exp.status === "PENDING"
-                                      ? "warning"
-                                      : "secondary"
-                                  }
-                                  className="d-inline-flex align-items-center"
-                                >
-                                  {exp.status === "APPROVED" ? (
-                                    <CheckCircle size={14} className="me-1" />
-                                  ) : exp.status === "REJECTED" ? (
-                                    <XCircle size={14} className="me-1" />
-                                  ) : (
-                                    <Clock size={14} className="me-1" />
-                                  )}
-                                  {exp.status}
-                                </Badge>
-                              </td>
-                              <td>
-                                <DateTimeDisplay date={exp.createdAt} />
-                              </td>
-                              <td className="text-center">
-                                <Button variant="outline-primary" size="sm">
-                                  View
-                                </Button>
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td
-                              colSpan={6}
-                              className="text-center text-muted py-4"
-                            >
-                              No recent expenses found
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </Table>
-                  </div>
+                  <RecentExpensesTable expenses={data.recentExpenses} />
                 </Card.Body>
               </Card>
             </Col>
