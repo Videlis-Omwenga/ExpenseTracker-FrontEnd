@@ -133,7 +133,6 @@ const PAYMENT_STATUS_COLORS: Record<string, string> = {
 };
 
 export default function Dashboard() {
-  const [expandedRows, setExpandedRows] = useState<number[]>([]);
   const [data, setData] = useState<ExpenseSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState("month");
@@ -243,7 +242,7 @@ export default function Dashboard() {
       <div className="min-vh-100 small mt-3">
         <Container fluid className="">
           <Container fluid className="">
-            <Row className="mb-4 align-items-center shadow-sm border rounded bg-primary bg-opacity-10 p-3">
+            <Row className="mb-4 align-items-center shadow-sm border-start border-2 border-primary rounded bg-primary bg-opacity-10 p-3">
               <Col>
                 <h5 className="mb-1 fw-bold mb-4">Expense Dashboard</h5>
                 <p className="text-muted mb-0">
@@ -289,35 +288,56 @@ export default function Dashboard() {
           {/* Time filter controls */}
           <Row className="mb-4">
             <Col>
-              <Card>
-                <Card.Body className="py-2">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div className="d-flex align-items-center">
-                      <Filter size={16} className="me-2 text-muted" />
-                      <span className="me-2 text-muted">Time Period:</span>
-                      <Form.Select
-                        size="sm"
-                        style={{ width: "auto" }}
-                        value={timeFilter}
-                        onChange={(e) => setTimeFilter(e.target.value)}
-                      >
-                        <option value="week">This Week</option>
-                        <option value="month">This Month</option>
-                        <option value="quarter">This Quarter</option>
-                        <option value="year">This Year</option>
-                        <option value="all">All Time</option>
-                      </Form.Select>
+              <Card className="shadow-sm border-0">
+                <Card.Body className="py-3 px-4">
+                  <div className="d-flex flex-wrap justify-content-between align-items-center">
+                    {/* Left side: Filter */}
+                    <div className="d-flex align-items-center mb-2 mb-sm-0">
+                      <div className="d-flex align-items-center bg-secondary bg-opacity-10 rounded px-3 py-2">
+                        <Filter size={16} className="me-2 text-primary" />
+                        <span className="me-2 fw-semibold text-secondary small">
+                          Time Period:
+                        </span>
+                        <Form.Select
+                          size="sm"
+                          className="border-0 shadow-none bg-transparent fw-semibold text-dark"
+                          style={{ width: "auto" }}
+                          value={timeFilter}
+                          onChange={(e) => setTimeFilter(e.target.value)}
+                        >
+                          <option value="week">This Week</option>
+                          <option value="month">This Month</option>
+                          <option value="quarter">This Quarter</option>
+                          <option value="year">This Year</option>
+                          <option value="all">All Time</option>
+                        </Form.Select>
+                      </div>
                     </div>
-                    <div className="text-danger small">
-                      {data.dateRange.startDate && data.dateRange.endDate
-                        ? `Data from ${format(
-                            new Date(data.dateRange.startDate),
-                            "MMM d, yyyy"
-                          )} to ${format(
-                            new Date(data.dateRange.endDate),
-                            "MMM d, yyyy"
-                          )}`
-                        : "No date range available"}
+
+                    {/* Right side: Date range */}
+                    <div className="text-muted small fw-medium bg-danger bg-opacity-10 rounded px-3 py-2">
+                      {data.dateRange.startDate && data.dateRange.endDate ? (
+                        <span>
+                          Data from{" "}
+                          <span className="fw-semibold text-dark">
+                            {format(
+                              new Date(data.dateRange.startDate),
+                              "MMM d, yyyy"
+                            )}
+                          </span>{" "}
+                          to{" "}
+                          <span className="fw-semibold text-dark">
+                            {format(
+                              new Date(data.dateRange.endDate),
+                              "MMM d, yyyy"
+                            )}
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-danger fw-semibold">
+                          No date range available
+                        </span>
+                      )}
                     </div>
                   </div>
                 </Card.Body>
@@ -328,7 +348,10 @@ export default function Dashboard() {
           {/* SUMMARY CARDS */}
           <Row className="mb-4">
             <Col xxl={2} lg={4} md={6} className="mb-3">
-              <Card className="h-100 shadow-sm border-0 bg-primary bg-opacity-10">
+              <Card
+                className="h-100 shadow-sm bg-primary bg-opacity-10"
+                style={{ borderLeft: "4px solid var(--bs-primary)" }}
+              >
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">
@@ -347,7 +370,10 @@ export default function Dashboard() {
               </Card>
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
-              <Card className="h-100 shadow-sm border-0 bg-success bg-opacity-10">
+              <Card
+                className="h-100 shadow-sm bg-success bg-opacity-10"
+                style={{ borderLeft: "4px solid var(--bs-success)" }}
+              >
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">
@@ -370,7 +396,10 @@ export default function Dashboard() {
               </Card>
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
-              <Card className="h-100 shadow-sm border-0 bg-info bg-opacity-10">
+              <Card
+                className="h-100 shadow-sm bg-info bg-opacity-10"
+                style={{ borderLeft: "4px solid var(--bs-info)" }}
+              >
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">
@@ -392,7 +421,10 @@ export default function Dashboard() {
               </Card>
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
-              <Card className="h-100 shadow-sm border-0 bg-warning bg-opacity-10">
+              <Card
+                className="h-100 shadow-sm bg-warning bg-opacity-10"
+                style={{ borderLeft: "4px solid var(--bs-warning)" }}
+              >
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">
@@ -412,7 +444,10 @@ export default function Dashboard() {
               </Card>
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
-              <Card className="h-100 shadow-sm border-0 bg-secondary bg-opacity-10">
+              <Card
+                className="h-100 shadow-sm bg-secondary bg-opacity-10"
+                style={{ borderLeft: "4px solid var(--bs-secondary)" }}
+              >
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">
@@ -432,7 +467,10 @@ export default function Dashboard() {
               </Card>
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
-              <Card className="h-100 shadow-sm border-0 bg-danger bg-opacity-10">
+              <Card
+                className="h-100 shadow-sm bg-danger bg-opacity-10"
+                style={{ borderLeft: "4px solid var(--bs-danger)" }}
+              >
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">

@@ -23,14 +23,9 @@ import {
   FaUser,
   FaClock,
   FaComment,
-  FaHourglassHalf,
-  FaCheck,
-  FaTimes,
-  FaMinus,
   FaListAlt,
 } from "react-icons/fa";
 import {
-  Search,
   Filter,
   CheckCircle,
   ClockHistory,
@@ -47,9 +42,6 @@ import TopNavbar from "@/app/components/Navbar";
 import AuthProvider from "@/app/authPages/tokenData";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 
-/**
- * TYPES aligned to your NestJS / Prisma backend
- */
 type ApprovalStatus = "NOT_STARTED" | "PENDING" | "APPROVED" | "REJECTED";
 type ExpenseStatus = "PENDING" | "APPROVED" | "REJECTED" | "PAID";
 
@@ -212,11 +204,17 @@ export default function ExpenseApprovalPage() {
           body: JSON.stringify({ expenseId: id, isApproved: true }),
         }
       );
-      if (!res.ok) throw new Error(await res.text());
-      toast.success("Expense approved successfully");
-      await fetchExpensesToApprove();
-    } catch (e: any) {
-      toast.error(`Approve failed: ${e?.message || e}`);
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success("Expense approved successfully");
+        await fetchExpensesToApprove();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(`${error}`);
     }
   };
 
@@ -243,13 +241,17 @@ export default function ExpenseApprovalPage() {
           }),
         }
       );
-      if (!res.ok) throw new Error(await res.text());
-      toast.success("Expense rejected successfully");
-      setRejectionReason("");
-      setShowDetailsModal(false);
-      await fetchExpensesToApprove();
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Expense rejected successfully");
+        setRejectionReason("");
+        setShowDetailsModal(false);
+        await fetchExpensesToApprove();
+      } else {
+        toast.error(data.message);
+      }
     } catch (e: any) {
-      toast.error(`Reject failed: ${e?.message || e}`);
+      toast.error(`Rejection failed: ${e?.message || e}`);
     }
   };
 
@@ -379,67 +381,146 @@ export default function ExpenseApprovalPage() {
       <TopNavbar />
       <Container fluid className="py-4">
         {/* Header */}
-        <Row className="align-items-center mb-4">
-          <Col>
-            <h3 className="fw-bold mb-1">Expense Approval</h3>
-            <p className="text-muted mb-0 small">
-              Review and approve pending expense requests
-            </p>
-          </Col>
-          <Col xs="auto" />
-        </Row>
+        <Container fluid className="mb-4 px-0">
+          <Row className="g-3 bg">
+            <Col>
+              <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center p-4 bg-primary bg-opacity-10 rounded-3 shadow-sm border-start border-primary border-2">
+                <div className="mb-3 mb-md-0">
+                  <div className="d-flex align-items-center mb-2">
+                    <h5 className="fw-bold text-dark mb-0 me-3">
+                      Expense Approval Dashboard
+                    </h5>
+                    <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fw-semibold">
+                      <ClockHistory size={16} className="me-1" />
+                      {pendingCount} Pending
+                    </span>
+                  </div>
+                  <p className="text-muted mb-0 small">
+                    Manage and process expense requests efficiently
+                  </p>
+                </div>
+                <div className="d-flex align-items-center small">
+                  <div className="text-end">
+                    <div className="text-muted mb-1">Last updated</div>
+                    <div
+                      className="fw-medium text-dark"
+                      suppressHydrationWarning
+                    >
+                      {new Date().toLocaleString(undefined, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                  </div>
+                  <div className="ms-3 p-2 bg-primary bg-opacity-10 rounded-circle">
+                    <ClockHistory size={18} className="text-primary" />
+                  </div>
+                </div>
+              </div>
+            </Col>
+          </Row>
+        </Container>
 
         {/* Stats */}
-        <Row className="g-3 mb-4">
+        <Row className="g-4 mb-4">
           <Col md={3}>
-            <Card className="stat-card">
-              <Card.Body>
+            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-secondary bg-opacity-10 border-start border-secondary border-2">
+              <Card.Body className="p-4">
                 <div className="d-flex align-items-center">
-                  <div className="icon-container bg-primary bg-opacity-10 me-3">
-                    <ClockHistory size={20} className="text-primary" />
+                  <div className="icon-container bg-secondary bg-opacity-10 p-3 rounded-3 me-3">
+                    <ClockHistory size={24} className="text-secondary" />
                   </div>
                   <div>
-                    <div className="text-muted small">Pending Approval</div>
-                    <h4 className="mb-0">{pendingCount}</h4>
+                    <div className="text-muted small fw-medium">
+                      Pending Approval
+                    </div>
+                    <h6 className="mb-0 fw-bold">{pendingCount}</h6>
                   </div>
+                </div>
+                <div className="card-footer bg-transparent border-top-0 py-2">
+                  <small className="text-muted">Awaiting your review</small>
                 </div>
               </Card.Body>
             </Card>
           </Col>
+
           <Col md={3}>
-            <Card className="stat-card">
-              <Card.Body>
+            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-success bg-opacity-10 border-start border-success border-2">
+              <Card.Body className="p-4">
                 <div className="d-flex align-items-center">
-                  <div className="icon-container bg-success bg-opacity-10 me-3">
-                    <CheckCircle size={20} className="text-success" />
+                  <div className="icon-container bg-success bg-opacity-10 p-3 rounded-3 me-3">
+                    <CheckCircle size={24} className="text-success" />
                   </div>
                   <div>
-                    <div className="text-muted small">Approved (visible)</div>
-                    <h4 className="mb-0">
-                      {expenses.filter((e) => e.status === "APPROVED").length}
-                    </h4>
+                    <div className="text-muted small fw-medium">
+                      Total Amount
+                    </div>
+                    <h6 className="mb-0 fw-bold">
+                      KES{" "}
+                      {expenses
+                        .reduce(
+                          (sum, expense) => sum + (expense.amount || 0),
+                          0
+                        )
+                        .toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                    </h6>
                   </div>
+                </div>
+                <div className="card-footer bg-transparent border-top-0 py-2">
+                  <small className="text-muted">Total expenses amount</small>
                 </div>
               </Card.Body>
             </Card>
           </Col>
+
           <Col md={3}>
-            <Card className="stat-card">
-              <Card.Body>
+            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-info bg-opacity-10 border-start border-info border-2">
+              <Card.Body className="p-4">
                 <div className="d-flex align-items-center">
-                  <div className="icon-container bg-info bg-opacity-10 me-3">
-                    <FileText size={20} className="text-info" />
+                  <div className="icon-container bg-info bg-opacity-10 p-3 rounded-3 me-3">
+                    <FileText size={24} className="text-info" />
                   </div>
                   <div>
-                    <div className="text-muted small">Total in list</div>
-                    <h4 className="mb-0">{expenses.length}</h4>
+                    <div className="text-muted small fw-medium">
+                      Total in list
+                    </div>
+                    <h6 className="mb-0 fw-bold">{expenses.length}</h6>
                   </div>
+                </div>
+                <div className="card-footer bg-transparent border-top-0 py-2">
+                  <small className="text-muted">Expenses in current view</small>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          <Col md={3}>
+            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-warning bg-opacity-10 border-start border-warning border-2">
+              <Card.Body className="p-4">
+                <div className="d-flex align-items-center">
+                  <div className="icon-container bg-warning bg-opacity-10 p-3 rounded-3 me-3">
+                    <FileText size={24} className="text-warning" />
+                  </div>
+                  <div>
+                    <div className="text-muted small fw-medium">Budgets</div>
+                    <h6 className="mb-0 fw-bold">{expenses.length}</h6>
+                  </div>
+                </div>
+                <div className="card-footer bg-transparent border-top-0 py-2">
+                  <small className="text-muted">Active budgets</small>
                 </div>
               </Card.Body>
             </Card>
           </Col>
         </Row>
-
+        <br />
+        <br />
         {/* Bulk Actions Bar */}
         {selectedExpenses.length > 0 && (
           <Card className="mb-4 bg-light border-0">
@@ -480,7 +561,6 @@ export default function ExpenseApprovalPage() {
             <h5 className="mb-0 me-3">Expense Requests</h5>
             <div className="d-flex flex-wrap gap-2 mt-2 mt-md-0">
               <div className="search-box d-flex">
-                <Search className="search-icon" />
                 <Form.Control
                   type="search"
                   placeholder="Search expenses..."
@@ -654,9 +734,7 @@ export default function ExpenseApprovalPage() {
                           <td>{exp.payeeNumber}</td>
                           <td>
                             <div className="d-flex align-items-center ">
-                              <div className="transaction-icon me-1 bg-light border bg-opacity-10 p-1 rounded-3">
-                                <FaListAlt className="text-success" size={14} />
-                              </div>
+                              <div className="transaction-icon me-1 bg-danger border bg-opacity-50 p-1 rounded-3"></div>
                               <div>
                                 <div
                                   className="fw-medium text-truncate"
@@ -668,29 +746,51 @@ export default function ExpenseApprovalPage() {
                               </div>
                             </div>
                           </td>
-                          <td className="text-success">
+                          <td className="">
                             <div className="d-flex flex-column">
                               <span className="text-success fw-bold">
                                 {exp?.amount?.toLocaleString() || "0.00"} KES
                               </span>
                               <span className="text-muted small">
                                 {exp?.primaryAmount?.toLocaleString() || "0.00"}{" "}
-                                {exp?.currency?.initials
-                                  ? `${
-                                      exp.currency.initials
-                                        ? `${exp.currency.initials}`
-                                        : ""
-                                    }`
-                                  : "N/A"}
+                                {(() => {
+                                  if (!exp) return "N/A";
+
+                                  // If currency is a string (direct currency code)
+                                  if (
+                                    exp.currency &&
+                                    typeof exp.currency === "string"
+                                  ) {
+                                    return exp.currency;
+                                  }
+
+                                  // If currency is an object with initials (type-safe check)
+                                  if (
+                                    exp.currency &&
+                                    typeof exp.currency === "object" &&
+                                    exp.currency !== null &&
+                                    "initials" in exp.currency
+                                  ) {
+                                    return (
+                                      exp.currency as { initials: string }
+                                    ).initials;
+                                  }
+
+                                  // If currencyDetails exists and has initials (type-safe check)
+                                  if (
+                                    exp.currencyDetails &&
+                                    "initials" in exp.currencyDetails
+                                  ) {
+                                    return exp.currencyDetails.initials;
+                                  }
+
+                                  return "N/A";
+                                })()}
                               </span>
                             </div>
                           </td>
                           <td>
                             <div className="d-flex align-items-center">
-                              <div className="avatar-sm bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center rounded-circle me-2 small">
-                                {exp.user.firstName.charAt(0)}
-                                {exp.user.lastName.charAt(0)}
-                              </div>
                               <div>
                                 <small className="fw-medium">
                                   {exp.user.firstName} {exp.user.lastName}
@@ -700,8 +800,8 @@ export default function ExpenseApprovalPage() {
                           </td>
                           <td>
                             <Badge
-                              bg="success bg-opacity-10 text-success"
-                              className="px-2 py-1 rounded border"
+                              bg="secondary bg-opacity-10 text-muted"
+                              className="px-2 py-1 rounded"
                             >
                               {exp.department?.name || "-"}
                             </Badge>
@@ -710,14 +810,14 @@ export default function ExpenseApprovalPage() {
                             <Badge
                               bg="light"
                               text="dark"
-                              className="px-2 py-1 rounded border bg-danger bg-opacity-10"
+                              className="px-2 py-1 rounded bg-danger bg-opacity-10"
                             >
                               {exp.category?.name || "-"}
                             </Badge>
                           </td>
                           <td>
                             <Badge
-                              className={`px-2 py-1 rounded border ${
+                              className={`px-2 py-1 rounded ${
                                 exp.budget?.remainingBudget < exp.amount
                                   ? "bg-danger bg-opacity-10 text-danger"
                                   : "bg-success bg-opacity-10 text-success"
@@ -862,7 +962,7 @@ export default function ExpenseApprovalPage() {
                 className="border-bottom-0 pb-0 position-relative"
               >
                 <div
-                  className="position-absolute h-100 bg-light bg-opacity-10 rounded-top"
+                  className="position-absolute bg-light bg-opacity-10 rounded-top"
                   style={{ borderBottom: "1px solid #dee2e6" }}
                 ></div>
                 <h6 className="position-relative">
@@ -882,7 +982,7 @@ export default function ExpenseApprovalPage() {
               <Modal.Body>
                 {/* Header with description and amount */}
                 <div
-                  className="d-flex justify-content-between align-items-start mb-4 p-3 bg-light bg-opacity-50 rounded-3"
+                  className="d-flex justify-content-between align-items-start mb-4 p-3 bg-primary bg-opacity-10 rounded-3"
                   style={{ borderBottom: "1px solid #dee2e6" }}
                 >
                   <div className="flex-grow-1 me-3">
@@ -903,23 +1003,23 @@ export default function ExpenseApprovalPage() {
                 {/* Steps timeline */}
                 <Row className="gy-4">
                   <Col md={6}>
-                    <Card className="h-100 border shadow-sm rounded-4">
-                      <Card.Body className="p-4">
+                    <Card className="rounded-4 border-0">
+                      <Card.Body className="p-4 border-top border-end rounded">
                         {/* Section Header */}
                         <div className="d-flex align-items-center mb-4">
-                          <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
-                            <FileText size={22} className="text-primary" />
+                          <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
+                            <FileText size={16} className="text-primary" />
                           </div>
-                          <h5 className="mb-0 fw-bold text-dark">
+                          <h6 className="mb-0 fw-bold text-dark">
                             Expense Information
-                          </h5>
+                          </h6>
                         </div>
 
                         {/* Info Rows */}
                         <div className="d-flex flex-column gap-3 small">
                           {/* Submission */}
-                          <div className="bg-light bg-opacity-50 p-3 rounded-3">
-                            <div className="fw-semibold text-uppercase text-muted mb-2 small">
+                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-top">
+                            <div className="fw-semibold text-muted mb-2 small">
                               Submission
                             </div>
                             <div className="d-flex justify-content-between">
@@ -951,8 +1051,8 @@ export default function ExpenseApprovalPage() {
                           </div>
 
                           {/* Classification */}
-                          <div className="bg-light bg-opacity-50 p-3 rounded-3">
-                            <div className="fw-semibold text-uppercase text-muted mb-2 small">
+                          <div className="bg-warning bg-opacity-10 p-3 rounded-3 border-top">
+                            <div className="fw-semibold text-muted mb-2 small">
                               Classification
                             </div>
                             <div className="d-flex justify-content-between">
@@ -976,8 +1076,8 @@ export default function ExpenseApprovalPage() {
                           </div>
 
                           {/* Payment */}
-                          <div className="bg-light bg-opacity-50 p-3 rounded-3">
-                            <div className="fw-semibold text-uppercase text-muted mb-2 small">
+                          <div className="bg-warning bg-opacity-10 p-3 rounded-3 border-top">
+                            <div className="fw-semibold text-muted mb-2 small">
                               Payment
                             </div>
                             <div className="d-flex justify-content-between">
@@ -1003,11 +1103,10 @@ export default function ExpenseApprovalPage() {
                   </Col>
 
                   <Col md={6}>
-                    <div className="detail-section border rounded-4 shadow-sm p-4 bg-white">
-                      <h5 className="fw-bold mb-4 d-flex align-items-center text-dark mb-4">
-                        <FaFlag size={16} className="me-2 text-primary fs-4" />
+                    <div className="detail-section rounded-4 p-4 bg-white border-top border-end">
+                      <h6 className="fw-bold mb-4 d-flex align-items-center text-dark mb-4 bg-primary bg-opacity-10 p-3 rounded-3">
                         Approval Steps
-                      </h5>
+                      </h6>
                       <br />
                       {selectedExpense.expenseSteps.length === 0 ? (
                         <div className="text-muted fst-italic d-flex align-items-center bg-light p-3 rounded-3">
@@ -1103,9 +1202,9 @@ export default function ExpenseApprovalPage() {
                 <Modal.Footer className="mt-4">
                   <Col>
                     <div className="detail-section small">
-                      <h5 className="fw-bold mb-3 d-flex align-items-center">
+                      <h6 className="fw-bold mb-3 d-flex align-items-center">
                         Approval Actions
-                      </h5>
+                      </h6>
                       <Form.Group className="mb-3">
                         <Form.Label>Rejection Reason (if rejecting)</Form.Label>
                         <Form.Control
@@ -1149,58 +1248,6 @@ export default function ExpenseApprovalPage() {
             </>
           )}
         </Modal>
-
-        {/* Styles */}
-        <style jsx>{`
-          .stat-card {
-            border-radius: 10px;
-            border: none;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-          }
-          .icon-container {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-          .search-box {
-            position: relative;
-            width: 220px;
-          }
-          .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-            z-index: 10;
-          }
-          .detail-section {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 1rem;
-            height: 100%;
-          }
-          .section-title {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #6c757d;
-            margin-bottom: 1rem;
-          }
-          table :global(thead th) {
-            border-top: none;
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: #6c757d;
-            vertical-align: middle;
-          }
-          table :global(tbody td) {
-            vertical-align: middle;
-          }
-        `}</style>
       </Container>
     </AuthProvider>
   );

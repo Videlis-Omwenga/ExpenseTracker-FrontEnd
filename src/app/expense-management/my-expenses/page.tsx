@@ -33,12 +33,15 @@ import {
   PencilSquare,
   Tag,
   ArrowUpCircle,
+  CashStack,
+  Clipboard2Data,
+  PieChart,
+  Wallet2,
 } from "react-bootstrap-icons";
-import Navbar from "../../components/Navbar";
 import { toast } from "react-toastify";
 import { BASE_API_URL } from "../../static/apiConfig";
 import AuthProvider from "../../authPages/tokenData";
-import { User } from "lucide-react";
+import { BarChart2, User } from "lucide-react";
 import { FaListAlt } from "react-icons/fa";
 import TopNavbar from "../../components/Navbar";
 
@@ -432,82 +435,213 @@ export default function FinanceDashboard() {
       <TopNavbar />
       <Container fluid className="dashboard-container px-4 py-3">
         {/* Header */}
-        <Row className="align-items-center mb-4">
-          <Alert variant="info" className="mb-4">
-            <div className="d-flex justify-content-between align-items-center">
-              <span>
-                {" "}
-                <h5 className="fw-bold mb-1">Dashboard</h5>
-                <p className="text-muted mb-0 small">
-                  Welcome back! Here are your expenses
-                </p>
-              </span>
-              <Button
-                variant="outline-primary"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={refreshing}
-              >
-                {refreshing ? (
-                  <Spinner animation="border" size="sm" className="me-1" />
-                ) : (
-                  <ArrowRepeat className="me-1" />
-                )}
-                Refresh
-              </Button>
-            </div>
-          </Alert>
+        <Row className="mb-4">
+          <Col>
+            <Card
+              className="border-0 shadow-sm"
+              style={{
+                background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+                borderRadius: "0.75rem",
+              }}
+            >
+              <Card.Body className="p-4">
+                <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                  <div className="d-flex align-items-center mb-3 mb-md-0">
+                    <div className="bg-secondary bg-opacity-10 border-bottom border-secondary border-2 p-3 rounded-circle me-3 shadow-sm">
+                      <Clipboard2Data size={24} className="text-primary" />
+                    </div>
+                    <div>
+                      <h6 className="fw-bold mb-1 text-dark">
+                        Expense Dashboard
+                      </h6>
+                      <p className="text-muted mb-0 small">
+                        Welcome back! Here's an overview of your expenses
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline-primary"
+                    className="d-inline-flex align-items-center"
+                    onClick={handleRefresh}
+                    disabled={refreshing}
+                    style={{
+                      minWidth: "110px",
+                      borderRadius: "0.5rem",
+                      borderWidth: "1.5px",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {refreshing ? (
+                      <Spinner animation="border" size="sm" className="me-2" />
+                    ) : (
+                      <ArrowRepeat size={16} className="me-2" />
+                    )}
+                    Refresh
+                  </Button>
+                </div>
+
+                {/* Stats Row */}
+                <Row className="mt-4 g-3">
+                  <Col xs={6} md={3}>
+                    <div className="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-primary border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
+                          <CashStack size={20} className="text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-muted small mb-1">
+                            Monthly Budget
+                          </p>
+                          <h6 className="mb-0 fw-bold">$12,500</h6>
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
+                  <Col xs={6} md={3}>
+                    <div className="bg-success p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-success border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-warning bg-opacity-10 p-2 rounded me-3">
+                          <BarChart2 size={20} className="text-warning" />
+                        </div>
+                        <div>
+                          <p className="text-muted small mb-1">Spent</p>
+                          <h6 className="mb-0 fw-bold">$8,240</h6>
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
+                  <Col xs={6} md={3}>
+                    <div className="bg-info p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-info border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-success bg-opacity-10 p-2 rounded me-3">
+                          <Wallet2 size={20} className="text-success" />
+                        </div>
+                        <div>
+                          <p className="text-muted small mb-1">Remaining</p>
+                          <h6 className="mb-0 fw-bold">$4,260</h6>
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
+                  <Col xs={6} md={3}>
+                    <div className="bg-warning p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-warning border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-info bg-opacity-10 p-2 rounded me-3">
+                          <PieChart size={20} className="text-info" />
+                        </div>
+                        <div>
+                          <p className="text-muted small mb-1">Utilization</p>
+                          <h6 className="mb-0 fw-bold">65.9%</h6>
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+          </Col>
         </Row>
 
-        {/* Main Content Area */}
-        <Row className="mb-4">
-          <Col sm={4}>
-            <Button
-              onClick={() => {
-                handleNavigation("create-expense");
+        {/* Action Cards */}
+        <Row className="mb-4 g-4">
+          <Col md={4}>
+            <Card
+              className="h-100 shadow-sm border-0 transition-all border-bottom border"
+              style={{
+                background: "white",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                borderRadius: "0.75rem",
               }}
-              className="w-100 text-start py-3 border bg-primary bg-opacity-10"
+              onClick={() => handleNavigation("create-expense")}
             >
-              <div className="d-flex align-items-center">
-                <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
-                  <ArrowUpCircle size={20} className="text-primary" />
+              <Card.Body className="p-4">
+                <div className="d-flex align-items-center">
+                  <div className="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                    <ArrowUpCircle size={24} className="text-primary" />
+                  </div>
+                  <div>
+                    <h6 className="mb-1 fw-semibold text-dark">
+                      Create Expense
+                    </h6>
+                    <p className="text-muted small mb-0">
+                      Add new expense records
+                    </p>
+                  </div>
+                  <div className="ms-auto">
+                    <div className="bg-primary bg-opacity-10 p-2 rounded-circle">
+                      <ArrowUpCircle size={16} className="text-primary" />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="fw-medium text-primary">Create expenses</div>
-                  <small className="text-muted d-block">Add new expenses</small>
-                </div>
-              </div>
-            </Button>
+              </Card.Body>
+            </Card>
           </Col>
-          <Col sm={4}>
-            <Button className="w-100 text-start py-3 border bg-danger bg-opacity-10">
-              <div className="d-flex align-items-center">
-                <div className="bg-danger bg-opacity-10 p-2 rounded me-3">
-                  <ArrowDownCircle size={20} className="text-danger" />
+
+          <Col md={4}>
+            <Card
+              className="h-100 shadow-sm border-0 transition-all border-bottom border"
+              style={{
+                background: "white",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                borderRadius: "0.75rem",
+              }}
+            >
+              <Card.Body className="p-4">
+                <div className="d-flex align-items-center">
+                  <div className="bg-warning bg-opacity-10 p-3 rounded-3 me-3">
+                    <BarChart2 size={24} className="text-warning" />
+                  </div>
+                  <div>
+                    <h6 className="mb-1 fw-semibold text-dark">
+                      Budget Overview
+                    </h6>
+                    <p className="text-muted small mb-0">
+                      View department budgets
+                    </p>
+                  </div>
+                  <div className="ms-auto">
+                    <div className="bg-warning bg-opacity-10 p-2 rounded-circle">
+                      <BarChart2 size={16} className="text-warning" />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="fw-medium text-danger">Check budgets</div>
-                  <small className="text-muted d-block">
-                    Check department budgets
-                  </small>
-                </div>
-              </div>
-            </Button>
+              </Card.Body>
+            </Card>
           </Col>
-          <Col sm={4}>
-            <Button className="w-100 text-start py-3 border bg-success bg-opacity-10">
-              <div className="d-flex align-items-center">
-                <div className="bg-success bg-opacity-10 p-2 rounded me-3">
-                  <FileText size={20} className="text-success" />
+
+          <Col md={4}>
+            <Card
+              className="h-100 shadow-sm border-0 transition-all border-bottom border"
+              style={{
+                background: "white",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                borderRadius: "0.75rem",
+              }}
+            >
+              <Card.Body className="p-4">
+                <div className="d-flex align-items-center">
+                  <div className="bg-success bg-opacity-10 p-3 rounded-3 me-3">
+                    <FileText size={24} className="text-success" />
+                  </div>
+                  <div>
+                    <h6 className="mb-1 fw-semibold text-dark">
+                      Generate Report
+                    </h6>
+                    <p className="text-muted small mb-0">
+                      Export financial data
+                    </p>
+                  </div>
+                  <div className="ms-auto">
+                    <div className="bg-success bg-opacity-10 p-2 rounded-circle">
+                      <FileText size={16} className="text-success" />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="fw-medium text-success">Generate Report</div>
-                  <small className="text-muted d-block">
-                    Export financial data
-                  </small>
-                </div>
-              </div>
-            </Button>
+              </Card.Body>
+            </Card>
           </Col>
         </Row>
 

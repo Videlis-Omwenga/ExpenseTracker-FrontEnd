@@ -24,6 +24,13 @@ import {
   FileEarmarkText,
   Tag,
   PersonBadge,
+  HouseDoor,
+  ListCheck,
+  PlusCircle,
+  CheckCircle,
+  Clock,
+  InfoCircle,
+  ShieldCheck,
 } from "react-bootstrap-icons";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 import { InputGroup } from "react-bootstrap";
@@ -234,54 +241,115 @@ export default function CreateExpensePage() {
     }
   };
 
-if (loading) return <PageLoader />;
+  if (loading) return <PageLoader />;
 
   return (
     <AuthProvider>
       <TopNavbar />
-      <Container
-        fluid
-        className="create-expense-page rounded-3 mb-4"
-        style={{ maxWidth: "1500px" }}
-      >
-        <Alert variant="info" className="mb-4 mt-5">
-          <div className="d-flex justify-content-between align-items-center">
-            {/* Header with Back Button */}
-            <div className="d-flex align-items-center">
-              <Button
-                variant="outline-primary"
-                className="me-3 rounded-circle d-flex align-items-center justify-content-center"
-                style={{ width: "40px", height: "40px" }}
-                onClick={() => window.history.back()}
-              >
-                <ArrowLeft size={18} />
-              </Button>
+      <Container fluid>
+        <div className="mb-4 mt-4">
+          <Card
+            className="border-0 border-3 border-start border-secondary shadow-sm"
+            style={{
+              borderRadius: "0.75rem",
+            }}
+          >
+            <Card.Body className="p-4">
+              <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div className="d-flex align-items-center mb-3 mb-md-0">
+                  <Button
+                    variant="light"
+                    className="me-3 rounded-circle p-0 d-flex align-items-center justify-content-center"
+                    style={{
+                      width: "44px",
+                      height: "44px",
+                      border: "1px solid rgba(0,0,0,0.08)",
+                    }}
+                    onClick={() => window.history.back()}
+                  >
+                    <ArrowLeft size={20} className="text-dark" />
+                  </Button>
+                  <div>
+                    <h5 className="fw-bold text-dark mb-1 d-flex align-items-center">
+                      <Receipt size={22} className="me-2 text-primary" />
+                      Create New Expense
+                    </h5>
+                    <p className="text-muted small mb-0">
+                      Submit a new expense for reimbursement
+                    </p>
+                  </div>
+                </div>
+
+                <Breadcrumb className="mb-0 d-none d-md-flex">
+                  <Breadcrumb.Item
+                    href="/"
+                    className="d-flex align-items-center small"
+                  >
+                    <HouseDoor size={14} className="me-1" />
+                    Home
+                  </Breadcrumb.Item>
+                  <Breadcrumb.Item
+                    href="/expense-management/my-expenses"
+                    className="d-flex align-items-center small"
+                  >
+                    <ListCheck size={14} className="me-1" />
+                    My Expenses
+                  </Breadcrumb.Item>
+                  <Breadcrumb.Item
+                    active
+                    className="d-flex align-items-center small"
+                  >
+                    <PlusCircle size={14} className="me-1" />
+                    Create New
+                  </Breadcrumb.Item>
+                </Breadcrumb>
+              </div>
+            </Card.Body>
+          </Card>
+
+          <div className="alert alert-info border-0 mt-4 border-start border-3 border-info">
+            <div className="d-flex">
+              <div className="me-3">
+                <InfoCircle size={24} className="text-info" />
+              </div>
               <div>
-                <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                  <Receipt className="me-2 text-primary" /> Create New Expense
+                <h6 className="alert-heading fw-bold">
+                  Expense Submission Guidelines
                 </h6>
-                <p className="text-muted mb-0 small">
-                  Submit a new expense for reimbursement
-                </p>
+                <div className="row g-3 mt-2">
+                  <Col md={12}>
+                    <ul className="list-unstyled small mb-0">
+                      <li className="mb-2">
+                        <CheckCircle size={16} className="text-success me-2" />
+                        Ensure all required fields are completed
+                      </li>
+                      <li className="mb-2">
+                        <CheckCircle size={16} className="text-success me-2" />
+                        Attach clear receipts for all expenses
+                      </li>
+                      <li className="mb-2">
+                        <CheckCircle size={16} className="text-success me-2" />
+                        Categorize expenses correctly
+                      </li>
+
+                      <li className="mb-2 fw-bold">
+                        <ShieldCheck size={16} className="text-danger me-2" />
+                        All submissions are subject to approval
+                      </li>
+                    </ul>
+                  </Col>
+                </div>
               </div>
             </div>
-            {/* Breadcrumb Navigation */}
-            <Breadcrumb className="mb-0">
-              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
-              <Breadcrumb.Item href="/expense-management/my-expenses">
-                Expenses
-              </Breadcrumb.Item>
-              <Breadcrumb.Item active>Create Expense</Breadcrumb.Item>
-            </Breadcrumb>
           </div>
-        </Alert>
+        </div>
         {/* Form */}
         <Form onSubmit={handleSubmit}>
           <Row>
             {/* Left Column - Expense Details */}
             <Col lg={8} className="rounded-3">
               {/* Payee Information Card */}
-              <Card className="border-0 mb-4 bg-light shadow-sm">
+              <Card className="border-1 mb-4 bg-light shadow-sm">
                 <Card.Header className="bg-secondary bg-opacity-10 py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <Person className="me-2 text-primary" /> Payee Information
@@ -344,7 +412,7 @@ if (loading) return <PageLoader />;
               </Card>
 
               {/* Expense Details Card */}
-              <Card className="border-0 mb-4 bg-light shadow-sm">
+              <Card className="border-1 mb-4 bg-light shadow-sm">
                 <Card.Header className="bg-secondary bg-opacity-10 py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <Cash className="me-2 text-primary" /> Expense Details
@@ -409,7 +477,7 @@ if (loading) return <PageLoader />;
               </Card>
 
               {/* Categorization Card */}
-              <Card className="border-0 mb-4 bg-light shadow-sm">
+              <Card className="border-1 mb-4 bg-light shadow-sm">
                 <Card.Header className="bg-secondary bg-opacity-10 py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <Tag className="me-2 text-primary" /> Categorization
@@ -490,7 +558,7 @@ if (loading) return <PageLoader />;
               </Card>
 
               {/* Payment Information Card */}
-              <Card className="border-0 mb-4 bg-light shadow-sm">
+              <Card className="border-1 mb-4 bg-light shadow-sm">
                 <Card.Header className="bg-secondary bg-opacity-10 py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <CreditCard className="me-2 text-primary" /> Payment
@@ -539,7 +607,7 @@ if (loading) return <PageLoader />;
               </Card>
 
               {/* Payment Information Card */}
-              <Card className="border-0 mb-4 bg-light shadow-sm">
+              <Card className="border-1 mb-4 bg-light shadow-sm">
                 <Card.Header className="bg-secondary bg-opacity-10 py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <CreditCard className="me-2 text-primary" /> Expense Details
@@ -564,7 +632,7 @@ if (loading) return <PageLoader />;
                   </Row>
 
                   {isAdvance && (
-                    <div className="mt-4 p-3 border rounded">
+                    <div className="mt-4 p-3 border-start border-3 border-info rounded bg-light shadow-sm">
                       <h6 className="mb-3 fw-semibold">Advance Allocation</h6>
                       <Row>
                         {categories.map((cat) => (
@@ -622,7 +690,7 @@ if (loading) return <PageLoader />;
               </Card>
 
               {/* Attachments Card */}
-              <Card className="border-0 mb-4 shadow-sm">
+              <Card className="border-1 mb-4 shadow-sm">
                 <Card.Header className="bg-secondary bg-opacity-10 py-3">
                   <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                     <FileEarmarkText className="me-2 text-primary" />{" "}
@@ -681,7 +749,7 @@ if (loading) return <PageLoader />;
             <Col lg={4}>
               {/* Summary Card */}
               <Card
-                className="border-0 mb-4 sticky-top"
+                className="border shadow-sm border-start border-light mb-4 sticky-top"
                 style={{ top: "20px" }}
               >
                 <Card.Header className="bg-secondary bg-opacity-10 py-3">
@@ -748,7 +816,7 @@ if (loading) return <PageLoader />;
                 </Card.Body>
 
                 {/* Action Buttons Card */}
-                <Card className="border-0 shadow-sm">
+                <Card className="border-0">
                   <Card.Body className="p-3">
                     <div className="d-grid gap-2">
                       <Button
