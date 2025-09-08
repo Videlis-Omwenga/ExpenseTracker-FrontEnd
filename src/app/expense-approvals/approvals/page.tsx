@@ -17,14 +17,7 @@ import {
   Table,
   Alert,
 } from "react-bootstrap";
-import {
-  FaFlag,
-  FaInfoCircle,
-  FaUser,
-  FaClock,
-  FaComment,
-  FaListAlt,
-} from "react-icons/fa";
+import { FaInfoCircle, FaUser, FaClock, FaComment } from "react-icons/fa";
 import {
   Filter,
   CheckCircle,
@@ -41,6 +34,7 @@ import { ArrowDownCircle, Tag } from "lucide-react";
 import TopNavbar from "@/app/components/Navbar";
 import AuthProvider from "@/app/authPages/tokenData";
 import { BASE_API_URL } from "@/app/static/apiConfig";
+import PageLoader from "@/app/components/PageLoader";
 
 type ApprovalStatus = "NOT_STARTED" | "PENDING" | "APPROVED" | "REJECTED";
 type ExpenseStatus = "PENDING" | "APPROVED" | "REJECTED" | "PAID";
@@ -376,6 +370,10 @@ export default function ExpenseApprovalPage() {
   /** Stats – Pending count from actual data */
   const pendingCount = expenses.filter((e) => e.status === "PENDING").length;
 
+  if (isLoading) {
+    return <PageLoader />;
+  }
+
   return (
     <AuthProvider>
       <TopNavbar />
@@ -626,26 +624,7 @@ export default function ExpenseApprovalPage() {
           </Card.Header>
 
           <Card.Body className="p-0">
-            {isLoading ? (
-              <div className="text-center py-5">
-                <Spinner animation="border" variant="primary" />
-                <div className="mt-2">Loading expenses...</div>
-              </div>
-            ) : error ? (
-              <Alert variant="danger" className="m-3">
-                <ExclamationTriangle className="me-2" />
-                {error}
-                <div className="mt-2">
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    onClick={fetchExpensesToApprove}
-                  >
-                    Try Again
-                  </Button>
-                </div>
-              </Alert>
-            ) : filteredExpenses.length === 0 ? (
+            {filteredExpenses.length === 0 ? (
               <div className="text-center py-5">
                 <FileText size={48} className="text-muted mb-3" />
                 <h5>No expenses to approve</h5>

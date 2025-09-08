@@ -249,17 +249,17 @@ export default function CreateExpensePage() {
       <Container fluid>
         <div className="mb-4 mt-4">
           <Card
-            className="border-0 border-3 border-start border-secondary shadow-sm"
+            className="border-0 border-3 border-start border-info shadow-sm"
             style={{
               borderRadius: "0.75rem",
             }}
           >
-            <Card.Body className="p-4">
+            <Card.Body className="p-4 border rounded-3">
               <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                <div className="d-flex align-items-center mb-3 mb-md-0">
+                <div className="alert alert-info d-flex align-items-center mb-3 mb-md-0 p-3 rounded-3">
                   <Button
                     variant="light"
-                    className="me-3 rounded-circle p-0 d-flex align-items-center justify-content-center"
+                    className="border-0 me-3 rounded-circle p-0 d-flex align-items-center justify-content-center border-bottom border-2 border-dark"
                     style={{
                       width: "44px",
                       height: "44px",
@@ -306,7 +306,6 @@ export default function CreateExpensePage() {
               </div>
             </Card.Body>
           </Card>
-
           <div className="alert alert-info border-0 mt-4 border-start border-3 border-info">
             <div className="d-flex">
               <div className="me-3">
@@ -343,7 +342,9 @@ export default function CreateExpensePage() {
             </div>
           </div>
         </div>
-        {/* Form */}
+
+        <br />
+        <br />
         <Form onSubmit={handleSubmit}>
           <Row>
             {/* Left Column - Expense Details */}

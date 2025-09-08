@@ -44,6 +44,7 @@ import AuthProvider from "../../authPages/tokenData";
 import { BarChart2, User } from "lucide-react";
 import { FaListAlt } from "react-icons/fa";
 import TopNavbar from "../../components/Navbar";
+import PageLoader from "@/app/components/PageLoader";
 
 /** ========= Types aligned to your Prisma schema ========= */
 
@@ -415,19 +416,7 @@ export default function FinanceDashboard() {
   };
 
   if (loading) {
-    return (
-      <Container fluid className="dashboard-container px-4 py-3">
-        <Row
-          className="align-items-center justify-content-center"
-          style={{ height: "50vh" }}
-        >
-          <Col className="text-center">
-            <Spinner animation="border" role="status" variant="primary" />
-            <p className="mt-3">Loading expenses...</p>
-          </Col>
-        </Row>
-      </Container>
-    );
+    return <PageLoader />;
   }
 
   return (
