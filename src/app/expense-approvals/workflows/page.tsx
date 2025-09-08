@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Diagram3Fill, PlusCircle } from "react-bootstrap-icons";
 import {
   Container,
   Row,
@@ -24,9 +25,9 @@ import {
   FaListOl,
   FaArrowUp,
   FaArrowDown,
-  FaArrowLeft,
   FaCheckCircle,
   FaPlusCircle,
+  FaPlus,
 } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import { BASE_API_URL } from "../../static/apiConfig";
@@ -65,6 +66,8 @@ export default function WorkflowEditor() {
   const [stepToDelete, setStepToDelete] = useState<number | null>(null);
   const [showStepDeleteModal, setShowStepDeleteModal] = useState(false);
   const [newStepRoleId, setNewStepRoleId] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [workflowName, setWorkflowName] = useState("");
 
   // Fetch data
   const fetchWorkflow = async () => {
@@ -98,6 +101,43 @@ export default function WorkflowEditor() {
   useEffect(() => {
     fetchWorkflow();
   }, []);
+
+  const handleCreateWorkflow = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const payload = {
+      name: workflowName,
+    };
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`${BASE_API_URL}/workflows/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "expenseTrackerToken"
+          )}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Workflow created successfully");
+        setShowCreateModal(false);
+        fetchWorkflow(); // Refresh the workflow list
+      } else {
+        toast.error(`${data.message}`);
+      }
+    } catch (error) {
+      toast.error(`Failed to create workflow: ${error}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleUpdateWorkflow = (field: string, value: string | number) => {
     if (!workflow) return;
@@ -286,7 +326,7 @@ export default function WorkflowEditor() {
             {workflow ? (
               <Card className="shadow-sm border-0 rounded-3">
                 <Card.Header className="bg-light py-3 rounded-top-3 d-flex justify-content-between align-items-center">
-                  <h5 className="mb-0">Edit Workflow</h5>
+                  <h5 className="mb-0">Expense approval steps</h5>
                   <Button
                     variant="danger"
                     size="sm"
@@ -300,15 +340,20 @@ export default function WorkflowEditor() {
                     <div className="d-flex">
                       <FaInfoCircle className="text-info me-2 fs-5 mt-1" />
                       <div>
-                        <h6 className="alert-heading mb-1">Editing Workflow</h6>
-                        Modify the workflow details and steps below.
+                        <h6 className="alert-heading mb-1">Update Workflow</h6>
+                        Modify the workflow name or add the steps required for
+                        the workflow. Workflow steps represent the roles that
+                        will be assigned to it. These are the stages an expense
+                        must go through before being paid by the finance
+                        department.
                       </div>
                     </div>
                   </Alert>
-
+                  <br />
+                  <br />
                   <h5 className="mb-3 border-bottom pb-2">Workflow Details</h5>
                   <Row className="mb-4 bg-info bg-opacity-10 p-3 rounded">
-                    <Col md={6}>
+                    <Col md={12}>
                       <Form.Group className="mb-3">
                         <Form.Label className="fw-semibold">
                           Workflow Name
@@ -320,28 +365,14 @@ export default function WorkflowEditor() {
                           }
                           className="py-2 border-2"
                         />
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label className="fw-semibold">
-                          Institution ID
-                        </Form.Label>
-                        <Form.Control
-                          type="number"
-                          value={workflow.institutionId}
-                          onChange={(e) =>
-                            handleUpdateWorkflow(
-                              "institutionId",
-                              parseInt(e.target.value)
-                            )
-                          }
-                          className="py-2 border-2"
-                        />
+                        <Form.Text className="text-muted">
+                          Workflow name is required
+                        </Form.Text>
                       </Form.Group>
                     </Col>
                   </Row>
-
+                  <br />
+                  <br />
                   <h5 className="mb-3 border-bottom pb-2">Workflow Steps</h5>
                   <div className="mb-4">
                     <h6 className="mb-3 border-bottom pb-2 d-flex align-items-center">
@@ -541,9 +572,17 @@ export default function WorkflowEditor() {
                 <Card.Body className="d-flex flex-column justify-content-center align-items-center py-5">
                   <FaPencilAlt className="display-4 text-muted opacity-50" />
                   <h5 className="mt-3 text-muted">No Workflow Found</h5>
-                  <p className="text-muted mb-0">
+                  <p className="text-muted mb-4">
                     Please create a workflow in the system first.
                   </p>
+                  <Button
+                    variant="primary"
+                    onClick={() => setShowCreateModal(true)}
+                    className="px-4"
+                  >
+                    <FaPlus className="me-2" />
+                    Create Workflow
+                  </Button>
                 </Card.Body>
               </Card>
             )}
@@ -611,6 +650,63 @@ export default function WorkflowEditor() {
             Delete Step
           </Button>
         </Modal.Footer>
+      </Modal>
+
+      {/* Create Workflow Modal */}
+      <Modal
+        show={showCreateModal}
+        onHide={() => setShowCreateModal(false)}
+        size="lg"
+        className="custom-modal"
+      >
+        <Form onSubmit={handleCreateWorkflow}>
+          <Modal.Header closeButton className="border-0">
+            <h5 className="fw-bold text-primary">
+              <Diagram3Fill className="me-2" /> Create New Workflow
+            </h5>
+          </Modal.Header>
+          <Modal.Body>
+            <div className="p-4  border rounded-3">
+              <Form.Group className="mb-4">
+                <Form.Label className="fw-semibold text-muted">
+                  Workflow Name
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  name="name"
+                  required
+                  maxLength={100}
+                  value={workflowName}
+                  onChange={(e) => setWorkflowName(e.target.value)}
+                  className="py-2 shadow-sm rounded-3"
+                />
+                <Form.Text className="text-muted">
+                  Give your workflow a descriptive name (max 100 characters).
+                </Form.Text>
+              </Form.Group>{" "}
+            </div>
+          </Modal.Body>
+
+          <Modal.Footer className="border-0 d-flex justify-content-end">
+            <Button
+              size="sm"
+              variant="outline-secondary"
+              onClick={() => setShowCreateModal(false)}
+              className="px-4 rounded-3"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              type="submit"
+              className="px-4 rounded-3 shadow-sm"
+            >
+              <PlusCircle className="me-2" />
+              Create Workflow
+            </Button>
+          </Modal.Footer>
+        </Form>
       </Modal>
     </AuthProvider>
   );

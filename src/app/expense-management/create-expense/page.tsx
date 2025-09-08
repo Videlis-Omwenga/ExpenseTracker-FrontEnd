@@ -31,6 +31,8 @@ import { toast } from "react-toastify";
 import { Upload } from "lucide-react";
 import AuthProvider from "@/app/authPages/tokenData";
 import TopNavbar from "@/app/components/Navbar";
+import { useRouter } from "next/navigation";
+import PageLoader from "@/app/components/PageLoader";
 
 interface Currency {
   id: number;
@@ -59,13 +61,7 @@ interface PaymentMethod {
   name: string;
 }
 
-interface CreateExpensePageProps {
-  onSuccess?: () => void;
-}
-
-export default function CreateExpensePage({
-  onSuccess,
-}: CreateExpensePageProps) {
+export default function CreateExpensePage() {
   const [payee, setPayee] = useState("");
   const [payeeId, setPayeeId] = useState("");
   const [payeeNumber, setPayeeNumber] = useState("");
@@ -85,6 +81,11 @@ export default function CreateExpensePage({
       ...prev,
       [categoryId]: value === "" ? 0 : parseFloat(value) || 0,
     }));
+  };
+
+  const router = useRouter();
+  const handleNavigation = (path: string) => {
+    router.push(path);
   };
 
   const [submitting, setSubmitting] = useState(false);
@@ -139,8 +140,7 @@ export default function CreateExpensePage({
         toast.error(data.message || "Failed to fetch data");
       }
     } catch (error) {
-      toast.error(`Failed to fetch data: ${error}`);
-      console.error("Error fetching data:", error);
+      toast.error(`${error}`);
     } finally {
       setLoading(false);
     }
@@ -217,13 +217,16 @@ export default function CreateExpensePage({
         }
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create expense");
-      }
+      const data = await response.json();
 
-      toast.success("Expense created successfully!");
-      if (onSuccess) await onSuccess();
+      console.log(data);
+
+      if (response.ok) {
+        toast.success(`Expense created successfully!`);
+        handleNavigation("/expense-management/my-expenses");
+      } else {
+        toast.error(`${data.message}`);
+      }
     } catch (error) {
       toast.error(`${error}`);
     } finally {
@@ -231,14 +234,7 @@ export default function CreateExpensePage({
     }
   };
 
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <Spinner animation="border" role="status" variant="primary" />
-        <span className="ms-2">Loading expense form...</span>
-      </div>
-    );
-  }
+if (loading) return <PageLoader />;
 
   return (
     <AuthProvider>

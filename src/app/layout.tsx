@@ -17,9 +17,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`body`}>
+      <body className="body">
         <ToastContainer />
-        <Container fluid>{children}</Container>
+        <Container fluid className="p-0">
+          {children}
+        </Container>
       </body>
     </html>
   );

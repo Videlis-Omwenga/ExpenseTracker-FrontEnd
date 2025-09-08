@@ -12,8 +12,6 @@ import {
   Button,
   ButtonGroup,
   Form,
-  Spinner,
-  Alert,
 } from "react-bootstrap";
 import { format } from "date-fns";
 import {
@@ -28,8 +26,6 @@ import {
   Eye,
   BarChart3,
   PieChart as PieChartIcon,
-  Users,
-  FolderOpen,
   FileText,
 } from "lucide-react";
 import { BASE_API_URL } from "../static/apiConfig";
@@ -44,11 +40,7 @@ import {
   YAxis,
   Legend,
   ResponsiveContainer,
-  AreaChart,
-  Area,
   CartesianGrid,
-  LineChart,
-  Line,
 } from "recharts";
 import { toast } from "react-toastify";
 import DateTimeDisplay from "../components/DateTimeDisplay";
@@ -233,17 +225,11 @@ export default function Dashboard() {
     totalAmount: dept.totalAmount,
   }));
 
-  const approvalStepsData = Object.entries(data.breakdown.approvalSteps).map(
-    ([status, count]) => ({
-      name: status,
-      count: count,
-    })
-  );
 
   return (
     <AuthProvider>
       <TopNavbar />
-      <div className="bg-light min-vh-100">
+      <div className="min-vh-100">
         <Container fluid className="py-4">
           {/* Header with title and controls */}
           <Row className="mb-4 align-items-center">
@@ -385,7 +371,8 @@ export default function Dashboard() {
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">
                       <h6 className="card-title text-muted mb-1">
-                        Pending Approvals
+                        Pending Approvals{" "}
+                        <span className="text-muted small">(steps)</span>
                       </h6>
                       <h4 className="fw-bold mb-0">
                         {data.summary.pendingApprovals ?? 0}
@@ -446,67 +433,53 @@ export default function Dashboard() {
           <Row className="mb-4">
             <Col xl={6} className="mb-4">
               <Card className="h-100 shadow-sm border-0">
-                <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
+                <Card.Header className="bg-white py-3">
                   <h6 className="mb-0">Expense Status Distribution</h6>
-                  <ButtonGroup size="sm">
-                    <Button
-                      variant={
-                        chartView === "pie" ? "primary" : "outline-primary"
-                      }
-                      onClick={() => setChartView("pie")}
-                    >
-                      <PieChartIcon size={14} />
-                    </Button>
-                    <Button
-                      variant={
-                        chartView === "bar" ? "primary" : "outline-primary"
-                      }
-                      onClick={() => setChartView("bar")}
-                    >
-                      <BarChart3 size={14} />
-                    </Button>
-                  </ButtonGroup>
                 </Card.Header>
                 <Card.Body>
-                  <Row>
-                    <Col md={6}>
-                      <ListGroup variant="flush" className="small">
-                        {Object.entries(data.breakdown.statuses).map(
-                          ([status, count]) => (
-                            <ListGroup.Item
-                              key={status}
-                              className="d-flex justify-content-between align-items-center px-0 py-2"
-                            >
-                              <div className="d-flex align-items-center">
-                                <span
-                                  className="d-inline-block rounded-circle me-2"
-                                  style={{
-                                    width: "10px",
-                                    height: "10px",
-                                    backgroundColor:
-                                      STATUS_COLORS[status] || COLORS[0],
-                                  }}
-                                ></span>
-                                <span>{status}</span>
-                              </div>
-                              <Badge bg="light" text="dark">
-                                {count}
-                              </Badge>
-                            </ListGroup.Item>
-                          )
-                        )}
-                      </ListGroup>
+                  <Row className="g-3">
+                    <Col md={4}>
+                      <div className="d-flex flex-column h-100">
+                        <h6 className="small text-muted mb-3">Status Breakdown</h6>
+                        <ListGroup variant="flush" className="small flex-grow-1">
+                          {Object.entries(data.breakdown.statuses).map(
+                            ([status, count]) => (
+                              <ListGroup.Item
+                                key={status}
+                                className="d-flex justify-content-between align-items-center px-0 py-2"
+                              >
+                                <div className="d-flex align-items-center">
+                                  <span
+                                    className="d-inline-block rounded-circle me-2"
+                                    style={{
+                                      width: "10px",
+                                      height: "10px",
+                                      backgroundColor:
+                                        STATUS_COLORS[status] || COLORS[0],
+                                    }}
+                                  ></span>
+                                  <span>{status}</span>
+                                </div>
+                                <Badge bg="light" text="dark">
+                                  {count}
+                                </Badge>
+                              </ListGroup.Item>
+                            )
+                          )}
+                        </ListGroup>
+                      </div>
                     </Col>
-                    <Col md={6} style={{ height: "200px" }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        {chartView === "pie" ? (
+                    <Col md={4} className="d-flex flex-column">
+                      <h6 className="small text-muted text-center mb-3">Pie Chart</h6>
+                      <div style={{ height: "220px" }} className="flex-grow-1">
+                        <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                             <Pie
                               data={statusChartData}
                               dataKey="value"
                               nameKey="name"
-                              outerRadius={80}
-                              label
+                              outerRadius={70}
+                              label={({ percent }) => percent !== undefined ? `${(percent * 100).toFixed(0)}%` : ''}
                             >
                               {statusChartData.map((entry, index) => (
                                 <Cell
@@ -518,14 +491,21 @@ export default function Dashboard() {
                                 />
                               ))}
                             </Pie>
-                            <Tooltip />
+                            <Tooltip formatter={(value, name) => [`${value}`, name]} />
+                            <Legend />
                           </PieChart>
-                        ) : (
-                          <BarChart data={statusChartData}>
-                            <CartesianGrid
-                              strokeDasharray="3 3"
-                              stroke="#eee"
-                            />
+                        </ResponsiveContainer>
+                      </div>
+                    </Col>
+                    <Col md={4} className="d-flex flex-column">
+                      <h6 className="small text-muted text-center mb-3">Bar Chart</h6>
+                      <div style={{ height: "220px" }} className="flex-grow-1">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={statusChartData}
+                            margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                             <XAxis dataKey="name" />
                             <YAxis />
                             <Tooltip />
@@ -533,10 +513,20 @@ export default function Dashboard() {
                               dataKey="value"
                               fill="#4F46E5"
                               radius={[4, 4, 0, 0]}
-                            />
+                            >
+                              {statusChartData.map((entry, index) => (
+                                <Cell
+                                  key={`bar-cell-${index}`}
+                                  fill={
+                                    STATUS_COLORS[entry.name] ||
+                                    COLORS[index % COLORS.length]
+                                  }
+                                />
+                              ))}
+                            </Bar>
                           </BarChart>
-                        )}
-                      </ResponsiveContainer>
+                        </ResponsiveContainer>
+                      </div>
                     </Col>
                   </Row>
                 </Card.Body>
