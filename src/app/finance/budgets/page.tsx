@@ -13,9 +13,9 @@ import {
   Pagination,
   Card,
   ProgressBar,
+  Modal,
 } from "react-bootstrap";
 import {
-  PlusCircle,
   PencilSquare,
   Trash,
   Search,
@@ -27,6 +27,8 @@ import {
   Layers,
   Building,
   CheckCircle,
+  InfoCircle,
+  XCircle,
 } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
 import { Plus } from "lucide-react";
@@ -34,6 +36,8 @@ import BudgetModalPage from "@/app/components/modals/budget-creation-modal";
 import AuthProvider from "@/app/authPages/tokenData";
 import TopNavbar from "@/app/components/Navbar";
 import { BASE_API_URL } from "@/app/static/apiConfig";
+import PageLoader from "@/app/components/PageLoader";
+import { FaInfoCircle } from "react-icons/fa";
 
 interface Budget {
   id: number;
@@ -46,6 +50,8 @@ interface Budget {
   expenseCategory: ExpenseCategory;
   department: Department;
   status: "Active" | "Expired" | "Upcoming";
+  addedVia: string;
+  amountAdd: boolean;
 }
 
 interface ExpenseCategory {
@@ -64,11 +70,11 @@ interface Category {
 }
 
 export default function BudgetsPage() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [submiting, setSubmitting] = useState(false);
 
   const fetchBudgets = async () => {
     setIsLoading(true);
@@ -103,51 +109,15 @@ export default function BudgetsPage() {
     fetchBudgets();
   }, []);
 
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState<
-    "create" | "upload" | "move" | null
-  >(null);
   const [currentTime, setCurrentTime] = useState("");
 
-  const handleClose = () => {
-    setShowModal(false);
-    setModalType(null);
-  };
-
-  const handleShow = (type: "create" | "upload" | "move") => {
-    setModalType(type);
-    setShowModal(true);
-  };
-
-  // Update time on client-side only
   useEffect(() => {
-    // Only run on client side
     if (typeof window !== "undefined") {
       const updateTime = () => {
         setCurrentTime(new Date().toLocaleTimeString());
       };
-
-      // Set initial time
       updateTime();
-
-      // Update every minute
       const timer = setInterval(updateTime, 60000);
-
-      // Cleanup
       return () => clearInterval(timer);
     }
   }, []);
@@ -157,6 +127,63 @@ export default function BudgetsPage() {
     (sum, budget) => sum + budget.remainingBudget,
     0
   );
+
+  const [budgetAmount, setBudgetAmount] = useState("");
+  const [budgetComments, setBudgetComments] = useState("");
+  const [selectedBudgetId, setSelectedBudgetId] = useState<number | null>(null);
+  const selectedBudgetData = budgets.find(
+    (budget) => budget.id === selectedBudgetId
+  );
+  const [showAddModal, setShowAddModal] = useState(false);
+  const openAddModal = (id: number) => {
+    setSelectedBudgetId(id);
+    setShowAddModal(true);
+  };
+  const closeAddModal = () => setShowAddModal(false);
+
+  const handleAddBudgetAmount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    const payload = {
+      amount: Number(budgetAmount),
+      comments: budgetComments,
+    };
+    try {
+      const res = await fetch(
+        `${BASE_API_URL}/budgets/add-budget/${selectedBudgetId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(
+              "expenseTrackerToken"
+            )}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success("Budget amount added successfully");
+        setShowAddModal(false);
+        setBudgetAmount("");
+        setBudgetComments("");
+        setSelectedBudgetId(null);
+        await fetchBudgets();
+      } else {
+        toast.error(`${data.message}`);
+      }
+    } catch (error) {
+      toast.error(`${error}`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (isLoading) return <PageLoader />;
 
   return (
     <AuthProvider>
@@ -399,6 +426,7 @@ export default function BudgetsPage() {
               <Table hover className="align-middle mb-0">
                 <thead className="bg-light">
                   <tr>
+                    <th className="border-0">ID</th>
                     <th className="border-0 ps-4">Period</th>
                     <th className="border-0">Initial Amount</th>
                     <th className="border-0">Balance</th>
@@ -406,6 +434,8 @@ export default function BudgetsPage() {
                     <th className="border-0">Category</th>
                     <th className="border-0">Department</th>
                     <th className="border-0">Description</th>
+                    <th className="border-0">Added Via</th>
+                    <th className="border-0">Amount adjusted</th>
                     <th
                       className="border-0 text-end pe-4"
                       style={{ width: "100px" }}
@@ -424,13 +454,6 @@ export default function BudgetsPage() {
                           <p className="text-muted">
                             Create a new budget to get started
                           </p>
-                          <Button
-                            variant="primary"
-                            className="rounded-pill mt-2"
-                            onClick={() => handleShow("create")}
-                          >
-                            <PlusCircle className="me-2" /> Create Budget
-                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -442,6 +465,12 @@ export default function BudgetsPage() {
                       );
                       return (
                         <tr key={budget.id} className="border-top">
+                          <td className="ps-4">
+                            <div className="fw-semibold text-dark">
+                              <Tag className="text-primary me-1" />
+                              {budget.id}
+                            </div>
+                          </td>
                           <td className="ps-4">
                             <div className="fw-semibold text-dark">
                               {new Date().toLocaleDateString("en-US", {
@@ -535,6 +564,22 @@ export default function BudgetsPage() {
                                 "No description found for this budget"}
                             </span>
                           </td>
+                          <td>
+                            <Badge 
+                              bg={budget.addedVia === 'manual' ? 'info' : 'secondary'} 
+                              className="text-capitalize"
+                            >
+                              {budget.addedVia || 'N/A'}
+                            </Badge>
+                          </td>
+                          <td>
+                            <Badge 
+                              bg={budget.amountAdd ? 'danger' : 'secondary'} 
+                              className="text-light"
+                            >
+                              {budget.amountAdd ? 'Yes' : 'No'}
+                            </Badge>
+                          </td>
                           <td className="text-end pe-4">
                             <div className="d-flex d-wrap align-items-center">
                               <Button
@@ -543,6 +588,7 @@ export default function BudgetsPage() {
                                 className="me-1 rounded-circle text-success border"
                                 style={{ width: "32px", height: "32px" }}
                                 title="Add Budget"
+                                onClick={() => openAddModal(budget.id)}
                               >
                                 <Plus size={14} />
                               </Button>
@@ -600,6 +646,144 @@ export default function BudgetsPage() {
           </Row>
         )}
       </Container>
+
+      <Modal
+        show={showAddModal}
+        onHide={closeAddModal}
+        size="xl"
+        aria-labelledby="contained-modal-title-vcenter"
+      >
+        <Modal.Header closeButton className="border-0 pb-0">
+          {selectedBudgetId && (
+            <div className="d-flex align-items-center gap-2">
+              <Tag className="text-primary" />
+              <h6 className="mb-0">
+                Adding budget to budget ID:{" "}
+                <span className="text-danger fw-bold">{selectedBudgetId}</span>
+              </h6>
+            </div>
+          )}
+        </Modal.Header>
+
+        {/* Body */}
+        <Form onSubmit={handleAddBudgetAmount}>
+          <Modal.Body className="p-4">
+            <div className="alert alert-light">
+              <div className="bg-info p-2 rounded-2 bg-opacity-10 fw-bold mb-4 text-center d-flex gap-2 border-start border-3 border-info">
+                <FaInfoCircle size={16} className="text-primary" />
+                <h6 className="fw-bold text-muted">Budget Details</h6>
+              </div>
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <div className="d-flex align-items-center gap-2 mb-2">
+                    <Building size={16} className="text-primary" />
+                    <span className="fw-semibold">Department:</span>
+                    <span className="ms-1">
+                      {selectedBudgetData?.department?.name || "N/A"}
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2 mb-2">
+                    <Layers size={16} className="text-primary" />
+                    <span className="fw-semibold">Category:</span>
+                    <span className="ms-1">
+                      {selectedBudgetData?.expenseCategory?.name || "N/A"}
+                    </span>
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="d-flex align-items-center gap-2 mb-2">
+                    <Wallet size={16} className="text-primary" />
+                    <span className="fw-semibold">Current Budget:</span>
+                    <span className="ms-1">
+                      {selectedBudgetData?.originalBudget?.toLocaleString() ||
+                        "0.00"}
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <BarChart size={16} className="text-primary" />
+                    <span className="fw-semibold">Remaining:</span>
+                    <span
+                      className={`ms-1 ${
+                        Number(selectedBudgetData?.remainingBudget) < 0
+                          ? "text-danger"
+                          : "text-success"
+                      }`}
+                    >
+                      {selectedBudgetData?.remainingBudget?.toLocaleString() ||
+                        "0.00"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <Card className="shadow-sm border rounded-3 p-4">
+              <div className="d-flex flex-column gap-4">
+                {/* Amount */}
+                <Form.Group controlId="budgetAmount">
+                  <Form.Label className="fw-semibold d-flex align-items-center gap-2 mb-2">
+                    <span>Budget Amount</span>
+                  </Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text className="bg-primary text-white fw-bold border-0">
+                      <Wallet size={18} className="text-white" />
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="number"
+                      value={budgetAmount}
+                      onChange={(e) => setBudgetAmount(e.target.value)}
+                    />
+                  </InputGroup>
+                  <Form.Text className="text-muted small mt-2 d-flex align-items-center">
+                    <InfoCircle size={14} className="me-1 text-secondary" />
+                    Enter the total budget you want to allocate
+                  </Form.Text>
+                </Form.Group>
+
+                {/* Comments */}
+                <Form.Group controlId="budgetComments">
+                  <Form.Label className="fw-semibold d-flex align-items-center gap-2 mb-2">
+                    <span>Comments / Reason</span>
+                  </Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    value={budgetComments}
+                    onChange={(e) => setBudgetComments(e.target.value)}
+                  />
+                  <Form.Text className="text-muted small mt-2 d-flex align-items-center">
+                    <InfoCircle size={14} className="me-1 text-secondary" />
+                    Explain why this budget is being added
+                  </Form.Text>
+                </Form.Group>
+              </div>
+            </Card>
+          </Modal.Body>
+
+          {/* Footer */}
+          <Modal.Footer className="border-0 px-4 pb-4">
+            <Button
+              variant="outline-dark"
+              size="sm"
+              disabled={submiting}
+              onClick={closeAddModal}
+              className="d-flex align-items-center gap-2 px-3 py-2 rounded-3"
+            >
+              <XCircle size={16} />
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              size="sm"
+              disabled={submiting}
+              className="d-flex align-items-center gap-2 px-3 py-2 rounded-3 shadow-sm"
+            >
+              <CheckCircle size={16} />
+              Add budget
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
 
       <style jsx global>{`
         .bg-success-light {

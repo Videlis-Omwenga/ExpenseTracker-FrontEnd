@@ -32,6 +32,7 @@ import {
 import Navbar from "../../components/Navbar";
 import { BASE_API_URL } from "../../static/apiConfig";
 import AuthProvider from "../../authPages/tokenData";
+import PageLoader from "@/app/components/PageLoader";
 
 interface WorkflowStep {
   id?: number;
@@ -309,24 +310,18 @@ export default function WorkflowEditor() {
     });
   };
 
-  if (loading) {
-    return (
-      <Container className="d-flex justify-content-center align-items-center min-vh-100">
-        <Spinner animation="border" variant="primary" />
-      </Container>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   return (
     <AuthProvider>
       <Navbar />
-      <Container className="my-5">
+      <Container fluid className="my-5">
         <Row>
           <Col lg={12}>
             {workflow ? (
               <Card className="shadow-sm border-0 rounded-3">
                 <Card.Header className="bg-light py-3 rounded-top-3 d-flex justify-content-between align-items-center">
-                  <h5 className="mb-0">Expense approval steps</h5>
+                  <h6 className="mb-0 fw-bold">Expense approval steps</h6>
                   <Button
                     variant="danger"
                     size="sm"
@@ -336,7 +331,10 @@ export default function WorkflowEditor() {
                   </Button>
                 </Card.Header>
                 <Card.Body className="p-4">
-                  <Alert variant="info" className="border-0 bg-light-info">
+                  <Alert
+                    variant="info"
+                    className="border-0 bg-light-info border-0 border-2 border-info border-start"
+                  >
                     <div className="d-flex">
                       <FaInfoCircle className="text-info me-2 fs-5 mt-1" />
                       <div>
@@ -351,13 +349,13 @@ export default function WorkflowEditor() {
                   </Alert>
                   <br />
                   <br />
-                  <h5 className="mb-3 border-bottom pb-2">Workflow Details</h5>
-                  <Row className="mb-4 bg-info bg-opacity-10 p-3 rounded">
+                  <h6 className="mb-3 border-bottom pb-2 fw-bold">
+                    Workflow Details
+                  </h6>
+                  <Row className="border-0 border-2 border-info border-start mb-4 bg-info bg-opacity-10 p-3 rounded">
                     <Col md={12}>
                       <Form.Group className="mb-3">
-                        <Form.Label className="fw-semibold">
-                          Workflow Name
-                        </Form.Label>
+                        <Form.Label>Workflow Name</Form.Label>
                         <Form.Control
                           value={workflow.name}
                           onChange={(e) =>
@@ -373,8 +371,10 @@ export default function WorkflowEditor() {
                   </Row>
                   <br />
                   <br />
-                  <h5 className="mb-3 border-bottom pb-2">Workflow Steps</h5>
-                  <div className="mb-4">
+                  <h6 className="mb-3 border-bottom pb-2 fw-bold">
+                    Workflow Steps
+                  </h6>
+                  <div className="mb-4 border p-4 rounded-3">
                     <h6 className="mb-3 border-bottom pb-2 d-flex align-items-center">
                       <FaListOl className="me-2 text-primary" />
                       Workflow Steps
@@ -482,7 +482,7 @@ export default function WorkflowEditor() {
                       </div>
                     )}
 
-                    <Card className="bg-info bg-opacity-10 border-0 mt-3">
+                    <Card className="bg-info bg-opacity-10 border-0 border-2 border-info border-start mt-3">
                       <Card.Body className="p-3">
                         <Form.Label className="fw-semibold">
                           Add New Step
@@ -571,7 +571,7 @@ export default function WorkflowEditor() {
               <Card className="rounded-3 text-center h-100 bg-light border">
                 <Card.Body className="d-flex flex-column justify-content-center align-items-center py-5">
                   <FaPencilAlt className="display-4 text-muted opacity-50" />
-                  <h5 className="mt-3 text-muted">No Workflow Found</h5>
+                  <h6 className="mt-3 text-muted">No Workflow Found</h6>
                   <p className="text-muted mb-4">
                     Please create a workflow in the system first.
                   </p>
@@ -661,9 +661,9 @@ export default function WorkflowEditor() {
       >
         <Form onSubmit={handleCreateWorkflow}>
           <Modal.Header closeButton className="border-0">
-            <h5 className="fw-bold text-primary">
+            <h6 className="fw-bold text-primary">
               <Diagram3Fill className="me-2" /> Create New Workflow
-            </h5>
+            </h6>
           </Modal.Header>
           <Modal.Body>
             <div className="p-4  border rounded-3">

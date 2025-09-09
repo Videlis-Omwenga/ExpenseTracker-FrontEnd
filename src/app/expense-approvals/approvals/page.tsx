@@ -13,9 +13,7 @@ import {
   Pagination,
   ProgressBar,
   Row,
-  Spinner,
   Table,
-  Alert,
 } from "react-bootstrap";
 import { FaInfoCircle, FaUser, FaClock, FaComment } from "react-icons/fa";
 import {
@@ -27,7 +25,6 @@ import {
   Eye,
   CheckLg,
   XLg,
-  ExclamationTriangle,
 } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
 import { ArrowDownCircle, Tag } from "lucide-react";
@@ -382,7 +379,7 @@ export default function ExpenseApprovalPage() {
         <Container fluid className="mb-4 px-0">
           <Row className="g-3 bg">
             <Col>
-              <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center p-4 bg-primary bg-opacity-10 rounded-3 shadow-sm border-start border-primary border-2">
+              <div className="alert alert-info border-0 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center p-4 rounded-3 shadow-sm border-start border-info border-3">
                 <div className="mb-3 mb-md-0">
                   <div className="d-flex align-items-center mb-2">
                     <h5 className="fw-bold text-dark mb-0 me-3">
@@ -425,7 +422,7 @@ export default function ExpenseApprovalPage() {
         {/* Stats */}
         <Row className="g-4 mb-4">
           <Col md={3}>
-            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-secondary bg-opacity-10 border-start border-secondary border-2">
+            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-secondary bg-opacity-10 border-start border-secondary border-3">
               <Card.Body className="p-4">
                 <div className="d-flex align-items-center">
                   <div className="icon-container bg-secondary bg-opacity-10 p-3 rounded-3 me-3">
@@ -446,7 +443,7 @@ export default function ExpenseApprovalPage() {
           </Col>
 
           <Col md={3}>
-            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-success bg-opacity-10 border-start border-success border-2">
+            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-success bg-opacity-10 border-start border-success border-3">
               <Card.Body className="p-4">
                 <div className="d-flex align-items-center">
                   <div className="icon-container bg-success bg-opacity-10 p-3 rounded-3 me-3">
@@ -478,7 +475,7 @@ export default function ExpenseApprovalPage() {
           </Col>
 
           <Col md={3}>
-            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-info bg-opacity-10 border-start border-info border-2">
+            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-info bg-opacity-10 border-start border-info border-3">
               <Card.Body className="p-4">
                 <div className="d-flex align-items-center">
                   <div className="icon-container bg-info bg-opacity-10 p-3 rounded-3 me-3">
@@ -499,7 +496,7 @@ export default function ExpenseApprovalPage() {
           </Col>
 
           <Col md={3}>
-            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-warning bg-opacity-10 border-start border-warning border-2">
+            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-warning bg-opacity-10 border-start border-warning border-3">
               <Card.Body className="p-4">
                 <div className="d-flex align-items-center">
                   <div className="icon-container bg-warning bg-opacity-10 p-3 rounded-3 me-3">
