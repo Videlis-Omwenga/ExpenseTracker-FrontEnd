@@ -203,13 +203,13 @@ export default function TopNavbar() {
                   </Dropdown.Item>
                   <Dropdown.Divider />
                   <Dropdown.Item
-                    onClick={() => handleNavigation("/company-admin")}
+                    onClick={() => handleNavigation("/admin-pages/company-admin-dashboard")}
                   >
                     <Building className="me-2 text-primary" size={18} />
                     Company admin
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={() => handleNavigation("/system-admin")}
+                    onClick={() => handleNavigation("/admin-pages/system-admin-dashboard")}
                   >
                     <Server className="me-2 text-primary" size={18} />
                     System admin

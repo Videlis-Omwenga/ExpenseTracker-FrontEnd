@@ -248,64 +248,6 @@ export default function CreateExpensePage() {
       <TopNavbar />
       <Container fluid>
         <div className="mb-4 mt-4">
-          <Card
-            className="border-0 border-3 border-start border-info shadow-sm"
-            style={{
-              borderRadius: "0.75rem",
-            }}
-          >
-            <Card.Body className="p-4 border rounded-3">
-              <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                <div className="alert alert-info d-flex align-items-center mb-3 mb-md-0 p-3 rounded-3">
-                  <Button
-                    variant="light"
-                    className="border-0 me-3 rounded-circle p-0 d-flex align-items-center justify-content-center border-bottom border-2 border-dark"
-                    style={{
-                      width: "44px",
-                      height: "44px",
-                      border: "1px solid rgba(0,0,0,0.08)",
-                    }}
-                    onClick={() => window.history.back()}
-                  >
-                    <ArrowLeft size={20} className="text-dark" />
-                  </Button>
-                  <div>
-                    <h5 className="fw-bold text-dark mb-1 d-flex align-items-center">
-                      <Receipt size={22} className="me-2 text-primary" />
-                      Create New Expense
-                    </h5>
-                    <p className="text-muted small mb-0">
-                      Submit a new expense for reimbursement
-                    </p>
-                  </div>
-                </div>
-
-                <Breadcrumb className="mb-0 d-none d-md-flex">
-                  <Breadcrumb.Item
-                    href="/"
-                    className="d-flex align-items-center small"
-                  >
-                    <HouseDoor size={14} className="me-1" />
-                    Home
-                  </Breadcrumb.Item>
-                  <Breadcrumb.Item
-                    href="/expense-management/my-expenses"
-                    className="d-flex align-items-center small"
-                  >
-                    <ListCheck size={14} className="me-1" />
-                    My Expenses
-                  </Breadcrumb.Item>
-                  <Breadcrumb.Item
-                    active
-                    className="d-flex align-items-center small"
-                  >
-                    <PlusCircle size={14} className="me-1" />
-                    Create New
-                  </Breadcrumb.Item>
-                </Breadcrumb>
-              </div>
-            </Card.Body>
-          </Card>
           <div className="alert alert-info border-0 mt-4 border-start border-3 border-info">
             <div className="d-flex">
               <div className="me-3">
@@ -343,10 +285,48 @@ export default function CreateExpensePage() {
           </div>
         </div>
 
-        <br />
-        <br />
         <Form onSubmit={handleSubmit}>
           <Row>
+            <Container className="">
+              <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div className="">
+                  {" "}
+                  <div className="alert alert-light border-0 mt-2 mb-5 border-start border-3 border-success shadow-sm">
+                    <h5 className="fw-bold text-dark mb-1 d-flex align-items-center">
+                      <Receipt size={22} className="me-2 text-primary" />
+                      Create New Expense
+                    </h5>
+                    <p className="text-muted small mb-0">
+                      Submit a new expense for reimbursement
+                    </p>
+                  </div>
+                </div>
+
+                <Breadcrumb className="mb-0 d-none d-md-flex">
+                  <Breadcrumb.Item
+                    href="/"
+                    className="d-flex align-items-center small"
+                  >
+                    <HouseDoor size={14} className="me-1" />
+                    Home
+                  </Breadcrumb.Item>
+                  <Breadcrumb.Item
+                    href="/expense-management/my-expenses"
+                    className="d-flex align-items-center small"
+                  >
+                    <ListCheck size={14} className="me-1" />
+                    My Expenses
+                  </Breadcrumb.Item>
+                  <Breadcrumb.Item
+                    active
+                    className="d-flex align-items-center small"
+                  >
+                    <PlusCircle size={14} className="me-1" />
+                    Create New
+                  </Breadcrumb.Item>
+                </Breadcrumb>
+              </div>
+            </Container>
             {/* Left Column - Expense Details */}
             <Col lg={8} className="rounded-3">
               {/* Payee Information Card */}

@@ -242,7 +242,7 @@ export default function Dashboard() {
       <div className="min-vh-100 small mt-3">
         <Container fluid className="">
           <Container fluid className="">
-            <Row className="mb-4 align-items-center shadow-sm border-start border-2 border-primary rounded bg-primary bg-opacity-10 p-3">
+            <Row className="mb-4 align-items-center shadow-sm border-start border-2 border-primary rounded bg-info bg-opacity-10 p-3">
               <Col>
                 <h5 className="mb-1 fw-bold mb-4">Expense Dashboard</h5>
                 <p className="text-muted mb-0">
@@ -293,14 +293,14 @@ export default function Dashboard() {
                   <div className="d-flex flex-wrap justify-content-between align-items-center">
                     {/* Left side: Filter */}
                     <div className="d-flex align-items-center mb-2 mb-sm-0">
-                      <div className="d-flex align-items-center bg-secondary bg-opacity-10 rounded px-3 py-2">
+                      <div className="d-flex align-items-center bg-success bg-opacity-10 rounded px-3 py-2">
                         <Filter size={16} className="me-2 text-primary" />
-                        <span className="me-2 fw-semibold text-secondary small">
+                        <span className="me-2 fw-semibold text-dark">
                           Time Period:
                         </span>
                         <Form.Select
                           size="sm"
-                          className="border-0 shadow-none bg-transparent fw-semibold text-dark"
+                          className="border bg-transparent fw-semibold text-muted"
                           style={{ width: "auto" }}
                           value={timeFilter}
                           onChange={(e) => setTimeFilter(e.target.value)}
@@ -315,7 +315,7 @@ export default function Dashboard() {
                     </div>
 
                     {/* Right side: Date range */}
-                    <div className="text-muted small fw-medium bg-danger bg-opacity-10 rounded px-3 py-2">
+                    <div className="text-muted small fw-medium bg-secondary bg-opacity-10 rounded px-3 py-2 shadow-sm border">
                       {data.dateRange.startDate && data.dateRange.endDate ? (
                         <span>
                           Data from{" "}
@@ -334,7 +334,7 @@ export default function Dashboard() {
                           </span>
                         </span>
                       ) : (
-                        <span className="text-danger fw-semibold">
+                        <span className="text-muted fw-semibold">
                           No date range available
                         </span>
                       )}

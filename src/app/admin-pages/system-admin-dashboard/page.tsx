@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+// Removed unused PieLabelProps interface
+
 import {
   Container,
   Row,
@@ -15,6 +18,21 @@ import {
   FormControl,
   Breadcrumb,
 } from "react-bootstrap";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from "recharts";
 import {
   People,
   Gear,
@@ -35,7 +53,7 @@ import { BASE_API_URL } from "../../static/apiConfig";
 import TopNavbar from "../../components/Navbar";
 import RoleCreationModal from "../../components/modals/admin-role-creation";
 import InstitutionCreationModal from "../../components/modals/create-institution";
-import AdminCreateUserModal from "../../components/modals/admin-create-user-modal";
+import { default as PageLoader } from "@/app/components/PageLoader";
 
 interface User {
   id: number;
@@ -43,11 +61,19 @@ interface User {
   firstName: string;
   lastName: string;
   status: string;
+  role?: string;
   createdAt: string;
   updatedAt: string;
-  roles: { role: { name: string } }[];
-  institution?: { id: number; name: string };
-  department?: { id: number; name: string };
+  lastLogin: string | null;
+  institution: {
+    id: number;
+    name: string;
+    country: string | null;
+  } | null;
+  department: {
+    id: number;
+    name: string;
+  };
 }
 
 interface Institution {
@@ -57,34 +83,49 @@ interface Institution {
   updatedAt: string;
   subscriptionPlan: string;
   status: string;
-  isActive: string;
-  industry: string;
-  address: string;
-  city: string;
-  country: string;
-  postalCode: string;
-  contactEmail: string;
-  phoneNumber: string;
-  websiteUrl: string;
-  logoUrl: string;
-  subscriptionStartDate: string;
-  subscriptionEndDate: string;
-  trialEndDate: string;
-  billingEmail: string;
+  isActive: boolean;
+  industry: string | null;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  postalCode: string | null;
+  contactEmail: string | null;
+  phoneNumber: string | null;
+  websiteUrl: string | null;
+  logoUrl: string | null;
+  subscriptionStartDate: string | null;
+  subscriptionEndDate: string | null;
+  trialEndDate: string | null;
+  billingEmail: string | null;
+  _count: {
+    users: number;
+    departments: number;
+  };
 }
 
-interface Role {
-  id: number;
-  role: string;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
+interface Statistics {
+  totalUsers: number;
+  totalInstitutions: number;
+  activeInstitutions: number;
+  totalDepartments: number;
+}
+
+interface UsersByInstitution {
+  _count: {
+    _all: number;
+  };
+  institutionId: number | null;
+  institutionName?: string;
+  country?: string;
 }
 
 export default function SuperAdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
+  const [statistics, setStatistics] = useState<Statistics | null>(null);
+  const [usersByInstitution, setUsersByInstitution] = useState<
+    UsersByInstitution[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [searchTerm, setSearchTerm] = useState("");
@@ -92,7 +133,7 @@ export default function SuperAdminDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${BASE_API_URL}/system-admin/users`, {
+      const response = await fetch(`${BASE_API_URL}/system-admin/dashboard`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -105,15 +146,16 @@ export default function SuperAdminDashboard() {
       const data = await response.json();
 
       if (response.ok) {
-        setUsers(data.users);
-        setInstitutions(data.institutions);
-        setRoles(data.roles);
+        setUsers(data.recentUsers || []);
+        setInstitutions(data.institutions || []);
+        setStatistics(data.statistics || null);
+        setUsersByInstitution(data.enhancedUsersByInstitution || []);
       } else {
-        toast.error(`${data.message}`);
+        toast.error(data.message || "Failed to fetch dashboard data");
       }
     } catch (error) {
+      console.error("Error fetching dashboard data:", error);
       toast.error(`Failed to fetch data: ${error}`);
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -126,19 +168,89 @@ export default function SuperAdminDashboard() {
   // Filter data based on search term
   const filteredUsers = users.filter(
     (user) =>
-      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const filteredInstitutions = institutions.filter(
+    (institution) =>
+      institution.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      institution.contactEmail?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Format date for display
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  // Get status color for charts
+  const getStatusColor = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case "ACTIVE":
+        return "#28a745"; // Green
+      case "INACTIVE":
+        return "#6c757d"; // Gray
+      case "SUSPENDED":
+        return "#dc3545"; // Red
+      case "TRIAL":
+        return "#ffc107"; // Yellow
+      default:
+        return "#6c757d"; // Gray
+    }
+  };
+
+  // Generate user growth data for the last 30 days
+  const generateUserGrowthData = (users: User[]) => {
+    const days = 30;
+    const result = [];
+    const now = new Date();
+
+    // Initialize data for each day
+    for (let i = days; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i);
+      const dateString = date.toISOString().split("T")[0];
+
+      // Count users created on or before this date
+      const count = users.filter((user) => {
+        const userDate = new Date(user.createdAt).toISOString().split("T")[0];
+        return userDate <= dateString;
+      }).length;
+
+      result.push({
+        date: dateString,
+        count,
+      });
+    }
+
+    return result;
+  };
+
+  // Get status variant
+  const getStatusVariant = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case "ACTIVE":
+        return "success";
+      case "INACTIVE":
+        return "secondary";
+      case "SUSPENDED":
+        return "danger";
+      case "TRIAL":
+        return "warning";
+      default:
+        return "secondary";
+    }
+  };
+
+  if (loading) return <PageLoader />;
 
   return (
     <AuthProvider>
       <TopNavbar />
 
-      <Container fluid className="p-0 super-admin-dashboard">
+      <Container fluid className="p-0 super-admin-dashboard small">
         {/* Top Navbar */}
         <Navbar
           bg="light"
@@ -266,45 +378,49 @@ export default function SuperAdminDashboard() {
                   </Breadcrumb>
                 </div>
 
-                <Row className="g-4">
+                <Row className="g-4 mb-4">
                   <Col md={12}>
-                    <Card className="h-100">
+                    <Card className="border-0">
                       <Card.Header className="bg-light">
                         <h5 className="mb-0">System Metrics</h5>
                       </Card.Header>
                       <Card.Body>
                         <Row className="g-3">
                           <Col xs={3}>
-                            <div className="p-3 border rounded text-center">
+                            <div className="p-3 border-0 bg-primary bg-opacity-10 border-start border-primary border-3 rounded text-center">
                               <div className="text-muted small mb-1">
                                 Total Institutions
                               </div>
-                              <h3 className="mb-0">{institutions.length}</h3>
+                              <h3 className="mb-0">
+                                {statistics?.totalInstitutions || 0}
+                              </h3>
                             </div>
                           </Col>
                           <Col xs={3}>
-                            <div className="p-3 border rounded text-center">
+                            <div className="p-3 border-0 bg-success bg-opacity-10 border-start border-success border-3 rounded text-center">
                               <div className="text-muted small mb-1">
                                 Active Users
                               </div>
                               <h3 className="mb-0">
                                 {
-                                  users.filter((u) => u.status === "active")
+                                  users.filter((u) => u.status === "ACTIVE")
                                     .length
                                 }
                               </h3>
                             </div>
                           </Col>
                           <Col xs={3}>
-                            <div className="p-3 border rounded text-center">
+                            <div className="p-3 border-0 bg-warning bg-opacity-10 border-start border-warning border-3 rounded text-center">
                               <div className="text-muted small mb-1">
                                 User Roles
                               </div>
-                              <h3 className="mb-0">{roles.length}</h3>
+                              <h3 className="mb-0">
+                                {users.filter((u) => u.role).length}
+                              </h3>
                             </div>
                           </Col>
                           <Col xs={3}>
-                            <div className="p-3 border rounded text-center">
+                            <div className="p-3 border-0 bg-info bg-opacity-10 border-start border-info border-3 rounded text-center">
                               <div className="text-muted small mb-1">
                                 System Status
                               </div>
@@ -314,6 +430,426 @@ export default function SuperAdminDashboard() {
                             </div>
                           </Col>
                         </Row>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+
+                <Row className="g-4">
+                  {/* User Growth Over Time */}
+                  <Col md={6}>
+                    <Card className="h-100">
+                      <Card.Header className="bg-light">
+                        <h5 className="mb-0">User Growth (Last 30 Days)</h5>
+                      </Card.Header>
+                      <Card.Body>
+                        <div style={{ height: "300px" }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart
+                              data={generateUserGrowthData(users)}
+                              margin={{
+                                top: 10,
+                                right: 30,
+                                left: 0,
+                                bottom: 0,
+                              }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="date" />
+                              <YAxis />
+                              <Tooltip
+                                formatter={(value) => [
+                                  `${value} users`,
+                                  "Total Users",
+                                ]}
+                              />
+                              <Area
+                                type="monotone"
+                                dataKey="count"
+                                stroke="#8884d8"
+                                fill="#8884d8"
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  {/* Institutions by Country */}
+                  <Col md={6}>
+                    <Card className="h-100">
+                      <Card.Header className="bg-light">
+                        <h5 className="mb-0">Institutions by Country</h5>
+                      </Card.Header>
+                      <Card.Body>
+                        <div style={{ height: "300px" }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={institutions.reduce(
+                                  (
+                                    acc: { name: string; value: number }[],
+                                    inst
+                                  ) => {
+                                    const country = inst.country || "Unknown";
+                                    const existing = acc.find(
+                                      (item) => item.name === country
+                                    );
+                                    if (existing) {
+                                      existing.value += 1;
+                                    } else {
+                                      acc.push({ name: country, value: 1 });
+                                    }
+                                    return acc;
+                                  },
+                                  []
+                                )}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                label={({
+                                  name,
+                                  percent,
+                                }: {
+                                  name: string;
+                                  percent: number;
+                                }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="value"
+                              >
+                                {[
+                                  "#0088FE",
+                                  "#00C49F",
+                                  "#FFBB28",
+                                  "#FF8042",
+                                  "#8884D8",
+                                  "#82CA9D",
+                                ].map((color, index) => (
+                                  <Cell key={`cell-${index}`} fill={color} />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                formatter={(value, name) => [
+                                  `${value} institutions`,
+                                  name,
+                                ]}
+                              />
+                              <Legend />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+
+                <Row className="g-4 mt-2">
+                  <Col md={6}>
+                    <Card className="h-100">
+                      <Card.Header className="bg-light">
+                        <h5 className="mb-0">Users by Status</h5>
+                      </Card.Header>
+                      <Card.Body>
+                        <div style={{ height: "300px" }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={users.reduce(
+                                  (
+                                    acc: {
+                                      name: string;
+                                      value: number;
+                                      color: string;
+                                    }[],
+                                    user
+                                  ) => {
+                                    const status = user.status || "UNKNOWN";
+                                    const existing = acc.find(
+                                      (item) => item.name === status
+                                    );
+                                    if (existing) {
+                                      existing.value += 1;
+                                    } else {
+                                      acc.push({
+                                        name: status,
+                                        value: 1,
+                                        color: getStatusColor(status),
+                                      });
+                                    }
+                                    return acc;
+                                  },
+                                  []
+                                )}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                label={({
+                                  name,
+                                  percent,
+                                }: {
+                                  name: string;
+                                  percent: number;
+                                }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="value"
+                              >
+                                {users
+                                  .reduce(
+                                    (
+                                      acc: {
+                                        name: string;
+                                        value: number;
+                                        color: string;
+                                      }[],
+                                      user
+                                    ) => {
+                                      const status = user.status || "UNKNOWN";
+                                      if (
+                                        !acc.find(
+                                          (item) => item.name === status
+                                        )
+                                      ) {
+                                        acc.push({
+                                          name: status,
+                                          value: 1,
+                                          color: getStatusColor(status),
+                                        });
+                                      }
+                                      return acc;
+                                    },
+                                    []
+                                  )
+                                  .map((entry, index) => (
+                                    <Cell
+                                      key={`cell-${index}`}
+                                      fill={entry.color}
+                                    />
+                                  ))}
+                              </Pie>
+                              <Tooltip
+                                formatter={(value, name) => [
+                                  `${value} users`,
+                                  name,
+                                ]}
+                              />
+                              <Legend />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={6}>
+                    <Card className="h-100">
+                      <Card.Header className="bg-light">
+                        <h5 className="mb-0">Institutions by Status</h5>
+                      </Card.Header>
+                      <Card.Body>
+                        <div style={{ height: "300px" }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                              data={institutions.reduce(
+                                (
+                                  acc: { status: string; count: number }[],
+                                  inst
+                                ) => {
+                                  const status = inst.status || "UNKNOWN";
+                                  const existing = acc.find(
+                                    (item) => item.status === status
+                                  );
+                                  if (existing) {
+                                    existing.count += 1;
+                                  } else {
+                                    acc.push({ status, count: 1 });
+                                  }
+                                  return acc;
+                                },
+                                []
+                              )}
+                              margin={{
+                                top: 5,
+                                right: 30,
+                                left: 20,
+                                bottom: 5,
+                              }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="status" />
+                              <YAxis />
+                              <Tooltip
+                                formatter={(value) => [
+                                  `${value} institutions`,
+                                  "Count",
+                                ]}
+                              />
+                              <Legend />
+                              <Bar
+                                dataKey="count"
+                                fill="#8884d8"
+                                name="Institutions"
+                              />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+
+                <Row className="g-4 mt-2">
+                  {/* Users per Institution */}
+                  <Col md={6}>
+                    <Card className="h-100">
+                      <Card.Header className="bg-light">
+                        <h5 className="mb-0">Users per Institution</h5>
+                      </Card.Header>
+                      <Card.Body>
+                        <div style={{ height: "300px" }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                              data={usersByInstitution
+                                .slice(0, 5)
+                                .map((inst) => ({
+                                  name: inst.institutionName || "Unknown",
+                                  users: inst._count?._all || 0,
+                                  country: inst.country || "N/A",
+                                }))}
+                              layout="vertical"
+                              margin={{
+                                top: 5,
+                                right: 30,
+                                left: 20,
+                                bottom: 5,
+                              }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis type="number" />
+                              <YAxis
+                                dataKey="name"
+                                type="category"
+                                width={100}
+                              />
+                              <Tooltip
+                                formatter={(value, name) => [
+                                  value,
+                                  name === "users" ? "Number of Users" : name,
+                                ]}
+                                labelFormatter={(label) =>
+                                  `Institution: ${label}`
+                                }
+                              />
+                              <Legend />
+                              <Bar
+                                dataKey="users"
+                                fill="#8884d8"
+                                name="Users"
+                              />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  {/* Institution Status Distribution */}
+                  <Col md={6}>
+                    <Card className="h-100">
+                      <Card.Header className="bg-light">
+                        <h5 className="mb-0">
+                          Institution Status Distribution
+                        </h5>
+                      </Card.Header>
+                      <Card.Body>
+                        <div style={{ height: "300px" }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={institutions.reduce(
+                                  (
+                                    acc: {
+                                      name: string;
+                                      value: number;
+                                      color: string;
+                                    }[],
+                                    inst
+                                  ) => {
+                                    const status = inst.status || "UNKNOWN";
+                                    const existing = acc.find(
+                                      (item) => item.name === status
+                                    );
+                                    if (existing) {
+                                      existing.value += 1;
+                                    } else {
+                                      acc.push({
+                                        name: status,
+                                        value: 1,
+                                        color: getStatusColor(status),
+                                      });
+                                    }
+                                    return acc;
+                                  },
+                                  []
+                                )}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                label={({
+                                  name,
+                                  percent,
+                                }: {
+                                  name: string;
+                                  percent: number;
+                                }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="value"
+                              >
+                                {institutions
+                                  .reduce(
+                                    (
+                                      acc: {
+                                        name: string;
+                                        value: number;
+                                        color: string;
+                                      }[],
+                                      inst
+                                    ) => {
+                                      const status = inst.status || "UNKNOWN";
+                                      if (
+                                        !acc.find(
+                                          (item) => item.name === status
+                                        )
+                                      ) {
+                                        acc.push({
+                                          name: status,
+                                          value: 1,
+                                          color: getStatusColor(status),
+                                        });
+                                      }
+                                      return acc;
+                                    },
+                                    []
+                                  )
+                                  .map((entry, index) => (
+                                    <Cell
+                                      key={`cell-${index}`}
+                                      fill={entry.color}
+                                    />
+                                  ))}
+                              </Pie>
+                              <Tooltip
+                                formatter={(value, name) => [
+                                  `${value} institutions`,
+                                  name,
+                                ]}
+                              />
+                              <Legend />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
                       </Card.Body>
                     </Card>
                   </Col>
@@ -363,9 +899,20 @@ export default function SuperAdminDashboard() {
                 <Card className="mb-4">
                   <Card.Body className="p-3">
                     <Row>
-                      <Col md={6}></Col>
-                      <Col md={6} className="d-flex justify-content-end gap-2">
-                        <AdminCreateUserModal roles={roles} />
+                      <Col md={6}>
+                        <InputGroup>
+                          <InputGroup.Text>
+                            <Search />
+                          </InputGroup.Text>
+                          <FormControl
+                            placeholder="Search users..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                        </InputGroup>
+                      </Col>
+                      <Col md={6} className="d-flex justify-content-end">
+                        <Button variant="primary">Add New User</Button>
                       </Col>
                     </Row>
                   </Card.Body>
@@ -379,9 +926,9 @@ export default function SuperAdminDashboard() {
                           <th>#</th>
                           <th>User</th>
                           <th>Email</th>
-                          <th>Role</th>
+                          <th>Department</th>
+                          <th>Institution</th>
                           <th>Last Login</th>
-                          <th>IP Address</th>
                           <th>Status</th>
                           <th className="text-center">Actions</th>
                         </tr>
@@ -400,29 +947,21 @@ export default function SuperAdminDashboard() {
                               </div>
                             </td>
                             <td>{user.email}</td>
-                            <td>
-                              <Badge bg={"danger"} className="px-2">
-                                xxx
-                              </Badge>
-                            </td>
+                            <td>{user.department?.name || "N/A"}</td>
+                            <td>{user.institution?.name || "None"}</td>
                             <td>
                               <small className="text-muted">
-                                {user.createdAt}
+                                {user.lastLogin
+                                  ? formatDate(user.lastLogin)
+                                  : "Never"}
                               </small>
                             </td>
                             <td>
-                              <code>{user.updatedAt}</code>
-                            </td>
-                            <td>
                               <Badge
-                                bg={
-                                  user.status === "ACTIVE"
-                                    ? "success"
-                                    : "secondary"
-                                }
+                                bg={getStatusVariant(user.status)}
                                 className="px-2 py-1"
                               >
-                                xxx
+                                {user.status}
                               </Badge>
                             </td>
                             <td className="text-center">
@@ -457,7 +996,7 @@ export default function SuperAdminDashboard() {
               </>
             )}
 
-            {/* System Logs Tab */}
+            {/* Institutions Tab */}
             {activeTab === "institutions" && (
               <>
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 bg-info p-4 bg-opacity-10 rounded-3 shadow-sm">
@@ -523,17 +1062,16 @@ export default function SuperAdminDashboard() {
                         <tr>
                           <th>ID</th>
                           <th>Name</th>
-                          <th>Industry</th>
+                          <th>Users</th>
+                          <th>Departments</th>
                           <th>Subscription</th>
                           <th>Status</th>
-                          <th>Contact</th>
-                          <th>Location</th>
-                          <th>Subscription Period</th>
+                          <th>Created</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {institutions.map((institution) => (
+                        {filteredInstitutions.map((institution) => (
                           <tr key={institution.id}>
                             <td>{institution.id}</td>
                             <td>
@@ -569,7 +1107,8 @@ export default function SuperAdminDashboard() {
                                 <span>{institution.name}</span>
                               </div>
                             </td>
-                            <td>{institution.industry || "-"}</td>
+                            <td>{institution._count.users}</td>
+                            <td>{institution._count.departments}</td>
                             <td>
                               <Badge
                                 bg={
@@ -587,89 +1126,14 @@ export default function SuperAdminDashboard() {
                             </td>
                             <td>
                               <Badge
-                                bg={
-                                  institution.status === "ACTIVE"
-                                    ? "success"
-                                    : institution.status === "SUSPENDED"
-                                    ? "warning"
-                                    : "secondary"
-                                }
+                                bg={getStatusVariant(institution.status)}
                                 className="text-capitalize"
                               >
                                 {institution.status?.toLowerCase() ||
                                   "inactive"}
                               </Badge>
                             </td>
-                            <td>
-                              <div className="small">
-                                <div>{institution.contactEmail}</div>
-                                <div className="text-muted">
-                                  {institution.phoneNumber || "-"}
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="small">
-                                <div>
-                                  {institution.city || "-"}
-                                  {institution.city && institution.country
-                                    ? ", "
-                                    : ""}
-                                  {institution.country || ""}
-                                </div>
-                                <div className="text-muted">
-                                  {institution.websiteUrl ? (
-                                    <a
-                                      href={
-                                        institution.websiteUrl.startsWith(
-                                          "http"
-                                        )
-                                          ? institution.websiteUrl
-                                          : `https://${institution.websiteUrl}`
-                                      }
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-decoration-none"
-                                    >
-                                      {institution.websiteUrl.replace(
-                                        /^https?:\/\//,
-                                        ""
-                                      )}
-                                    </a>
-                                  ) : (
-                                    "-"
-                                  )}
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="small">
-                                <div>
-                                  Start:{" "}
-                                  {institution.subscriptionStartDate
-                                    ? new Date(
-                                        institution.subscriptionStartDate
-                                      ).toLocaleDateString()
-                                    : "-"}
-                                </div>
-                                <div>
-                                  End:{" "}
-                                  {institution.subscriptionEndDate
-                                    ? new Date(
-                                        institution.subscriptionEndDate
-                                      ).toLocaleDateString()
-                                    : "-"}
-                                </div>
-                                {institution.trialEndDate && (
-                                  <div className="text-warning">
-                                    Trial ends:{" "}
-                                    {new Date(
-                                      institution.trialEndDate
-                                    ).toLocaleDateString()}
-                                  </div>
-                                )}
-                              </div>
-                            </td>
+                            <td>{formatDate(institution.createdAt)}</td>
                             <td>
                               <div className="d-flex">
                                 <Button
@@ -706,7 +1170,7 @@ export default function SuperAdminDashboard() {
               </>
             )}
 
-            {/* Other Tabs */}
+            {/* Roles Tab */}
             {activeTab === "roles" && (
               <>
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 bg-info p-4 bg-opacity-10 rounded-3 shadow-sm">
@@ -781,15 +1245,11 @@ export default function SuperAdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {roles.map((role) => (
+                        {tempRoles.map((role) => (
                           <tr key={role.id}>
                             <td>{role.id}</td>
-                            <td>
-                              {new Date(role.createdAt).toLocaleDateString()}
-                            </td>
-                            <td>
-                              {new Date(role.updatedAt).toLocaleDateString()}
-                            </td>
+                            <td>{formatDate(role.createdAt)}</td>
+                            <td>{formatDate(role.updatedAt)}</td>
                             <td>
                               <Badge bg="primary" className="text-uppercase">
                                 {role.role}
