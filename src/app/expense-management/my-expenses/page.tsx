@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -16,7 +16,6 @@ import {
   OverlayTrigger,
   Tooltip,
   ProgressBar,
-  Alert,
 } from "react-bootstrap";
 import {
   ArrowDownCircle,
@@ -45,6 +44,8 @@ import { BarChart2, User } from "lucide-react";
 import { FaListAlt } from "react-icons/fa";
 import TopNavbar from "../../components/Navbar";
 import PageLoader from "@/app/components/PageLoader";
+import DateTimeDisplay from "@/app/components/DateTimeDisplay";
+import BudgetOverview from "../budgets/page";
 
 /** ========= Types aligned to your Prisma schema ========= */
 
@@ -223,6 +224,34 @@ const getProgressPercent = (steps: ExpenseStep[]) => {
   return Math.floor((completed / total) * 100);
 };
 
+interface BudgetSummary {
+  totalBudget: number;
+  totalSpent: number;
+  totalPending: number;
+  totalRemaining: number;
+  overallUtilization: number;
+  isOverBudget: boolean;
+  month: string;
+  year: number;
+  byCategory: Array<{
+    categoryId: number;
+    categoryName: string;
+    departmentId: number;
+    departmentName: string;
+    regionId: number;
+    regionName: string;
+    budgetAmount: number;
+    remainingBudget: number;
+    totalSpent: number;
+    pendingAmount: number;
+    remaining: number;
+    utilization: number;
+    isOverBudget: boolean;
+    month: string;
+    year: number;
+  }>;
+}
+
 export default function FinanceDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseRow | null>(
@@ -230,11 +259,22 @@ export default function FinanceDashboard() {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [expenses, setExpenses] = useState<ExpenseRow[]>([]);
+  const [budgetSummary, setBudgetSummary] = useState<BudgetSummary | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const router = useRouter();
   const handleNavigation = (path: string) => router.push(path);
+
+  // Log budgetSummary when it changes
+  useEffect(() => {}, [budgetSummary]);
+
+  // Fetch expenses when component mounts
+  useEffect(() => {
+    fetchExpenses();
+  }, []); // Empty dependency array means this runs once on mount
 
   /** ===== Fetch & transform ===== */
   const fetchExpenses = async () => {
@@ -254,9 +294,15 @@ export default function FinanceDashboard() {
         return;
       }
 
-      const data = await response.json();
+      const responseData = await response.json();
 
-      console.log(data);
+      // The actual expenses array
+      const data = Array.isArray(responseData) ? responseData : [];
+
+      // If we have expenses and the first one has a budgetSummary, use it
+      if (data.length > 0 && data[0].budgetSummary) {
+        setBudgetSummary(data[0].budgetSummary);
+      }
 
       if (Array.isArray(data)) {
         const mapped = data.map((item: any): ExpenseRow => {
@@ -378,11 +424,6 @@ export default function FinanceDashboard() {
     }
   };
 
-  useEffect(() => {
-    fetchExpenses();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const handleRefresh = () => {
     setRefreshing(true);
     fetchExpenses();
@@ -407,13 +448,6 @@ export default function FinanceDashboard() {
       );
     });
   }, [expenses, searchQuery]);
-
-  const formatDate = (iso?: string) => {
-    if (!iso) return "-";
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return iso;
-    return d.toLocaleDateString();
-  };
 
   if (loading) {
     return <PageLoader />;
@@ -449,7 +483,8 @@ export default function FinanceDashboard() {
                     </div>
                   </div>
                   <Button
-                    variant="outline-primary"
+                    size="sm"
+                    variant="primary"
                     className="d-inline-flex align-items-center"
                     onClick={handleRefresh}
                     disabled={refreshing}
@@ -465,7 +500,7 @@ export default function FinanceDashboard() {
                     ) : (
                       <ArrowRepeat size={16} className="me-2" />
                     )}
-                    Refresh
+                    Refresh page
                   </Button>
                 </div>
 
@@ -481,7 +516,10 @@ export default function FinanceDashboard() {
                           <p className="text-muted small mb-1">
                             Monthly Budget
                           </p>
-                          <h6 className="mb-0 fw-bold">$12,500</h6>
+                          <h6 className="mb-0 fw-bold">
+                            $
+                            {(budgetSummary?.totalBudget || 0).toLocaleString()}
+                          </h6>
                         </div>
                       </div>
                     </div>
@@ -494,7 +532,9 @@ export default function FinanceDashboard() {
                         </div>
                         <div>
                           <p className="text-muted small mb-1">Spent</p>
-                          <h6 className="mb-0 fw-bold">$8,240</h6>
+                          <h6 className="mb-0 fw-bold">
+                            ${(budgetSummary?.totalSpent || 0).toLocaleString()}
+                          </h6>
                         </div>
                       </div>
                     </div>
@@ -507,7 +547,12 @@ export default function FinanceDashboard() {
                         </div>
                         <div>
                           <p className="text-muted small mb-1">Remaining</p>
-                          <h6 className="mb-0 fw-bold">$4,260</h6>
+                          <h6 className="mb-0 fw-bold">
+                            $
+                            {(
+                              budgetSummary?.totalRemaining || 0
+                            ).toLocaleString()}
+                          </h6>
                         </div>
                       </div>
                     </div>
@@ -520,7 +565,10 @@ export default function FinanceDashboard() {
                         </div>
                         <div>
                           <p className="text-muted small mb-1">Utilization</p>
-                          <h6 className="mb-0 fw-bold">65.9%</h6>
+                          <h6 className="mb-0 fw-bold">
+                            {budgetSummary?.overallUtilization?.toFixed(1) || 0}
+                            %
+                          </h6>
                         </div>
                       </div>
                     </div>
@@ -566,40 +614,7 @@ export default function FinanceDashboard() {
               </Card.Body>
             </Card>
           </Col>
-
-          <Col md={4}>
-            <Card
-              className="h-100 shadow-sm border-0 transition-all border-bottom border"
-              style={{
-                background: "white",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                borderRadius: "0.75rem",
-              }}
-            >
-              <Card.Body className="p-4">
-                <div className="d-flex align-items-center">
-                  <div className="bg-warning bg-opacity-10 p-3 rounded-3 me-3">
-                    <BarChart2 size={24} className="text-warning" />
-                  </div>
-                  <div>
-                    <h6 className="mb-1 fw-semibold text-dark">
-                      Budget Overview
-                    </h6>
-                    <p className="text-muted small mb-0">
-                      View department budgets
-                    </p>
-                  </div>
-                  <div className="ms-auto">
-                    <div className="bg-warning bg-opacity-10 p-2 rounded-circle">
-                      <BarChart2 size={16} className="text-warning" />
-                    </div>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-
+          <BudgetOverview />
           <Col md={4}>
             <Card
               className="h-100 shadow-sm border-0 transition-all border-bottom border"
@@ -713,10 +728,20 @@ export default function FinanceDashboard() {
                                 <td>
                                   <div className="d-flex flex-column">
                                     <div className="">
-                                      Created: {formatDate(expense.createdAt)}
+                                      Created:{" "}
+                                      <DateTimeDisplay
+                                        date={expense.createdAt}
+                                      />
                                     </div>
                                     <div className="text-muted small">
-                                      Updated: {formatDate(expense.updatedAt)}
+                                      Updated:{" "}
+                                      <DateTimeDisplay
+                                        date={expense.updatedAt}
+                                        isHighlighted={
+                                          expense.updatedAt !==
+                                          expense.createdAt
+                                        }
+                                      />
                                     </div>
                                   </div>
                                 </td>
@@ -935,7 +960,8 @@ export default function FinanceDashboard() {
                       {selectedExpense.description}
                     </h6>
                     <small className="text-muted">
-                      Created on {formatDate(selectedExpense.createdAt)}
+                      Created on{" "}
+                      <DateTimeDisplay date={selectedExpense.createdAt} />
                     </small>
                   </div>
                   <div className="text-end">
@@ -970,13 +996,21 @@ export default function FinanceDashboard() {
                             <div className="detail-item">
                               <span className="detail-label">Submitted On</span>
                               <span className="detail-value">
-                                {formatDate(selectedExpense.createdAt)}
+                                <DateTimeDisplay
+                                  date={selectedExpense.createdAt}
+                                />
                               </span>
                             </div>
                             <div className="detail-item">
                               <span className="detail-label">Last Updated</span>
                               <span className="detail-value">
-                                {formatDate(selectedExpense.updatedAt)}
+                                <DateTimeDisplay
+                                  date={selectedExpense.updatedAt}
+                                  isHighlighted={
+                                    selectedExpense.updatedAt !==
+                                    selectedExpense.createdAt
+                                  }
+                                />
                               </span>
                             </div>
                             <div className="detail-item">

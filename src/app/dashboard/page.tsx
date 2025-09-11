@@ -202,8 +202,8 @@ export default function Dashboard() {
           <p className="text-muted mb-3">
             There's no expense data to display yet
           </p>
-          <Button variant="primary" onClick={fetchData}>
-            Refresh
+          <Button size="sm" variant="primary" onClick={fetchData}>
+            Refresh page
           </Button>
         </div>
       </div>

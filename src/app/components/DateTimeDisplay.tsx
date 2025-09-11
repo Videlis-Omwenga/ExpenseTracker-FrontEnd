@@ -6,6 +6,7 @@ interface DateTimeDisplayProps {
   showDate?: boolean;
   shortFormat?: boolean;
   className?: string;
+  isHighlighted?: boolean;
 }
 
 const DateTimeDisplay: React.FC<DateTimeDisplayProps> = ({
@@ -14,6 +15,7 @@ const DateTimeDisplay: React.FC<DateTimeDisplayProps> = ({
   showDate = true,
   shortFormat = false,
   className = '',
+  isHighlighted = false,
 }) => {
   if (!date) return <span className={className}>-</span>;
 
@@ -46,7 +48,8 @@ const DateTimeDisplay: React.FC<DateTimeDisplayProps> = ({
     formattedDate = dateObj.toLocaleTimeString('en-US', timeOptions);
   }
 
-  return <span className={className}>{formattedDate}</span>;
+  const highlightClass = isHighlighted ? 'text-danger' : '';
+  return <span className={`${className} ${highlightClass}`}>{formattedDate}</span>;
 };
 
 export default DateTimeDisplay;
