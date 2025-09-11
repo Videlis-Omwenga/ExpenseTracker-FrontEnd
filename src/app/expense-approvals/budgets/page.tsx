@@ -55,8 +55,8 @@ const BudgetOverviewHOD = () => {
   const [show, setShow] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
-  const [requestAmount, setRequestAmount] = useState('');
-  const [requestReason, setRequestReason] = useState('');
+  const [requestAmount, setRequestAmount] = useState("");
+  const [requestReason, setRequestReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(false);
@@ -71,12 +71,12 @@ const BudgetOverviewHOD = () => {
   const handleRequestClick = (budget: Budget) => {
     // Close the current modal first
     setShow(false);
-    
+
     // Set a small timeout to allow the modal to close before opening the new one
     setTimeout(() => {
       setCurrentBudget(budget);
-      setRequestAmount('');
-      setRequestReason('');
+      setRequestAmount("");
+      setRequestReason("");
       setShowRequestModal(true);
     }, 300); // 300ms should be enough for the modal close animation
   };
@@ -85,7 +85,7 @@ const BudgetOverviewHOD = () => {
     // Close the request modal
     setShowRequestModal(false);
     setCurrentBudget(null);
-    
+
     // Reopen the budgets modal after a short delay
     setTimeout(() => {
       setShow(true);
@@ -93,8 +93,13 @@ const BudgetOverviewHOD = () => {
   };
 
   const handleSubmitRequest = async () => {
-    if (!currentBudget || !requestAmount || isNaN(Number(requestAmount)) || Number(requestAmount) <= 0) {
-      toast.error('Please enter a valid amount');
+    if (
+      !currentBudget ||
+      !requestAmount ||
+      isNaN(Number(requestAmount)) ||
+      Number(requestAmount) <= 0
+    ) {
+      toast.error("Please enter a valid amount");
       return;
     }
 
@@ -102,15 +107,15 @@ const BudgetOverviewHOD = () => {
     try {
       // Here you would typically make an API call to submit the budget request
       // For example: await submitBudgetRequest(currentBudget.id, Number(requestAmount), requestReason);
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast.success('Budget increase request submitted successfully');
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      toast.success("Budget increase request submitted successfully");
       handleCloseRequestModal();
     } catch (error) {
-      console.error('Error submitting budget request:', error);
-      toast.error('Failed to submit budget request');
+      console.error("Error submitting budget request:", error);
+      toast.error("Failed to submit budget request");
     } finally {
       setIsSubmitting(false);
     }
@@ -197,12 +202,13 @@ const BudgetOverviewHOD = () => {
         <Modal.Header className="border-0 pb-0 position-relative">
           <div className="w-100">
             <div className="d-flex align-items-center justify-content-between mb-3">
-              <Modal.Title
+              <h6
                 id="budget-modal-title"
-                className="fw-bold text-dark fs-4 d-flex align-items-center"
+                className="fw-bold text-dark fs-5 d-flex align-items-center"
               >
-                <BarChart2 size={24} className="me-2" /> 📊 Budget Overview
-              </Modal.Title>
+                {" "}
+                📊 Budget Overview
+              </h6>
               <button
                 type="button"
                 className="btn-close p-1 rounded-circle"
@@ -219,7 +225,7 @@ const BudgetOverviewHOD = () => {
                 <X size={16} />
               </button>
             </div>
-            <p className="text-muted mb-0 d-flex align-items-center">
+            <p className="text-muted mb-0 d-flex align-items-center small">
               <Info size={16} className="me-2" />
               Monitor department budgets and spending patterns
             </p>
@@ -269,9 +275,7 @@ const BudgetOverviewHOD = () => {
                     <th className="py-3 fw-semibold text-dark">
                       <BarChart2 size={14} className="me-1" /> Utilization
                     </th>
-                    <th className="pe-4 py-3 fw-semibold text-dark">
-                      <Calendar size={14} className="me-1" /> Date
-                    </th>
+                    <th className="pe-4 py-3 fw-semibold text-dark">Period</th>
                     <th className="pe-4 py-3 fw-semibold text-dark">Action</th>
                   </tr>
                 </thead>
@@ -291,7 +295,7 @@ const BudgetOverviewHOD = () => {
 
                     return (
                       <tr key={b.id} className="border-bottom">
-                        <td className="ps-4 py-3">
+                        <td className="ps-4 py-3 small">
                           <Tag size={12} className="me-1" />
                           {b.id}
                         </td>
@@ -300,7 +304,7 @@ const BudgetOverviewHOD = () => {
                             {b.expenseCategory?.name || "N/A"}
                           </span>
                         </td>
-                        <td className="py-3">
+                        <td className="py-3 small">
                           <span className="d-inline-flex align-items-center">
                             {b.department?.name ||
                               `Department ${b.departmentId}`}
@@ -312,7 +316,7 @@ const BudgetOverviewHOD = () => {
                             {b.region?.name || `Region ${b.regionId}`}
                           </span>
                         </td>
-                        <td className="py-3 fw-semibold">
+                        <td className="py-3 fw-semibold small">
                           <span className="d-inline-flex align-items-center">
                             {b.originalBudget.toLocaleString()}
                           </span>
@@ -326,7 +330,7 @@ const BudgetOverviewHOD = () => {
                               : "text-success"
                           }`}
                         >
-                          <div className="d-flex align-items-center">
+                          <div className="d-flex align-items-center small">
                             {isCritical ? (
                               <>
                                 <AlertTriangle size={16} className="me-1" />
@@ -395,14 +399,14 @@ const BudgetOverviewHOD = () => {
                           </div>
                         </td>
                         <td className="pe-4 py-3">
-                          {new Date(b.monthYear).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
+                          {new Date(b.monthYear).toLocaleDateString("en-US", {
+                            month: "long",
                           })}
                         </td>
                         <td className="pe-4 py-3">
-                          <button 
-                            className="btn btn-sm btn-outline-primary"
+                          <Button
+                            size="sm"
+                            variant="primary"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleRequestClick(b);
@@ -410,7 +414,7 @@ const BudgetOverviewHOD = () => {
                             disabled={isSubmitting}
                           >
                             Request Addition
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                     );
@@ -426,7 +430,7 @@ const BudgetOverviewHOD = () => {
             <span className="text-muted small">
               Showing {budgets.length} budget{budgets.length !== 1 ? "s" : ""}
             </span>
-            <Button size="sm" onClick={handleClose}>
+            <Button size="sm" variant="outline-secondary" onClick={handleClose}>
               Close budgets
             </Button>
           </div>
@@ -439,88 +443,142 @@ const BudgetOverviewHOD = () => {
         onHide={handleCloseRequestModal}
         size="xl"
         aria-labelledby="budget-request-modal-title"
+        className="budget-request-modal"
       >
-        <Modal.Header closeButton className="border-0 pb-0">
-          <Modal.Title id="budget-request-modal-title" className="fw-bold">
-            Request Budget Addition
-          </Modal.Title>
+        <Modal.Header className="border-0 pb-0 position-relative">
+          <div className="w-100">
+            <div className="d-flex align-items-center justify-content-between mb-3">
+              <h6
+                id="budget-request-modal-title"
+                className="fw-bold text-dark fs-5 d-flex align-items-center"
+              >
+                <TrendingUp size={24} className="me-2" /> Request Budget
+                Addition
+              </h6>
+              <Button
+                variant="outline-secondary"
+                className="btn-close p-1 rounded-circle"
+                onClick={handleCloseRequestModal}
+                style={{
+                  background: "rgba(0,0,0,0.1)",
+                  width: "28px",
+                  height: "28px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <X size={16} />
+              </Button>
+            </div>
+            <p className="text-muted mb-0 d-flex align-items-center small">
+              <Info size={16} className="me-2" />
+              Request additional budget allocation for your department
+            </p>
+          </div>
         </Modal.Header>
-        <Modal.Body>
+
+        <Modal.Body className="pt-4">
           {currentBudget && (
             <div>
-              <div className="mb-4">
-                <p className="mb-2">
-                  <strong>Category:</strong> {currentBudget.expenseCategory?.name || 'N/A'}
-                </p>
-                <p className="mb-2">
-                  <strong>Department:</strong> {currentBudget.department?.name || 'N/A'}
-                </p>
-                <p className="mb-2">
-                  <strong>Current Remaining:</strong> {currentBudget.remainingBudget.toLocaleString()}
-                </p>
+              <div className="mb-4 p-3 bg-secondary bg-opacity-10 rounded-3">
+                <h6 className="fw-semibold mb-3">Budget Details</h6>
+                <div className="row g-3">
+                  <div className="col-md-4">
+                    <p className="mb-1 text-muted small">Category</p>
+                    <p className="mb-0 fw-medium">
+                      {currentBudget.expenseCategory?.name || "N/A"}
+                    </p>
+                  </div>
+                  <div className="col-md-4">
+                    <p className="mb-1 text-muted small">Department</p>
+                    <p className="mb-0 fw-medium">
+                      {currentBudget.department?.name || "N/A"}
+                    </p>
+                  </div>
+                  <div className="col-md-4">
+                    <p className="mb-1 text-muted small">Current Remaining</p>
+                    <p className="mb-0 fw-medium text-primary">
+                      ${currentBudget.remainingBudget.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
               </div>
-              
-              <div className="mb-3">
-                <label htmlFor="amount" className="form-label fw-medium">
+
+              <div className="mb-4 p-3 border shadow-sm rounded-3">
+                <label htmlFor="amount" className="form-label fw-bold">
                   Amount to Request
                 </label>
                 <div className="input-group">
-                  <span className="input-group-text">$</span>
+                  <span className="input-group-text bg-primary text-white">
+                    <span className="text-white">$</span>
+                  </span>
                   <input
                     type="number"
                     className="form-control"
                     id="amount"
                     value={requestAmount}
                     onChange={(e) => setRequestAmount(e.target.value)}
-                    placeholder="Enter amount"
                     min="1"
                     step="0.01"
                     disabled={isSubmitting}
+                    style={{ borderLeft: 0 }}
                   />
                 </div>
-              </div>
-              
-              <div className="mb-3">
-                <label htmlFor="reason" className="form-label fw-medium">
-                  Reason for Request (Optional)
-                </label>
-                <textarea
-                  className="form-control"
-                  id="reason"
-                  rows={3}
-                  value={requestReason}
-                  onChange={(e) => setRequestReason(e.target.value)}
-                  placeholder="Please provide a reason for this budget increase request"
-                  disabled={isSubmitting}
-                />
+                <div className="form-text">
+                  Enter the additional amount you're requesting
+                </div>
+                <div className="mb-4 mt-4">
+                  <label htmlFor="reason" className="form-label fw-bold">
+                    Reason for Request{" "}
+                    <span className="text-muted">(Optional)</span>
+                  </label>
+                  <textarea
+                    className="form-control"
+                    id="reason"
+                    rows={4}
+                    value={requestReason}
+                    onChange={(e) => setRequestReason(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                  <div className="form-text">
+                    Help us understand why you need this additional budget
+                  </div>
+                </div>
               </div>
             </div>
           )}
         </Modal.Body>
         <Modal.Footer className="border-0 pt-0">
-          <button
-            type="button"
-            className="btn btn-outline-secondary"
-            onClick={handleCloseRequestModal}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={handleSubmitRequest}
-            disabled={isSubmitting || !requestAmount}
-          >
-            {isSubmitting ? (
-              <>
-                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                Submitting...
-              </>
-            ) : (
-              'Submit Request'
-            )}
-          </button>
+          <div className="d-flex justify-content-end w-100 gap-2">
+            <Button
+              size="sm"
+              variant="outline-secondary"
+              onClick={handleCloseRequestModal}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={handleSubmitRequest}
+              disabled={isSubmitting || !requestAmount}
+            >
+              {isSubmitting ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  Submitting...
+                </>
+              ) : (
+                "Submit Request"
+              )}
+            </Button>
+          </div>
         </Modal.Footer>
       </Modal>
 

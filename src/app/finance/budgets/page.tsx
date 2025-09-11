@@ -232,15 +232,7 @@ export default function BudgetsPage() {
         <Row className="mb-4 g-3">
           {/* Total Budgets Card */}
           <Col md={3}>
-            <Card
-              className="border-0 rounded-4 h-100 overflow-hidden"
-              style={{
-                background: "linear-gradient(135deg, #f6f8ff 0%, #f1f4ff 100%)",
-                borderLeft: "4px solid #4361ee",
-                transition: "transform 0.3s",
-                cursor: "pointer",
-              }}
-            >
+            <Card className="border-0 border-start border-3 bg-primary bg-opacity-10 border-primary rounded-4 overflow-hidden">
               <Card.Body className="p-4">
                 <div className="d-flex justify-content-between align-items-center">
                   <div>
@@ -250,15 +242,15 @@ export default function BudgetsPage() {
                     >
                       Total Budgets
                     </h6>
-                    <h3 className="fw-bold mb-0" style={{ color: "#1a237e" }}>
+                    <h6 className="fw-bold mb-0" style={{ color: "#1a237e" }}>
                       {budgets.length}
-                    </h3>
+                    </h6>
                   </div>
                   <div
-                    className="bg-primary bg-opacity-10 p-3 rounded-circle"
-                    style={{ width: "60px", height: "60px" }}
+                    className="bg-primary bg-opacity-10 p-1 rounded-4 text-center border-primary border-bottom"
+                    style={{ width: "38px", height: "38px" }}
                   >
-                    <Layers size={24} className="text-primary" />
+                    <Layers size={15} className="text-primary" />
                   </div>
                 </div>
               </Card.Body>
@@ -267,15 +259,7 @@ export default function BudgetsPage() {
 
           {/* Total Balance Card */}
           <Col md={3}>
-            <Card
-              className="border-0 rounded-4 h-100 overflow-hidden"
-              style={{
-                background: "linear-gradient(135deg, #e6f7ee 0%, #d1f2e5 100%)",
-                borderLeft: "4px solid #10b581",
-                transition: "transform 0.3s",
-                cursor: "pointer",
-              }}
-            >
+            <Card className="border-0 border-start border-3 bg-success bg-opacity-10 border-success rounded-4 overflow-hidden">
               <Card.Body className="p-4">
                 <div className="d-flex justify-content-between align-items-center">
                   <div>
@@ -285,15 +269,15 @@ export default function BudgetsPage() {
                     >
                       Total Balance
                     </h6>
-                    <h3 className="fw-bold mb-0" style={{ color: "#0d5c42" }}>
-                      ${totalBalance.toLocaleString()}
-                    </h3>
+                    <h6 className="fw-bold mb-0" style={{ color: "#0d5c42" }}>
+                      {totalBalance.toLocaleString()}
+                    </h6>
                   </div>
                   <div
-                    className="bg-success bg-opacity-10 p-3 rounded-circle"
-                    style={{ width: "60px", height: "60px" }}
+                    className="bg-success bg-opacity-10 p-1 rounded-4 text-center border-success border-bottom"
+                    style={{ width: "38px", height: "38px" }}
                   >
-                    <Wallet size={24} className="text-success" />
+                    <Wallet size={15} className="text-success" />
                   </div>
                 </div>
               </Card.Body>
@@ -301,15 +285,7 @@ export default function BudgetsPage() {
           </Col>
           {/* Departments Card */}
           <Col md={3}>
-            <Card
-              className="border-0 rounded-4 h-100 overflow-hidden"
-              style={{
-                background: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)",
-                borderLeft: "4px solid #4f46e5",
-                transition: "transform 0.3s",
-                cursor: "pointer",
-              }}
-            >
+            <Card className="border-0 rounded-4 overflow-hidden bg-info bg-opacity-10 border-3 border-info border-start">
               <Card.Body className="p-4">
                 <div className="d-flex justify-content-between align-items-center">
                   <div>
@@ -319,15 +295,15 @@ export default function BudgetsPage() {
                     >
                       Departments
                     </h6>
-                    <h3 className="fw-bold mb-0" style={{ color: "#3730a3" }}>
+                    <h6 className="fw-bold mb-0" style={{ color: "#3730a3" }}>
                       {new Set(budgets.map((b) => b.departmentId)).size}
-                    </h3>
+                    </h6>
                   </div>
                   <div
-                    className="bg-indigo-100 p-3 rounded-circle"
-                    style={{ width: "60px", height: "60px" }}
+                    className="bg-info bg-opacity-10 p-1 rounded-4 text-center border-info border-bottom"
+                    style={{ width: "38px", height: "38px" }}
                   >
-                    <Building size={24} className="text-indigo-600" />
+                    <Building size={15} className="text-info" />
                   </div>
                 </div>
               </Card.Body>
@@ -337,7 +313,7 @@ export default function BudgetsPage() {
           {/* Active Budgets Card */}
           <Col md={3}>
             <Card
-              className="border-0 rounded-4 h-100 overflow-hidden"
+              className="border-0 rounded-4 overflow-hidden bg-warning bg-opacity-10 border-3 border-warning border-start"
               style={{
                 background: "linear-gradient(135deg, #fef6e6 0%, #fff1db 100%)",
                 borderLeft: "4px solid #f59e0b",
@@ -354,15 +330,15 @@ export default function BudgetsPage() {
                     >
                       Active Budgets
                     </h6>
-                    <h3 className="fw-bold mb-0" style={{ color: "#92400e" }}>
+                    <h6 className="fw-bold mb-0" style={{ color: "#92400e" }}>
                       {budgets.filter((b) => b.status === "Active").length}
-                    </h3>
+                    </h6>
                   </div>
                   <div
-                    className="bg-amber-100 p-3 rounded-circle"
-                    style={{ width: "60px", height: "60px" }}
+                    className="bg-warning bg-opacity-10 p-1 rounded-4 text-center border-warning border-bottom"
+                    style={{ width: "38px", height: "38px" }}
                   >
-                    <CheckCircle size={24} className="text-amber-600" />
+                    <CheckCircle size={15} className="text-warning" />
                   </div>
                 </div>
               </Card.Body>
@@ -565,19 +541,23 @@ export default function BudgetsPage() {
                             </span>
                           </td>
                           <td>
-                            <Badge 
-                              bg={budget.addedVia === 'manual' ? 'info' : 'secondary'} 
+                            <Badge
+                              bg={
+                                budget.addedVia === "manual"
+                                  ? "info"
+                                  : "secondary"
+                              }
                               className="text-capitalize"
                             >
-                              {budget.addedVia || 'N/A'}
+                              {budget.addedVia || "N/A"}
                             </Badge>
                           </td>
                           <td>
-                            <Badge 
-                              bg={budget.amountAdd ? 'danger' : 'secondary'} 
+                            <Badge
+                              bg={budget.amountAdd ? "danger" : "secondary"}
                               className="text-light"
                             >
-                              {budget.amountAdd ? 'Yes' : 'No'}
+                              {budget.amountAdd ? "Yes" : "No"}
                             </Badge>
                           </td>
                           <td className="text-end pe-4">

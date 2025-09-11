@@ -162,7 +162,7 @@ export default function BudgetModalPage({
   return (
     <div>
       {/* Dashboard Action Header */}
-      <Card className="shadow-sm border-0 rounded-4 mb-4">
+      <Card className=" border-0 rounded-4 mb-4">
         <Card.Body className="d-flex flex-column d-wrap flex-md-row justify-content-between align-items-center p-4">
           <div>
             <h5 className="fw-bold mb-1">Budgets Management</h5>
@@ -228,7 +228,7 @@ export default function BudgetModalPage({
                           Department
                         </Form.Label>
                         <Form.Select
-                          className="rounded-3 shadow-sm"
+                          className="rounded-3 "
                           required
                           value={departmentId}
                           onChange={(e) => setDepartmentId(e.target.value)}
@@ -254,7 +254,7 @@ export default function BudgetModalPage({
                           <Tags className="me-1 text-info" /> Category
                         </Form.Label>
                         <Form.Select
-                          className="rounded-3 shadow-sm"
+                          className="rounded-3 "
                           required
                           value={categoryId}
                           onChange={(e) => setCategoryId(e.target.value)}
@@ -280,12 +280,12 @@ export default function BudgetModalPage({
                           <CashStack className="me-1 text-success" /> Amount
                         </Form.Label>
                         <InputGroup>
-                          <InputGroup.Text className="rounded-start-3 shadow-sm">
+                          <InputGroup.Text className="rounded-start-3 ">
                             $
                           </InputGroup.Text>
                           <Form.Control
                             type="number"
-                            className="rounded-end-3 shadow-sm"
+                            className="rounded-end-3 "
                             min="0"
                             step="0.01"
                             required
@@ -310,7 +310,7 @@ export default function BudgetModalPage({
                     <Form.Control
                       as="textarea"
                       rows={3}
-                      className="rounded-3 shadow-sm"
+                      className="rounded-3 "
                       required
                       value={budgetComments}
                       onChange={(e) => setBudgetComments(e.target.value)}
@@ -338,7 +338,7 @@ export default function BudgetModalPage({
                   type="submit"
                   variant="primary"
                   onClick={handleSubmit}
-                  className="rounded-2 px-4 shadow-sm"
+                  className="rounded-2 px-4 "
                   style={{ backgroundColor: "#4361ee", border: "none" }}
                 >
                   Create Budget
@@ -349,13 +349,13 @@ export default function BudgetModalPage({
 
           {modalType === "upload" && (
             <Form onSubmit={handleSubmitExcel}>
-              <div className="mb-3 border p-4 rounded-4 shadow-sm">
+              <div className="mb-3 border p-4 rounded-4 ">
                 <Form.Group className="mb-3">
                   <Form.Label className="fw-semibold small text-muted">
                     <Building className="me-1 text-secondary" /> Department
                   </Form.Label>
                   <Form.Select
-                    className="rounded-3 shadow-sm"
+                    className="rounded-3 "
                     required
                     value={departmentId}
                     onChange={(e) => setDepartmentId(e.target.value)}
@@ -392,7 +392,7 @@ export default function BudgetModalPage({
                       as="label"
                       htmlFor="file-upload"
                       variant="outline-primary"
-                      className="rounded-pill shadow-sm"
+                      className="rounded-pill "
                     >
                       Browse Files
                     </Button>
@@ -413,7 +413,7 @@ export default function BudgetModalPage({
                   <Form.Control
                     as="textarea"
                     rows={3}
-                    className="rounded-3 shadow-sm"
+                    className="rounded-3 "
                     required
                     value={budgetComments}
                     onChange={(e) => setBudgetComments(e.target.value)}
@@ -438,7 +438,7 @@ export default function BudgetModalPage({
                 <Button
                   type="submit"
                   variant="primary"
-                  className="rounded-2 px-4 shadow-sm"
+                  className="rounded-2 px-4 "
                   style={{ backgroundColor: "#4361ee", border: "none" }}
                 >
                   Upload Budget
@@ -449,14 +449,14 @@ export default function BudgetModalPage({
 
           {modalType === "move" && (
             <Form>
-              <Card className="border shadow-sm mb-3 rounded-4">
+              <Card className="border  mb-3 rounded-4">
                 <Card.Body>
                   <Form.Group className="mb-3">
                     <Form.Label className="fw-semibold small text-muted">
                       <Building className="me-1 text-secondary" /> Department
                     </Form.Label>
                     <Form.Select
-                      className="rounded-3 shadow-sm"
+                      className="rounded-3 "
                       required
                       value={departmentId}
                       onChange={(e) => setDepartmentId(e.target.value)}
@@ -480,7 +480,7 @@ export default function BudgetModalPage({
                       <Tags className="me-1 text-info" /> Category
                     </Form.Label>
                     <Form.Select
-                      className="rounded-3 shadow-sm"
+                      className="rounded-3 "
                       required
                       value={categoryId}
                       onChange={(e) => setCategoryId(e.target.value)}
@@ -505,7 +505,7 @@ export default function BudgetModalPage({
                     </Form.Label>
                     <Form.Control
                       type="number"
-                      className="rounded-3  shadow-sm"
+                      className="rounded-3  "
                       required
                       value={amountToMove}
                       onChange={(e) => setAmountToMove(e.target.value)}
@@ -521,7 +521,7 @@ export default function BudgetModalPage({
                     <Form.Control
                       as="textarea"
                       rows={3}
-                      className="rounded-3 shadow-sm"
+                      className="rounded-3 "
                       required
                       value={budgetComments}
                       onChange={(e) => setBudgetComments(e.target.value)}

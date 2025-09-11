@@ -118,7 +118,7 @@ const BudgetOverview = () => {
       {/* ===== Activator Card ===== */}
       <Col md={4} onClick={handleOpen}>
         <Card
-          className="h-100 shadow-sm border-0 transition-all border-bottom border"
+          className="shadow-sm border-0 transition-all border-bottom border"
           style={{
             background: "white",
             cursor: "pointer",
@@ -374,7 +374,7 @@ const BudgetOverview = () => {
             <span className="text-muted small">
               Showing {budgets.length} budget{budgets.length !== 1 ? "s" : ""}
             </span>
-            <Button size="sm" onClick={handleClose}>
+            <Button variant="secondary" size="sm" onClick={handleClose}>
               Close budgets
             </Button>
           </div>

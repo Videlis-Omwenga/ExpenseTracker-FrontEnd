@@ -600,81 +600,78 @@ export default function FinanceDashboard() {
         {/* Action Cards */}
         <Row className="mb-4 g-4">
           <Col md={4}>
-            <Card
-              className="h-100 shadow-sm border-0 transition-all border-bottom border"
+            <Button
+              variant="light"
+              className="w-100 text-start shadow-sm border-0 p-4 d-flex align-items-center"
               style={{
+                borderRadius: "0.75rem",
                 background: "white",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
-                borderRadius: "0.75rem",
               }}
               onClick={() => handleNavigation("create-expense")}
             >
-              <Card.Body className="p-4">
-                <div className="d-flex align-items-center">
-                  <div className="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
-                    <ArrowUpCircle size={24} className="text-primary" />
-                  </div>
-                  <div>
-                    <h6 className="mb-1 fw-semibold text-dark">
-                      Create Expense
-                    </h6>
-                    <p className="text-muted small mb-0">
-                      Add new expense records
-                    </p>
-                  </div>
-                  <div className="ms-auto">
-                    <div className="bg-primary bg-opacity-10 p-2 rounded-circle">
-                      <ArrowUpCircle size={16} className="text-primary" />
-                    </div>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
+              {/* Left Icon */}
+              <div className="bg-primary bg-opacity-10 p-3 rounded-3 me-3 d-flex align-items-center justify-content-center">
+                <ArrowUpCircle size={24} className="text-primary" />
+              </div>
+
+              {/* Text */}
+              <div>
+                <h6 className="mb-1 fw-semibold text-dark">Create Expense</h6>
+                <p className="text-muted small mb-0">Add new expense records</p>
+              </div>
+
+              {/* Right Icon */}
+              <div className="ms-auto bg-primary bg-opacity-10 p-2 rounded-circle d-flex align-items-center justify-content-center">
+                <ArrowUpCircle size={16} className="text-primary" />
+              </div>
+            </Button>
           </Col>
-          <BudgetOverview />
+
           <Col md={4}>
-            <Card
-              className="h-100 shadow-sm border-0 transition-all border-bottom border"
+            <Button
+              variant="light"
+              className="w-100 text-start shadow-sm border-0 p-4 d-flex align-items-center"
               style={{
+                borderRadius: "0.75rem",
                 background: "white",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
-                borderRadius: "0.75rem",
               }}
+              onClick={() => handleNavigation("generate-report")}
             >
-              <Card.Body className="p-4">
-                <div className="d-flex align-items-center">
-                  <div className="bg-success bg-opacity-10 p-3 rounded-3 me-3">
-                    <FileText size={24} className="text-success" />
-                  </div>
-                  <div>
-                    <h6 className="mb-1 fw-semibold text-dark">
-                      Generate Report
-                    </h6>
-                    <p className="text-muted small mb-0">
-                      Export financial data
-                    </p>
-                  </div>
-                  <div className="ms-auto">
-                    <div className="bg-success bg-opacity-10 p-2 rounded-circle">
-                      <FileText size={16} className="text-success" />
-                    </div>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
+              {/* Left Icon */}
+              <div className="bg-success bg-opacity-10 p-3 rounded-3 me-3 d-flex align-items-center justify-content-center">
+                <FileText size={24} className="text-success" />
+              </div>
+
+              {/* Text */}
+              <div>
+                <h6 className="mb-1 fw-semibold text-dark">Generate Report</h6>
+                <p className="text-muted small mb-0">Export financial data</p>
+              </div>
+
+              {/* Right Icon */}
+              <div className="ms-auto bg-success bg-opacity-10 p-2 rounded-circle d-flex align-items-center justify-content-center">
+                <FileText size={16} className="text-success" />
+              </div>
+            </Button>
           </Col>
+
+          <BudgetOverview />
         </Row>
 
         {/* Expenses Table */}
-        <Container fluid className="mt-5">
+        <Container fluid className="mt-2">
           <Card className="mb-4">
             <Card.Header className="bg-white border-bottom d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 p-3">
               <div className="mb-2 mb-md-0">
                 <h6 className="mb-0 fw-bold text-secondary">Expenses</h6>
                 <small className="text-muted">
-                  Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredExpenses.length)} of {filteredExpenses.length} expenses
+                  Showing {indexOfFirstItem + 1}-
+                  {Math.min(indexOfLastItem, filteredExpenses.length)} of{" "}
+                  {filteredExpenses.length} expenses
                 </small>
               </div>
               <div className="d-flex align-items-center w-100 w-md-auto mt-2 mt-md-0">
@@ -934,45 +931,56 @@ export default function FinanceDashboard() {
                           })}
                         </tbody>
                       </Table>
-                      
+
                       {/* Pagination Controls */}
                       {totalPages > 1 && (
                         <div className="d-flex justify-content-between align-items-center px-3 py-3 border-top">
                           <div className="text-muted small">
-                            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredExpenses.length)} of {filteredExpenses.length} expenses
+                            Showing {indexOfFirstItem + 1}-
+                            {Math.min(indexOfLastItem, filteredExpenses.length)}{" "}
+                            of {filteredExpenses.length} expenses
                           </div>
                           <div>
                             <nav>
                               <ul className="pagination pagination-sm mb-0">
-                                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                <li
+                                  className={`page-item ${
+                                    currentPage === 1 ? "disabled" : ""
+                                  }`}
+                                >
                                   <button
                                     className="page-link"
-                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    onClick={() =>
+                                      handlePageChange(currentPage - 1)
+                                    }
                                     disabled={currentPage === 1}
                                   >
                                     &laquo; Previous
                                   </button>
                                 </li>
-                                
+
                                 {/* First page */}
                                 {currentPage > 3 && (
                                   <li className="page-item">
-                                    <button className="page-link" onClick={() => handlePageChange(1)}>
+                                    <button
+                                      className="page-link"
+                                      onClick={() => handlePageChange(1)}
+                                    >
                                       1
                                     </button>
                                   </li>
                                 )}
-                                
+
                                 {/* Ellipsis if needed */}
                                 {currentPage > 4 && (
                                   <li className="page-item disabled">
                                     <span className="page-link">...</span>
                                   </li>
                                 )}
-                                
+
                                 {/* Middle pages */}
                                 {Array.from(
-                                  { length: Math.min(3, totalPages) }, 
+                                  { length: Math.min(3, totalPages) },
                                   (_, i) => {
                                     let pageNum;
                                     if (currentPage <= 2) {
@@ -982,16 +990,22 @@ export default function FinanceDashboard() {
                                     } else {
                                       pageNum = currentPage - 1 + i;
                                     }
-                                    
+
                                     if (pageNum > 0 && pageNum <= totalPages) {
                                       return (
-                                        <li 
-                                          key={pageNum} 
-                                          className={`page-item ${currentPage === pageNum ? 'active' : ''}`}
+                                        <li
+                                          key={pageNum}
+                                          className={`page-item ${
+                                            currentPage === pageNum
+                                              ? "active"
+                                              : ""
+                                          }`}
                                         >
-                                          <button 
-                                            className="page-link" 
-                                            onClick={() => handlePageChange(pageNum)}
+                                          <button
+                                            className="page-link"
+                                            onClick={() =>
+                                              handlePageChange(pageNum)
+                                            }
                                           >
                                             {pageNum}
                                           </button>
@@ -1001,30 +1015,40 @@ export default function FinanceDashboard() {
                                     return null;
                                   }
                                 )}
-                                
+
                                 {/* Ellipsis if needed */}
-                                {currentPage < totalPages - 2 && totalPages > 3 && (
-                                  <li className="page-item disabled">
-                                    <span className="page-link">...</span>
-                                  </li>
-                                )}
-                                
+                                {currentPage < totalPages - 2 &&
+                                  totalPages > 3 && (
+                                    <li className="page-item disabled">
+                                      <span className="page-link">...</span>
+                                    </li>
+                                  )}
+
                                 {/* Last page if not already shown */}
-                                {currentPage < totalPages - 1 && totalPages > 1 && (
-                                  <li className="page-item">
-                                    <button 
-                                      className="page-link" 
-                                      onClick={() => handlePageChange(totalPages)}
-                                    >
-                                      {totalPages}
-                                    </button>
-                                  </li>
-                                )}
-                                
-                                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                {currentPage < totalPages - 1 &&
+                                  totalPages > 1 && (
+                                    <li className="page-item">
+                                      <button
+                                        className="page-link"
+                                        onClick={() =>
+                                          handlePageChange(totalPages)
+                                        }
+                                      >
+                                        {totalPages}
+                                      </button>
+                                    </li>
+                                  )}
+
+                                <li
+                                  className={`page-item ${
+                                    currentPage === totalPages ? "disabled" : ""
+                                  }`}
+                                >
                                   <button
                                     className="page-link"
-                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    onClick={() =>
+                                      handlePageChange(currentPage + 1)
+                                    }
                                     disabled={currentPage === totalPages}
                                   >
                                     Next &raquo;
