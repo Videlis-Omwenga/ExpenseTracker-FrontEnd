@@ -32,6 +32,7 @@ import TopNavbar from "@/app/components/Navbar";
 import AuthProvider from "@/app/authPages/tokenData";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 import PageLoader from "@/app/components/PageLoader";
+import BudgetOverviewHOD from "../budgets/page";
 
 type ApprovalStatus = "NOT_STARTED" | "PENDING" | "APPROVED" | "REJECTED";
 type ExpenseStatus = "PENDING" | "APPROVED" | "REJECTED" | "PAID";
@@ -420,7 +421,7 @@ export default function ExpenseApprovalPage() {
         </Container>
 
         {/* Stats */}
-        <Row className="g-4 mb-4">
+        <Row className="g-4">
           <Col md={3}>
             <Card className="stat-card shadow-sm border-0 overflow-hidden bg-secondary bg-opacity-10 border-start border-secondary border-3">
               <Card.Body className="p-4">
@@ -434,9 +435,6 @@ export default function ExpenseApprovalPage() {
                     </div>
                     <h6 className="mb-0 fw-bold">{pendingCount}</h6>
                   </div>
-                </div>
-                <div className="card-footer bg-transparent border-top-0 py-2">
-                  <small className="text-muted">Awaiting your review</small>
                 </div>
               </Card.Body>
             </Card>
@@ -467,9 +465,6 @@ export default function ExpenseApprovalPage() {
                     </h6>
                   </div>
                 </div>
-                <div className="card-footer bg-transparent border-top-0 py-2">
-                  <small className="text-muted">Total expenses amount</small>
-                </div>
               </Card.Body>
             </Card>
           </Col>
@@ -488,31 +483,10 @@ export default function ExpenseApprovalPage() {
                     <h6 className="mb-0 fw-bold">{expenses.length}</h6>
                   </div>
                 </div>
-                <div className="card-footer bg-transparent border-top-0 py-2">
-                  <small className="text-muted">Expenses in current view</small>
-                </div>
               </Card.Body>
             </Card>
           </Col>
-
-          <Col md={3}>
-            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-warning bg-opacity-10 border-start border-warning border-3">
-              <Card.Body className="p-4">
-                <div className="d-flex align-items-center">
-                  <div className="icon-container bg-warning bg-opacity-10 p-3 rounded-3 me-3">
-                    <FileText size={24} className="text-warning" />
-                  </div>
-                  <div>
-                    <div className="text-muted small fw-medium">Budgets</div>
-                    <h6 className="mb-0 fw-bold">{expenses.length}</h6>
-                  </div>
-                </div>
-                <div className="card-footer bg-transparent border-top-0 py-2">
-                  <small className="text-muted">Active budgets</small>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
+          <BudgetOverviewHOD />
         </Row>
         <br />
         <br />

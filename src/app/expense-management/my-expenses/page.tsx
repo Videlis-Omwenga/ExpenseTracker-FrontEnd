@@ -264,6 +264,8 @@ export default function FinanceDashboard() {
   );
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
 
   const router = useRouter();
   const handleNavigation = (path: string) => router.push(path);
@@ -448,6 +450,22 @@ export default function FinanceDashboard() {
       );
     });
   }, [expenses, searchQuery]);
+
+  // Pagination logic
+  const totalPages = Math.max(1, Math.ceil(filteredExpenses.length / itemsPerPage));
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredExpenses.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Reset to first page when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   if (loading) {
     return <PageLoader />;
@@ -652,10 +670,15 @@ export default function FinanceDashboard() {
         {/* Expenses Table */}
         <Container fluid className="mt-5">
           <Card className="mb-4">
-            <Card.Header className="bg-white border-bottom d-flex justify-content-between align-items-center mb-5">
-              <h6 className="mb-0 fw-bold text-secondary">Expenses table</h6>
-              <div className="d-flex">
-                <div className="search-box me-2 d-flex d-wrap">
+            <Card.Header className="bg-white border-bottom d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 p-3">
+              <div className="mb-2 mb-md-0">
+                <h6 className="mb-0 fw-bold text-secondary">Expenses</h6>
+                <small className="text-muted">
+                  Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredExpenses.length)} of {filteredExpenses.length} expenses
+                </small>
+              </div>
+              <div className="d-flex align-items-center w-100 w-md-auto mt-2 mt-md-0">
+                <div className="search-box me-2 flex-grow-1">
                   <Form.Control
                     type="search"
                     placeholder="Search expenses..."
@@ -664,6 +687,20 @@ export default function FinanceDashboard() {
                     className="ps-4"
                   />
                 </div>
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className="d-flex align-items-center"
+                >
+                  {refreshing ? (
+                    <Spinner animation="border" size="sm" className="me-1" />
+                  ) : (
+                    <ArrowRepeat size={14} className="me-1" />
+                  )}
+                  Refresh
+                </Button>
               </div>
             </Card.Header>
 
@@ -700,7 +737,7 @@ export default function FinanceDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {filteredExpenses.map((expense) => {
+                          {currentItems.map((expense) => {
                             const badge = statusBadge(expense.status);
                             const completed = countCompletedSteps(
                               expense.expenseSteps
@@ -897,6 +934,107 @@ export default function FinanceDashboard() {
                           })}
                         </tbody>
                       </Table>
+                      
+                      {/* Pagination Controls */}
+                      {totalPages > 1 && (
+                        <div className="d-flex justify-content-between align-items-center px-3 py-3 border-top">
+                          <div className="text-muted small">
+                            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredExpenses.length)} of {filteredExpenses.length} expenses
+                          </div>
+                          <div>
+                            <nav>
+                              <ul className="pagination pagination-sm mb-0">
+                                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                  <button
+                                    className="page-link"
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                  >
+                                    &laquo; Previous
+                                  </button>
+                                </li>
+                                
+                                {/* First page */}
+                                {currentPage > 3 && (
+                                  <li className="page-item">
+                                    <button className="page-link" onClick={() => handlePageChange(1)}>
+                                      1
+                                    </button>
+                                  </li>
+                                )}
+                                
+                                {/* Ellipsis if needed */}
+                                {currentPage > 4 && (
+                                  <li className="page-item disabled">
+                                    <span className="page-link">...</span>
+                                  </li>
+                                )}
+                                
+                                {/* Middle pages */}
+                                {Array.from(
+                                  { length: Math.min(3, totalPages) }, 
+                                  (_, i) => {
+                                    let pageNum;
+                                    if (currentPage <= 2) {
+                                      pageNum = i + 1;
+                                    } else if (currentPage >= totalPages - 1) {
+                                      pageNum = totalPages - 2 + i;
+                                    } else {
+                                      pageNum = currentPage - 1 + i;
+                                    }
+                                    
+                                    if (pageNum > 0 && pageNum <= totalPages) {
+                                      return (
+                                        <li 
+                                          key={pageNum} 
+                                          className={`page-item ${currentPage === pageNum ? 'active' : ''}`}
+                                        >
+                                          <button 
+                                            className="page-link" 
+                                            onClick={() => handlePageChange(pageNum)}
+                                          >
+                                            {pageNum}
+                                          </button>
+                                        </li>
+                                      );
+                                    }
+                                    return null;
+                                  }
+                                )}
+                                
+                                {/* Ellipsis if needed */}
+                                {currentPage < totalPages - 2 && totalPages > 3 && (
+                                  <li className="page-item disabled">
+                                    <span className="page-link">...</span>
+                                  </li>
+                                )}
+                                
+                                {/* Last page if not already shown */}
+                                {currentPage < totalPages - 1 && totalPages > 1 && (
+                                  <li className="page-item">
+                                    <button 
+                                      className="page-link" 
+                                      onClick={() => handlePageChange(totalPages)}
+                                    >
+                                      {totalPages}
+                                    </button>
+                                  </li>
+                                )}
+                                
+                                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                  <button
+                                    className="page-link"
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                  >
+                                    Next &raquo;
+                                  </button>
+                                </li>
+                              </ul>
+                            </nav>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {filteredExpenses.length === 0 && (

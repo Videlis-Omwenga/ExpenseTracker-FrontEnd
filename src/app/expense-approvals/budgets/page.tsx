@@ -6,13 +6,13 @@ import {
   BarChart2,
   X,
   TrendingUp,
-  Building,
   Info,
   Tag,
   MapPin,
   Calendar,
   AlertTriangle,
   CheckCircle,
+  FileText,
 } from "lucide-react";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 import { toast } from "react-toastify";
@@ -51,8 +51,13 @@ interface ExpenseResponse {
   id: number;
 }
 
-const BudgetOverview = () => {
+const BudgetOverviewHOD = () => {
   const [show, setShow] = useState(false);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
+  const [requestAmount, setRequestAmount] = useState('');
+  const [requestReason, setRequestReason] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -62,6 +67,54 @@ const BudgetOverview = () => {
   };
 
   const handleClose = () => setShow(false);
+
+  const handleRequestClick = (budget: Budget) => {
+    // Close the current modal first
+    setShow(false);
+    
+    // Set a small timeout to allow the modal to close before opening the new one
+    setTimeout(() => {
+      setCurrentBudget(budget);
+      setRequestAmount('');
+      setRequestReason('');
+      setShowRequestModal(true);
+    }, 300); // 300ms should be enough for the modal close animation
+  };
+
+  const handleCloseRequestModal = () => {
+    // Close the request modal
+    setShowRequestModal(false);
+    setCurrentBudget(null);
+    
+    // Reopen the budgets modal after a short delay
+    setTimeout(() => {
+      setShow(true);
+    }, 300); // 300ms should be enough for the modal close animation
+  };
+
+  const handleSubmitRequest = async () => {
+    if (!currentBudget || !requestAmount || isNaN(Number(requestAmount)) || Number(requestAmount) <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Here you would typically make an API call to submit the budget request
+      // For example: await submitBudgetRequest(currentBudget.id, Number(requestAmount), requestReason);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success('Budget increase request submitted successfully');
+      handleCloseRequestModal();
+    } catch (error) {
+      console.error('Error submitting budget request:', error);
+      toast.error('Failed to submit budget request');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const fetchBudgets = async () => {
     setLoading(true);
@@ -116,34 +169,17 @@ const BudgetOverview = () => {
   return (
     <>
       {/* ===== Activator Card ===== */}
-      <Col md={4} onClick={handleOpen}>
-        <Card
-          className="h-100 shadow-sm border-0 transition-all border-bottom border"
-          style={{
-            background: "white",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            borderRadius: "0.75rem",
-          }}
-        >
+
+      <Col md={3} onClick={handleOpen}>
+        <Card className="stat-card shadow-sm border-0 overflow-hidden bg-warning bg-opacity-10 border-start border-warning border-3">
           <Card.Body className="p-4">
             <div className="d-flex align-items-center">
-              <div className="bg-warning bg-opacity-10 p-3 rounded-3 me-3">
-                <BarChart2 size={24} className="text-warning" />
+              <div className="icon-container bg-warning bg-opacity-10 p-3 rounded-3 me-3">
+                <FileText size={24} className="text-warning" />
               </div>
               <div>
-                <h6 className="mb-1 fw-semibold text-dark">
-                  📊 Budget Overview
-                </h6>
-                <p className="text-muted small mb-0">
-                  <Building size={14} className="me-1" /> View department
-                  budgets
-                </p>
-              </div>
-              <div className="ms-auto">
-                <div className="bg-warning bg-opacity-10 p-2 rounded-circle">
-                  <BarChart2 size={16} className="text-warning" />
-                </div>
+                <div className="text-muted small fw-medium">Budgets</div>
+                <p className="mb-0 small">Click to view</p>
               </div>
             </div>
           </Card.Body>
@@ -236,6 +272,7 @@ const BudgetOverview = () => {
                     <th className="pe-4 py-3 fw-semibold text-dark">
                       <Calendar size={14} className="me-1" /> Date
                     </th>
+                    <th className="pe-4 py-3 fw-semibold text-dark">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -358,7 +395,22 @@ const BudgetOverview = () => {
                           </div>
                         </td>
                         <td className="pe-4 py-3">
-                          <span className="text-muted">{b.monthYear}</span>
+                          {new Date(b.monthYear).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                          })}
+                        </td>
+                        <td className="pe-4 py-3">
+                          <button 
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRequestClick(b);
+                            }}
+                            disabled={isSubmitting}
+                          >
+                            Request Addition
+                          </button>
                         </td>
                       </tr>
                     );
@@ -378,6 +430,97 @@ const BudgetOverview = () => {
               Close budgets
             </Button>
           </div>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Budget Request Modal */}
+      <Modal
+        show={showRequestModal}
+        onHide={handleCloseRequestModal}
+        size="xl"
+        aria-labelledby="budget-request-modal-title"
+      >
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title id="budget-request-modal-title" className="fw-bold">
+            Request Budget Addition
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {currentBudget && (
+            <div>
+              <div className="mb-4">
+                <p className="mb-2">
+                  <strong>Category:</strong> {currentBudget.expenseCategory?.name || 'N/A'}
+                </p>
+                <p className="mb-2">
+                  <strong>Department:</strong> {currentBudget.department?.name || 'N/A'}
+                </p>
+                <p className="mb-2">
+                  <strong>Current Remaining:</strong> {currentBudget.remainingBudget.toLocaleString()}
+                </p>
+              </div>
+              
+              <div className="mb-3">
+                <label htmlFor="amount" className="form-label fw-medium">
+                  Amount to Request
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text">$</span>
+                  <input
+                    type="number"
+                    className="form-control"
+                    id="amount"
+                    value={requestAmount}
+                    onChange={(e) => setRequestAmount(e.target.value)}
+                    placeholder="Enter amount"
+                    min="1"
+                    step="0.01"
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+              
+              <div className="mb-3">
+                <label htmlFor="reason" className="form-label fw-medium">
+                  Reason for Request (Optional)
+                </label>
+                <textarea
+                  className="form-control"
+                  id="reason"
+                  rows={3}
+                  value={requestReason}
+                  onChange={(e) => setRequestReason(e.target.value)}
+                  placeholder="Please provide a reason for this budget increase request"
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="border-0 pt-0">
+          <button
+            type="button"
+            className="btn btn-outline-secondary"
+            onClick={handleCloseRequestModal}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleSubmitRequest}
+            disabled={isSubmitting || !requestAmount}
+          >
+            {isSubmitting ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Submitting...
+              </>
+            ) : (
+              'Submit Request'
+            )}
+          </button>
         </Modal.Footer>
       </Modal>
 
@@ -467,4 +610,4 @@ const BudgetOverview = () => {
   );
 };
 
-export default BudgetOverview;
+export default BudgetOverviewHOD;
