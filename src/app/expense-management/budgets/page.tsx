@@ -161,12 +161,13 @@ const BudgetOverview = () => {
         <Modal.Header className="border-0 pb-0 position-relative">
           <div className="w-100">
             <div className="d-flex align-items-center justify-content-between mb-3">
-              <Modal.Title
+              <h6
                 id="budget-modal-title"
-                className="fw-bold text-dark fs-4 d-flex align-items-center"
+                className="fw-bold text-dark fs-5 d-flex align-items-center"
               >
-                <BarChart2 size={24} className="me-2" /> 📊 Budget Overview
-              </Modal.Title>
+                {" "}
+                📊 Budget Overview
+              </h6>
               <button
                 type="button"
                 className="btn-close p-1 rounded-circle"
@@ -183,7 +184,7 @@ const BudgetOverview = () => {
                 <X size={16} />
               </button>
             </div>
-            <p className="text-muted mb-0 d-flex align-items-center">
+            <p className="text-muted mb-0 d-flex align-items-center small">
               <Info size={16} className="me-2" />
               Monitor department budgets and spending patterns
             </p>
