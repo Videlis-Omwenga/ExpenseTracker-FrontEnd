@@ -780,13 +780,7 @@ export default function ExpenseApprovalPage() {
                               </span>
                               <span className="text-muted small">
                                 {exp?.primaryAmount?.toLocaleString() || "0.00"}{" "}
-                                {exp?.currency?.initials
-                                  ? `${
-                                      exp.currency.initials
-                                        ? `${exp.currency.initials}`
-                                        : ""
-                                    }`
-                                  : "N/A"}
+                                {exp?.currencyDetails?.initials || exp?.currency || "N/A"}
                               </span>
                             </div>
                           </td>

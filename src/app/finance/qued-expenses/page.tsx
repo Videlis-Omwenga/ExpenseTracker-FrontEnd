@@ -27,8 +27,6 @@ import {
 } from "react-icons/fa";
 import {
   Filter,
-  CheckCircle,
-  ClockHistory,
   FileText,
   Download,
   Eye,
@@ -38,12 +36,12 @@ import {
   Check2Circle,
   ShieldCheck,
 } from "react-bootstrap-icons";
-import Navbar from "../../components/Navbar";
-import { BASE_API_URL } from "../../static/apiConfig";
+import DateTimeDisplay from "@/app/components/DateTimeDisplay";
 import { toast } from "react-toastify";
 import AuthProvider from "../../authPages/tokenData";
 import { ArrowDownCircle, DollarSign, Tag, ListChecks } from "lucide-react";
 import TopNavbar from "../../components/Navbar";
+import { BASE_API_URL } from "@/app/static/apiConfig";
 
 /**
  * TYPES aligned to your NestJS / Prisma backend
@@ -99,6 +97,12 @@ type Department = {
   name: string;
 };
 
+type Budget = {
+  id: number;
+  originalBudget: number;
+  remainingBudget: number;
+};
+
 type Expense = {
   id: number;
   workflowId: number;
@@ -119,6 +123,7 @@ type Expense = {
   currencyDetails: Currency;
   status: ExpenseStatus;
   user: UserLite;
+  budget: Budget;
   expenseSteps: ExpenseStep[];
   createdAt: string;
   updatedAt: string;
@@ -127,12 +132,6 @@ type Expense = {
   regions: Region[];
 };
 
-const formatDate = (iso?: string) => {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString();
-};
 const humanStatus = (s: string) =>
   s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 
@@ -151,6 +150,20 @@ export default function ExpenseApprovalPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
+
+  // Form input states
+  const [paymentMethodId, setPaymentMethodId] = useState<number | "">("");
+  const [categoryId, setCategoryId] = useState<number | "">("");
+  const [regionId, setRegionId] = useState<number | "">("");
+
+  // Initialize form fields when an expense is selected
+  useEffect(() => {
+    if (selectedExpense) {
+      setCategoryId(selectedExpense.category?.id || "");
+      setPaymentMethodId(selectedExpense.paymentMethod?.id || "");
+      setRegionId(selectedExpense.region?.id || "");
+    }
+  }, [selectedExpense]);
 
   // Data state
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -235,34 +248,17 @@ export default function ExpenseApprovalPage() {
   };
 
   /** Approve / Reject via single unified endpoint */
-  const approveExpense = async (id: number) => {
-    try {
-      const res = await fetch(`${BASE_API_URL}/finance/process-payment`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem(
-            "expenseTrackerToken"
-          )}`,
-        },
-        body: JSON.stringify({ expenseId: id, isApproved: true }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      toast.success("Expense approved successfully");
-      await fetchExpensesToApprove();
-    } catch (e: any) {
-      toast.error(`Approve failed: ${e?.message || e}`);
-    }
-  };
+  const approveExpense = async (id: number, reason: string) => {
+    const payload = {
+      paymentMethodId: Number(paymentMethodId),
+      categoryId: Number(categoryId),
+      regionId: Number(regionId),
+      comments: reason,
+    };
 
-  const rejectExpense = async (id: number, reason: string) => {
-    if (!reason.trim()) {
-      toast.error("Please provide a reason for rejection");
-      return;
-    }
     try {
       const res = await fetch(
-        `${BASE_API_URL}/expense-approvals/process-approval`,
+        `${BASE_API_URL}/finance/expense-for-payment/${id}`,
         {
           method: "POST",
           headers: {
@@ -271,11 +267,62 @@ export default function ExpenseApprovalPage() {
               "expenseTrackerToken"
             )}`,
           },
-          body: JSON.stringify({
-            expenseId: id,
-            isApproved: false,
-            comments: reason,
-          }),
+          body: JSON.stringify(payload),
+        }
+      );
+
+      let responseData;
+      const contentType = res.headers.get('content-type');
+      
+      try {
+        // Only try to parse as JSON if the response has content and is JSON
+        if (contentType && contentType.includes('application/json')) {
+          responseData = await res.json();
+        } else {
+          const text = await res.text();
+          responseData = text ? { message: text } : { message: 'No content in response' };
+        }
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+        responseData = { message: 'Invalid response format' };
+      }
+
+      if (res.ok) {
+        toast.success("Expense approved successfully");
+        await fetchExpensesToApprove();
+      } else {
+        const errorMessage = responseData?.message || `HTTP error! status: ${res.status}`;
+        toast.error(errorMessage);
+      }
+    } catch (e: any) {
+      console.error('Approval error:', e);
+      toast.error(`Approve failed: ${e?.message || 'Unknown error occurred'}`);
+    }
+  };
+
+  const rejectExpense = async (id: number, reason: string) => {
+    if (!reason.trim()) {
+      toast.error("Please provide a reason for rejection");
+      return;
+    }
+
+    const payload = {
+      isApproved: false,
+      comments: reason,
+    };
+
+    try {
+      const res = await fetch(
+        `${BASE_API_URL}/expense-approvals//expense-for-payment/${id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(
+              "expenseTrackerToken"
+            )}`,
+          },
+          body: JSON.stringify(payload),
         }
       );
       if (!res.ok) throw new Error(await res.text());
@@ -296,7 +343,7 @@ export default function ExpenseApprovalPage() {
       return;
     }
     if (isApproved) {
-      await approveExpense(selectedExpense.id);
+      await approveExpense(selectedExpense.id, "Expense approved by finance");
       setShowDetailsModal(false);
     } else {
       await rejectExpense(selectedExpense.id, rejectionReason);
@@ -305,7 +352,6 @@ export default function ExpenseApprovalPage() {
 
   useEffect(() => {
     fetchExpensesToApprove();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /** Derived data */
@@ -382,7 +428,11 @@ export default function ExpenseApprovalPage() {
   /** Bulk actions */
   const handleBulkApprove = async () => {
     if (selectedExpenses.length === 0) return;
-    await Promise.all(selectedExpenses.map((id) => approveExpense(id)));
+    await Promise.all(
+      selectedExpenses.map((id) =>
+        approveExpense(id, "Bulk approved by finance")
+      )
+    );
     setSelectedExpenses([]);
   };
 
@@ -399,15 +449,13 @@ export default function ExpenseApprovalPage() {
   };
 
   /** Per-row actions */
-  const handleApprove = (id: number) => approveExpense(id);
+  const handleApprove = (id: number) =>
+    approveExpense(id, "Approved via quick action");
 
   const handleViewDetails = (expense: Expense) => {
     setSelectedExpense(expense);
     setShowDetailsModal(true);
   };
-
-  /** Stats – Pending count from actual data */
-  const pendingCount = expenses.filter((e) => e.status === "PENDING").length;
 
   return (
     <AuthProvider>
@@ -417,8 +465,8 @@ export default function ExpenseApprovalPage() {
         <Row className="align-items-center mb-4">
           <Col>
             {/* Title and Subtitle */}
-            <div className="d-flex align-items-center mb-3 bg-primary bg-opacity-10 p-3 rounded-4">
-              <div className="p-3 rounded-3 bg-gradient-primary bg-opacity-10 me-3 shadow-sm">
+            <div className="d-flex align-items-center mb-3 bg-info bg-opacity-10 p-3 rounded-4 border-start border-info border-3">
+              <div className="p-3 rounded-3 bg-success-primary bg-opacity-10 me-3 shadow-sm">
                 <ListChecks className="text-primary" size={24} />
               </div>
               <div>
@@ -433,7 +481,7 @@ export default function ExpenseApprovalPage() {
 
             <Row>
               <Col md={6} className="mb-4">
-                <div className="bg-white p-4 rounded-4 shadow-sm border">
+                <div className="p-4 rounded-4 shadow-sm border bg-primary bg-opacity-10 border-0 border-start border-primary border-3">
                   <p className="small text-secondary mb-4">
                     Every submitted expense goes through this check to ensure
                     compliance and readiness for payment:
@@ -486,57 +534,18 @@ export default function ExpenseApprovalPage() {
               </Col>
               <Col md={6}>
                 <Row className="g-3 mb-4">
-                  <Col md={3}>
-                    <Card className="stat-card">
-                      <Card.Body>
-                        <div className="d-flex align-items-center">
-                          <div className="icon-container bg-primary bg-opacity-10 me-3">
-                            <ClockHistory size={20} className="text-primary" />
-                          </div>
-                          <div>
-                            <div className="text-muted small">
-                              Pending Approval
-                            </div>
-                            <h4 className="mb-0">{pendingCount}</h4>
-                          </div>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                  <Col md={3}>
-                    <Card className="stat-card">
+                  <Col md={6}>
+                    <Card className="stat-card border-0 bg-success bg-opacity-10 border-start border-success border-3">
                       <Card.Body>
                         <div className="d-flex align-items-center">
                           <div className="icon-container bg-success bg-opacity-10 me-3">
-                            <CheckCircle size={20} className="text-success" />
-                          </div>
-                          <div>
-                            <div className="text-muted small">
-                              Approved (visible)
-                            </div>
-                            <h4 className="mb-0">
-                              {
-                                expenses.filter((e) => e.status === "APPROVED")
-                                  .length
-                              }
-                            </h4>
-                          </div>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                  <Col md={3}>
-                    <Card className="stat-card">
-                      <Card.Body>
-                        <div className="d-flex align-items-center">
-                          <div className="icon-container bg-primary bg-opacity-10 me-3">
-                            <DollarSign size={20} className="text-primary" />
+                            <DollarSign size={20} className="text-success" />
                           </div>
                           <div>
                             <div className="text-muted small">
                               Total Expenses
                             </div>
-                            <h4 className="mb-0">
+                            <h6 className="mb-0 mt-2">
                               {expenses.length > 0
                                 ? expenses
                                     .reduce(
@@ -548,24 +557,24 @@ export default function ExpenseApprovalPage() {
                                       maximumFractionDigits: 2,
                                     })
                                 : "0.00"}
-                            </h4>
+                            </h6>
                           </div>
                         </div>
                       </Card.Body>
                     </Card>
                   </Col>
-                  <Col md={3}>
-                    <Card className="stat-card">
+                  <Col md={6}>
+                    <Card className="stat-card border-0 bg-danger bg-opacity-10 border-start border-danger border-3">
                       <Card.Body>
                         <div className="d-flex align-items-center">
-                          <div className="icon-container bg-info bg-opacity-10 me-3">
-                            <FileText size={20} className="text-info" />
+                          <div className="icon-container bg-danger bg-opacity-10 me-3">
+                            <FileText size={20} className="text-danger" />
                           </div>
                           <div>
                             <div className="text-muted small">
                               Total in list
                             </div>
-                            <h4 className="mb-0">{expenses.length}</h4>
+                            <h6 className="mb-0 mt-2">{expenses.length}</h6>
                           </div>
                         </div>
                       </Card.Body>
@@ -779,10 +788,12 @@ export default function ExpenseApprovalPage() {
                           <td>
                             <div className="d-flex flex-column">
                               <div className="">
-                                Created: {formatDate(exp.createdAt)}
+                                Created:{" "}
+                                <DateTimeDisplay date={exp.createdAt} />
                               </div>
                               <div className="text-muted small">
-                                Updated: {formatDate(exp.updatedAt)}
+                                Updated:{" "}
+                                <DateTimeDisplay date={exp.updatedAt} />
                               </div>
                             </div>
                           </td>
@@ -804,20 +815,46 @@ export default function ExpenseApprovalPage() {
                               </div>
                             </div>
                           </td>
-                          <td className="text-success">
+                          <td className="">
                             <div className="d-flex flex-column">
                               <span className="text-success fw-bold">
                                 {exp?.amount?.toLocaleString() || "0.00"} KES
                               </span>
                               <span className="text-muted small">
                                 {exp?.primaryAmount?.toLocaleString() || "0.00"}{" "}
-                                {exp?.currency?.initials
-                                  ? `${
-                                      exp.currency.initials
-                                        ? `${exp.currency.initials}`
-                                        : ""
-                                    }`
-                                  : "N/A"}
+                                {(() => {
+                                  if (!exp) return "N/A";
+
+                                  // If currency is a string (direct currency code)
+                                  if (
+                                    exp.currency &&
+                                    typeof exp.currency === "string"
+                                  ) {
+                                    return exp.currency;
+                                  }
+
+                                  // If currency is an object with initials (type-safe check)
+                                  if (
+                                    exp.currency &&
+                                    typeof exp.currency === "object" &&
+                                    exp.currency !== null &&
+                                    "initials" in exp.currency
+                                  ) {
+                                    return (
+                                      exp.currency as { initials: string }
+                                    ).initials;
+                                  }
+
+                                  // If currencyDetails exists and has initials (type-safe check)
+                                  if (
+                                    exp.currencyDetails &&
+                                    "initials" in exp.currencyDetails
+                                  ) {
+                                    return exp.currencyDetails.initials;
+                                  }
+
+                                  return "N/A";
+                                })()}
                               </span>
                             </div>
                           </td>
@@ -853,10 +890,18 @@ export default function ExpenseApprovalPage() {
                           </td>
                           <td>
                             <Badge
-                              text="danger"
-                              className="px-2 py-1 rounded border bg-danger bg-opacity-10"
+                              className={`px-2 py-1 rounded ${
+                                exp.budget?.remainingBudget < exp.amount
+                                  ? "bg-danger bg-opacity-10 text-danger"
+                                  : "bg-success bg-opacity-10 text-success"
+                              }`}
+                              title={`Original Budget: ${
+                                exp.budget?.originalBudget?.toLocaleString() ||
+                                "N/A"
+                              }`}
                             >
-                              100,000
+                              {exp.budget?.remainingBudget?.toLocaleString() ||
+                                "N/A"}
                             </Badge>
                           </td>
                           <td style={{ minWidth: 200 }}>
@@ -875,7 +920,7 @@ export default function ExpenseApprovalPage() {
                                   ? "success"
                                   : exp.status === "PENDING"
                                   ? "info"
-                                  : "danger"
+                                  : "success"
                               }
                               animated={exp.status === "PENDING"}
                             />
@@ -990,7 +1035,7 @@ export default function ExpenseApprovalPage() {
                 className="border-bottom-0 pb-0 position-relative"
               >
                 <div
-                  className="position-absolute w-100 h-100 bg-light bg-opacity-10 rounded-top"
+                  className="position-absolute h-100 bg-light bg-opacity-10 rounded-top"
                   style={{ borderBottom: "1px solid #dee2e6" }}
                 ></div>
                 <h6 className="position-relative">
@@ -1018,7 +1063,11 @@ export default function ExpenseApprovalPage() {
                       {selectedExpense.description}
                     </h6>
                     <small className="text-muted">
-                      Created on {formatDate(selectedExpense.createdAt)}
+                      Created on{" "}
+                      <DateTimeDisplay
+                        date={selectedExpense.createdAt}
+                        showTime={false}
+                      />
                     </small>
                   </div>
                   <div className="text-end">
@@ -1053,13 +1102,19 @@ export default function ExpenseApprovalPage() {
                             <div className="d-flex justify-content-between">
                               <span className="text-muted">Submitted On</span>
                               <span className="fw-semibold">
-                                {formatDate(selectedExpense.createdAt)}
+                                <DateTimeDisplay
+                                  date={selectedExpense.createdAt}
+                                  showTime={true}
+                                />
                               </span>
                             </div>
                             <div className="d-flex justify-content-between mt-1">
                               <span className="text-muted">Last Updated</span>
                               <span className="fw-semibold">
-                                {formatDate(selectedExpense.updatedAt)}
+                                <DateTimeDisplay
+                                  date={selectedExpense.updatedAt}
+                                  showTime={true}
+                                />
                               </span>
                             </div>
                             <div className="d-flex justify-content-between mt-1">
@@ -1208,7 +1263,10 @@ export default function ExpenseApprovalPage() {
                                   {step.updatedAt && (
                                     <span className="d-flex align-items-center">
                                       <FaClock className="me-1 text-secondary" />
-                                      {formatDate(step.updatedAt)}
+                                      <DateTimeDisplay
+                                        date={step.updatedAt}
+                                        showTime={true}
+                                      />
                                     </span>
                                   )}
 
@@ -1237,17 +1295,12 @@ export default function ExpenseApprovalPage() {
                       <Form.Group className="mb-3">
                         <Form.Label>Category</Form.Label>
                         <Form.Select
-                          value={selectedExpense?.category?.id || ""}
+                          value={categoryId || ""}
                           onChange={(e) => {
-                            const category = categories.find(
-                              (c) => c.id === Number(e.target.value)
-                            );
-                            if (category && selectedExpense) {
-                              setSelectedExpense({
-                                ...selectedExpense,
-                                category,
-                              });
-                            }
+                            const value = e.target.value
+                              ? Number(e.target.value)
+                              : "";
+                            setCategoryId(value);
                           }}
                         >
                           <option value="">Select category...</option>
@@ -1262,17 +1315,12 @@ export default function ExpenseApprovalPage() {
                       <Form.Group className="mb-3">
                         <Form.Label>Payment Method</Form.Label>
                         <Form.Select
-                          value={selectedExpense?.paymentMethod?.id || ""}
+                          value={paymentMethodId || ""}
                           onChange={(e) => {
-                            const paymentMethod = paymentMethods.find(
-                              (pm) => pm.id === Number(e.target.value)
-                            );
-                            if (paymentMethod && selectedExpense) {
-                              setSelectedExpense({
-                                ...selectedExpense,
-                                paymentMethod,
-                              });
-                            }
+                            const value = e.target.value
+                              ? Number(e.target.value)
+                              : "";
+                            setPaymentMethodId(value);
                           }}
                         >
                           <option value="">Select payment method...</option>
@@ -1287,26 +1335,25 @@ export default function ExpenseApprovalPage() {
                       <Form.Group className="mb-3">
                         <Form.Label>Region</Form.Label>
                         <Form.Select
-                          value={selectedExpense?.region?.id?.toString() || ""}
+                          value={regionId || ""}
                           onChange={(e) => {
-                            const selectedId = Number(e.target.value);
-                            if (!selectedId) return;
-                            
-                            const region = regions.find((r) => r.id === selectedId);
-                            if (region && selectedExpense) {
-                              setSelectedExpense(prev => ({
-                                ...prev,
-                                region,
-                              }));
-                            }
+                            const value = e.target.value
+                              ? Number(e.target.value)
+                              : "";
+                            setRegionId(value);
                           }}
                           disabled={!regions.length}
                         >
                           <option value="">
-                            {regions.length ? 'Select region...' : 'Loading regions...'}
+                            {regions.length
+                              ? "Select region..."
+                              : "Loading regions..."}
                           </option>
                           {regions.map((region) => (
-                            <option key={`region-${region.id}`} value={region.id}>
+                            <option
+                              key={`region-${region.id}`}
+                              value={region.id}
+                            >
                               {region.name}
                             </option>
                           ))}
