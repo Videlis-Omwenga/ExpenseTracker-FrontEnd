@@ -13,6 +13,7 @@ import {
   Calendar,
   AlertTriangle,
   CheckCircle,
+  Eye,
 } from "lucide-react";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 import { toast } from "react-toastify";
@@ -116,38 +117,20 @@ const BudgetOverview = () => {
   return (
     <>
       {/* ===== Activator Card ===== */}
-      <Col md={4} onClick={handleOpen}>
-        <Card
-          className="shadow-sm border-0 transition-all border-bottom border"
-          style={{
-            background: "white",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            borderRadius: "0.75rem",
-          }}
-        >
-          <Card.Body className="p-4">
-            <div className="d-flex align-items-center">
-              <div className="bg-warning bg-opacity-10 p-3 rounded-3 me-3">
-                <BarChart2 size={24} className="text-warning" />
-              </div>
-              <div>
-                <h6 className="mb-1 fw-semibold text-dark">
-                  📊 Budget Overview
-                </h6>
-                <p className="text-muted small mb-0">
-                  <Building size={14} className="me-1" /> View department
-                  budgets
-                </p>
-              </div>
-              <div className="ms-auto">
-                <div className="bg-warning bg-opacity-10 p-2 rounded-circle">
-                  <BarChart2 size={16} className="text-warning" />
-                </div>
-              </div>
+      <Col xs={6} md={3} onClick={handleOpen}>
+        <div className="bg-danger p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-warning border-2">
+          <div className="d-flex align-items-center">
+            <div className="bg-danger bg-opacity-10 p-2 rounded me-3">
+              <Eye size={20} className="me-1" />
             </div>
-          </Card.Body>
-        </Card>
+            <div>
+              <p className="text-muted small mb-1">Budgets</p>
+              <h6 className="mb-1 fw-semibold text-dark">
+                View budgets
+              </h6>
+            </div>
+          </div>
+        </div>
       </Col>
 
       {/* ===== Modal with Table ===== */}
@@ -160,17 +143,17 @@ const BudgetOverview = () => {
       >
         <Modal.Header className="border-0 pb-0 position-relative">
           <div className="w-100">
-            <div className="d-flex align-items-center justify-content-between mb-3">
+            <div className="d-flex align-items-center justify-content-between mb-0">
               <h6
                 id="budget-modal-title"
-                className="fw-bold text-dark fs-5 d-flex align-items-center"
+                className="fw-bold text-dark"
               >
                 {" "}
                 📊 Budget Overview
               </h6>
               <button
                 type="button"
-                className="btn-close p-1 rounded-circle"
+                className="btn-close p-1 rounded-circle text-danger"
                 onClick={handleClose}
                 style={{
                   background: "rgba(0,0,0,0.1)",
@@ -186,7 +169,7 @@ const BudgetOverview = () => {
             </div>
             <p className="text-muted mb-0 d-flex align-items-center small">
               <Info size={16} className="me-2" />
-              Monitor department budgets and spending patterns
+              Your departmental budgets overview
             </p>
           </div>
         </Modal.Header>

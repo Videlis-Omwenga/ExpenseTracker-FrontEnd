@@ -295,7 +295,6 @@ export default function ExpenseApprovalPage() {
         toast.error(errorMessage);
       }
     } catch (e: any) {
-      console.error('Approval error:', e);
       toast.error(`Approve failed: ${e?.message || 'Unknown error occurred'}`);
     }
   };

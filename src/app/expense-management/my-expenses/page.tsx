@@ -16,6 +16,7 @@ import {
   OverlayTrigger,
   Tooltip,
   ProgressBar,
+  Dropdown,
 } from "react-bootstrap";
 import {
   ArrowDownCircle,
@@ -40,8 +41,8 @@ import {
 import { toast } from "react-toastify";
 import { BASE_API_URL } from "../../static/apiConfig";
 import AuthProvider from "../../authPages/tokenData";
-import { BarChart2, User } from "lucide-react";
-import { FaListAlt } from "react-icons/fa";
+import { BarChart2, Download, User } from "lucide-react";
+import { FaListAlt, FaPlusCircle } from "react-icons/fa";
 import TopNavbar from "../../components/Navbar";
 import PageLoader from "@/app/components/PageLoader";
 import DateTimeDisplay from "@/app/components/DateTimeDisplay";
@@ -258,6 +259,8 @@ export default function FinanceDashboard() {
     null
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All Statuses");
+  const [dateRangeFilter, setDateRangeFilter] = useState("All Time");
   const [expenses, setExpenses] = useState<ExpenseRow[]>([]);
   const [budgetSummary, setBudgetSummary] = useState<BudgetSummary | null>(
     null
@@ -265,6 +268,7 @@ export default function FinanceDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const itemsPerPage = 50;
 
   const router = useRouter();
@@ -439,27 +443,55 @@ export default function FinanceDashboard() {
   /** ===== Derived/UI state ===== */
 
   const filteredExpenses = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return expenses;
-    return expenses.filter((e) => {
-      const who = `${e.user.firstName} ${e.user.lastName}`.toLowerCase();
-      return (
-        e.description.toLowerCase().includes(q) ||
-        String(e.amount).toLowerCase().includes(q) ||
-        who.includes(q)
-      );
+    return expenses.filter((expense) => {
+      // Search by description, amount, or reference number
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch =
+        expense.description?.toLowerCase().includes(searchLower) ||
+        expense.amount?.toString().includes(searchQuery) ||
+        expense.referenceNumber?.toLowerCase().includes(searchLower);
+
+      // Filter by status
+      const matchesStatus =
+        statusFilter === "All Statuses" ||
+        expense.status?.toLowerCase() === statusFilter.toLowerCase();
+
+      // Filter by date range
+      const now = new Date();
+      const expenseDate = new Date(expense.createdAt);
+      let matchesDateRange = true;
+
+      if (dateRangeFilter === "Today") {
+        matchesDateRange = expenseDate.toDateString() === now.toDateString();
+      } else if (dateRangeFilter === "This Week") {
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay()); // Start of current week (Sunday)
+        matchesDateRange = expenseDate >= startOfWeek;
+      } else if (dateRangeFilter === "This Month") {
+        matchesDateRange =
+          expenseDate.getMonth() === now.getMonth() &&
+          expenseDate.getFullYear() === now.getFullYear();
+      }
+
+      return matchesSearch && matchesStatus && matchesDateRange;
     });
-  }, [expenses, searchQuery]);
+  }, [expenses, searchQuery, statusFilter, dateRangeFilter]);
 
   // Pagination logic
-  const totalPages = Math.max(1, Math.ceil(filteredExpenses.length / itemsPerPage));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredExpenses.length / itemsPerPage)
+  );
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredExpenses.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredExpenses.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Reset to first page when search query changes
@@ -591,116 +623,158 @@ export default function FinanceDashboard() {
                       </div>
                     </div>
                   </Col>
+                  <Col xs={6} md={3}>
+                    <div className="bg-secondary p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-secondary border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-secondary bg-opacity-10 p-2 rounded me-3">
+                          <Download size={20} className="text-secondary" />
+                        </div>
+                        <div>
+                          <p className="text-secondary small mb-1">
+                            Generate report
+                          </p>
+                          <h6 className="mb-0 fw-bold">Export expenses</h6>
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
+                  <BudgetOverview />
                 </Row>
               </Card.Body>
             </Card>
           </Col>
         </Row>
 
-        {/* Action Cards */}
-        <Row className="mb-4 g-4">
-          <Col md={4}>
-            <Button
-              variant="light"
-              className="w-100 text-start shadow-sm border-0 p-4 d-flex align-items-center"
-              style={{
-                borderRadius: "0.75rem",
-                background: "white",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-              onClick={() => handleNavigation("create-expense")}
-            >
-              {/* Left Icon */}
-              <div className="bg-primary bg-opacity-10 p-3 rounded-3 me-3 d-flex align-items-center justify-content-center">
-                <ArrowUpCircle size={24} className="text-primary" />
-              </div>
-
-              {/* Text */}
-              <div>
-                <h6 className="mb-1 fw-semibold text-dark">Create Expense</h6>
-                <p className="text-muted small mb-0">Add new expense records</p>
-              </div>
-
-              {/* Right Icon */}
-              <div className="ms-auto bg-primary bg-opacity-10 p-2 rounded-circle d-flex align-items-center justify-content-center">
-                <ArrowUpCircle size={16} className="text-primary" />
-              </div>
-            </Button>
-          </Col>
-
-          <Col md={4}>
-            <Button
-              variant="light"
-              className="w-100 text-start shadow-sm border-0 p-4 d-flex align-items-center"
-              style={{
-                borderRadius: "0.75rem",
-                background: "white",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-              onClick={() => handleNavigation("generate-report")}
-            >
-              {/* Left Icon */}
-              <div className="bg-success bg-opacity-10 p-3 rounded-3 me-3 d-flex align-items-center justify-content-center">
-                <FileText size={24} className="text-success" />
-              </div>
-
-              {/* Text */}
-              <div>
-                <h6 className="mb-1 fw-semibold text-dark">Generate Report</h6>
-                <p className="text-muted small mb-0">Export financial data</p>
-              </div>
-
-              {/* Right Icon */}
-              <div className="ms-auto bg-success bg-opacity-10 p-2 rounded-circle d-flex align-items-center justify-content-center">
-                <FileText size={16} className="text-success" />
-              </div>
-            </Button>
-          </Col>
-
-          <BudgetOverview />
-        </Row>
-
         {/* Expenses Table */}
         <Container fluid className="mt-2">
           <Card className="mb-4">
-            <Card.Header className="bg-white border-bottom d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 p-3">
-              <div className="mb-2 mb-md-0">
-                <h6 className="mb-0 fw-bold text-secondary">Expenses</h6>
-                <small className="text-muted">
-                  Showing {indexOfFirstItem + 1}-
-                  {Math.min(indexOfLastItem, filteredExpenses.length)} of{" "}
-                  {filteredExpenses.length} expenses
-                </small>
-              </div>
-              <div className="d-flex align-items-center w-100 w-md-auto mt-2 mt-md-0">
-                <div className="search-box me-2 flex-grow-1">
-                  <Form.Control
-                    type="search"
-                    placeholder="Search expenses..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="ps-4"
-                  />
-                </div>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={handleRefresh}
-                  disabled={refreshing}
-                  className="d-flex align-items-center"
-                >
-                  {refreshing ? (
-                    <Spinner animation="border" size="sm" className="me-1" />
-                  ) : (
-                    <ArrowRepeat size={14} className="me-1" />
-                  )}
-                  Refresh
-                </Button>
-              </div>
+            <Card.Header className="bg-white p-3">
+              <Row className="align-items-center g-3">
+                <Col xs={12} md={4}>
+                  <small className="text-muted">
+                    Showing {indexOfFirstItem + 1}-
+                    {Math.min(indexOfLastItem, filteredExpenses.length)} of{" "}
+                    {filteredExpenses.length} expenses
+                  </small>
+                </Col>
+                <Col xs={12} md={5} className="mb-2 mb-md-0">
+                  <div className="input-group">
+                    <span className="input-group-text bg-white border-end-0">
+                      <i className="bi bi-search text-muted"></i>
+                    </span>
+                    <Form.Control
+                      type="search"
+                      placeholder="Search expenses by reference, amount, or description..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="border-start-0 px-2 py-2"
+                      style={{
+                        borderRight: "none",
+                        boxShadow: "none",
+                        borderColor: "#dee2e6",
+                      }}
+                    />
+                    <Dropdown
+                      className="border-start-0"
+                      style={{
+                        borderTopRightRadius: "0.375rem",
+                        borderBottomRightRadius: "0.375rem",
+                      }}
+                    >
+                      <Dropdown.Toggle
+                        variant="light"
+                        className="bg-white border-start-0"
+                        style={{
+                          borderTopLeftRadius: 0,
+                          borderBottomLeftRadius: 0,
+                          borderColor: "#dee2e6",
+                          borderLeft: "none",
+                          height: "100%",
+                          boxShadow: "none",
+                        }}
+                      >
+                        <i className="bi bi-funnel me-1"></i>
+                        <span className="d-none d-md-inline">Filter</span>
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu
+                        className="p-2"
+                        style={{ minWidth: "200px" }}
+                      >
+                        <div className="mb-2">
+                          <small className="text-muted d-block mb-1">
+                            Status
+                          </small>
+                          <Form.Select
+                            size="sm"
+                            className="mb-2"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                          >
+                            <option value="All Statuses">All Statuses</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="APPROVED">Approved</option>
+                            <option value="REJECTED">Rejected</option>
+                            <option value="PAID">Paid</option>
+                          </Form.Select>
+                        </div>
+                        <div className="mb-2">
+                          <small className="text-muted d-block mb-1">
+                            Date Range
+                          </small>
+                          <Form.Select
+                            size="sm"
+                            value={dateRangeFilter}
+                            onChange={(e) => setDateRangeFilter(e.target.value)}
+                          >
+                            <option value="All Time">All Time</option>
+                            <option value="Today">Today</option>
+                            <option value="This Week">This Week</option>
+                            <option value="This Month">This Month</option>
+                          </Form.Select>
+                        </div>
+                        <div className="d-grid gap-2 mt-2">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => setDropdownOpen(false)}
+                          >
+                            Apply Filters
+                          </Button>
+                          <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={() => {
+                              setStatusFilter("All Statuses");
+                              setDateRangeFilter("All Time");
+                              setSearchQuery("");
+                            }}
+                          >
+                            Reset All
+                          </Button>
+                        </div>
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </div>
+                </Col>
+                <Col xs={12} md={3} className="text-end">
+                  <Button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => handleNavigation("create-expense")}
+                    style={{
+                      minWidth: "110px",
+                      borderRadius: "0.5rem",
+                      borderWidth: "1.5px",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <FaPlusCircle size={16} className="me-2" />
+                    Create expense
+                  </Button>
+                </Col>
+              </Row>
             </Card.Header>
-
+            <br />
+            <br />
             <Card.Body className="p-0">
               {filteredExpenses.length === 0 ? (
                 <div className="text-center py-5">

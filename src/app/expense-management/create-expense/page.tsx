@@ -31,7 +31,6 @@ import {
   CheckCircle,
   Check2,
   InfoCircle,
-  ShieldCheck,
   Clock,
   FileEarmarkPlus,
   Calculator,
@@ -104,7 +103,7 @@ export default function CreateExpensePage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completionPercentage, setCompletionPercentage] = useState(0);
-  
+
   // TODO: Implement form completion percentage calculation
   // This should be updated based on form field validations
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -256,36 +255,46 @@ export default function CreateExpensePage() {
   useEffect(() => {
     // Track only the specified fields for progress
     const trackedFields = [
-      payee,          // Payee Name
-      payeeId,        // ID Number
-      payeeNumber,    // Payment Reference
-      primaryAmount,  // Amount
-      description,    // Description
-      department,     // Department
-      category,       // Category
-      region,         // Region
-      currency,       // Currency
-      paymentMethod,  // Payment Method
-      selectedFile    // Attachments (file upload)
+      payee, // Payee Name
+      payeeId, // ID Number
+      payeeNumber, // Payment Reference
+      primaryAmount, // Amount
+      description, // Description
+      department, // Department
+      category, // Category
+      region, // Region
+      currency, // Currency
+      paymentMethod, // Payment Method
+      selectedFile, // Attachments (file upload)
     ];
-    
+
     // Count filled fields from the tracked fields
-    const filledFields = trackedFields.filter(field => {
+    const filledFields = trackedFields.filter((field) => {
       // For files, check if a file is selected
       if (field === selectedFile) return Boolean(field);
       // For other fields, check if they have a value
       return Boolean(field);
     }).length;
-    
+
     // Calculate percentage (0-100)
-    const percentage = trackedFields.length > 0 
-      ? Math.round((filledFields / trackedFields.length) * 100)
-      : 0;
-    
+    const percentage =
+      trackedFields.length > 0
+        ? Math.round((filledFields / trackedFields.length) * 100)
+        : 0;
+
     setCompletionPercentage(percentage);
   }, [
-    payee, payeeId, payeeNumber, primaryAmount, description,
-    department, category, region, currency, paymentMethod, selectedFile
+    payee,
+    payeeId,
+    payeeNumber,
+    primaryAmount,
+    description,
+    department,
+    category,
+    region,
+    currency,
+    paymentMethod,
+    selectedFile,
   ]);
 
   // Show loading state if data is being fetched
@@ -371,8 +380,8 @@ export default function CreateExpensePage() {
                     </Card.Body>
                   </Card>
                   {/* Payee Information Card */}
-                  <Card className="border-0 shadow-sm mb-4">
-                    <Card.Header className="bg-white py-3 border-bottom-0">
+                  <Card className="border rounded-3 p-4 mb-4">
+                    <Card.Header className="bg-white py-3 border-bottom-0 mb-4">
                       <div className="d-flex align-items-center">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                           <Person className="text-primary" size={20} />
@@ -445,8 +454,8 @@ export default function CreateExpensePage() {
                   </Card>
 
                   {/* Expense Details Card */}
-                  <Card className="border-0 shadow-sm mb-4">
-                    <Card.Header className="bg-white py-3 border-bottom-0">
+                  <Card className="border rounded-3 p-4 mb-4">
+                    <Card.Header className="bg-white py-3 border-bottom-0 mb-4">
                       <div className="d-flex align-items-center">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                           <Cash className="text-primary" size={20} />
@@ -534,8 +543,8 @@ export default function CreateExpensePage() {
                   </Card>
 
                   {/* Categorization Card */}
-                  <Card className="border-0 shadow-sm mb-4">
-                    <Card.Header className="bg-white py-3 border-bottom-0">
+                  <Card className="border rounded-3 p-4 mb-4">
+                    <Card.Header className="bg-white py-3 border-bottom-0 mb-4">
                       <div className="d-flex align-items-center">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                           <Tag className="text-primary" size={20} />
@@ -627,8 +636,8 @@ export default function CreateExpensePage() {
                   </Card>
 
                   {/* Payment Information Card */}
-                  <Card className="border-0 shadow-sm mb-4">
-                    <Card.Header className="bg-white py-3 border-bottom-0">
+                  <Card className="border rounded-3 p-4 mb-4">
+                    <Card.Header className="bg-white py-3 border-bottom-0 mb-4">
                       <div className="d-flex align-items-center">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                           <CreditCard className="text-primary" size={20} />
@@ -689,8 +698,8 @@ export default function CreateExpensePage() {
                   </Card>
 
                   {/* Advance Request Card */}
-                  <Card className="border-0 shadow-sm mb-4">
-                    <Card.Header className="bg-white py-3 border-bottom-0">
+                  <Card className="border rounded-3 p-4 mb-4">
+                    <Card.Header className="bg-white py-3 border-bottom-0 mb-4">
                       <div className="d-flex align-items-center">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                           <Calculator className="text-primary" size={20} />
@@ -815,8 +824,8 @@ export default function CreateExpensePage() {
                   </Card>
 
                   {/* Attachments Card */}
-                  <Card className="border-0 shadow-sm mb-4">
-                    <Card.Header className="bg-white py-3 border-bottom-0">
+                  <Card className="border rounded-3 p-4 mb-4">
+                    <Card.Header className="bg-white py-3 border-bottom-0 mb-4">
                       <div className="d-flex align-items-center">
                         <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
                           <FileEarmarkText className="text-info" size={20} />
@@ -1074,5 +1083,3 @@ export default function CreateExpensePage() {
     </AuthProvider>
   );
 }
-
-

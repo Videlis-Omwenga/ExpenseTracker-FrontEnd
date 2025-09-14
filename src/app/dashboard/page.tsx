@@ -239,21 +239,14 @@ export default function Dashboard() {
   return (
     <AuthProvider>
       <TopNavbar />
-      <div className="min-vh-100 small mt-3">
+      <div className="min-vh-100  mt-3">
         <Container fluid className="">
           <Container fluid className="">
-            <Row className="mb-4 align-items-center shadow-sm border-start border-2 border-primary rounded bg-info bg-opacity-10 p-3">
+            <Row className="mb-4 align-items-center shadow-sm border-start border-3 border-primary rounded bg-info bg-opacity-10 p-3">
               <Col>
-                <h5 className="mb-1 fw-bold mb-4">Expense Dashboard</h5>
+                <h5 className="mb-1 fw-bold mb-0">Expense Dashboard</h5>
                 <p className="text-muted mb-0">
                   Overview of all expense activities
-                </p>
-                <p className="text-muted mb-0">
-                  Track, analyze, and manage expenses efficiently with real-time
-                  insights.
-                  <br />
-                  Get a clear view of approvals, pending requests, and payment
-                  statuses in one place.
                 </p>
               </Col>
               <Col xs="auto">
@@ -283,24 +276,19 @@ export default function Dashboard() {
               </Col>
             </Row>
           </Container>
-          <br />
-          <br />
           {/* Time filter controls */}
-          <Row className="mb-4">
+          <Row className="mb-1">
             <Col>
-              <Card className="shadow-sm border-0">
+              <Card className="border-0 ">  
                 <Card.Body className="py-3 px-4">
                   <div className="d-flex flex-wrap justify-content-between align-items-center">
                     {/* Left side: Filter */}
                     <div className="d-flex align-items-center mb-2 mb-sm-0">
-                      <div className="d-flex align-items-center bg-success bg-opacity-10 rounded px-3 py-2">
-                        <Filter size={16} className="me-2 text-primary" />
-                        <span className="me-2 fw-semibold text-dark">
-                          Time Period:
-                        </span>
+                      <div className="d-flex align-items-center bg-light bg-opacity-10 rounded px-1 py-1">
+                        <Filter size={16} className="text-primary" />
                         <Form.Select
                           size="sm"
-                          className="border bg-transparent fw-semibold text-muted"
+                          className="border-0 bg-transparent text-dark"
                           style={{ width: "auto" }}
                           value={timeFilter}
                           onChange={(e) => setTimeFilter(e.target.value)}
@@ -315,7 +303,7 @@ export default function Dashboard() {
                     </div>
 
                     {/* Right side: Date range */}
-                    <div className="text-muted small fw-medium bg-secondary bg-opacity-10 rounded px-3 py-2 shadow-sm border">
+                    <div className="text-muted  fw-medium bg-light bg-opacity-10 rounded px-1 py-1 border-0">
                       {data.dateRange.startDate && data.dateRange.endDate ? (
                         <span>
                           Data from{" "}
@@ -430,7 +418,7 @@ export default function Dashboard() {
                     <div className="flex-grow-1">
                       <h6 className="card-title text-muted mb-1">
                         Pending Approvals{" "}
-                        <span className="text-muted small">(steps)</span>
+                        <span className="text-muted ">(steps)</span>
                       </h6>
                       <h6 className="fw-bold mb-0">
                         {data.summary.pendingApprovals ?? 0}
@@ -502,13 +490,8 @@ export default function Dashboard() {
                   <Row className="g-3">
                     <Col md={4}>
                       <div className="d-flex flex-column h-100">
-                        <h6 className="small text-muted mb-3">
-                          Status Breakdown
-                        </h6>
-                        <ListGroup
-                          variant="flush"
-                          className="small flex-grow-1"
-                        >
+                        <h6 className=" text-muted mb-3">Status Breakdown</h6>
+                        <ListGroup variant="flush" className=" flex-grow-1">
                           {Object.entries(data.breakdown.statuses).map(
                             ([status, count]) => (
                               <ListGroup.Item
@@ -537,7 +520,7 @@ export default function Dashboard() {
                       </div>
                     </Col>
                     <Col md={4} className="d-flex flex-column">
-                      <h6 className="small text-muted text-center mb-3">
+                      <h6 className=" text-muted text-center mb-3">
                         Pie Chart
                       </h6>
                       <div style={{ height: "220px" }} className="flex-grow-1">
@@ -573,7 +556,7 @@ export default function Dashboard() {
                       </div>
                     </Col>
                     <Col md={4} className="d-flex flex-column">
-                      <h6 className="small text-muted text-center mb-3">
+                      <h6 className=" text-muted text-center mb-3">
                         Bar Chart
                       </h6>
                       <div style={{ height: "220px" }} className="flex-grow-1">
@@ -620,7 +603,7 @@ export default function Dashboard() {
                 <Card.Body>
                   <Row>
                     <Col md={6}>
-                      <ListGroup variant="flush" className="small">
+                      <ListGroup variant="flush" className="">
                         {Object.entries(data.breakdown.paymentStatuses).map(
                           ([status, count]) => (
                             <ListGroup.Item

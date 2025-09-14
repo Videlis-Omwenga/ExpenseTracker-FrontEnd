@@ -29,6 +29,14 @@ import {
   Collection,
   Building,
   Server,
+  ChevronDown,
+  PlusCircle,
+  Journal,
+  People,
+  Folder,
+  BarChart,
+  Clock,
+  CheckCircle,
 } from "react-bootstrap-icons";
 
 export default function TopNavbar() {
@@ -46,7 +54,7 @@ export default function TopNavbar() {
       <Navbar
         expand="lg"
         expanded={expanded}
-        className="top-navbar primary-navbar shadow-sm"
+        className="top-navbar primary-navbar"
         variant="dark"
       >
         <Container fluid className="navbar-container">
@@ -59,6 +67,9 @@ export default function TopNavbar() {
               <CashStack size={24} />
             </div>
             <span className="brand-text">ExpenseTracker</span>
+            <span className="brand-subtitle d-none d-md-inline">
+              Enterprise
+            </span>
           </Navbar.Brand>
 
           {/* Toggle button for mobile */}
@@ -76,13 +87,19 @@ export default function TopNavbar() {
 
             {/* Right side items */}
             <div className="navbar-right-container">
+              {/* Quick Add Button */}
+              <button className="btn btn-primary btn-sm me-2 quick-add-btn">
+                <PlusCircle size={16} className="me-1" />
+                <span className="d-none d-md-inline">New Expense</span>
+              </button>
+
               {/* Notifications */}
               <Dropdown className="notification-dropdown-container">
                 <Dropdown.Toggle
                   variant="dark"
                   className="notification-toggle position-relative"
                 >
-                  <Bell size={20} />
+                  <Bell size={16} />
                   <Badge
                     bg="danger"
                     className="notification-badge position-absolute"
@@ -92,50 +109,66 @@ export default function TopNavbar() {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu align="end" className="notification-dropdown">
-                  <Dropdown.Header className="dropdown-header">
-                    Notifications
+                  <Dropdown.Header className="dropdown-header d-flex justify-content-between align-items-center">
+                    <span>Notifications</span>
+                    <Badge bg="primary" pill>
+                      3 New
+                    </Badge>
                   </Dropdown.Header>
-                  <Dropdown.Divider />
-                  <Dropdown.Item className="notification-item py-3">
+
+                  <Dropdown.Item className="notification-item py-3 unread">
                     <div className="d-flex">
                       <div className="notification-icon bg-success bg-opacity-10 p-2 rounded me-3">
-                        <CreditCard size={20} className="text-success" />
+                        <CreditCard size={16} className="text-success" />
                       </div>
                       <div className="flex-grow-1">
-                        <div className="fw-medium">New transaction</div>
+                        <div className="fw-medium d-flex align-items-center">
+                          New transaction
+                          <span className="ms-2">
+                            <Badge bg="success" className="ms-1" pill>
+                              Payment
+                            </Badge>
+                          </span>
+                        </div>
                         <small className="text-muted">
                           Payment received from Client X
                         </small>
                         <div className="text-muted mt-1 notification-time">
+                          <Clock size={12} className="me-1" />
                           10 minutes ago
                         </div>
                       </div>
                     </div>
                   </Dropdown.Item>
-                  <Dropdown.Divider />
-                  <Dropdown.Item className="notification-item py-3">
+
+                  <Dropdown.Item className="notification-item py-3 unread">
                     <div className="d-flex">
                       <div className="notification-icon bg-warning bg-opacity-10 p-2 rounded me-3">
-                        <FileText size={20} className="text-warning" />
+                        <FileText size={16} className="text-warning" />
                       </div>
                       <div className="flex-grow-1">
-                        <div className="fw-medium">
+                        <div className="fw-medium d-flex align-items-center">
                           Expense requires approval
+                          <span className="ms-2">
+                            <Badge bg="warning" className="ms-1" pill>
+                              Action Needed
+                            </Badge>
+                          </span>
                         </div>
                         <small className="text-muted">
                           John Doe submitted a new expense
                         </small>
                         <div className="text-muted mt-1 notification-time">
-                          2 hours ago
+                          <Clock size={12} className="me-1" />2 hours ago
                         </div>
                       </div>
                     </div>
                   </Dropdown.Item>
-                  <Dropdown.Divider />
+
                   <Dropdown.Item className="notification-item py-3">
                     <div className="d-flex">
                       <div className="notification-icon bg-info bg-opacity-10 p-2 rounded me-3">
-                        <ClipboardCheck size={20} className="text-info" />
+                        <ClipboardCheck size={16} className="text-info" />
                       </div>
                       <div className="flex-grow-1">
                         <div className="fw-medium">Report generated</div>
@@ -143,11 +176,12 @@ export default function TopNavbar() {
                           Monthly financial report is ready
                         </small>
                         <div className="text-muted mt-1 notification-time">
-                          1 day ago
+                          <Clock size={12} className="me-1" />1 day ago
                         </div>
                       </div>
                     </div>
                   </Dropdown.Item>
+
                   <Dropdown.Divider />
                   <Dropdown.Item className="text-center view-all-notifications">
                     View all notifications
@@ -162,36 +196,49 @@ export default function TopNavbar() {
                   className="user-dropdown-toggle d-flex align-items-center"
                 >
                   <div className="d-flex align-items-center">
-                    <div className="user-avatar me-2">
-                      <PersonCircle size={28} />
+                    <div className="user-avatar me-2 position-relative">
+                      <PersonCircle size={32} />
+                      <span className="user-status position-absolute bg-success rounded-circle"></span>
                     </div>
-                    <div className="user-info d-none d-md-block">
+                    <div className="user-info d-none d-md-block text-start">
                       <div className="user-name">Admin User</div>
                       <div className="user-role">Administrator</div>
                     </div>
+                    <ChevronDown size={16} className="ms-1 d-none d-md-block" />
                   </div>
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu align="end" className="user-dropdown">
-                  <Dropdown.Header className="dropdown-header">
-                    Account
+                  <Dropdown.Header className="dropdown-header d-flex align-items-center">
+                    <PersonCircle size={24} className="me-2" />
+                    <div>
+                      <div className="fw-medium">Admin User</div>
+                      <small className="text-muted">admin@example.com</small>
+                    </div>
                   </Dropdown.Header>
+
                   <Dropdown.Item className="dropdown-item">
-                    <PersonCircle className="me-2" size={18} />
+                    <PersonCircle className="me-2" size={16} />
                     Profile
                   </Dropdown.Item>
                   <Dropdown.Item className="dropdown-item">
-                    <Gear className="me-2" size={18} />
+                    <Gear className="me-2" size={16} />
                     Settings
                   </Dropdown.Item>
+
                   <Dropdown.Divider />
+
+                  <Dropdown.Header className="dropdown-header">
+                    Admin Portals
+                  </Dropdown.Header>
+
                   <Dropdown.Item
                     className="dropdown-item"
                     onClick={() =>
                       handleNavigation("/admin-pages/company-admin-dashboard")
                     }
                   >
-                    <Building className="me-2 text-primary" size={18} />
+                    <Building className="me-2 text-primary" size={16} />
                     Company admin
                   </Dropdown.Item>
                   <Dropdown.Item
@@ -200,15 +247,17 @@ export default function TopNavbar() {
                       handleNavigation("/admin-pages/system-admin-dashboard")
                     }
                   >
-                    <Server className="me-2 text-primary" size={18} />
+                    <Server className="me-2 text-primary" size={16} />
                     System admin
                   </Dropdown.Item>
+
                   <Dropdown.Divider />
+
                   <Dropdown.Item
                     className="dropdown-item"
                     onClick={() => handleNavigation("/login")}
                   >
-                    <BoxArrowRight className="me-2 text-danger" size={18} />
+                    <BoxArrowRight className="me-2 text-danger" size={16} />
                     Logout
                   </Dropdown.Item>
                 </Dropdown.Menu>
@@ -222,7 +271,7 @@ export default function TopNavbar() {
       <Navbar
         expand="lg"
         expanded={expanded}
-        className="secondary-navbar shadow-sm"
+        className="secondary-navbar"
         variant="light"
       >
         <Container fluid className="navbar-container">
@@ -242,13 +291,15 @@ export default function TopNavbar() {
                 onClick={() => handleNavigation("/dashboard")}
                 className="nav-link-item"
               >
-                <GraphUp className="me-1" size={16} />
+                <GraphUp className="me-1 text-primary" size={16} />
                 Dashboard
               </Nav.Link>
+
               <Dropdown as={Nav.Item} className="nav-dropdown">
                 <Dropdown.Toggle as={Nav.Link} className="nav-link-item">
-                  <CashStack className="me-1" size={16} />
+                  <CashStack className="me-1 text-primary" size={16} />
                   Expenses
+                  
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="dropdown-menu">
                   <Dropdown.Item
@@ -257,7 +308,7 @@ export default function TopNavbar() {
                     }
                     className="dropdown-item"
                   >
-                    <CreditCard className="me-2" size={16} />
+                    <Journal className="me-2" size={16} />
                     My expenses
                   </Dropdown.Item>
                   <Dropdown.Item
@@ -266,31 +317,67 @@ export default function TopNavbar() {
                     }
                     className="dropdown-item"
                   >
-                    <Collection className="me-2" size={16} />
+                    <PlusCircle className="me-2" size={16} />
                     Create expense
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() =>
+                      handleNavigation("/expense-management/reports")
+                    }
+                    className="dropdown-item"
+                  >
+                    <BarChart className="me-2" size={16} />
+                    Expense reports
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
-              <Nav.Link
-                onClick={() => handleNavigation("/expense-approvals/workflows")}
-                className="nav-link-item"
-              >
-                <FileText className="me-1" size={16} />
-                Workflows
-              </Nav.Link>
-              <Nav.Link
-                onClick={() => handleNavigation("/expense-approvals/approvals")}
-                className="nav-link-item"
-              >
-                <ClipboardCheck className="me-1" size={16} />
-                Approvals
-              </Nav.Link>
+
+              <Dropdown as={Nav.Item} className="nav-dropdown">
+                <Dropdown.Toggle as={Nav.Link} className="nav-link-item">
+                  <ClipboardCheck className="me-1 text-primary" size={16} />
+                  Approvals
+                  
+                </Dropdown.Toggle>
+                <Dropdown.Menu className="dropdown-menu">
+                  <Dropdown.Item
+                    onClick={() =>
+                      handleNavigation("/expense-approvals/workflows")
+                    }
+                    className="dropdown-item"
+                  >
+                    <FileText className="me-2" size={16} />
+                    Workflows
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() =>
+                      handleNavigation("/expense-approvals/approvals")
+                    }
+                    className="dropdown-item"
+                  >
+                    <CheckCircle className="me-2" size={16} />
+                    Pending approvals
+                    <Badge bg="warning" text="dark" className="ms-2" pill>
+                      5
+                    </Badge>
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() =>
+                      handleNavigation("/expense-approvals/history")
+                    }
+                    className="dropdown-item"
+                  >
+                    <Clock className="me-2" size={16} />
+                    Approval history
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
 
               {/* Finance Dropdown */}
               <Dropdown as={Nav.Item} className="nav-dropdown">
                 <Dropdown.Toggle as={Nav.Link} className="nav-link-item">
-                  <CashStack className="me-1" size={16} />
+                  <Wallet2 className="me-1 text-primary" size={16} />
                   Finance
+                  
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="dropdown-menu">
                   <Dropdown.Item
@@ -299,6 +386,9 @@ export default function TopNavbar() {
                   >
                     <Collection className="me-2" size={16} />
                     Manage expenses
+                    <Badge bg="info" className="ms-2" pill>
+                      12
+                    </Badge>
                   </Dropdown.Item>
                   <Dropdown.Item
                     onClick={() => handleNavigation("/finance/pay-expenses")}
@@ -318,15 +408,17 @@ export default function TopNavbar() {
                     onClick={() => handleNavigation("/finance/accounts")}
                     className="dropdown-item"
                   >
-                    <Wallet2 className="me-2" size={16} />
+                    <Folder className="me-2" size={16} />
                     All expenses
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
+
               <Dropdown as={Nav.Item} className="nav-dropdown">
                 <Dropdown.Toggle as={Nav.Link} className="nav-link-item">
-                  <CashStack className="me-1" size={16} />
-                  Data inputs
+                  <Building className="me-1 text-primary " size={16} />
+                  Administration
+                  
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="dropdown-menu">
                   <Dropdown.Item
@@ -340,8 +432,15 @@ export default function TopNavbar() {
                     onClick={() => handleNavigation("/data-inputs/departments")}
                     className="dropdown-item"
                   >
-                    <CreditCard className="me-2" size={16} />
+                    <People className="me-2" size={16} />
                     Departments
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => handleNavigation("/data-inputs/policies")}
+                    className="dropdown-item"
+                  >
+                    <FileText className="me-2" size={16} />
+                    Expense Policies
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
@@ -357,7 +456,7 @@ export default function TopNavbar() {
                   </InputGroup.Text>
                   <Form.Control
                     type="search"
-                    placeholder="Search..."
+                    placeholder="Search expenses ..."
                     className="search-input"
                   />
                 </InputGroup>
@@ -373,17 +472,19 @@ export default function TopNavbar() {
           position: sticky;
           top: 0;
           z-index: 1030;
+          font-family: "Inter", "Segoe UI", system-ui, sans-serif;
         }
 
         /* Primary Navbar Styles */
         .primary-navbar {
           background: linear-gradient(
             135deg,
-            #2c3e50 0%,
-            #1a2530 100%
+            #1a2a3a 0%,
+            #0d1b2a 100%
           ) !important;
           padding: 0.5rem 0;
           min-height: 64px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .navbar-container {
@@ -396,26 +497,41 @@ export default function TopNavbar() {
         }
 
         .logo-icon {
-          background: linear-gradient(45deg, #4e73df, #224abe);
-          border-radius: 8px;
-          padding: 6px;
-          margin-right: 10px;
+          background: linear-gradient(45deg, #4361ee, #3a0ca3);
+          border-radius: 10px;
+          padding: 8px;
+          margin-right: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .brand-text {
-          font-size: 1.4rem;
-          background: linear-gradient(to right, #fff, #e0e0e0);
+          font-size: 1.5rem;
+          background: linear-gradient(to right, #fff, #f8f9fa);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           font-weight: 700;
+          letter-spacing: -0.5px;
+        }
+
+        .brand-subtitle {
+          font-size: 0.75rem;
+          background: linear-gradient(to right, #4cc9f0, #4361ee);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          font-weight: 600;
+          margin-left: 8px;
+          padding: 2px 8px;
+          border-radius: 4px;
+          background-color: rgba(255, 255, 255, 0.1);
         }
 
         .navbar-toggle {
           border: none;
           padding: 0.25rem 0.5rem;
+          color: rgba(255, 255, 255, 0.8);
         }
 
         .navbar-toggle:focus {
@@ -427,18 +543,34 @@ export default function TopNavbar() {
           align-items: center;
           margin-top: 0.5rem;
           margin-bottom: 0.5rem;
+          gap: 0.75rem;
+        }
+
+        .quick-add-btn {
+          background: linear-gradient(45deg, #4361ee, #3a0ca3);
+          border: none;
+          border-radius: 8px;
+          padding: 0.5rem 1rem;
+          font-weight: 500;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          transition: all 0.2s ease;
+        }
+
+        .quick-add-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
 
         .notification-dropdown-container {
-          margin-right: 1rem;
+          margin-right: 0;
         }
 
         .notification-toggle {
-          background: rgba(255, 255, 255, 0.1) !important;
-          border: 1px solid rgba(255, 255, 255, 0.15) !important;
-          border-radius: 50% !important;
-          width: 40px;
-          height: 40px;
+          background: rgba(255, 255, 255, 0.08) !important;
+          border: 1px solid rgba(255, 255, 255, 0.12) !important;
+          border-radius: 8px !important;
+          width: 42px;
+          height: 42px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -446,7 +578,8 @@ export default function TopNavbar() {
         }
 
         .notification-toggle:hover {
-          background: rgba(255, 255, 255, 0.2) !important;
+          background: rgba(255, 255, 255, 0.15) !important;
+          transform: translateY(-1px);
         }
 
         .notification-toggle:after {
@@ -454,57 +587,66 @@ export default function TopNavbar() {
         }
 
         .notification-badge {
-          font-size: 0.6rem;
+          font-size: 0.65rem;
           padding: 0.25em 0.5em;
-          top: -5px !important;
-          right: -5px !important;
+          top: -2px !important;
+          right: -2px !important;
         }
 
         .notification-dropdown {
-          width: 350px;
+          width: 380px;
           border: 1px solid rgba(0, 0, 0, 0.1);
-          box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-          border-radius: 0.5rem;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+          border-radius: 12px;
           padding: 0;
+          overflow: hidden;
         }
 
         .dropdown-header {
           font-weight: 600;
-          padding: 0.75rem 1rem;
+          padding: 0.875rem 1rem;
           background-color: #f8f9fa;
-          border-top-left-radius: 0.5rem;
-          border-top-right-radius: 0.5rem;
+          border-bottom: 1px solid #dee2e6;
         }
 
         .notification-item {
-          border-left: 3px solid transparent;
+          border-left: 4px solid transparent;
           transition: all 0.2s ease;
+          padding: 0.875rem 1rem;
+        }
+
+        .notification-item.unread {
+          background-color: #f8fafd;
+          border-left: 4px solid #4361ee;
         }
 
         .notification-item:hover {
-          background-color: #f8f9fa;
-          border-left: 3px solid #4e73df;
+          background-color: #f0f4f8;
         }
 
         .notification-time {
           font-size: 0.75rem;
+          display: flex;
+          align-items: center;
         }
 
         .view-all-notifications {
-          color: #4e73df !important;
+          color: #4361ee !important;
           font-weight: 500;
           padding: 0.75rem 1rem;
+          background-color: #f8f9fa;
+          transition: all 0.2s ease;
         }
 
         .view-all-notifications:hover {
-          background-color: #f8f9fa;
+          background-color: #e9ecef;
         }
 
         .user-dropdown-toggle {
           background: transparent !important;
           border: none !important;
           padding: 0.25rem 0.5rem;
-          border-radius: 0.5rem;
+          border-radius: 8px;
           transition: all 0.2s ease;
         }
 
@@ -513,11 +655,20 @@ export default function TopNavbar() {
         }
 
         .user-dropdown-toggle:after {
-          margin-left: 0.5rem;
+          display: none;
         }
 
         .user-avatar {
           color: #fff;
+          position: relative;
+        }
+
+        .user-status {
+          width: 12px;
+          height: 12px;
+          bottom: 0;
+          right: 0;
+          border: 2px solid #1a2a3a;
         }
 
         .user-info {
@@ -538,50 +689,57 @@ export default function TopNavbar() {
 
         .user-dropdown {
           border: 1px solid rgba(0, 0, 0, 0.1);
-          box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-          border-radius: 0.5rem;
-          padding: 0.5rem 0;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+          border-radius: 12px;
+          padding: 0.5rem;
+          width: 280px;
         }
 
         .dropdown-item {
           display: flex;
           align-items: center;
-          padding: 0.5rem 1rem;
-          border-radius: 0.25rem;
-          margin: 0 0.25rem;
-          width: auto;
+          padding: 0.625rem 0.75rem;
+          border-radius: 8px;
+          margin: 0.125rem 0;
+          transition: all 0.2s ease;
         }
 
         .dropdown-item:hover {
-          background-color: #f8f9fa;
+          background-color: #f0f4f8;
+          transform: translateX(2px);
         }
 
         /* Secondary Navbar Styles */
         .secondary-navbar {
-          background: linear-gradient(to right, #f8f9fa, #e9ecef) !important;
+          background: linear-gradient(to right, #ffffff, #f8fafc) !important;
           padding: 0.5rem 0;
           min-height: 56px;
-          border-top: 1px solid #dee2e6;
+          border-bottom: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .main-navigation {
           align-items: center;
+          gap: 0.25rem;
         }
 
         .nav-link-item {
           display: flex;
           align-items: center;
-          padding: 0.5rem 0.75rem !important;
-          border-radius: 0.375rem;
-          margin: 0 0.15rem;
-          color: #4e73df !important;
+          padding: 0.625rem 0.875rem !important;
+          border-radius: 8px;
+          margin: 0 0.1rem;
+          color: #4a5568 !important;
           font-weight: 500;
           transition: all 0.2s ease;
+          border: 1px solid transparent;
         }
 
-        .nav-link-item:hover {
-          background-color: rgba(78, 115, 223, 0.1);
-          color: #224abe !important;
+        .nav-link-item:hover,
+        .nav-link-item:focus {
+          background-color: #f1f5f9;
+          color: #4361ee !important;
+          border-color: #e2e8f0;
         }
 
         .nav-dropdown .dropdown-toggle {
@@ -590,30 +748,75 @@ export default function TopNavbar() {
         }
 
         .nav-dropdown .dropdown-menu {
-          border: 1px solid rgba(0, 0, 0, 0.1);
-          box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-          border-radius: 0.5rem;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+          border-radius: 12px;
           padding: 0.5rem;
+          margin-top: 0.5rem;
+        }
+
+        .nav-dropdown .dropdown-item {
+          padding: 0.625rem 0.75rem;
+          border-radius: 8px;
         }
 
         .search-icon-container {
           background-color: #fff;
-          border: 1px solid #ced4da;
+          border: 1px solid #e2e8f0;
           border-right: none;
-          border-radius: 0.375rem 0 0 0.375rem;
+          border-radius: 8px 0 0 8px;
+          color: #64748b;
         }
 
         .search-input {
           border-left: none;
-          border-radius: 0 0.375rem 0.375rem 0;
+          border-radius: 0 8px 8px 0;
+          border-color: #e2e8f0;
+          min-width: 280px;
         }
 
         .search-input:focus {
           box-shadow: none;
-          border-color: #ced4da;
+          border-color: #e2e8f0;
+        }
+
+        .search-input::placeholder {
+          color: #94a3b8;
+        }
+
+        .quick-stats {
+          padding: 0.5rem;
+          background: #f8fafc;
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+        }
+
+        .stat-item {
+          text-align: center;
+          padding: 0 0.75rem;
+          border-right: 1px solid #e2e8f0;
+        }
+
+        .stat-item:last-child {
+          border-right: none;
+        }
+
+        .stat-label {
+          font-size: 0.7rem;
+          margin-bottom: 0.1rem;
+        }
+
+        .stat-value {
+          font-size: 0.9rem;
         }
 
         /* Responsive adjustments */
+        @media (max-width: 1199.98px) {
+          .search-input {
+            min-width: 220px;
+          }
+        }
+
         @media (max-width: 991.98px) {
           .navbar-container {
             padding: 0 1rem;
@@ -622,6 +825,7 @@ export default function TopNavbar() {
           .navbar-right-container {
             margin-top: 1rem;
             margin-bottom: 1rem;
+            flex-wrap: wrap;
           }
 
           .main-navigation {
@@ -642,6 +846,35 @@ export default function TopNavbar() {
           .search-container {
             width: 100%;
             margin: 1rem 0;
+          }
+
+          .search-input {
+            min-width: 100%;
+          }
+
+          .quick-stats {
+            display: none !important;
+          }
+        }
+
+        @media (max-width: 767.98px) {
+          .brand-text {
+            font-size: 1.25rem;
+          }
+
+          .quick-add-btn span {
+            display: none;
+          }
+
+          .quick-add-btn {
+            padding: 0.5rem;
+          }
+        }
+
+        @media (max-width: 575.98px) {
+          .notification-dropdown {
+            width: 300px;
+            right: -50px;
           }
         }
       `}</style>
