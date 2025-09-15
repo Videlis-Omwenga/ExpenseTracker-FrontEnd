@@ -45,6 +45,7 @@ import {
   Tag,
   ListChecks,
   CheckCircle,
+  User,
 } from "lucide-react";
 import TopNavbar from "../../components/Navbar";
 import { BASE_API_URL } from "@/app/static/apiConfig";
@@ -137,6 +138,7 @@ type Expense = {
   paymentMethods: PaymentMethod[];
   regions: Region[];
   exchangeRateUsed: number;
+  countBudget?: number;
 };
 
 const humanStatus = (s: string) =>
@@ -318,11 +320,14 @@ export default function ExpenseApprovalPage() {
     const payload = {
       isApproved: false,
       comments: reason,
+      paymentMethodId: Number(paymentMethodId),
+      categoryId: Number(categoryId),
+      regionId: Number(regionId),
     };
 
     try {
       const res = await fetch(
-        `${BASE_API_URL}/expense-approvals//expense-for-payment/${id}`,
+        `${BASE_API_URL}/finance/reject-expense/${id}`,
         {
           method: "POST",
           headers: {
@@ -495,7 +500,7 @@ export default function ExpenseApprovalPage() {
                     Every submitted expense goes through this check to ensure
                     compliance and readiness for payment:
                   </p>
-
+                  <br />
                   <div className="d-flex flex-column gap-3 small text-secondary">
                     {/* Step 1 */}
                     <div className="d-flex align-items-center">
@@ -554,6 +559,10 @@ export default function ExpenseApprovalPage() {
                                     })
                                 : "0.00"}
                             </h6>
+
+                            <div className="text-muted small mt-1">
+                              Total amount
+                            </div>
                           </div>
                         </div>
                       </Card.Body>
@@ -571,6 +580,10 @@ export default function ExpenseApprovalPage() {
                               Total in list
                             </div>
                             <h6 className="mb-0 mt-2">{expenses.length}</h6>
+
+                            <div className="text-muted small mt-1">
+                              Expenses to review
+                            </div>
                           </div>
                         </div>
                       </Card.Body>
@@ -584,10 +597,16 @@ export default function ExpenseApprovalPage() {
                             <FileText size={20} className="text-info" />
                           </div>
                           <div>
-                            <div className="text-muted small">
-                              Total in list
+                            <div className="text-muted small">Budgets</div>
+                            <h6 className="mb-0">Navigate to budgets</h6>
+                            <div className="text-muted small mt-1">
+                              {expenses.length > 0
+                                ? `${expenses.reduce(
+                                    (sum, exp) => sum + (exp.countBudget || 0),
+                                    0
+                                  )} budgets found`
+                                : "0 budgets found"}
                             </div>
-                            <h6 className="mb-0 mt-2">{expenses.length}</h6>
                           </div>
                         </div>
                       </Card.Body>
@@ -598,13 +617,23 @@ export default function ExpenseApprovalPage() {
                       <Card.Body>
                         <div className="d-flex align-items-center">
                           <div className="icon-container bg-secondary bg-opacity-10 me-3">
-                            <FileText size={20} className="text-secondary" />
+                            <User size={20} className="text-secondary" />
                           </div>
                           <div>
                             <div className="text-muted small">
-                              Total in list
+                              Last approved expense for
                             </div>
-                            <h6 className="mb-0 mt-2">{expenses.length}</h6>
+                            <h6 className="mb-0">
+                              {expenses.length > 0
+                                ? `${expenses[0].user.firstName} ${expenses[0].user.lastName}`
+                                : "N/A"}
+                            </h6>
+                            <div className="text-muted small mt-1">
+                              {expenses.length > 0 &&
+                                new Date(
+                                  expenses[0].createdAt
+                                ).toLocaleDateString()}
+                            </div>
                           </div>
                         </div>
                       </Card.Body>
