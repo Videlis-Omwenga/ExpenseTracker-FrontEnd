@@ -39,7 +39,13 @@ import {
 import DateTimeDisplay from "@/app/components/DateTimeDisplay";
 import { toast } from "react-toastify";
 import AuthProvider from "../../authPages/tokenData";
-import { ArrowDownCircle, DollarSign, Tag, ListChecks } from "lucide-react";
+import {
+  ArrowDownCircle,
+  DollarSign,
+  Tag,
+  ListChecks,
+  CheckCircle,
+} from "lucide-react";
 import TopNavbar from "../../components/Navbar";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 
@@ -130,6 +136,7 @@ type Expense = {
   categories: Category[];
   paymentMethods: PaymentMethod[];
   regions: Region[];
+  exchangeRateUsed: number;
 };
 
 const humanStatus = (s: string) =>
@@ -1077,76 +1084,71 @@ export default function ExpenseApprovalPage() {
               </Modal.Header>
               <Modal.Body>
                 {/* Header with description and amount */}
-                <div
-                  className="d-flex justify-content-between align-items-start mb-4 p-3 bg-light bg-opacity-50 rounded-3"
-                  style={{ borderBottom: "1px solid #dee2e6" }}
-                >
+                <div className="d-flex justify-content-between align-items-start mb-4 p-3 bg-secondary border-secondary bg-opacity-10 rounded-3">
                   <div className="flex-grow-1 me-3">
                     <h6 className="mb-1 fw-semibold">
                       {selectedExpense.description}
                     </h6>
                     <small className="text-muted">
                       Created on{" "}
-                      <DateTimeDisplay
-                        date={selectedExpense.createdAt}
-                        showTime={false}
-                      />
+                      <DateTimeDisplay date={selectedExpense.createdAt} />
                     </small>
                   </div>
                   <div className="text-end">
                     <h5 className="mb-0 text-danger fw-bold">
                       {selectedExpense.amount.toLocaleString()} KES
                     </h5>
-                    <small className="text-muted">Total amount</small>
+                    <small className="text-muted">Base currency</small>
                   </div>
                 </div>
                 {/* Steps timeline */}
                 <Row className="gy-4">
                   <Col md={6}>
-                    <Card className="h-100 border shadow-sm rounded-4">
-                      <Card.Body className="p-4">
+                    <Card className="border shadow-sm h-100">
+                      <Card.Body>
                         {/* Section Header */}
-                        <div className="d-flex align-items-center mb-4">
-                          <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
-                            <FileText size={22} className="text-primary" />
+                        <div className="d-flex align-items-center mb-3 bg-primary border-start border-primary border-3 bg-opacity-10 p-3 rounded-3">
+                          <div className="bg-primary bg-opacity-10 p-2 rounded me-2">
+                            <FileText size={18} className="text-primary" />
                           </div>
-                          <h5 className="mb-0 fw-bold text-dark">
+                          <h6 className="mb-0 fw-semibold">
                             Expense Information
-                          </h5>
+                          </h6>
                         </div>
 
-                        {/* Info Rows */}
-                        <div className="d-flex flex-column gap-3 small">
-                          {/* Submission */}
-                          <div className="bg-light bg-opacity-50 p-3 rounded-3">
-                            <div className="fw-semibold text-uppercase text-muted mb-2 small">
+                        <div className="detail-list small">
+                          {/* Submission Details */}
+                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3 mb-4">
+                            <h6 className="text-muted fw-semibold small mb-2">
                               Submission
-                            </div>
-                            <div className="d-flex justify-content-between">
-                              <span className="text-muted">Submitted On</span>
-                              <span className="fw-semibold">
+                            </h6>
+                            <div className="detail-item">
+                              <span className="detail-label">Submitted On</span>
+                              <span className="detail-value">
                                 <DateTimeDisplay
                                   date={selectedExpense.createdAt}
-                                  showTime={true}
                                 />
                               </span>
                             </div>
-                            <div className="d-flex justify-content-between mt-1">
-                              <span className="text-muted">Last Updated</span>
-                              <span className="fw-semibold">
+                            <div className="detail-item">
+                              <span className="detail-label">Last Updated</span>
+                              <span className="detail-value">
                                 <DateTimeDisplay
                                   date={selectedExpense.updatedAt}
-                                  showTime={true}
+                                  isHighlighted={
+                                    selectedExpense.updatedAt !==
+                                    selectedExpense.createdAt
+                                  }
                                 />
                               </span>
                             </div>
-                            <div className="d-flex justify-content-between mt-1">
-                              <span className="text-muted">
+                            <div className="detail-item">
+                              <span className="detail-label">
                                 Reference Number
                               </span>
-                              <span className="fw-semibold">
+                              <span className="detail-value">
                                 {selectedExpense.referenceNumber ? (
-                                  <code className="bg-white border px-2 py-1 rounded small">
+                                  <code className="bg-light px-2 py-1 rounded">
                                     {selectedExpense.referenceNumber}
                                   </code>
                                 ) : (
@@ -1157,50 +1159,60 @@ export default function ExpenseApprovalPage() {
                           </div>
 
                           {/* Classification */}
-                          <div className="bg-light bg-opacity-50 p-3 rounded-3">
-                            <div className="fw-semibold text-uppercase text-muted mb-2 small">
+                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3 mb-4">
+                            <h6 className="text-muted fw-semibold small mb-2">
                               Classification
-                            </div>
-                            <div className="d-flex justify-content-between">
-                              <span className="text-muted">Category</span>
-                              <span className="fw-semibold">
+                            </h6>
+                            <div className="detail-item">
+                              <span className="detail-label">Category</span>
+                              <span className="detail-value">
                                 {selectedExpense.category?.name || "N/A"}
                               </span>
                             </div>
-                            <div className="d-flex justify-content-between mt-1">
-                              <span className="text-muted">Department</span>
-                              <span className="fw-semibold">
+                            <div className="detail-item">
+                              <span className="detail-label">Department</span>
+                              <span className="detail-value">
                                 {selectedExpense.department?.name || "N/A"}
                               </span>
                             </div>
-                            <div className="d-flex justify-content-between mt-1">
-                              <span className="text-muted">Region</span>
-                              <span className="fw-semibold">
+                            <div className="detail-item">
+                              <span className="detail-label">Region</span>
+                              <span className="detail-value">
                                 {selectedExpense.region?.name || "N/A"}
                               </span>
                             </div>
                           </div>
 
                           {/* Payment */}
-                          <div className="bg-light bg-opacity-50 p-3 rounded-3">
-                            <div className="fw-semibold text-uppercase text-muted mb-2 small">
+                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3">
+                            <h6 className="text-muted fw-semibold small mb-2">
                               Payment
-                            </div>
-                            <div className="d-flex justify-content-between">
-                              <span className="text-muted">Payment Method</span>
-                              <span className="fw-semibold">
+                            </h6>
+                            <div className="detail-item">
+                              <span className="detail-label">
+                                Payment Method
+                              </span>
+                              <span className="detail-value">
                                 {selectedExpense.paymentMethod?.name || "N/A"}
                               </span>
                             </div>
-                            <div className="d-flex justify-content-between mt-1">
-                              <span className="text-muted">Payee ID</span>
-                              <span className="fw-semibold">
+                            <div className="detail-item">
+                              <span className="detail-label">Payee ID</span>
+                              <span className="detail-value">
                                 {selectedExpense.payeeId || "N/A"}
                               </span>
                             </div>
-                            <div className="d-flex justify-content-between mt-1">
-                              <span className="text-muted">Exchange Rate</span>
-                              <span className="fw-semibold">N/A</span>
+                            <div className="detail-item">
+                              <span className="detail-label">
+                                Exchange Rate
+                              </span>
+                              <span className="detail-value">
+                                {selectedExpense.exchangeRateUsed
+                                  ? Number(
+                                      selectedExpense.exchangeRateUsed
+                                    ).toFixed(2)
+                                  : "N/A"}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -1210,100 +1222,103 @@ export default function ExpenseApprovalPage() {
 
                   <Col md={6}>
                     <div className="detail-section border rounded-4 shadow-sm p-4 bg-white">
-                      <h5 className="fw-bold mb-4 d-flex align-items-center text-dark mb-4">
-                        <FaFlag size={16} className="me-2 text-primary fs-4" />
-                        Approval Steps
-                      </h5>
-                      <br />
-                      {selectedExpense.expenseSteps.length === 0 ? (
-                        <div className="text-muted fst-italic d-flex align-items-center bg-light p-3 rounded-3">
-                          <FaInfoCircle
-                            size={16}
-                            className="me-2 text-secondary"
-                          />
-                          No steps configured.
+                      <div className="d-flex align-items-center mb-3 bg-success border-start border-success border-3 bg-opacity-10 p-3 rounded-3">
+                        <div className="bg-success bg-opacity-10 p-2 rounded me-2">
+                          <CheckCircle size={18} className="text-success" />
                         </div>
-                      ) : (
-                        <ul className="timeline list-unstyled position-relative ps-4">
-                          {selectedExpense.expenseSteps
-                            .sort((a, b) => a.order - b.order)
-                            .map((step) => (
-                              <li
-                                key={step.id}
-                                className="mb-4 position-relative ps-3"
-                                style={{
-                                  borderLeft: "2px solid #dee2e6",
-                                }}
-                              >
-                                {/* Timeline dot */}
-                                <span
-                                  className="position-absolute top-0 start-0 translate-middle p-2 rounded-circle"
+                        <h6 className="mb-0 fw-semibold">Approval Process</h6>
+                      </div>
+                      <div className="bg-secondary bg-opacity-10 p-3 rounded-3">
+                        {selectedExpense.expenseSteps.length === 0 ? (
+                          <div className="text-muted fst-italic d-flex align-items-center bg-light p-3 rounded-3">
+                            <FaInfoCircle
+                              size={16}
+                              className="me-2 text-secondary"
+                            />
+                            No steps configured.
+                          </div>
+                        ) : (
+                          <ul className="timeline list-unstyled position-relative ps-4">
+                            {selectedExpense.expenseSteps
+                              .sort((a, b) => a.order - b.order)
+                              .map((step) => (
+                                <li
+                                  key={step.id}
+                                  className="mb-4 position-relative ps-3"
                                   style={{
-                                    backgroundColor:
-                                      step.status === "PENDING"
-                                        ? "#f0ad4e"
-                                        : step.status === "APPROVED"
-                                        ? "#198754"
-                                        : step.status === "REJECTED"
-                                        ? "#dc3545"
-                                        : "#6c757d",
-                                    boxShadow: "0 0 0 4px #fff",
+                                    borderLeft: "2px solid #dee2e6",
                                   }}
-                                ></span>
+                                >
+                                  {/* Timeline dot */}
+                                  <span
+                                    className="position-absolute top-0 start-0 translate-middle p-2 rounded-circle"
+                                    style={{
+                                      backgroundColor:
+                                        step.status === "PENDING"
+                                          ? "#f0ad4e"
+                                          : step.status === "APPROVED"
+                                          ? "#198754"
+                                          : step.status === "REJECTED"
+                                          ? "#dc3545"
+                                          : "#6c757d",
+                                      boxShadow: "0 0 0 4px #fff",
+                                    }}
+                                  ></span>
 
-                                <div className="d-flex justify-content-between align-items-start mb-1">
-                                  <div className="fw-semibold text-dark">
-                                    Step {step.order}{" "}
-                                    <span className="text-muted small">
-                                      • {step.role?.name ?? "Unassigned role"}
-                                    </span>
+                                  <div className="d-flex justify-content-between align-items-start mb-1">
+                                    <div className="fw-semibold text-dark">
+                                      Step {step.order}{" "}
+                                      <span className="text-muted small">
+                                        • {step.role?.name ?? "Unassigned role"}
+                                      </span>
+                                    </div>
+                                    <Badge
+                                      pill
+                                      bg={
+                                        step.status === "PENDING"
+                                          ? "warning"
+                                          : step.status === "APPROVED"
+                                          ? "success"
+                                          : step.status === "REJECTED"
+                                          ? "danger"
+                                          : "secondary"
+                                      }
+                                      className="px-3 py-2 fw-semibold"
+                                    >
+                                      {humanStatus(step.status)}
+                                    </Badge>
                                   </div>
-                                  <Badge
-                                    pill
-                                    bg={
-                                      step.status === "PENDING"
-                                        ? "warning"
-                                        : step.status === "APPROVED"
-                                        ? "success"
-                                        : step.status === "REJECTED"
-                                        ? "danger"
-                                        : "secondary"
-                                    }
-                                    className="px-3 py-2 fw-semibold"
-                                  >
-                                    {humanStatus(step.status)}
-                                  </Badge>
-                                </div>
 
-                                <div className="small text-muted d-flex flex-wrap gap-3">
-                                  <span className="d-flex align-items-center">
-                                    <FaUser className="me-1 text-secondary" />
-                                    {step.approver
-                                      ? `${step.approver.firstName} ${step.approver.lastName}`
-                                      : "—"}
-                                  </span>
-
-                                  {step.updatedAt && (
+                                  <div className="small text-muted d-flex flex-wrap gap-3">
                                     <span className="d-flex align-items-center">
-                                      <FaClock className="me-1 text-secondary" />
-                                      <DateTimeDisplay
-                                        date={step.updatedAt}
-                                        showTime={true}
-                                      />
+                                      <FaUser className="me-1 text-secondary" />
+                                      {step.approver
+                                        ? `${step.approver.firstName} ${step.approver.lastName}`
+                                        : "—"}
                                     </span>
-                                  )}
 
-                                  {step.comments && (
-                                    <span className="d-flex align-items-center">
-                                      <FaComment className="me-1 text-secondary" />
-                                      {step.comments}
-                                    </span>
-                                  )}
-                                </div>
-                              </li>
-                            ))}
-                        </ul>
-                      )}
+                                    {step.updatedAt && (
+                                      <span className="d-flex align-items-center">
+                                        <FaClock className="me-1 text-secondary" />
+                                        <DateTimeDisplay
+                                          date={step.updatedAt}
+                                          showTime={true}
+                                        />
+                                      </span>
+                                    )}
+
+                                    {step.comments && (
+                                      <span className="d-flex align-items-center">
+                                        <FaComment className="me-1 text-secondary" />
+                                        {step.comments}
+                                      </span>
+                                    )}
+                                  </div>
+                                </li>
+                              ))}
+                          </ul>
+                        )}
+                      </div>
                     </div>
                   </Col>
                 </Row>
@@ -1429,22 +1444,51 @@ export default function ExpenseApprovalPage() {
 
         {/* Styles */}
         <style jsx>{`
-          .stat-card {
-            border-radius: 10px;
-            border: none;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+          .dashboard-container {
+            background-color: #f8f9fa;
           }
-          .icon-container {
-            width: 40px;
-            height: 40px;
+          .transactions-table {
+            border-collapse: separate;
+            border-spacing: 0;
+          }
+          .transactions-table tr {
+            cursor: pointer;
+            transition: background-color 0.2s;
+          }
+          .transactions-table tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+          }
+          .transactions-table td {
+            border-top: 1px solid #f0f0f0;
+            vertical-align: middle;
+            padding: 1rem;
+          }
+          .transactions-table th {
+            border: none;
+            padding: 0.75rem 1rem;
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #6c757d;
+          }
+          .transaction-icon {
+            width: 36px;
+            height: 36px;
             border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .transaction-icon-lg {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
           }
           .search-box {
             position: relative;
-            width: 220px;
+            width: 200px;
           }
           .search-icon {
             position: absolute;
@@ -1452,7 +1496,6 @@ export default function ExpenseApprovalPage() {
             top: 50%;
             transform: translateY(-50%);
             color: #6c757d;
-            z-index: 10;
           }
           .detail-section {
             background-color: #f8f9fa;
@@ -1467,15 +1510,211 @@ export default function ExpenseApprovalPage() {
             color: #6c757d;
             margin-bottom: 1rem;
           }
-          table :global(thead th) {
+
+          /* Step strip in table */
+          .step-strip {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+          }
+          .step-pill {
+            display: inline-block;
+            width: 16px;
+            height: 10px;
+            border-radius: 999px;
+            opacity: 0.95;
+          }
+
+          /* Timeline */
+          .activity-timeline {
+            position: relative;
+            padding-left: 20px;
+          }
+          .activity-item {
+            position: relative;
+            padding-bottom: 20px;
+          }
+          .activity-badge {
+            position: absolute;
+            left: -20px;
+            top: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+          }
+          .activity-badge.success {
+            background-color: #198754;
+          }
+          .activity-badge.danger {
+            background-color: #dc3545;
+          }
+          .activity-badge.primary {
+            background-color: #0d6efd;
+          }
+          .activity-content {
+            padding-left: 10px;
+          }
+          .activity-item:not(:last-child):after {
+            content: "";
+            position: absolute;
+            left: -16px;
+            top: 12px;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+          }
+          .transactions-table {
+            font-size: 0.9rem;
+          }
+          .transactions-table th {
             border-top: none;
-            background-color: #f8f9fa;
             font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
             color: #6c757d;
+            padding: 1rem 0.75rem;
+          }
+          .transactions-table td {
+            padding: 1rem 0.75rem;
             vertical-align: middle;
           }
-          table :global(tbody td) {
-            vertical-align: middle;
+          .transactions-table tr {
+            transition: all 0.2s ease;
+          }
+          .transactions-table tr:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+          }
+          .cursor-pointer {
+            cursor: pointer;
+          }
+          .transaction-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .avatar-sm {
+            width: 32px;
+            height: 32px;
+            font-size: 0.8rem;
+          }
+          .step-strip .step-pill {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 2px;
+          }
+          .step-pill.approved {
+            background-color: #198754;
+          }
+          .step-pill.pending {
+            background-color: #ffc107;
+          }
+          .step-pill.rejected {
+            background-color: #dc3545;
+          }
+          .step-pill.not-started {
+            background-color: #6c757d;
+          }
+          .expense-modal :global(.modal-content) {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+          }
+          .expense-modal :global(.modal-header) {
+            padding: 1.5rem 1.5rem 0;
+          }
+          .expense-modal :global(.modal-body) {
+            padding: 1rem 1.5rem;
+          }
+          .expense-modal :global(.modal-footer) {
+            padding: 0 1.5rem 1.5rem;
+          }
+          .modal-icon-wrapper {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .detail-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+          }
+          .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+          }
+          .detail-label {
+            font-weight: 500;
+            color: #6c757d;
+            flex: 0 0 40%;
+          }
+          .detail-value {
+            flex: 0 0 60%;
+            text-align: right;
+          }
+          .avatar-sm {
+            width: 28px;
+            height: 28px;
+            font-size: 0.7rem;
+          }
+          .approval-timeline {
+            position: relative;
+            padding-left: 1.5rem;
+          }
+          .approval-timeline::before {
+            content: "";
+            position: absolute;
+            left: 11px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+          }
+          .timeline-item {
+            position: relative;
+            margin-bottom: 1.25rem;
+          }
+          .timeline-marker {
+            position: absolute;
+            left: -1.5rem;
+            top: 0.25rem;
+          }
+          .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px #dee2e6;
+          }
+          .status-indicator.approved {
+            background-color: #198754;
+          }
+          .status-indicator.rejected {
+            background-color: #dc3545;
+          }
+          .status-indicator.pending {
+            background-color: #ffc107;
+          }
+          .status-indicator.not-started {
+            background-color: #6c757d;
+          }
+          .timeline-content {
+            padding: 0.5rem 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+          }
+          .comments-box {
+            border-left: 3px solid #dee2e6;
           }
         `}</style>
       </Container>

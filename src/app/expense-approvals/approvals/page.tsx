@@ -1048,7 +1048,6 @@ export default function ExpenseApprovalPage() {
                         </div>
                         <h6 className="mb-0 fw-semibold">Approval Process</h6>
                       </div>
-                      <br />
                       <div className="bg-secondary bg-opacity-10 p-3 rounded-3">
                         {selectedExpense.expenseSteps.length === 0 ? (
                           <div className="text-muted fst-italic d-flex align-items-center bg-light p-3 rounded-3">
