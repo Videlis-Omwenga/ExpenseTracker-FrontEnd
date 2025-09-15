@@ -33,6 +33,7 @@ import AuthProvider from "@/app/authPages/tokenData";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 import PageLoader from "@/app/components/PageLoader";
 import BudgetOverviewHOD from "../budgets/page";
+import DateTimeDisplay from "@/app/components/DateTimeDisplay";
 
 type ApprovalStatus = "NOT_STARTED" | "PENDING" | "APPROVED" | "REJECTED";
 type ExpenseStatus = "PENDING" | "APPROVED" | "REJECTED" | "PAID";
@@ -382,14 +383,10 @@ export default function ExpenseApprovalPage() {
             <Col>
               <div className="alert alert-info border-0 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center p-4 rounded-3 shadow-sm border-start border-info border-3">
                 <div className="mb-3 mb-md-0">
-                  <div className="d-flex align-items-center mb-2">
+                  <div className="d-flex align-items-center">
                     <h5 className="fw-bold text-dark mb-0 me-3">
                       Expense Approval Dashboard
                     </h5>
-                    <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fw-semibold">
-                      <ClockHistory size={16} className="me-1" />
-                      {pendingCount} Pending
-                    </span>
                   </div>
                   <p className="text-muted mb-0 small">
                     Manage and process expense requests efficiently
@@ -742,32 +739,25 @@ export default function ExpenseApprovalPage() {
                           <td>
                             <div className="d-flex align-items-center">
                               <div>
-                                <small className="fw-medium">
+                                <span className="fw-medium">
                                   {exp.user.firstName} {exp.user.lastName}
-                                </small>
+                                </span>
                               </div>
                             </div>
                           </td>
                           <td>
-                            <Badge
-                              bg="secondary bg-opacity-10 text-muted"
-                              className="px-2 py-1 rounded"
-                            >
+                            <span className="px-2 py-1 rounded bg-primary bg-opacity-10 text-primary small border">
                               {exp.department?.name || "-"}
-                            </Badge>
+                            </span>
                           </td>
                           <td>
-                            <Badge
-                              bg="light"
-                              text="dark"
-                              className="px-2 py-1 rounded bg-danger bg-opacity-10"
-                            >
+                            <span className="px-2 py-1 rounded bg-secondary bg-opacity-10 text-dark border small">
                               {exp.category?.name || "-"}
-                            </Badge>
+                            </span>
                           </td>
                           <td>
-                            <Badge
-                              className={`px-2 py-1 rounded ${
+                            <span
+                              className={`px-2 py-1 rounded fw-bold ${
                                 exp.budget?.remainingBudget < exp.amount
                                   ? "bg-danger bg-opacity-10 text-danger"
                                   : "bg-success bg-opacity-10 text-success"
@@ -779,10 +769,10 @@ export default function ExpenseApprovalPage() {
                             >
                               {exp.budget?.remainingBudget?.toLocaleString() ||
                                 "N/A"}
-                            </Badge>
+                            </span>
                           </td>
                           <td style={{ minWidth: 200 }}>
-                            <div className="mb-1 small text-muted">
+                            <div className="mb-1 text-muted">
                               {approvedSteps}/{totalSteps} approved{" "}
                               {currentStep
                                 ? `• Now: ${currentStep.role?.name ?? "—"}`
@@ -931,36 +921,34 @@ export default function ExpenseApprovalPage() {
               </Modal.Header>
               <Modal.Body>
                 {/* Header with description and amount */}
-                <div
-                  className="d-flex justify-content-between align-items-start mb-4 p-3 bg-primary bg-opacity-10 rounded-3"
-                  style={{ borderBottom: "1px solid #dee2e6" }}
-                >
+                <div className="d-flex justify-content-between align-items-start mb-4 p-3 bg-secondary border-secondary bg-opacity-10 rounded-3 shadow-sm">
                   <div className="flex-grow-1 me-3">
                     <h6 className="mb-1 fw-semibold">
                       {selectedExpense.description}
                     </h6>
                     <small className="text-muted">
-                      Created on {formatDate(selectedExpense.createdAt)}
+                      Created on{" "}
+                      <DateTimeDisplay date={selectedExpense.createdAt} />
                     </small>
                   </div>
                   <div className="text-end">
                     <h5 className="mb-0 text-danger fw-bold">
                       {selectedExpense.amount.toLocaleString()} KES
                     </h5>
-                    <small className="text-muted">Total amount</small>
+                    <small className="text-muted">Base currency</small>
                   </div>
                 </div>
                 {/* Steps timeline */}
                 <Row className="gy-4">
                   <Col md={6}>
                     <Card className="rounded-4 border-0">
-                      <Card.Body className="p-4 border-top border-end rounded">
+                      <Card.Body className="p-1 border-top border-end rounded">
                         {/* Section Header */}
-                        <div className="d-flex align-items-center mb-4">
-                          <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
-                            <FileText size={16} className="text-primary" />
+                        <div className="d-flex align-items-center mb-3 bg-primary border-start border-primary border-3 bg-opacity-10 p-3 rounded-3">
+                          <div className="bg-primary bg-opacity-10 p-2 rounded me-2">
+                            <FileText size={18} className="text-primary" />
                           </div>
-                          <h6 className="mb-0 fw-bold text-dark">
+                          <h6 className="mb-0 fw-semibold">
                             Expense Information
                           </h6>
                         </div>
@@ -968,7 +956,7 @@ export default function ExpenseApprovalPage() {
                         {/* Info Rows */}
                         <div className="d-flex flex-column gap-3 small">
                           {/* Submission */}
-                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-top">
+                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3">
                             <div className="fw-semibold text-muted mb-2 small">
                               Submission
                             </div>
@@ -1001,7 +989,7 @@ export default function ExpenseApprovalPage() {
                           </div>
 
                           {/* Classification */}
-                          <div className="bg-warning bg-opacity-10 p-3 rounded-3 border-top">
+                          <div className="bg-warning bg-opacity-10 p-3 rounded-3 border-start border-warning border-3">
                             <div className="fw-semibold text-muted mb-2 small">
                               Classification
                             </div>
@@ -1026,7 +1014,7 @@ export default function ExpenseApprovalPage() {
                           </div>
 
                           {/* Payment */}
-                          <div className="bg-warning bg-opacity-10 p-3 rounded-3 border-top">
+                          <div className="bg-warning bg-opacity-10 p-3 rounded-3 border-start border-warning border-3">
                             <div className="fw-semibold text-muted mb-2 small">
                               Payment
                             </div>
@@ -1053,97 +1041,102 @@ export default function ExpenseApprovalPage() {
                   </Col>
 
                   <Col md={6}>
-                    <div className="detail-section rounded-4 p-4 bg-white border-top border-end">
-                      <h6 className="fw-bold mb-4 d-flex align-items-center text-dark mb-4 bg-primary bg-opacity-10 p-3 rounded-3">
-                        Approval Steps
-                      </h6>
-                      <br />
-                      {selectedExpense.expenseSteps.length === 0 ? (
-                        <div className="text-muted fst-italic d-flex align-items-center bg-light p-3 rounded-3">
-                          <FaInfoCircle
-                            size={16}
-                            className="me-2 text-secondary"
-                          />
-                          No steps configured.
+                    <div className="detail-section rounded-4 p-1 bg-white border-top border-end">
+                      <div className="d-flex align-items-center mb-3 bg-success border-start border-success border-3 bg-opacity-10 p-3 rounded-3">
+                        <div className="bg-success bg-opacity-10 p-2 rounded me-2">
+                          <CheckCircle size={18} className="text-success" />
                         </div>
-                      ) : (
-                        <ul className="timeline list-unstyled position-relative ps-4">
-                          {selectedExpense.expenseSteps
-                            .sort((a, b) => a.order - b.order)
-                            .map((step) => (
-                              <li
-                                key={step.id}
-                                className="mb-4 position-relative ps-3"
-                                style={{
-                                  borderLeft: "2px solid #dee2e6",
-                                }}
-                              >
-                                {/* Timeline dot */}
-                                <span
-                                  className="position-absolute top-0 start-0 translate-middle p-2 rounded-circle"
+                        <h6 className="mb-0 fw-semibold">Approval Process</h6>
+                      </div>
+                      <br />
+                      <div className="bg-secondary bg-opacity-10 p-3 rounded-3">
+                        {selectedExpense.expenseSteps.length === 0 ? (
+                          <div className="text-muted fst-italic d-flex align-items-center bg-light p-3 rounded-3">
+                            <FaInfoCircle
+                              size={16}
+                              className="me-2 text-secondary"
+                            />
+                            No steps configured.
+                          </div>
+                        ) : (
+                          <ul className="timeline list-unstyled position-relative ps-4">
+                            {selectedExpense.expenseSteps
+                              .sort((a, b) => a.order - b.order)
+                              .map((step) => (
+                                <li
+                                  key={step.id}
+                                  className="mb-4 position-relative ps-3"
                                   style={{
-                                    backgroundColor:
-                                      step.status === "PENDING"
-                                        ? "#f0ad4e"
-                                        : step.status === "APPROVED"
-                                        ? "#198754"
-                                        : step.status === "REJECTED"
-                                        ? "#dc3545"
-                                        : "#6c757d",
-                                    boxShadow: "0 0 0 4px #fff",
+                                    borderLeft: "2px solid #dee2e6",
                                   }}
-                                ></span>
+                                >
+                                  {/* Timeline dot */}
+                                  <span
+                                    className="position-absolute top-0 start-0 translate-middle p-2 rounded-circle"
+                                    style={{
+                                      backgroundColor:
+                                        step.status === "PENDING"
+                                          ? "#f0ad4e"
+                                          : step.status === "APPROVED"
+                                          ? "#198754"
+                                          : step.status === "REJECTED"
+                                          ? "#dc3545"
+                                          : "#6c757d",
+                                      boxShadow: "0 0 0 4px #fff",
+                                    }}
+                                  ></span>
 
-                                <div className="d-flex justify-content-between align-items-start mb-1">
-                                  <div className="fw-semibold text-dark">
-                                    Step {step.order}{" "}
-                                    <span className="text-muted small">
-                                      • {step.role?.name ?? "Unassigned role"}
-                                    </span>
+                                  <div className="d-flex justify-content-between align-items-start mb-1">
+                                    <div className="fw-semibold text-dark">
+                                      Step {step.order}{" "}
+                                      <span className="text-muted small">
+                                        • {step.role?.name ?? "Unassigned role"}
+                                      </span>
+                                    </div>
+                                    <Badge
+                                      pill
+                                      bg={
+                                        step.status === "PENDING"
+                                          ? "warning"
+                                          : step.status === "APPROVED"
+                                          ? "success"
+                                          : step.status === "REJECTED"
+                                          ? "danger"
+                                          : "secondary"
+                                      }
+                                      className="px-3 py-2 fw-semibold"
+                                    >
+                                      {humanStatus(step.status)}
+                                    </Badge>
                                   </div>
-                                  <Badge
-                                    pill
-                                    bg={
-                                      step.status === "PENDING"
-                                        ? "warning"
-                                        : step.status === "APPROVED"
-                                        ? "success"
-                                        : step.status === "REJECTED"
-                                        ? "danger"
-                                        : "secondary"
-                                    }
-                                    className="px-3 py-2 fw-semibold"
-                                  >
-                                    {humanStatus(step.status)}
-                                  </Badge>
-                                </div>
 
-                                <div className="small text-muted d-flex flex-wrap gap-3">
-                                  <span className="d-flex align-items-center">
-                                    <FaUser className="me-1 text-secondary" />
-                                    {step.approver
-                                      ? `${step.approver.firstName} ${step.approver.lastName}`
-                                      : "—"}
-                                  </span>
-
-                                  {step.updatedAt && (
+                                  <div className="small text-muted d-flex flex-wrap gap-3">
                                     <span className="d-flex align-items-center">
-                                      <FaClock className="me-1 text-secondary" />
-                                      {formatDate(step.updatedAt)}
+                                      <FaUser className="me-1 text-secondary" />
+                                      {step.approver
+                                        ? `${step.approver.firstName} ${step.approver.lastName}`
+                                        : "—"}
                                     </span>
-                                  )}
 
-                                  {step.comments && (
-                                    <span className="d-flex align-items-center">
-                                      <FaComment className="me-1 text-secondary" />
-                                      {step.comments}
-                                    </span>
-                                  )}
-                                </div>
-                              </li>
-                            ))}
-                        </ul>
-                      )}
+                                    {step.updatedAt && (
+                                      <span className="d-flex align-items-center">
+                                        <FaClock className="me-1 text-secondary" />
+                                        {formatDate(step.updatedAt)}
+                                      </span>
+                                    )}
+
+                                    {step.comments && (
+                                      <span className="d-flex align-items-center">
+                                        <FaComment className="me-1 text-secondary" />
+                                        {step.comments}
+                                      </span>
+                                    )}
+                                  </div>
+                                </li>
+                              ))}
+                          </ul>
+                        )}
+                      </div>
                     </div>
                   </Col>
                 </Row>

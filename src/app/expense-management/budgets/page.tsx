@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Col, Card, Modal, Table, Spinner, Button } from "react-bootstrap";
+import { Col, Modal, Table, Spinner, Button } from "react-bootstrap";
 import {
   BarChart2,
   X,
   TrendingUp,
-  Building,
   Info,
   Tag,
   MapPin,

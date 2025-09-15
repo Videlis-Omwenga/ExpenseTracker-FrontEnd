@@ -272,30 +272,33 @@ export default function ExpenseApprovalPage() {
       );
 
       let responseData;
-      const contentType = res.headers.get('content-type');
-      
+      const contentType = res.headers.get("content-type");
+
       try {
         // Only try to parse as JSON if the response has content and is JSON
-        if (contentType && contentType.includes('application/json')) {
+        if (contentType && contentType.includes("application/json")) {
           responseData = await res.json();
         } else {
           const text = await res.text();
-          responseData = text ? { message: text } : { message: 'No content in response' };
+          responseData = text
+            ? { message: text }
+            : { message: "No content in response" };
         }
       } catch (parseError) {
-        console.error('Failed to parse response:', parseError);
-        responseData = { message: 'Invalid response format' };
+        console.error("Failed to parse response:", parseError);
+        responseData = { message: "Invalid response format" };
       }
 
       if (res.ok) {
         toast.success("Expense approved successfully");
         await fetchExpensesToApprove();
       } else {
-        const errorMessage = responseData?.message || `HTTP error! status: ${res.status}`;
+        const errorMessage =
+          responseData?.message || `HTTP error! status: ${res.status}`;
         toast.error(errorMessage);
       }
     } catch (e: any) {
-      toast.error(`Approve failed: ${e?.message || 'Unknown error occurred'}`);
+      toast.error(`Approve failed: ${e?.message || "Unknown error occurred"}`);
     }
   };
 
@@ -466,12 +469,12 @@ export default function ExpenseApprovalPage() {
             {/* Title and Subtitle */}
             <div className="d-flex align-items-center mb-3 bg-info bg-opacity-10 p-3 rounded-4 border-start border-info border-3">
               <div className="p-3 rounded-3 bg-success-primary bg-opacity-10 me-3 shadow-sm">
-                <ListChecks className="text-primary" size={24} />
+                <ListChecks className="text-info" size={24} />
               </div>
               <div>
-                <h5 className="fw-bold mb-1 text-dark">
+                <h6 className="fw-bold mb-1 text-dark">
                   Queued Expenses for checks
-                </h5>
+                </h6>
                 <p className="text-muted mb-0 small">
                   Review, validate, and approve expenses prior to payment.
                 </p>
@@ -481,7 +484,7 @@ export default function ExpenseApprovalPage() {
             <Row>
               <Col md={6} className="mb-4">
                 <div className="p-4 rounded-4 shadow-sm border bg-primary bg-opacity-10 border-0 border-start border-primary border-3">
-                  <p className="small text-secondary mb-4">
+                  <p className="small text-secondary mb-2">
                     Every submitted expense goes through this check to ensure
                     compliance and readiness for payment:
                   </p>
@@ -516,23 +519,10 @@ export default function ExpenseApprovalPage() {
                       </div>
                     </div>
                   </div>
-
-                  <hr className="my-4" />
-
-                  <p className="small text-secondary mb-0">
-                    These checks help maintain{" "}
-                    <span className="fw-semibold text-dark">transparency</span>,{" "}
-                    <span className="fw-semibold text-dark">
-                      accountability
-                    </span>
-                    , and{" "}
-                    <span className="fw-semibold text-dark">efficiency</span> in
-                    managing expenses.
-                  </p>
                 </div>
               </Col>
               <Col md={6}>
-                <Row className="g-3 mb-4">
+                <Row>
                   <Col md={6}>
                     <Card className="stat-card border-0 bg-success bg-opacity-10 border-start border-success border-3">
                       <Card.Body>
@@ -568,6 +558,40 @@ export default function ExpenseApprovalPage() {
                         <div className="d-flex align-items-center">
                           <div className="icon-container bg-danger bg-opacity-10 me-3">
                             <FileText size={20} className="text-danger" />
+                          </div>
+                          <div>
+                            <div className="text-muted small">
+                              Total in list
+                            </div>
+                            <h6 className="mb-0 mt-2">{expenses.length}</h6>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={6}>
+                    <Card className="stat-card border-0 bg-info bg-opacity-10 border-start border-info border-3">
+                      <Card.Body>
+                        <div className="d-flex align-items-center">
+                          <div className="icon-container bg-info bg-opacity-10 me-3">
+                            <FileText size={20} className="text-info" />
+                          </div>
+                          <div>
+                            <div className="text-muted small">
+                              Total in list
+                            </div>
+                            <h6 className="mb-0 mt-2">{expenses.length}</h6>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={6}>
+                    <Card className="stat-card border-0 bg-secondary bg-opacity-10 border-start border-secondary border-3">
+                      <Card.Body>
+                        <div className="d-flex align-items-center">
+                          <div className="icon-container bg-secondary bg-opacity-10 me-3">
+                            <FileText size={20} className="text-secondary" />
                           </div>
                           <div>
                             <div className="text-muted small">

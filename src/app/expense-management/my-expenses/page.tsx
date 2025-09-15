@@ -30,9 +30,7 @@ import {
   CheckCircleFill,
   ChatLeftText,
   FileEarmarkX,
-  PencilSquare,
   Tag,
-  ArrowUpCircle,
   CashStack,
   Clipboard2Data,
   PieChart,
@@ -680,6 +678,8 @@ export default function FinanceDashboard() {
                         borderTopRightRadius: "0.375rem",
                         borderBottomRightRadius: "0.375rem",
                       }}
+                      show={dropdownOpen}
+                      onToggle={(isOpen: boolean) => setDropdownOpen(isOpen)}
                     >
                       <Dropdown.Toggle
                         variant="light"
@@ -697,7 +697,7 @@ export default function FinanceDashboard() {
                         <span className="d-none d-md-inline">Filter</span>
                       </Dropdown.Toggle>
                       <Dropdown.Menu
-                        className="p-2"
+                        className="p-3"
                         style={{ minWidth: "200px" }}
                       >
                         <div className="mb-2">
@@ -1187,10 +1187,7 @@ export default function FinanceDashboard() {
 
               <Modal.Body className="pt-4">
                 {/* Header with description and amount */}
-                <div
-                  className="d-flex justify-content-between align-items-start mb-4 p-3 bg-light bg-opacity-50 rounded-3"
-                  style={{ borderBottom: "1px solid #dee2e6" }}
-                >
+                <div className="d-flex justify-content-between align-items-start mb-4 p-3 bg-secondary border-secondary bg-opacity-10 rounded-3">
                   <div className="flex-grow-1 me-3">
                     <h6 className="mb-1 fw-semibold">
                       {selectedExpense.description}
@@ -1204,7 +1201,7 @@ export default function FinanceDashboard() {
                     <h5 className="mb-0 text-danger fw-bold">
                       {selectedExpense.amount.toLocaleString()} KES
                     </h5>
-                    <small className="text-muted">Total amount</small>
+                    <small className="text-muted">Base currency</small>
                   </div>
                 </div>
 
@@ -1214,7 +1211,7 @@ export default function FinanceDashboard() {
                     <Card className="border shadow-sm h-100">
                       <Card.Body>
                         {/* Section Header */}
-                        <div className="d-flex align-items-center mb-3 bg-primary bg-opacity-10 p-3 rounded-3">
+                        <div className="d-flex align-items-center mb-3 bg-primary border-start border-primary border-3 bg-opacity-10 p-3 rounded-3">
                           <div className="bg-primary bg-opacity-10 p-2 rounded me-2">
                             <FileText size={18} className="text-primary" />
                           </div>
@@ -1225,7 +1222,7 @@ export default function FinanceDashboard() {
 
                         <div className="detail-list small">
                           {/* Submission Details */}
-                          <div className="mb-3">
+                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3">
                             <h6 className="text-muted fw-semibold small mb-2">
                               Submission
                             </h6>
@@ -1266,7 +1263,7 @@ export default function FinanceDashboard() {
                           </div>
 
                           {/* Classification */}
-                          <div className="mb-3">
+                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3">
                             <h6 className="text-muted fw-semibold small mb-2">
                               Classification
                             </h6>
@@ -1291,7 +1288,7 @@ export default function FinanceDashboard() {
                           </div>
 
                           {/* Payment */}
-                          <div>
+                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3">
                             <h6 className="text-muted fw-semibold small mb-2">
                               Payment
                             </h6>
@@ -1331,7 +1328,7 @@ export default function FinanceDashboard() {
                   <Col md={6}>
                     <Card className="border shadow-sm h-100">
                       <Card.Body>
-                        <div className="d-flex align-items-center mb-3">
+                        <div className="d-flex align-items-center mb-3 bg-success border-start border-success border-3 bg-opacity-10 p-3 rounded-3">
                           <div className="bg-success bg-opacity-10 p-2 rounded me-2">
                             <CheckCircle size={18} className="text-success" />
                           </div>
@@ -1429,21 +1426,12 @@ export default function FinanceDashboard() {
 
               <Modal.Footer className="border-top-0 pt-0">
                 <Button
+                  size="sm"
                   variant="outline-secondary"
                   onClick={() => setShowModal(false)}
                   className="rounded-pill px-4"
                 >
                   Close
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() =>
-                    handleNavigation(`/expenses/${selectedExpense.id}/edit`)
-                  }
-                  className="rounded-pill px-4"
-                >
-                  <PencilSquare className="me-2" size={16} />
-                  Edit Expense
                 </Button>
               </Modal.Footer>
             </>

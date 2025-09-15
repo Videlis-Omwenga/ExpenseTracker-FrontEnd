@@ -9,7 +9,6 @@ import {
   Info,
   Tag,
   MapPin,
-  Calendar,
   AlertTriangle,
   CheckCircle,
   FileText,
@@ -201,7 +200,7 @@ const BudgetOverviewHOD = () => {
       >
         <Modal.Header className="border-0 pb-0 position-relative">
           <div className="w-100">
-            <div className="d-flex align-items-center justify-content-between mb-3">
+            <div className="d-flex align-items-center justify-content-between">
               <h6
                 id="budget-modal-title"
                 className="fw-bold text-dark fs-5 d-flex align-items-center"

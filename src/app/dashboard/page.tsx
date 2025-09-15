@@ -250,12 +250,13 @@ export default function Dashboard() {
                 </p>
               </Col>
               <Col xs="auto">
-                <Button variant="primary" size="sm" className="me-2">
-                  <FaPlus
-                    size={16}
-                    className="me-1"
-                    onClick={() => handleNavigation("/create-expense")}
-                  />
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="me-2"
+                  onClick={() => handleNavigation("/expense-management/create-expense")}
+                >
+                  <FaPlus size={16} className="me-1" />
                   Create Expense
                 </Button>
                 <Button
@@ -279,7 +280,7 @@ export default function Dashboard() {
           {/* Time filter controls */}
           <Row className="mb-1">
             <Col>
-              <Card className="border-0 ">  
+              <Card className="border-0 ">
                 <Card.Body className="py-3 px-4">
                   <div className="d-flex flex-wrap justify-content-between align-items-center">
                     {/* Left side: Filter */}
