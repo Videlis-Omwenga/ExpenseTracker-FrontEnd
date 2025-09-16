@@ -18,7 +18,6 @@ import {
   Alert,
 } from "react-bootstrap";
 import {
-  FaFlag,
   FaInfoCircle,
   FaUser,
   FaClock,
@@ -26,26 +25,29 @@ import {
   FaListAlt,
 } from "react-icons/fa";
 import {
-  Search,
   Filter,
-  CheckCircle,
-  ClockHistory,
   FileText,
   Download,
   Eye,
   CheckLg,
   XLg,
   ExclamationTriangle,
-  CashCoin,
   Check2Circle,
   ShieldCheck,
 } from "react-bootstrap-icons";
-import Navbar from "../../components/Navbar";
-import { BASE_API_URL } from "../../static/apiConfig";
+import DateTimeDisplay from "@/app/components/DateTimeDisplay";
 import { toast } from "react-toastify";
 import AuthProvider from "../../authPages/tokenData";
-import { ArrowDownCircle, DollarSign, Tag } from "lucide-react";
+import {
+  ArrowDownCircle,
+  DollarSign,
+  Tag,
+  ListChecks,
+  CheckCircle,
+  User,
+} from "lucide-react";
 import TopNavbar from "../../components/Navbar";
+import { BASE_API_URL } from "@/app/static/apiConfig";
 
 /**
  * TYPES aligned to your NestJS / Prisma backend
@@ -101,6 +103,12 @@ type Department = {
   name: string;
 };
 
+type Budget = {
+  id: number;
+  originalBudget: number;
+  remainingBudget: number;
+};
+
 type Expense = {
   id: number;
   workflowId: number;
@@ -121,34 +129,17 @@ type Expense = {
   currencyDetails: Currency;
   status: ExpenseStatus;
   user: UserLite;
+  budget: Budget;
   expenseSteps: ExpenseStep[];
   createdAt: string;
   updatedAt: string;
+  categories: Category[];
+  paymentMethods: PaymentMethod[];
+  regions: Region[];
+  exchangeRateUsed: number;
+  countBudget?: number;
 };
 
-/** Utility formatters */
-const formatMoney = (amount: number, currency: string | Currency) => {
-  // Handle both string currency code and Currency object
-  const currencyCode =
-    typeof currency === "string" ? currency : currency?.initials || "USD";
-
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currencyCode,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  } catch (e) {
-    // Fallback if Intl.NumberFormat fails
-    return `${currencyCode} ${amount.toFixed(2)}`;
-  }
-};
-const formatDate = (iso?: string) => {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString();
-};
 const humanStatus = (s: string) =>
   s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 
@@ -164,6 +155,20 @@ export default function ExpenseApprovalPage() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+
+  // Form input states
+  const [paymentMethodId, setPaymentMethodId] = useState<number | "">("");
+  const [categoryId, setCategoryId] = useState<number | "">("");
+  const [regionId, setRegionId] = useState<number | "">("");
+
+  // Initialize form fields when an expense is selected
+  useEffect(() => {
+    if (selectedExpense) {
+      setCategoryId(selectedExpense.category?.id || "");
+      setPaymentMethodId(selectedExpense.paymentMethod?.id || "");
+      setRegionId(selectedExpense.region?.id || "");
+    }
+  }, [selectedExpense]);
 
   // Data state
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -204,9 +209,13 @@ export default function ExpenseApprovalPage() {
   };
 
   /** Approve / Reject via single unified endpoint */
-  const approveExpense = async (id: number) => {
+  const approveExpense = async (id: number, reason: string) => {
+    const payload = {
+      comments: reason,
+    };
+
     try {
-      const res = await fetch(`${BASE_API_URL}/finance/process-payment`, {
+      const res = await fetch(`${BASE_API_URL}/finance/paid/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -214,13 +223,37 @@ export default function ExpenseApprovalPage() {
             "expenseTrackerToken"
           )}`,
         },
-        body: JSON.stringify({ expenseId: id, isApproved: true }),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error(await res.text());
-      toast.success("Expense approved successfully");
-      await fetchExpensesToApprove();
+
+      let responseData;
+      const contentType = res.headers.get("content-type");
+
+      try {
+        // Only try to parse as JSON if the response has content and is JSON
+        if (contentType && contentType.includes("application/json")) {
+          responseData = await res.json();
+        } else {
+          const text = await res.text();
+          responseData = text
+            ? { message: text }
+            : { message: "No content in response" };
+        }
+      } catch (parseError) {
+        console.error("Failed to parse response:", parseError);
+        responseData = { message: "Invalid response format" };
+      }
+
+      if (res.ok) {
+        toast.success("Expense marked as paid successfully");
+        await fetchExpensesToApprove();
+      } else {
+        const errorMessage =
+          responseData?.message || `HTTP error! status: ${res.status}`;
+        toast.error(errorMessage);
+      }
     } catch (e: any) {
-      toast.error(`Approve failed: ${e?.message || e}`);
+      toast.error(`Approve failed: ${e?.message || "Unknown error occurred"}`);
     }
   };
 
@@ -229,24 +262,23 @@ export default function ExpenseApprovalPage() {
       toast.error("Please provide a reason for rejection");
       return;
     }
+
+    const payload = {
+      isApproved: false,
+      comments: reason,
+    };
+
     try {
-      const res = await fetch(
-        `${BASE_API_URL}/expense-approvals/process-approval`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem(
-              "expenseTrackerToken"
-            )}`,
-          },
-          body: JSON.stringify({
-            expenseId: id,
-            isApproved: false,
-            comments: reason,
-          }),
-        }
-      );
+      const res = await fetch(`${BASE_API_URL}/finance/reject-expense/${id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "expenseTrackerToken"
+          )}`,
+        },
+        body: JSON.stringify(payload),
+      });
       if (!res.ok) throw new Error(await res.text());
       toast.success("Expense rejected successfully");
       setRejectionReason("");
@@ -265,7 +297,7 @@ export default function ExpenseApprovalPage() {
       return;
     }
     if (isApproved) {
-      await approveExpense(selectedExpense.id);
+      await approveExpense(selectedExpense.id, "Expense approved by finance");
       setShowDetailsModal(false);
     } else {
       await rejectExpense(selectedExpense.id, rejectionReason);
@@ -274,7 +306,6 @@ export default function ExpenseApprovalPage() {
 
   useEffect(() => {
     fetchExpensesToApprove();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /** Derived data */
@@ -351,7 +382,11 @@ export default function ExpenseApprovalPage() {
   /** Bulk actions */
   const handleBulkApprove = async () => {
     if (selectedExpenses.length === 0) return;
-    await Promise.all(selectedExpenses.map((id) => approveExpense(id)));
+    await Promise.all(
+      selectedExpenses.map((id) =>
+        approveExpense(id, "Bulk approved by finance")
+      )
+    );
     setSelectedExpenses([]);
   };
 
@@ -368,15 +403,13 @@ export default function ExpenseApprovalPage() {
   };
 
   /** Per-row actions */
-  const handleApprove = (id: number) => approveExpense(id);
+  const handleApprove = (id: number) =>
+    approveExpense(id, "Approved via quick action");
 
   const handleViewDetails = (expense: Expense) => {
     setSelectedExpense(expense);
     setShowDetailsModal(true);
   };
-
-  /** Stats – Pending count from actual data */
-  const pendingCount = expenses.filter((e) => e.status === "PENDING").length;
 
   return (
     <AuthProvider>
@@ -386,27 +419,28 @@ export default function ExpenseApprovalPage() {
         <Row className="align-items-center mb-4">
           <Col>
             {/* Title and Subtitle */}
-            <div className="d-flex align-items-center mb-3 bg-primary bg-opacity-10 p-3 rounded-4">
-              <div className="p-3 rounded-3 bg-gradient-primary bg-opacity-10 me-3 shadow-sm">
-                <CashCoin className="text-primary" size={24} />
+            <div className="d-flex align-items-center mb-3 bg-info bg-opacity-10 p-3 rounded-4 border-start border-info border-3">
+              <div className="p-3 rounded-3 bg-success-primary bg-opacity-10 me-3 shadow-sm">
+                <ListChecks className="text-info" size={24} />
               </div>
               <div>
-                <h5 className="fw-bold mb-1 text-dark">Expenses to pay</h5>
+                <h6 className="fw-bold mb-1 text-dark">
+                  Queued Expenses for payment
+                </h6>
                 <p className="text-muted mb-0 small">
-                  Review, validate, and approve expenses before payment.
+                  Review, validate, and approve expenses prior to payment.
                 </p>
               </div>
             </div>
 
             <Row>
               <Col md={6} className="mb-4">
-                <div className="bg-white p-4 rounded-4 shadow-sm border">
-                  <p className="small text-secondary mb-4">
-                    Every submitted expense goes through checks to ensure
-                    compliance and then submitted here for payment. Please
-                    review every expense before payment to ensure:
+                <div className="p-4 rounded-4 shadow-sm border bg-primary bg-opacity-10 border-0 border-start border-primary border-3">
+                  <p className="small text-secondary mb-2">
+                    Every submitted expense goes through this check to ensure
+                    compliance and readiness for payment:
                   </p>
-
+                  <br />
                   <div className="d-flex flex-column gap-3 small text-secondary">
                     {/* Step 1 */}
                     <div className="d-flex align-items-center">
@@ -437,74 +471,22 @@ export default function ExpenseApprovalPage() {
                       </div>
                     </div>
                   </div>
-
-                  <hr className="my-4" />
-
-                  <p className="small text-secondary mb-0">
-                    These checks help maintain{" "}
-                    <span className="fw-semibold text-dark">transparency</span>,{" "}
-                    <span className="fw-semibold text-dark">
-                      accountability
-                    </span>
-                    , and{" "}
-                    <span className="fw-semibold text-dark">efficiency</span> in
-                    managing expenses.
-                  </p>
                 </div>
               </Col>
               <Col md={6}>
-                <Row className="g-3 mb-4">
-                  <Col md={3}>
-                    <Card className="stat-card">
-                      <Card.Body>
-                        <div className="d-flex align-items-center">
-                          <div className="icon-container bg-primary bg-opacity-10 me-3">
-                            <ClockHistory size={20} className="text-primary" />
-                          </div>
-                          <div>
-                            <div className="text-muted small">
-                              Pending Approval
-                            </div>
-                            <h4 className="mb-0">{pendingCount}</h4>
-                          </div>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                  <Col md={3}>
-                    <Card className="stat-card">
+                <Row>
+                  <Col md={6}>
+                    <Card className="stat-card border-0 bg-success bg-opacity-10 border-start border-success border-3">
                       <Card.Body>
                         <div className="d-flex align-items-center">
                           <div className="icon-container bg-success bg-opacity-10 me-3">
-                            <CheckCircle size={20} className="text-success" />
-                          </div>
-                          <div>
-                            <div className="text-muted small">
-                              Approved (visible)
-                            </div>
-                            <h4 className="mb-0">
-                              {
-                                expenses.filter((e) => e.status === "APPROVED")
-                                  .length
-                              }
-                            </h4>
-                          </div>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                  <Col md={3}>
-                    <Card className="stat-card">
-                      <Card.Body>
-                        <div className="d-flex align-items-center">
-                          <div className="icon-container bg-primary bg-opacity-10 me-3">
-                            <DollarSign size={20} className="text-primary" />
+                            <DollarSign size={20} className="text-success" />
                           </div>
                           <div>
                             <div className="text-muted small">
                               Total Expenses
                             </div>
-                            <h4 className="mb-0">
+                            <h6 className="mb-0 mt-2">
                               {expenses.length > 0
                                 ? expenses
                                     .reduce(
@@ -516,24 +498,82 @@ export default function ExpenseApprovalPage() {
                                       maximumFractionDigits: 2,
                                     })
                                 : "0.00"}
-                            </h4>
+                            </h6>
+
+                            <div className="text-muted small mt-1">
+                              Total amount
+                            </div>
                           </div>
                         </div>
                       </Card.Body>
                     </Card>
                   </Col>
-                  <Col md={3}>
-                    <Card className="stat-card">
+                  <Col md={6}>
+                    <Card className="stat-card border-0 bg-danger bg-opacity-10 border-start border-danger border-3">
+                      <Card.Body>
+                        <div className="d-flex align-items-center">
+                          <div className="icon-container bg-danger bg-opacity-10 me-3">
+                            <FileText size={20} className="text-danger" />
+                          </div>
+                          <div>
+                            <div className="text-muted small">
+                              Total in list
+                            </div>
+                            <h6 className="mb-0 mt-2">{expenses.length}</h6>
+
+                            <div className="text-muted small mt-1">
+                              Expenses to review
+                            </div>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={6}>
+                    <Card className="stat-card border-0 bg-info bg-opacity-10 border-start border-info border-3">
                       <Card.Body>
                         <div className="d-flex align-items-center">
                           <div className="icon-container bg-info bg-opacity-10 me-3">
                             <FileText size={20} className="text-info" />
                           </div>
                           <div>
-                            <div className="text-muted small">
-                              Total in list
+                            <div className="text-muted small">Budgets</div>
+                            <h6 className="mb-0">Navigate to budgets</h6>
+                            <div className="text-muted small mt-1">
+                              {expenses.length > 0
+                                ? `${expenses.reduce(
+                                    (sum, exp) => sum + (exp.countBudget || 0),
+                                    0
+                                  )} budgets found`
+                                : "0 budgets found"}
                             </div>
-                            <h4 className="mb-0">{expenses.length}</h4>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={6}>
+                    <Card className="stat-card border-0 bg-secondary bg-opacity-10 border-start border-secondary border-3">
+                      <Card.Body>
+                        <div className="d-flex align-items-center">
+                          <div className="icon-container bg-secondary bg-opacity-10 me-3">
+                            <User size={20} className="text-secondary" />
+                          </div>
+                          <div>
+                            <div className="text-muted small">
+                              Last approved expense for
+                            </div>
+                            <h6 className="mb-0">
+                              {expenses.length > 0
+                                ? `${expenses[0].user.firstName} ${expenses[0].user.lastName}`
+                                : "N/A"}
+                            </h6>
+                            <div className="text-muted small mt-1">
+                              {expenses.length > 0 &&
+                                new Date(
+                                  expenses[0].createdAt
+                                ).toLocaleDateString()}
+                            </div>
                           </div>
                         </div>
                       </Card.Body>
@@ -563,15 +603,11 @@ export default function ExpenseApprovalPage() {
                     onClick={handleBulkApprove}
                   >
                     <CheckLg size={16} className="me-1" />
-                    Approve Selected
+                    Mark as paid
                   </Button>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    onClick={handleBulkReject}
-                  >
+                  <Button variant="danger" size="sm" onClick={handleBulkReject}>
                     <XLg size={16} className="me-1" />
-                    Reject Selected
+                    Not paid
                   </Button>
                 </Col>
               </Row>
@@ -585,7 +621,6 @@ export default function ExpenseApprovalPage() {
             <h5 className="mb-0 me-3">Expense Requests</h5>
             <div className="d-flex flex-wrap gap-2 mt-2 mt-md-0">
               <div className="search-box d-flex">
-                <Search className="search-icon" />
                 <Form.Control
                   type="search"
                   placeholder="Search expenses..."
@@ -748,10 +783,12 @@ export default function ExpenseApprovalPage() {
                           <td>
                             <div className="d-flex flex-column">
                               <div className="">
-                                Created: {formatDate(exp.createdAt)}
+                                Created:{" "}
+                                <DateTimeDisplay date={exp.createdAt} />
                               </div>
                               <div className="text-muted small">
-                                Updated: {formatDate(exp.updatedAt)}
+                                Updated:{" "}
+                                <DateTimeDisplay date={exp.updatedAt} />
                               </div>
                             </div>
                           </td>
@@ -773,14 +810,46 @@ export default function ExpenseApprovalPage() {
                               </div>
                             </div>
                           </td>
-                          <td className="text-success">
+                          <td className="">
                             <div className="d-flex flex-column">
                               <span className="text-success fw-bold">
                                 {exp?.amount?.toLocaleString() || "0.00"} KES
                               </span>
                               <span className="text-muted small">
                                 {exp?.primaryAmount?.toLocaleString() || "0.00"}{" "}
-                                {exp?.currencyDetails?.initials || exp?.currency || "N/A"}
+                                {(() => {
+                                  if (!exp) return "N/A";
+
+                                  // If currency is a string (direct currency code)
+                                  if (
+                                    exp.currency &&
+                                    typeof exp.currency === "string"
+                                  ) {
+                                    return exp.currency;
+                                  }
+
+                                  // If currency is an object with initials (type-safe check)
+                                  if (
+                                    exp.currency &&
+                                    typeof exp.currency === "object" &&
+                                    exp.currency !== null &&
+                                    "initials" in exp.currency
+                                  ) {
+                                    return (
+                                      exp.currency as { initials: string }
+                                    ).initials;
+                                  }
+
+                                  // If currencyDetails exists and has initials (type-safe check)
+                                  if (
+                                    exp.currencyDetails &&
+                                    "initials" in exp.currencyDetails
+                                  ) {
+                                    return exp.currencyDetails.initials;
+                                  }
+
+                                  return "N/A";
+                                })()}
                               </span>
                             </div>
                           </td>
@@ -816,10 +885,18 @@ export default function ExpenseApprovalPage() {
                           </td>
                           <td>
                             <Badge
-                              text="danger"
-                              className="px-2 py-1 rounded border bg-danger bg-opacity-10"
+                              className={`px-2 py-1 rounded ${
+                                exp.budget?.remainingBudget < exp.amount
+                                  ? "bg-danger bg-opacity-10 text-danger"
+                                  : "bg-success bg-opacity-10 text-success"
+                              }`}
+                              title={`Original Budget: ${
+                                exp.budget?.originalBudget?.toLocaleString() ||
+                                "N/A"
+                              }`}
                             >
-                              100,000
+                              {exp.budget?.remainingBudget?.toLocaleString() ||
+                                "N/A"}
                             </Badge>
                           </td>
                           <td style={{ minWidth: 200 }}>
@@ -838,7 +915,7 @@ export default function ExpenseApprovalPage() {
                                   ? "success"
                                   : exp.status === "PENDING"
                                   ? "info"
-                                  : "danger"
+                                  : "success"
                               }
                               animated={exp.status === "PENDING"}
                             />
@@ -953,7 +1030,7 @@ export default function ExpenseApprovalPage() {
                 className="border-bottom-0 pb-0 position-relative"
               >
                 <div
-                  className="position-absolute w-100 h-100 bg-light bg-opacity-10 rounded-top"
+                  className="position-absolute h-100 bg-light bg-opacity-10 rounded-top"
                   style={{ borderBottom: "1px solid #dee2e6" }}
                 ></div>
                 <h6 className="position-relative">
@@ -972,66 +1049,71 @@ export default function ExpenseApprovalPage() {
               </Modal.Header>
               <Modal.Body>
                 {/* Header with description and amount */}
-                <div
-                  className="d-flex justify-content-between align-items-start mb-4 p-3 bg-light bg-opacity-50 rounded-3"
-                  style={{ borderBottom: "1px solid #dee2e6" }}
-                >
+                <div className="d-flex justify-content-between align-items-start mb-4 p-3 bg-secondary border-secondary bg-opacity-10 rounded-3">
                   <div className="flex-grow-1 me-3">
                     <h6 className="mb-1 fw-semibold">
                       {selectedExpense.description}
                     </h6>
                     <small className="text-muted">
-                      Created on {formatDate(selectedExpense.createdAt)}
+                      Created on{" "}
+                      <DateTimeDisplay date={selectedExpense.createdAt} />
                     </small>
                   </div>
                   <div className="text-end">
                     <h5 className="mb-0 text-danger fw-bold">
                       {selectedExpense.amount.toLocaleString()} KES
                     </h5>
-                    <small className="text-muted">Total amount</small>
+                    <small className="text-muted">Base currency</small>
                   </div>
                 </div>
                 {/* Steps timeline */}
                 <Row className="gy-4">
                   <Col md={6}>
-                    <Card className="h-100 border shadow-sm rounded-4">
-                      <Card.Body className="p-4">
+                    <Card className="border shadow-sm h-100">
+                      <Card.Body>
                         {/* Section Header */}
-                        <div className="d-flex align-items-center mb-4">
-                          <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
-                            <FileText size={22} className="text-primary" />
+                        <div className="d-flex align-items-center mb-3 bg-primary border-start border-primary border-3 bg-opacity-10 p-3 rounded-3">
+                          <div className="bg-primary bg-opacity-10 p-2 rounded me-2">
+                            <FileText size={18} className="text-primary" />
                           </div>
-                          <h5 className="mb-0 fw-bold text-dark">
+                          <h6 className="mb-0 fw-semibold">
                             Expense Information
-                          </h5>
+                          </h6>
                         </div>
 
-                        {/* Info Rows */}
-                        <div className="d-flex flex-column gap-3 small">
-                          {/* Submission */}
-                          <div className="bg-light bg-opacity-50 p-3 rounded-3">
-                            <div className="fw-semibold text-uppercase text-muted mb-2 small">
+                        <div className="detail-list small">
+                          {/* Submission Details */}
+                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3 mb-4">
+                            <h6 className="text-muted fw-semibold small mb-2">
                               Submission
-                            </div>
-                            <div className="d-flex justify-content-between">
-                              <span className="text-muted">Submitted On</span>
-                              <span className="fw-semibold">
-                                {formatDate(selectedExpense.createdAt)}
+                            </h6>
+                            <div className="detail-item">
+                              <span className="detail-label">Submitted On</span>
+                              <span className="detail-value">
+                                <DateTimeDisplay
+                                  date={selectedExpense.createdAt}
+                                />
                               </span>
                             </div>
-                            <div className="d-flex justify-content-between mt-1">
-                              <span className="text-muted">Last Updated</span>
-                              <span className="fw-semibold">
-                                {formatDate(selectedExpense.updatedAt)}
+                            <div className="detail-item">
+                              <span className="detail-label">Last Updated</span>
+                              <span className="detail-value">
+                                <DateTimeDisplay
+                                  date={selectedExpense.updatedAt}
+                                  isHighlighted={
+                                    selectedExpense.updatedAt !==
+                                    selectedExpense.createdAt
+                                  }
+                                />
                               </span>
                             </div>
-                            <div className="d-flex justify-content-between mt-1">
-                              <span className="text-muted">
+                            <div className="detail-item">
+                              <span className="detail-label">
                                 Reference Number
                               </span>
-                              <span className="fw-semibold">
+                              <span className="detail-value">
                                 {selectedExpense.referenceNumber ? (
-                                  <code className="bg-white border px-2 py-1 rounded small">
+                                  <code className="bg-light px-2 py-1 rounded">
                                     {selectedExpense.referenceNumber}
                                   </code>
                                 ) : (
@@ -1042,50 +1124,60 @@ export default function ExpenseApprovalPage() {
                           </div>
 
                           {/* Classification */}
-                          <div className="bg-light bg-opacity-50 p-3 rounded-3">
-                            <div className="fw-semibold text-uppercase text-muted mb-2 small">
+                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3 mb-4">
+                            <h6 className="text-muted fw-semibold small mb-2">
                               Classification
-                            </div>
-                            <div className="d-flex justify-content-between">
-                              <span className="text-muted">Category</span>
-                              <span className="fw-semibold">
+                            </h6>
+                            <div className="detail-item">
+                              <span className="detail-label">Category</span>
+                              <span className="detail-value">
                                 {selectedExpense.category?.name || "N/A"}
                               </span>
                             </div>
-                            <div className="d-flex justify-content-between mt-1">
-                              <span className="text-muted">Department</span>
-                              <span className="fw-semibold">
+                            <div className="detail-item">
+                              <span className="detail-label">Department</span>
+                              <span className="detail-value">
                                 {selectedExpense.department?.name || "N/A"}
                               </span>
                             </div>
-                            <div className="d-flex justify-content-between mt-1">
-                              <span className="text-muted">Region</span>
-                              <span className="fw-semibold">
+                            <div className="detail-item">
+                              <span className="detail-label">Region</span>
+                              <span className="detail-value">
                                 {selectedExpense.region?.name || "N/A"}
                               </span>
                             </div>
                           </div>
 
                           {/* Payment */}
-                          <div className="bg-light bg-opacity-50 p-3 rounded-3">
-                            <div className="fw-semibold text-uppercase text-muted mb-2 small">
+                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3">
+                            <h6 className="text-muted fw-semibold small mb-2">
                               Payment
-                            </div>
-                            <div className="d-flex justify-content-between">
-                              <span className="text-muted">Payment Method</span>
-                              <span className="fw-semibold">
+                            </h6>
+                            <div className="detail-item">
+                              <span className="detail-label">
+                                Payment Method
+                              </span>
+                              <span className="detail-value">
                                 {selectedExpense.paymentMethod?.name || "N/A"}
                               </span>
                             </div>
-                            <div className="d-flex justify-content-between mt-1">
-                              <span className="text-muted">Payee ID</span>
-                              <span className="fw-semibold">
+                            <div className="detail-item">
+                              <span className="detail-label">Payee ID</span>
+                              <span className="detail-value">
                                 {selectedExpense.payeeId || "N/A"}
                               </span>
                             </div>
-                            <div className="d-flex justify-content-between mt-1">
-                              <span className="text-muted">Exchange Rate</span>
-                              <span className="fw-semibold">N/A</span>
+                            <div className="detail-item">
+                              <span className="detail-label">
+                                Exchange Rate
+                              </span>
+                              <span className="detail-value">
+                                {selectedExpense.exchangeRateUsed
+                                  ? Number(
+                                      selectedExpense.exchangeRateUsed
+                                    ).toFixed(2)
+                                  : "N/A"}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -1095,97 +1187,103 @@ export default function ExpenseApprovalPage() {
 
                   <Col md={6}>
                     <div className="detail-section border rounded-4 shadow-sm p-4 bg-white">
-                      <h5 className="fw-bold mb-4 d-flex align-items-center text-dark mb-4">
-                        <FaFlag size={16} className="me-2 text-primary fs-4" />
-                        Approval Steps
-                      </h5>
-                      <br />
-                      {selectedExpense.expenseSteps.length === 0 ? (
-                        <div className="text-muted fst-italic d-flex align-items-center bg-light p-3 rounded-3">
-                          <FaInfoCircle
-                            size={16}
-                            className="me-2 text-secondary"
-                          />
-                          No steps configured.
+                      <div className="d-flex align-items-center mb-3 bg-success border-start border-success border-3 bg-opacity-10 p-3 rounded-3">
+                        <div className="bg-success bg-opacity-10 p-2 rounded me-2">
+                          <CheckCircle size={18} className="text-success" />
                         </div>
-                      ) : (
-                        <ul className="timeline list-unstyled position-relative ps-4">
-                          {selectedExpense.expenseSteps
-                            .sort((a, b) => a.order - b.order)
-                            .map((step, idx) => (
-                              <li
-                                key={step.id}
-                                className="mb-4 position-relative ps-3"
-                                style={{
-                                  borderLeft: "2px solid #dee2e6",
-                                }}
-                              >
-                                {/* Timeline dot */}
-                                <span
-                                  className="position-absolute top-0 start-0 translate-middle p-2 rounded-circle"
+                        <h6 className="mb-0 fw-semibold">Approval Process</h6>
+                      </div>
+                      <div className="bg-secondary bg-opacity-10 p-3 rounded-3">
+                        {selectedExpense.expenseSteps.length === 0 ? (
+                          <div className="text-muted fst-italic d-flex align-items-center bg-light p-3 rounded-3">
+                            <FaInfoCircle
+                              size={16}
+                              className="me-2 text-secondary"
+                            />
+                            No steps configured.
+                          </div>
+                        ) : (
+                          <ul className="timeline list-unstyled position-relative ps-4">
+                            {selectedExpense.expenseSteps
+                              .sort((a, b) => a.order - b.order)
+                              .map((step) => (
+                                <li
+                                  key={step.id}
+                                  className="mb-4 position-relative ps-3"
                                   style={{
-                                    backgroundColor:
-                                      step.status === "PENDING"
-                                        ? "#f0ad4e"
-                                        : step.status === "APPROVED"
-                                        ? "#198754"
-                                        : step.status === "REJECTED"
-                                        ? "#dc3545"
-                                        : "#6c757d",
-                                    boxShadow: "0 0 0 4px #fff",
+                                    borderLeft: "2px solid #dee2e6",
                                   }}
-                                ></span>
+                                >
+                                  {/* Timeline dot */}
+                                  <span
+                                    className="position-absolute top-0 start-0 translate-middle p-2 rounded-circle"
+                                    style={{
+                                      backgroundColor:
+                                        step.status === "PENDING"
+                                          ? "#f0ad4e"
+                                          : step.status === "APPROVED"
+                                          ? "#198754"
+                                          : step.status === "REJECTED"
+                                          ? "#dc3545"
+                                          : "#6c757d",
+                                      boxShadow: "0 0 0 4px #fff",
+                                    }}
+                                  ></span>
 
-                                <div className="d-flex justify-content-between align-items-start mb-1">
-                                  <div className="fw-semibold text-dark">
-                                    Step {step.order}{" "}
-                                    <span className="text-muted small">
-                                      • {step.role?.name ?? "Unassigned role"}
-                                    </span>
+                                  <div className="d-flex justify-content-between align-items-start mb-1">
+                                    <div className="fw-semibold text-dark">
+                                      Step {step.order}{" "}
+                                      <span className="text-muted small">
+                                        • {step.role?.name ?? "Unassigned role"}
+                                      </span>
+                                    </div>
+                                    <Badge
+                                      pill
+                                      bg={
+                                        step.status === "PENDING"
+                                          ? "warning"
+                                          : step.status === "APPROVED"
+                                          ? "success"
+                                          : step.status === "REJECTED"
+                                          ? "danger"
+                                          : "secondary"
+                                      }
+                                      className="px-3 py-2 fw-semibold"
+                                    >
+                                      {humanStatus(step.status)}
+                                    </Badge>
                                   </div>
-                                  <Badge
-                                    pill
-                                    bg={
-                                      step.status === "PENDING"
-                                        ? "warning"
-                                        : step.status === "APPROVED"
-                                        ? "success"
-                                        : step.status === "REJECTED"
-                                        ? "danger"
-                                        : "secondary"
-                                    }
-                                    className="px-3 py-2 fw-semibold"
-                                  >
-                                    {humanStatus(step.status)}
-                                  </Badge>
-                                </div>
 
-                                <div className="small text-muted d-flex flex-wrap gap-3">
-                                  <span className="d-flex align-items-center">
-                                    <FaUser className="me-1 text-secondary" />
-                                    {step.approver
-                                      ? `${step.approver.firstName} ${step.approver.lastName}`
-                                      : "—"}
-                                  </span>
-
-                                  {step.updatedAt && (
+                                  <div className="small text-muted d-flex flex-wrap gap-3">
                                     <span className="d-flex align-items-center">
-                                      <FaClock className="me-1 text-secondary" />
-                                      {formatDate(step.updatedAt)}
+                                      <FaUser className="me-1 text-secondary" />
+                                      {step.approver
+                                        ? `${step.approver.firstName} ${step.approver.lastName}`
+                                        : "—"}
                                     </span>
-                                  )}
 
-                                  {step.comments && (
-                                    <span className="d-flex align-items-center">
-                                      <FaComment className="me-1 text-secondary" />
-                                      {step.comments}
-                                    </span>
-                                  )}
-                                </div>
-                              </li>
-                            ))}
-                        </ul>
-                      )}
+                                    {step.updatedAt && (
+                                      <span className="d-flex align-items-center">
+                                        <FaClock className="me-1 text-secondary" />
+                                        <DateTimeDisplay
+                                          date={step.updatedAt}
+                                          showTime={true}
+                                        />
+                                      </span>
+                                    )}
+
+                                    {step.comments && (
+                                      <span className="d-flex align-items-center">
+                                        <FaComment className="me-1 text-secondary" />
+                                        {step.comments}
+                                      </span>
+                                    )}
+                                  </div>
+                                </li>
+                              ))}
+                          </ul>
+                        )}
+                      </div>
                     </div>
                   </Col>
                 </Row>
@@ -1197,15 +1295,16 @@ export default function ExpenseApprovalPage() {
                       <h5 className="fw-bold mb-3 d-flex align-items-center">
                         Payment Actions
                       </h5>
+
                       <Form.Group className="mb-3">
-                        <Form.Label>Rejection Reason (if rejecting)</Form.Label>
+                        <Form.Label>Reason for not paying</Form.Label>
                         <Form.Control
                           as="textarea"
                           rows={3}
                           value={rejectionReason}
                           onChange={(e) => setRejectionReason(e.target.value)}
                         />
-                        <Form.Text> Provide reason...</Form.Text>
+                        <Form.Text>Provide reason...</Form.Text>
                       </Form.Group>
                       <div className="d-flex gap-2">
                         <Button
@@ -1214,7 +1313,7 @@ export default function ExpenseApprovalPage() {
                           onClick={() => handleApproveExpenseFromModal(true)}
                         >
                           <CheckLg size={16} className="me-1" />
-                          Approve Expense
+                          Mark as Paid
                         </Button>
                         <Button
                           size="sm"
@@ -1222,7 +1321,7 @@ export default function ExpenseApprovalPage() {
                           onClick={() => handleApproveExpenseFromModal(false)}
                         >
                           <XLg size={16} className="me-1" />
-                          Reject payment
+                          Not paid
                         </Button>
                       </div>
                     </div>
@@ -1243,22 +1342,51 @@ export default function ExpenseApprovalPage() {
 
         {/* Styles */}
         <style jsx>{`
-          .stat-card {
-            border-radius: 10px;
-            border: none;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+          .dashboard-container {
+            background-color: #f8f9fa;
           }
-          .icon-container {
-            width: 40px;
-            height: 40px;
+          .transactions-table {
+            border-collapse: separate;
+            border-spacing: 0;
+          }
+          .transactions-table tr {
+            cursor: pointer;
+            transition: background-color 0.2s;
+          }
+          .transactions-table tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+          }
+          .transactions-table td {
+            border-top: 1px solid #f0f0f0;
+            vertical-align: middle;
+            padding: 1rem;
+          }
+          .transactions-table th {
+            border: none;
+            padding: 0.75rem 1rem;
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #6c757d;
+          }
+          .transaction-icon {
+            width: 36px;
+            height: 36px;
             border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .transaction-icon-lg {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
           }
           .search-box {
             position: relative;
-            width: 220px;
+            width: 200px;
           }
           .search-icon {
             position: absolute;
@@ -1266,7 +1394,6 @@ export default function ExpenseApprovalPage() {
             top: 50%;
             transform: translateY(-50%);
             color: #6c757d;
-            z-index: 10;
           }
           .detail-section {
             background-color: #f8f9fa;
@@ -1281,15 +1408,211 @@ export default function ExpenseApprovalPage() {
             color: #6c757d;
             margin-bottom: 1rem;
           }
-          table :global(thead th) {
+
+          /* Step strip in table */
+          .step-strip {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+          }
+          .step-pill {
+            display: inline-block;
+            width: 16px;
+            height: 10px;
+            border-radius: 999px;
+            opacity: 0.95;
+          }
+
+          /* Timeline */
+          .activity-timeline {
+            position: relative;
+            padding-left: 20px;
+          }
+          .activity-item {
+            position: relative;
+            padding-bottom: 20px;
+          }
+          .activity-badge {
+            position: absolute;
+            left: -20px;
+            top: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+          }
+          .activity-badge.success {
+            background-color: #198754;
+          }
+          .activity-badge.danger {
+            background-color: #dc3545;
+          }
+          .activity-badge.primary {
+            background-color: #0d6efd;
+          }
+          .activity-content {
+            padding-left: 10px;
+          }
+          .activity-item:not(:last-child):after {
+            content: "";
+            position: absolute;
+            left: -16px;
+            top: 12px;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+          }
+          .transactions-table {
+            font-size: 0.9rem;
+          }
+          .transactions-table th {
             border-top: none;
-            background-color: #f8f9fa;
             font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
             color: #6c757d;
+            padding: 1rem 0.75rem;
+          }
+          .transactions-table td {
+            padding: 1rem 0.75rem;
             vertical-align: middle;
           }
-          table :global(tbody td) {
-            vertical-align: middle;
+          .transactions-table tr {
+            transition: all 0.2s ease;
+          }
+          .transactions-table tr:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+          }
+          .cursor-pointer {
+            cursor: pointer;
+          }
+          .transaction-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .avatar-sm {
+            width: 32px;
+            height: 32px;
+            font-size: 0.8rem;
+          }
+          .step-strip .step-pill {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 2px;
+          }
+          .step-pill.approved {
+            background-color: #198754;
+          }
+          .step-pill.pending {
+            background-color: #ffc107;
+          }
+          .step-pill.rejected {
+            background-color: #dc3545;
+          }
+          .step-pill.not-started {
+            background-color: #6c757d;
+          }
+          .expense-modal :global(.modal-content) {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+          }
+          .expense-modal :global(.modal-header) {
+            padding: 1.5rem 1.5rem 0;
+          }
+          .expense-modal :global(.modal-body) {
+            padding: 1rem 1.5rem;
+          }
+          .expense-modal :global(.modal-footer) {
+            padding: 0 1.5rem 1.5rem;
+          }
+          .modal-icon-wrapper {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .detail-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+          }
+          .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+          }
+          .detail-label {
+            font-weight: 500;
+            color: #6c757d;
+            flex: 0 0 40%;
+          }
+          .detail-value {
+            flex: 0 0 60%;
+            text-align: right;
+          }
+          .avatar-sm {
+            width: 28px;
+            height: 28px;
+            font-size: 0.7rem;
+          }
+          .approval-timeline {
+            position: relative;
+            padding-left: 1.5rem;
+          }
+          .approval-timeline::before {
+            content: "";
+            position: absolute;
+            left: 11px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+          }
+          .timeline-item {
+            position: relative;
+            margin-bottom: 1.25rem;
+          }
+          .timeline-marker {
+            position: absolute;
+            left: -1.5rem;
+            top: 0.25rem;
+          }
+          .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px #dee2e6;
+          }
+          .status-indicator.approved {
+            background-color: #198754;
+          }
+          .status-indicator.rejected {
+            background-color: #dc3545;
+          }
+          .status-indicator.pending {
+            background-color: #ffc107;
+          }
+          .status-indicator.not-started {
+            background-color: #6c757d;
+          }
+          .timeline-content {
+            padding: 0.5rem 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+          }
+          .comments-box {
+            border-left: 3px solid #dee2e6;
           }
         `}</style>
       </Container>

@@ -254,7 +254,9 @@ export default function Dashboard() {
                   variant="primary"
                   size="sm"
                   className="me-2"
-                  onClick={() => handleNavigation("/expense-management/create-expense")}
+                  onClick={() =>
+                    handleNavigation("/expense-management/create-expense")
+                  }
                 >
                   <FaPlus size={16} className="me-1" />
                   Create Expense

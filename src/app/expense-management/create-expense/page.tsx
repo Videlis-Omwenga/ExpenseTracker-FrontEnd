@@ -77,7 +77,6 @@ export default function CreateExpensePage() {
   const [payee, setPayee] = useState("");
   const [payeeId, setPayeeId] = useState("");
   const [payeeNumber, setPayeeNumber] = useState("");
-  const [expenseTitle, setExpenseTitle] = useState("");
   const [description, setDescription] = useState("");
   const [primaryAmount, setPrimaryAmount] = useState("");
   const [category, setCategory] = useState("");
@@ -240,7 +239,7 @@ export default function CreateExpensePage() {
 
       if (response.ok) {
         toast.success(`Expense created successfully!`);
-        handleNavigation("/expense-management/my-expenses");
+        // handleNavigation("/expense-management/my-expenses");
       } else {
         toast.error(`${data.message}`);
       }

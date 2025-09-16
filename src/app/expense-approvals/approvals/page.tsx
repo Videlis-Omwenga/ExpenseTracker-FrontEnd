@@ -128,6 +128,9 @@ const humanStatus = (s: string) =>
   s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 
 export default function ExpenseApprovalPage() {
+  // Data state
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+
   // UI state
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | ExpenseStatus>(
@@ -140,8 +143,51 @@ export default function ExpenseApprovalPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
-  // Data state
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  // Check if all selected expenses have the same category and if total amount is within budget
+  const { hasSameCategory, exceedsBudget, budgetRemaining } = useMemo(() => {
+    if (selectedExpenses.length === 0)
+      return { hasSameCategory: true, exceedsBudget: false, budgetRemaining: 0 };
+
+    const selectedExpensesData = expenses.filter((expense) =>
+      selectedExpenses.includes(expense.id)
+    );
+
+    if (selectedExpensesData.length === 0)
+      return { hasSameCategory: true, exceedsBudget: false, budgetRemaining: 0 };
+
+    // First check if all expenses have the same category
+    const firstCategory = selectedExpensesData[0]?.category?.id;
+    const sameCategory = selectedExpensesData.every(
+      (expense) => expense.category?.id === firstCategory
+    );
+
+    // Only check budget if categories are the same
+    if (!sameCategory) {
+      return {
+        hasSameCategory: false,
+        exceedsBudget: false, // Don't care about budget if categories don't match
+        budgetRemaining: 0
+      };
+    }
+
+    // Calculate total amount of selected expenses
+    const totalAmount = selectedExpensesData.reduce(
+      (sum, expense) => sum + (expense.amount || 0),
+      0
+    );
+
+    // Get remaining budget from the first expense (all should have the same budget if same category)
+    const budgetRemaining = selectedExpensesData[0]?.budget?.remainingBudget || 0;
+
+    return {
+      hasSameCategory: true,
+      exceedsBudget: totalAmount > budgetRemaining,
+      budgetRemaining,
+    };
+  }, [selectedExpenses, expenses]);
+
+  // Determine if buttons should be disabled
+  const buttonsDisabled = !hasSameCategory || exceedsBudget;
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -498,18 +544,52 @@ export default function ExpenseApprovalPage() {
                   </span>
                 </Col>
                 <Col md={6} className="text-end">
-                  <Button
-                    variant="success"
-                    size="sm"
-                    className="me-2"
-                    onClick={handleBulkApprove}
-                  >
-                    <CheckLg size={16} className="me-1" />
-                    Approve Selected
-                  </Button>
+                  <div className="position-relative d-inline-block me-2">
+                    <Button
+                      variant="success"
+                      size="sm"
+                      className="me-2"
+                      disabled={buttonsDisabled}
+                      title={
+                        exceedsBudget
+                          ? `Selected amount exceeds remaining budget of ${budgetRemaining.toLocaleString()} KES`
+                          : !hasSameCategory
+                          ? "All selected expenses must be from the same category"
+                          : ""
+                      }
+                      onClick={handleBulkApprove}
+                    >
+                      <CheckLg size={16} className="me-1" />
+                      Approve Selected
+                    </Button>
+                    {(exceedsBudget || !hasSameCategory) && selectedExpenses.length > 0 && (
+                      <div 
+                        className="position-absolute top-100 start-0 mt-1 w-100 text-center"
+                        style={{
+                          fontSize: '0.7rem',
+                          color: '#dc3545',
+                          whiteSpace: 'nowrap',
+                          left: 0
+                        }}
+                        title={exceedsBudget 
+                          ? `Selected amount exceeds remaining budget of ${budgetRemaining.toLocaleString()} KES` 
+                          : 'Please select expenses from the same category'}
+                      >
+                        {exceedsBudget ? 'Budget exceeded' : 'Same category required'}
+                      </div>
+                    )}
+                  </div>
                   <Button
                     variant="outline-danger"
                     size="sm"
+                    disabled={buttonsDisabled}
+                    title={
+                      exceedsBudget
+                        ? `Selected amount exceeds remaining budget of ${budgetRemaining.toLocaleString()} KES`
+                        : !hasSameCategory
+                        ? "All selected expenses must be from the same category"
+                        : ""
+                    }
                     onClick={handleBulkReject}
                   >
                     <XLg size={16} className="me-1" />
