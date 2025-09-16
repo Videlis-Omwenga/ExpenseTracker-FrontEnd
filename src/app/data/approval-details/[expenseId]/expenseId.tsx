@@ -99,9 +99,21 @@ interface Workflow {
 
 interface Advance {
   id: number;
+  primaryAmount: number;
+  exchangeRate: number;
   amount: number;
-  description: string;
-  status: string;
+  category: {
+    id: number;
+    name: string;
+  };
+  currency: {
+    id: number;
+    currency: string;
+    initials: string;
+    rate: number;
+  };
+  description?: string;
+  status?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -441,46 +453,49 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
     <AuthProvider>
       <TopNavbar />
       <Container className="mt-5">
-        {/* Header */}
-        <Row className="mb-4">
-          <Col>
-            <div className="d-flex justify-content-between align-items-center">
-              <div>
-                <div className="d-flex align-items-center gap-3 mb-2">
-                  <FileText size={24} className="text-success" />
-                  <h6 className="mb-0 fw-bold text-success">
-                    Expense Approval Details
-                  </h6>
+        <Card className="border-0 bg-light shadow border-start rounded-3 border-3 border-success mb-5">
+          <Row className="mb-4">
+            <Col className="p-4">
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  <div className="d-flex align-items-center gap-3 mb-2">
+                    <FileText size={24} className="text-success" />
+                    <h6 className="mb-0 fw-bold text-success">
+                      Expense Approval Details
+                    </h6>
+                  </div>
+                  <p className="text-muted d-flex align-items-center gap-2">
+                    <ListCheck size={16} />
+                    Tracking approval process for expense #{expense.id}
+                  </p>
                 </div>
-                <p className="text-muted d-flex align-items-center gap-2">
-                  <ListCheck size={16} />
-                  Tracking approval process for expense #{expense.id}
-                </p>
+                <Button variant="secondary" onClick={() => router.back()}>
+                  &larr; Back
+                </Button>
               </div>
-              <Button variant="secondary" onClick={() => router.back()}>
-                &larr; Back
-              </Button>
-            </div>
 
-            <p className="text-muted d-flex align-items-center gap-2">
-              <span className="text-muted fw-bold">Expense details</span>
-              <span>
-                {expense.description || (
-                  <span className="text-muted fst-italic">No description</span>
-                )}
-              </span>
-            </p>
-          </Col>
-        </Row>
+              <p className="text-muted d-flex align-items-center gap-2">
+                <span className="text-muted fw-bold">Expense details</span>
+                <span>
+                  {expense.description || (
+                    <span className="text-muted fst-italic">
+                      No description
+                    </span>
+                  )}
+                </span>
+              </p>
+            </Col>
+          </Row>
+        </Card>
 
         {/* Approval Progress */}
         <Row className="mb-4">
           <Col>
-            <Card>
-              <Card.Body className="bg-success bg-opacity-10">
+            <Card className="border-0">
+              <Card.Body className="bg-success bg-opacity-10 shadow">
                 <div className="d-flex justify-content-between align-items-center mb-2">
                   <div className="d-flex align-items-center gap-2">
-                    <ListCheck size={18} className="text-primary" />
+                    <ListCheck size={18} className="text-success" />
                     <h6 className="card-title mb-0 fw-bold">
                       Approval Progress
                     </h6>
@@ -529,7 +544,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
           <Col lg={8} className="mb-4">
             <Card className="mb-4 border shadow-sm rounded-4 overflow-hidden">
               {/* Header with gradient and subtle shadow */}
-              <div className="bg-gradient bg-primary bg-opacity-10 border-bottom">
+              <div className="bg-gradient bg-dark bg-opacity-10 border-bottom">
                 <div className="container-fluid px-4 py-3">
                   <div className="d-flex align-items-center gap-3">
                     <div className="bg-white bg-opacity-80 p-2 rounded-3 shadow-sm">
@@ -544,7 +559,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                       </p>
                     </div>
                     <div className="d-flex align-items-center justify-content-between ms-auto flex-column">
-                      <div className="fw-bold text-success">
+                      <div className="fw-bold text-dark">
                         Amount: {expense.amount.toLocaleString()}
                       </div>
                       <div className="small">
@@ -577,7 +592,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                 <Row className="gy-4">
                   {/* Basic Info */}
                   <Col md={6}>
-                    <Card className="h-100 border shadow-sm rounded-3 bg-light-subtle">
+                    <Card className="h-100 border-0 border-top border-success border-3 shadow-sm rounded-3 bg-light-subtle">
                       <Card.Body>
                         <h6 className="text-secondary fw-semibold small text-uppercase border-bottom pb-2 mb-3">
                           Basic Information
@@ -646,7 +661,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
                   {/* Financial Info */}
                   <Col md={6}>
-                    <Card className="h-100 border shadow-sm rounded-3 bg-light-subtle">
+                    <Card className="h-100 border-0 border-top border-success border-3 shadow-sm rounded-3 bg-light-subtle">
                       <Card.Body>
                         <h6 className="text-secondary fw-semibold small text-uppercase border-bottom pb-2 mb-3">
                           Financial Information
@@ -697,7 +712,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
                   {/* Payee Info */}
                   <Col md={6}>
-                    <Card className="h-100 border shadow-sm rounded-3">
+                    <Card className="h-100 border-0 border-top border-success border-3 shadow-sm rounded-3 bg-light-subtle">
                       <Card.Body>
                         <h6 className="text-secondary fw-semibold small text-uppercase border-bottom pb-2 mb-3">
                           Payee Details
@@ -735,7 +750,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
                   {/* Organizational Info */}
                   <Col md={6}>
-                    <Card className="h-100 border shadow-sm rounded-3">
+                    <Card className="h-100 border-0 border-top border-success border-3 shadow-sm rounded-3 bg-light-subtle">
                       <Card.Body>
                         <h6 className="text-secondary fw-semibold small text-uppercase border-bottom pb-2 mb-3">
                           Organizational Information
@@ -764,7 +779,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
                   {/* Timestamps */}
                   <Col md={6}>
-                    <Card className="h-100 border shadow-sm rounded-3 bg-light-subtle">
+                    <Card className="h-100 border-0 border-top border-success border-3 shadow-sm rounded-3 bg-light-subtle">
                       <Card.Body>
                         <h6 className="text-secondary fw-semibold small text-uppercase border-bottom pb-2 mb-3">
                           Timestamps
@@ -791,7 +806,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
                   {/* People */}
                   <Col md={6}>
-                    <Card className="h-100 border shadow-sm rounded-3">
+                    <Card className="h-100 border-0 border-top border-success border-3 shadow-sm rounded-3 bg-light-subtle">
                       <Card.Body>
                         <h6 className="text-secondary fw-semibold small text-uppercase border-bottom pb-2 mb-3">
                           Payment
@@ -826,11 +841,11 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
             {/* Advances */}
             {expense.advances?.length > 0 && (
-              <Card className="shadow-sm border-0 rounded-4 mt-4 overflow-hidden">
-                <Card.Header className="bg-primary bg-opacity-10 border-bottom py-2">
-                  <div className="d-flex align-items-center gap-2">
+              <Card className="shadow-sm border rounded-4 mt-4 overflow-hidden">
+                <Card.Header className="bg-dark bg-opacity-10 border-bottom py-2">
+                  <div className="d-flex align-items-center gap-2 p-3">
                     <WalletIcon size={18} className="text-primary" />
-                    <h6 className="mb-0 fw-semibold text-primary">
+                    <h6 className="mb-0 fw-semibold text-dark">
                       Advance Breakdown
                     </h6>
                   </div>
@@ -845,19 +860,27 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                   >
                     <thead className="table-light text-muted">
                       <tr>
+                        <th>ID</th>
+                        <th>Primary Amount</th>
+                        <th>Exchange Rate</th>
                         <th>Amount</th>
                         <th>Category</th>
-                        <th>Date</th>
+                        <th>Currency</th>
                       </tr>
                     </thead>
                     <tbody>
                       {expense.advances.map((advance: any) => (
                         <tr key={advance.id}>
+                          <td>{advance.id}</td>
+                          <td className="fw-semibold">
+                            {advance.primaryAmount?.toLocaleString() || "N/A"}
+                          </td>
+                          <td>{advance.exchangeRate || "1.0"}</td>
                           <td className="fw-semibold text-success">
-                            {advance.amount.toLocaleString()}
+                            {advance.amount?.toLocaleString() || "N/A"}
                           </td>
                           <td>{advance.category?.name || "N/A"}</td>
-                          <td>{formatDate(advance.createdAt)}</td>
+                          <td>{advance.currency?.initials || "N/A"}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -871,7 +894,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
           <Col lg={4}>
             {/* Expense Steps */}
             <Card className="mb-4 border shadow-sm rounded-4 overflow-hidden">
-              <div className="bg-gradient bg-primary bg-opacity-10 border-bottom">
+              <div className="bg-gradient bg-dark bg-opacity-10 border-bottom">
                 <div className="container-fluid px-4 py-3">
                   <div className="d-flex align-items-center gap-3">
                     <div className="bg-white bg-opacity-80 p-2 rounded-3 shadow-sm">
@@ -980,7 +1003,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
       <Container>
         {/* Approval Steps */}
         <Card className="mb-4 shadow-sm border rounded-4">
-          <div className="d-flex align-items-center gap-2 p-3 bg-primary bg-opacity-10 rounded-top-4">
+          <div className="d-flex align-items-center gap-2 p-3 bg-dark bg-opacity-10 rounded-top-4">
             <div className="bg-white bg-opacity-80 p-2 rounded-3 shadow-sm">
               <ListCheck className="text-primary" size={20} />
             </div>

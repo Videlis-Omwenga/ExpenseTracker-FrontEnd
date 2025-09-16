@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   Card,
   Button,
@@ -40,7 +39,7 @@ import {
 import { toast } from "react-toastify";
 import { BASE_API_URL } from "../../static/apiConfig";
 import AuthProvider from "../../authPages/tokenData";
-import { BarChart2, Download, User } from "lucide-react";
+import { BarChart2, Download, Eye, User } from "lucide-react";
 import { FaListAlt, FaPlusCircle } from "react-icons/fa";
 import TopNavbar from "../../components/Navbar";
 import PageLoader from "@/app/components/PageLoader";
@@ -1419,16 +1418,6 @@ export default function FinanceDashboard() {
                             <p className="mb-0">No approval steps found</p>
                           </div>
                         )}
-
-
-                        <div className="mt-4 text-end">
-                          <Link 
-                            href={`/data/approval-details/${selectedExpense.id}`}
-                            className="btn btn-sm btn-outline-primary"
-                          >
-                            View Full Approval Details
-                          </Link>
-                        </div>
                       </Card.Body>
                     </Card>
                   </Col>
@@ -1443,6 +1432,14 @@ export default function FinanceDashboard() {
                   className="rounded-pill px-4"
                 >
                   Close
+                </Button>
+
+                <Button
+                  href={`/data/approval-details/${selectedExpense.id}`}
+                  className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 shadow-sm rounded-pill px-3"
+                >
+                  <Eye size={16} className="mb-0" />
+                  View Approval Details
                 </Button>
               </Modal.Footer>
             </>
