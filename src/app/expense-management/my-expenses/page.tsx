@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Card,
   Button,
@@ -1418,6 +1419,16 @@ export default function FinanceDashboard() {
                             <p className="mb-0">No approval steps found</p>
                           </div>
                         )}
+
+
+                        <div className="mt-4 text-end">
+                          <Link 
+                            href={`/data/approval-details/${selectedExpense.id}`}
+                            className="btn btn-sm btn-outline-primary"
+                          >
+                            View Full Approval Details
+                          </Link>
+                        </div>
                       </Card.Body>
                     </Card>
                   </Col>

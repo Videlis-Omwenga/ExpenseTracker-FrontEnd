@@ -266,12 +266,10 @@ export default function ExpenseApprovalPage() {
   // Determine if buttons should be disabled
   const buttonsDisabled = !hasSameCategory || exceedsBudget;
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   /** Fetch "expenses to approve" */
   const fetchExpensesToApprove = async () => {
     setIsLoading(true);
-    setError(null);
     try {
       const res = await fetch(
         `${BASE_API_URL}/expense-approvals/expenses-to-approve`,
@@ -298,7 +296,7 @@ export default function ExpenseApprovalPage() {
 
       setExpenses(data);
     } catch (e: any) {
-      setError(e?.message || "Failed to fetch expenses");
+      toast.error(`${e?.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -317,7 +315,11 @@ export default function ExpenseApprovalPage() {
               "expenseTrackerToken"
             )}`,
           },
-          body: JSON.stringify({ expenseId: id, isApproved: true }),
+          body: JSON.stringify({
+            expenseId: id,
+            isApproved: true,
+            comments: rejectionReason,
+          }),
         }
       );
 

@@ -299,7 +299,6 @@ export default function TopNavbar() {
                 <Dropdown.Toggle as={Nav.Link} className="nav-link-item">
                   <CashStack className="me-1 text-primary" size={16} />
                   Expenses
-                  
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="dropdown-menu">
                   <Dropdown.Item
@@ -336,18 +335,8 @@ export default function TopNavbar() {
                 <Dropdown.Toggle as={Nav.Link} className="nav-link-item">
                   <ClipboardCheck className="me-1 text-primary" size={16} />
                   Approvals
-                  
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="dropdown-menu">
-                  <Dropdown.Item
-                    onClick={() =>
-                      handleNavigation("/expense-approvals/workflows")
-                    }
-                    className="dropdown-item"
-                  >
-                    <FileText className="me-2" size={16} />
-                    Workflows
-                  </Dropdown.Item>
                   <Dropdown.Item
                     onClick={() =>
                       handleNavigation("/expense-approvals/approvals")
@@ -377,7 +366,6 @@ export default function TopNavbar() {
                 <Dropdown.Toggle as={Nav.Link} className="nav-link-item">
                   <Wallet2 className="me-1 text-primary" size={16} />
                   Finance
-                  
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="dropdown-menu">
                   <Dropdown.Item
@@ -418,9 +406,17 @@ export default function TopNavbar() {
                 <Dropdown.Toggle as={Nav.Link} className="nav-link-item">
                   <Building className="me-1 text-primary " size={16} />
                   Administration
-                  
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="dropdown-menu">
+                  <Dropdown.Item
+                    onClick={() =>
+                      handleNavigation("/expense-approvals/workflows")
+                    }
+                    className="dropdown-item"
+                  >
+                    <FileText className="me-2" size={16} />
+                    Workflows
+                  </Dropdown.Item>
                   <Dropdown.Item
                     onClick={() => handleNavigation("/data-inputs/categories")}
                     className="dropdown-item"
