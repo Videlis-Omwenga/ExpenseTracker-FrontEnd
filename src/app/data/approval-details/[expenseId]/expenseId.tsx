@@ -18,7 +18,6 @@ import {
   ArrowLeft,
   FileText,
   Lock,
-  FileEarmarkText as FileEarmarkTextIcon,
   Wallet as WalletIcon,
   ListCheck,
   PersonFill,
@@ -37,29 +36,8 @@ import { BASE_API_URL } from "@/app/static/apiConfig";
 import AuthProvider from "@/app/authPages/tokenData";
 import TopNavbar from "@/app/components/Navbar";
 import PageLoader from "@/app/components/PageLoader";
-import { Unlock } from "lucide-react";
+import { ShieldCheck, Unlock } from "lucide-react";
 import { FaUser } from "react-icons/fa";
-
-interface ApprovalStep {
-  id: number;
-  createdAt: string;
-  updatedAt: string;
-
-  approvalStatus: "NOT_STARTED" | "APPROVED" | "REJECTED"; // match enum
-  comments: string | null;
-  actionedBy: number;
-
-  roleId: number | null;
-  role?: {
-    id: number;
-    name: string;
-  };
-
-  user?: {
-    id: number;
-    name: string;
-  };
-}
 
 interface ExpenseSteps {
   id: number;
@@ -241,12 +219,36 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
             name: step.role.name,
           }
         : undefined,
+      // Use user if available, otherwise use approver
+      user: step.user
+        ? {
+            id: step.user.id,
+            firstName: step.user.firstName,
+            lastName: step.user.lastName,
+            email: step.user.email || "",
+          }
+        : step.approver
+        ? {
+            id: step.approver.id,
+            firstName: step.approver.firstName,
+            lastName: step.approver.lastName,
+            email: step.approver.email || "",
+          }
+        : undefined,
+      // Also keep the approver for backward compatibility
       approver: step.approver
         ? {
             id: step.approver.id,
             firstName: step.approver.firstName,
             lastName: step.approver.lastName,
             email: step.approver.email || "",
+          }
+        : step.user
+        ? {
+            id: step.user.id,
+            firstName: step.user.firstName,
+            lastName: step.user.lastName,
+            email: step.user.email || "",
           }
         : undefined,
     }));
@@ -366,29 +368,12 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
     fetchExpenseData();
   }, [expenseId, initialLoad]);
 
-  const formatCurrency = (amount: number, currencyCode?: string) => {
-    if (amount == null) return "N/A";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currencyCode || "USD",
-    }).format(amount);
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
-    });
-  };
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
     });
   };
 
@@ -455,15 +440,17 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
   return (
     <AuthProvider>
       <TopNavbar />
-      <Container className="py-5">
+      <Container className="mt-5">
         {/* Header */}
         <Row className="mb-4">
           <Col>
             <div className="d-flex justify-content-between align-items-center">
               <div>
                 <div className="d-flex align-items-center gap-3 mb-2">
-                  <FileText size={24} className="text-primary" />
-                  <h6 className="mb-0">Expense Approval Details</h6>
+                  <FileText size={24} className="text-success" />
+                  <h6 className="mb-0 fw-bold text-success">
+                    Expense Approval Details
+                  </h6>
                 </div>
                 <p className="text-muted d-flex align-items-center gap-2">
                   <ListCheck size={16} />
@@ -490,7 +477,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
         <Row className="mb-4">
           <Col>
             <Card>
-              <Card.Body>
+              <Card.Body className="bg-success bg-opacity-10">
                 <div className="d-flex justify-content-between align-items-center mb-2">
                   <div className="d-flex align-items-center gap-2">
                     <ListCheck size={18} className="text-primary" />
@@ -939,7 +926,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                               ) : step.status === "REJECTED" ? (
                                 <i className="text-white">✕</i>
                               ) : (
-                                <i className="text-white">…</i>
+                                <i className="text-white">?</i>
                               )}
                             </div>
                             {index < expense.expenseSteps.length - 1 && (
@@ -987,32 +974,6 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                 )}
               </Card.Body>
             </Card>
-
-            {/* Workflow */}
-            {expense.workflow && (
-              <Card>
-                <Card.Header>
-                  <div className="d-flex align-items-center gap-2">
-                    <ListCheck size={18} className="text-primary" />
-                    <h6 className="mb-0 fw-bold">Workflow Details</h6>
-                  </div>
-                </Card.Header>
-                <Card.Body>
-                  <div className="d-flex align-items-center">
-                    <div className="flex-shrink-0 me-3">
-                      <i className="bi bi-diagram-3 fs-3 text-primary"></i>
-                    </div>
-                    <div className="flex-grow-1">
-                      <h6 className="mb-0">{expense.workflow.name}</h6>
-                      <small className="text-muted">
-                        {expense.workflow.description ||
-                          "No description available"}
-                      </small>
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
-            )}
           </Col>
         </Row>
       </Container>
@@ -1039,7 +1000,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                 </div>
               </Alert>
             ) : (
-              <div className="table-responsive rounded-3 border">
+              <div className="table-responsive rounded-">
                 <Table hover className="align-middle mb-0">
                   <thead className="bg-light">
                     <tr>
@@ -1058,8 +1019,8 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {expense.approvalSteps?.map(
-                      (step: ExpenseSteps, index: number) => (
+                    {expense.approvalSteps?.map((step: any, index: number) => {
+                      return (
                         <tr
                           key={`approval-${step.id || index}`}
                           className="border-top"
@@ -1075,17 +1036,17 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                                     ? "bg-danger bg-opacity-10"
                                     : "bg-warning bg-opacity-10"
                                 }`}
-                                style={{ width: "36px", height: "36px" }}
+                                style={{ width: "25px", height: "25px" }}
                               >
                                 {step.approvalStatus === "APPROVED" ? (
                                   <CheckCircle
                                     className="text-success"
-                                    size={20}
+                                    size={16}
                                   />
                                 ) : step.approvalStatus === "REJECTED" ? (
-                                  <XCircle className="text-danger" size={20} />
+                                  <XCircle className="text-danger" size={16} />
                                 ) : (
-                                  <Clock className="text-warning" size={20} />
+                                  <Clock className="text-warning" size={16} />
                                 )}
                               </div>
                               <div>
@@ -1119,7 +1080,10 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                                 className="bg-light rounded-circle d-flex align-items-center justify-content-center me-2"
                                 style={{ width: "32px", height: "32px" }}
                               >
-                                <Person className="text-primary" size={16} />
+                                <ShieldCheck
+                                  className="text-primary"
+                                  size={16}
+                                />
                               </div>
                               <span className="fw-medium">
                                 {step.role?.name || "—"}
@@ -1129,7 +1093,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
                           {/* Approver */}
                           <td className="py-3">
-                            {step.approver ? (
+                            {step.user || step.approver ? (
                               <div className="d-flex align-items-center">
                                 <div
                                   className="bg-light rounded-circle d-flex align-items-center justify-content-center me-2"
@@ -1142,11 +1106,11 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                                 </div>
                                 <div>
                                   <div className="fw-medium text-dark">
-                                    {step.approver.firstName}{" "}
-                                    {step.approver.lastName}
+                                    {(step.user || step.approver)?.firstName}{" "}
+                                    {(step.user || step.approver)?.lastName}
                                   </div>
                                   <small className="text-muted">
-                                    {step.approver.email}
+                                    {(step.user || step.approver)?.email}
                                   </small>
                                 </div>
                               </div>
@@ -1184,8 +1148,8 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                             )}
                           </td>
                         </tr>
-                      )
-                    )}
+                      );
+                    })}
                   </tbody>
                 </Table>
               </div>
