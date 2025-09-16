@@ -26,6 +26,9 @@ import {
   Eye,
   CheckLg,
   XLg,
+  ExclamationTriangle,
+  InfoCircle,
+  XCircle,
 } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
 import { ArrowDownCircle, Tag } from "lucide-react";
@@ -178,84 +181,87 @@ export default function ExpenseApprovalPage() {
     return Array.from(categoryMap.values());
   }, [expenses]);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
   // Check if all selected expenses have the same category and if total amount is within budget
-  const { hasSameCategory, exceedsBudget, budgetRemaining, totalAmount } = useMemo(() => {
-    if (selectedExpenses.length === 0)
+  const { hasSameCategory, exceedsBudget, budgetRemaining, totalAmount } =
+    useMemo(() => {
+      if (selectedExpenses.length === 0)
+        return {
+          hasSameCategory: true,
+          exceedsBudget: false,
+          budgetRemaining: 0,
+          totalAmount: 0,
+        };
+
+      const selectedExpensesData = expenses.filter((expense) =>
+        selectedExpenses.includes(expense.id)
+      );
+
+      if (selectedExpensesData.length === 0)
+        return {
+          hasSameCategory: true,
+          exceedsBudget: false,
+          budgetRemaining: 0,
+          totalAmount: 0,
+        };
+
+      // First check if all expenses have the same category
+      const firstCategory = selectedExpensesData[0]?.category?.id;
+      const sameCategory = selectedExpensesData.every(
+        (expense) => expense.category?.id === firstCategory
+      );
+
+      // Only check budget if categories are the same
+      if (!sameCategory) {
+        return {
+          hasSameCategory: false,
+          exceedsBudget: false, // Don't care about budget if categories don't match
+          budgetRemaining: 0,
+          totalAmount: 0,
+        };
+      }
+
+      // Check if all selected expenses have already started approval (have at least one approval step)
+      const allHaveStartedApproval = selectedExpensesData.every((expense) => {
+        const progress = getApprovalProgress(expense);
+        const [completed] = progress.split("/").map(Number);
+        return completed > 0; // At least one approval step completed
+      });
+
+      // If all selected expenses have already started approval, skip budget check
+      if (allHaveStartedApproval) {
+        return {
+          hasSameCategory: true,
+          exceedsBudget: false, // Skip budget check
+          budgetRemaining:
+            selectedExpensesData[0]?.budget?.remainingBudget || 0,
+          totalAmount: 0, // Not needed when all have started approval
+        };
+      }
+
+      // Calculate total amount of selected expenses
+      const totalAmount = selectedExpensesData.reduce(
+        (sum, expense) => sum + (expense.amount || 0),
+        0
+      );
+
+      // Get remaining budget from the first expense (all should have the same budget if same category)
+      const budgetRemaining =
+        selectedExpensesData[0]?.budget?.remainingBudget || 0;
+
+      const budgetExceeded = totalAmount > budgetRemaining;
       return {
         hasSameCategory: true,
-        exceedsBudget: false,
-        budgetRemaining: 0,
-        totalAmount: 0,
+        exceedsBudget: budgetExceeded,
+        budgetRemaining,
+        totalAmount: budgetExceeded ? totalAmount : 0, // Only include totalAmount if budget is exceeded
       };
-
-    const selectedExpensesData = expenses.filter((expense) =>
-      selectedExpenses.includes(expense.id)
-    );
-
-    if (selectedExpensesData.length === 0)
-      return {
-        hasSameCategory: true,
-        exceedsBudget: false,
-        budgetRemaining: 0,
-        totalAmount: 0,
-      };
-
-    // First check if all expenses have the same category
-    const firstCategory = selectedExpensesData[0]?.category?.id;
-    const sameCategory = selectedExpensesData.every(
-      (expense) => expense.category?.id === firstCategory
-    );
-
-    // Only check budget if categories are the same
-    if (!sameCategory) {
-      return {
-        hasSameCategory: false,
-        exceedsBudget: false, // Don't care about budget if categories don't match
-        budgetRemaining: 0,
-        totalAmount: 0,
-      };
-    }
-
-    // Check if all selected expenses have already started approval (have at least one approval step)
-    const allHaveStartedApproval = selectedExpensesData.every((expense) => {
-      const progress = getApprovalProgress(expense);
-      const [completed] = progress.split("/").map(Number);
-      return completed > 0; // At least one approval step completed
-    });
-
-    // If all selected expenses have already started approval, skip budget check
-    if (allHaveStartedApproval) {
-      return {
-        hasSameCategory: true,
-        exceedsBudget: false, // Skip budget check
-        budgetRemaining: selectedExpensesData[0]?.budget?.remainingBudget || 0,
-        totalAmount: 0, // Not needed when all have started approval
-      };
-    }
-
-    // Calculate total amount of selected expenses
-    const totalAmount = selectedExpensesData.reduce(
-      (sum, expense) => sum + (expense.amount || 0),
-      0
-    );
-
-    // Get remaining budget from the first expense (all should have the same budget if same category)
-    const budgetRemaining =
-      selectedExpensesData[0]?.budget?.remainingBudget || 0;
-
-    const budgetExceeded = totalAmount > budgetRemaining;
-    return {
-      hasSameCategory: true,
-      exceedsBudget: budgetExceeded,
-      budgetRemaining,
-      totalAmount: budgetExceeded ? totalAmount : 0, // Only include totalAmount if budget is exceeded
-    };
-  }, [selectedExpenses, expenses]);
+    }, [selectedExpenses, expenses]);
 
   // Determine if buttons should be disabled
   const buttonsDisabled = !hasSameCategory || exceedsBudget;
@@ -476,14 +482,21 @@ export default function ExpenseApprovalPage() {
 
   const handleBulkReject = async () => {
     if (selectedExpenses.length === 0) return;
-    const reason =
-      rejectionReason ||
-      prompt("Reason for rejection? (applies to all selected)") ||
-      "";
-    if (!reason.trim()) return;
-    await Promise.all(selectedExpenses.map((id) => rejectExpense(id, reason)));
+    setShowRejectModal(true);
+  };
+
+  const confirmBulkReject = async () => {
+    if (!rejectionReason.trim()) {
+      toast.error("Please provide a reason for rejection");
+      return;
+    }
+
+    await Promise.all(
+      selectedExpenses.map((id) => rejectExpense(id, rejectionReason))
+    );
     setSelectedExpenses([]);
     setRejectionReason("");
+    setShowRejectModal(false);
   };
 
   /** Per-row actions */
@@ -656,12 +669,16 @@ export default function ExpenseApprovalPage() {
                           }}
                           title={
                             exceedsBudget
-                              ? `Selected amount (${totalAmount.toLocaleString()} KES) exceeds remaining budget (${budgetRemaining.toLocaleString()} KES) by ${(totalAmount - budgetRemaining).toLocaleString()} KES`
+                              ? `Selected amount (${totalAmount.toLocaleString()} KES) exceeds remaining budget (${budgetRemaining.toLocaleString()} KES) by ${(
+                                  totalAmount - budgetRemaining
+                                ).toLocaleString()} KES`
                               : "Please select expenses from the same category"
                           }
                         >
                           {exceedsBudget
-                            ? `Budget exceeded by ${(totalAmount - budgetRemaining).toLocaleString()} KES`
+                            ? `Budget exceeded by ${(
+                                totalAmount - budgetRemaining
+                              ).toLocaleString()} KES`
                             : "Same category required"}
                         </div>
                       )}
@@ -680,6 +697,84 @@ export default function ExpenseApprovalPage() {
             </Card.Body>
           </Card>
         )}
+        <Modal
+          show={showRejectModal}
+          onHide={() => setShowRejectModal(false)}
+          size="xl"
+          aria-labelledby="contained-modal-title-vcenter"
+        >
+          <Modal.Header closeButton className="border-0 pb-0">
+            <div className="d-flex align-items-center gap-2">
+              <XCircle size={24} className="text-danger" />
+              <h6 className="mb-0 fw-bold">
+                Reject {selectedExpenses.length} Selected Expense
+                {selectedExpenses.length !== 1 ? "s" : ""}
+              </h6>
+            </div>
+          </Modal.Header>
+          <div className="bg-light">
+            <Modal.Body>
+              <div className="d-flex align-items-start gap-3 mb-4">
+                <div className="text-warning">
+                  <ExclamationTriangle size={20} />
+                </div>
+                <div>
+                  <p className="mb-0 fw-medium">
+                    This action cannot be undone. The following expenses will be
+                    rejected:
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-4 p-3 bg-white rounded border">
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <InfoCircle size={16} className="text-primary" />
+                  <span className="small fw-medium">Expense IDs</span>
+                </div>
+                <div className="d-flex flex-wrap gap-2">
+                  {selectedExpenses.map((id) => (
+                    <Badge
+                      key={id}
+                      bg="light"
+                      text="dark"
+                      className="border d-flex align-items-center gap-1"
+                    >
+                      <XCircle size={12} className="text-danger" />
+                      <span>#{id}</span>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <Form.Group className="mb-0">
+                <Form.Label className="small">
+                  Reason for rejection <span className="text-danger">*</span>
+                </Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  placeholder="Enter the reason for rejection"
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  className="mt-1"
+                />
+              </Form.Group>
+            </Modal.Body>
+          </div>
+          <Modal.Footer>
+            <Button
+              size="sm"
+              variant="outline-secondary"
+              onClick={() => setShowRejectModal(false)}
+            >
+              Cancel rejection
+            </Button>
+            <Button size="sm" variant="danger" onClick={confirmBulkReject}>
+              <XLg size={16} className="me-1" />
+              Reject expenses
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
         {/* Table */}
         <Card className="mb-4">
