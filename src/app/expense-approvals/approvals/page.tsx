@@ -18,6 +18,7 @@ import {
 import { FaInfoCircle, FaUser, FaClock, FaComment } from "react-icons/fa";
 import {
   Filter,
+  ListCheck,
   CheckCircle,
   ClockHistory,
   FileText,
@@ -133,10 +134,49 @@ export default function ExpenseApprovalPage() {
 
   // UI state
   const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<number | "all">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | ExpenseStatus>(
     "all"
   );
+  const [approvalFilter, setApprovalFilter] = useState<string>("all");
   const [selectedExpenses, setSelectedExpenses] = useState<number[]>([]);
+
+  // Helper function to get approval progress string (e.g. "1/2")
+  const getApprovalProgress = (expense: Expense): string => {
+    const totalSteps = expense.expenseSteps?.length || 0;
+    if (totalSteps === 0) return "0/0";
+
+    const completedSteps =
+      expense.expenseSteps?.filter(
+        (step) => step.status === "APPROVED" || step.status === "REJECTED"
+      ).length || 0;
+
+    return `${completedSteps}/${totalSteps}`;
+  };
+
+  // Extract unique approval statuses
+  const approvalStatuses = useMemo(() => {
+    const statuses = new Set<string>();
+    statuses.add("all");
+    expenses.forEach((expense) => {
+      const progress = getApprovalProgress(expense);
+      if (progress !== "0/0") {
+        statuses.add(progress);
+      }
+    });
+    return Array.from(statuses).sort();
+  }, [expenses]);
+
+  // Extract unique categories from expenses
+  const categories = useMemo(() => {
+    const categoryMap = new Map<number, Category>();
+    expenses.forEach((expense) => {
+      if (expense.category) {
+        categoryMap.set(expense.category.id, expense.category);
+      }
+    });
+    return Array.from(categoryMap.values());
+  }, [expenses]);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
@@ -144,16 +184,26 @@ export default function ExpenseApprovalPage() {
   const itemsPerPage = 20;
 
   // Check if all selected expenses have the same category and if total amount is within budget
-  const { hasSameCategory, exceedsBudget, budgetRemaining } = useMemo(() => {
+  const { hasSameCategory, exceedsBudget, budgetRemaining, totalAmount } = useMemo(() => {
     if (selectedExpenses.length === 0)
-      return { hasSameCategory: true, exceedsBudget: false, budgetRemaining: 0 };
+      return {
+        hasSameCategory: true,
+        exceedsBudget: false,
+        budgetRemaining: 0,
+        totalAmount: 0,
+      };
 
     const selectedExpensesData = expenses.filter((expense) =>
       selectedExpenses.includes(expense.id)
     );
 
     if (selectedExpensesData.length === 0)
-      return { hasSameCategory: true, exceedsBudget: false, budgetRemaining: 0 };
+      return {
+        hasSameCategory: true,
+        exceedsBudget: false,
+        budgetRemaining: 0,
+        totalAmount: 0,
+      };
 
     // First check if all expenses have the same category
     const firstCategory = selectedExpensesData[0]?.category?.id;
@@ -166,7 +216,25 @@ export default function ExpenseApprovalPage() {
       return {
         hasSameCategory: false,
         exceedsBudget: false, // Don't care about budget if categories don't match
-        budgetRemaining: 0
+        budgetRemaining: 0,
+        totalAmount: 0,
+      };
+    }
+
+    // Check if all selected expenses have already started approval (have at least one approval step)
+    const allHaveStartedApproval = selectedExpensesData.every((expense) => {
+      const progress = getApprovalProgress(expense);
+      const [completed] = progress.split("/").map(Number);
+      return completed > 0; // At least one approval step completed
+    });
+
+    // If all selected expenses have already started approval, skip budget check
+    if (allHaveStartedApproval) {
+      return {
+        hasSameCategory: true,
+        exceedsBudget: false, // Skip budget check
+        budgetRemaining: selectedExpensesData[0]?.budget?.remainingBudget || 0,
+        totalAmount: 0, // Not needed when all have started approval
       };
     }
 
@@ -177,12 +245,15 @@ export default function ExpenseApprovalPage() {
     );
 
     // Get remaining budget from the first expense (all should have the same budget if same category)
-    const budgetRemaining = selectedExpensesData[0]?.budget?.remainingBudget || 0;
+    const budgetRemaining =
+      selectedExpensesData[0]?.budget?.remainingBudget || 0;
 
+    const budgetExceeded = totalAmount > budgetRemaining;
     return {
       hasSameCategory: true,
-      exceedsBudget: totalAmount > budgetRemaining,
+      exceedsBudget: budgetExceeded,
       budgetRemaining,
+      totalAmount: budgetExceeded ? totalAmount : 0, // Only include totalAmount if budget is exceeded
     };
   }, [selectedExpenses, expenses]);
 
@@ -314,9 +385,9 @@ export default function ExpenseApprovalPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** Derived data */
+  // Filter and sort expenses
   const filteredExpenses = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
+    const q = searchQuery.toLowerCase();
     return expenses.filter((exp) => {
       const employee = `${exp.user?.firstName ?? ""} ${
         exp.user?.lastName ?? ""
@@ -339,10 +410,21 @@ export default function ExpenseApprovalPage() {
 
       const matchesStatus =
         statusFilter === "all" || exp.status === statusFilter;
+      const matchesCategory =
+        categoryFilter === "all" || exp.category?.id === categoryFilter;
 
-      return matchesSearch && matchesStatus;
+      // Filter by approval progress (e.g. "1/2")
+      const matchesApprovalProgress =
+        approvalFilter === "all" || getApprovalProgress(exp) === approvalFilter;
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesCategory &&
+        matchesApprovalProgress
+      );
     });
-  }, [expenses, searchQuery, statusFilter]);
+  }, [expenses, searchQuery, statusFilter, categoryFilter, approvalFilter]);
 
   /** Pagination */
   const totalPages = Math.max(
@@ -562,35 +644,33 @@ export default function ExpenseApprovalPage() {
                       <CheckLg size={16} className="me-1" />
                       Approve Selected
                     </Button>
-                    {(exceedsBudget || !hasSameCategory) && selectedExpenses.length > 0 && (
-                      <div 
-                        className="position-absolute top-100 start-0 mt-1 w-100 text-center"
-                        style={{
-                          fontSize: '0.7rem',
-                          color: '#dc3545',
-                          whiteSpace: 'nowrap',
-                          left: 0
-                        }}
-                        title={exceedsBudget 
-                          ? `Selected amount exceeds remaining budget of ${budgetRemaining.toLocaleString()} KES` 
-                          : 'Please select expenses from the same category'}
-                      >
-                        {exceedsBudget ? 'Budget exceeded' : 'Same category required'}
-                      </div>
-                    )}
+                    {(exceedsBudget || !hasSameCategory) &&
+                      selectedExpenses.length > 0 && (
+                        <div
+                          className="position-absolute top-100 start-0 mt-1 w-100 text-center"
+                          style={{
+                            fontSize: "0.7rem",
+                            color: "#dc3545",
+                            whiteSpace: "nowrap",
+                            left: 0,
+                          }}
+                          title={
+                            exceedsBudget
+                              ? `Selected amount (${totalAmount.toLocaleString()} KES) exceeds remaining budget (${budgetRemaining.toLocaleString()} KES) by ${(totalAmount - budgetRemaining).toLocaleString()} KES`
+                              : "Please select expenses from the same category"
+                          }
+                        >
+                          {exceedsBudget
+                            ? `Budget exceeded by ${(totalAmount - budgetRemaining).toLocaleString()} KES`
+                            : "Same category required"}
+                        </div>
+                      )}
                   </div>
                   <Button
                     variant="outline-danger"
                     size="sm"
-                    disabled={buttonsDisabled}
-                    title={
-                      exceedsBudget
-                        ? `Selected amount exceeds remaining budget of ${budgetRemaining.toLocaleString()} KES`
-                        : !hasSameCategory
-                        ? "All selected expenses must be from the same category"
-                        : ""
-                    }
                     onClick={handleBulkReject}
+                    title="Reject selected expenses without budget or category restrictions"
                   >
                     <XLg size={16} className="me-1" />
                     Reject Selected
@@ -618,7 +698,7 @@ export default function ExpenseApprovalPage() {
                   className="ps-4"
                 />
               </div>
-              <Dropdown>
+              <Dropdown className="me-2">
                 <Dropdown.Toggle variant="outline-secondary" size="sm">
                   <Filter size={16} className="me-1" />
                   Status:{" "}
@@ -657,6 +737,68 @@ export default function ExpenseApprovalPage() {
                   >
                     Rejected
                   </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+
+              <Dropdown className="me-2">
+                <Dropdown.Toggle variant="outline-secondary" size="sm">
+                  <ListCheck size={16} className="me-1" />
+                  Approval: {approvalFilter === "all" ? "All" : approvalFilter}
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  <Dropdown.Item
+                    onClick={() => {
+                      setApprovalFilter("all");
+                      setCurrentPage(1);
+                    }}
+                    active={approvalFilter === "all"}
+                  >
+                    All Approvals
+                  </Dropdown.Item>
+                  {approvalStatuses.map((status) => (
+                    <Dropdown.Item
+                      key={status}
+                      onClick={() => {
+                        setApprovalFilter(status);
+                        setCurrentPage(1);
+                      }}
+                      active={approvalFilter === status}
+                    >
+                      {status}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
+
+              <Dropdown>
+                <Dropdown.Toggle variant="outline-secondary" size="sm">
+                  <Filter size={16} className="me-1" />
+                  Category:{" "}
+                  {categoryFilter === "all"
+                    ? "All"
+                    : categories.find((c) => c.id === categoryFilter)?.name ||
+                      "All"}
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  <Dropdown.Item
+                    onClick={() => {
+                      setCategoryFilter("all");
+                      setCurrentPage(1);
+                    }}
+                  >
+                    All Categories
+                  </Dropdown.Item>
+                  {categories.map((category) => (
+                    <Dropdown.Item
+                      key={category.id}
+                      onClick={() => {
+                        setCategoryFilter(category.id);
+                        setCurrentPage(1);
+                      }}
+                    >
+                      {category.name}
+                    </Dropdown.Item>
+                  ))}
                 </Dropdown.Menu>
               </Dropdown>
               <Button
@@ -848,7 +990,7 @@ export default function ExpenseApprovalPage() {
                               }`}
                             >
                               {exp.budget?.remainingBudget?.toLocaleString() ||
-                                "N/A"}
+                                "0.00"}
                             </span>
                           </td>
                           <td style={{ minWidth: 200 }}>
