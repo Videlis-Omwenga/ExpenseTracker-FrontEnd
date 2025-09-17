@@ -24,6 +24,7 @@ export default function AdminCreateUserModal({
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [institution, setInstitution] = useState("");
+  const [phone, setPhone] = useState("");
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
@@ -36,8 +37,9 @@ export default function AdminCreateUserModal({
         firstName,
         lastName,
         email,
-        role,
-        institution,
+        role: Number(role),
+        institution: Number(institution),
+        phone,
       };
 
       const response = await fetch(`${BASE_API_URL}/system-admin/create-user`, {
@@ -59,6 +61,7 @@ export default function AdminCreateUserModal({
         setLastName("");
         setEmail("");
         setRole("");
+        setPhone("");
         setInstitution("");
         setShow(false);
         if (onSuccess) {
@@ -178,6 +181,23 @@ export default function AdminCreateUserModal({
                   <Col md={6}>
                     <Form.Group className="mb-3">
                       <Form.Label className="fw-semibold text-dark">
+                        Phone number <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        required
+                        className="rounded-3 py-2 px-3 modern-input"
+                      />
+                      <Form.Text className="text-muted">
+                        Please enter the user's phone number. 25471234567
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="fw-semibold text-dark">
                         Role <span className="text-danger">*</span>
                       </Form.Label>
                       <Form.Select
@@ -188,7 +208,7 @@ export default function AdminCreateUserModal({
                       >
                         <option value=""></option>
                         {roles.map((r) => (
-                          <option key={r.id} value={r.name}>
+                          <option key={r.id} value={r.id}>
                             {r.name}
                           </option>
                         ))}
@@ -211,7 +231,7 @@ export default function AdminCreateUserModal({
                       >
                         <option value=""></option>
                         {institutions.map((i) => (
-                          <option key={i.id} value={i.name}>
+                          <option key={i.id} value={i.id}>
                             {i.name}
                           </option>
                         ))}

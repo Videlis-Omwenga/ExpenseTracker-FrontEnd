@@ -486,8 +486,20 @@ export default function Dashboard() {
           <Row className="mb-4">
             <Col xl={6} className="mb-4">
               <Card className="h-100 shadow-sm border-0">
-                <Card.Header className="bg-white py-3">
-                  <h6 className="mb-0 fw-bold">Expense Status Distribution</h6>
+                <Card.Header className="bg-gradient-to-r from-blue-500 to-purple-600 py-4">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 className="mb-1 fw-bold text-white">
+                        📊 Expense Status Distribution
+                      </h6>
+                      <p className="mb-0 text-white opacity-75 small">
+                        Track expense approval states
+                      </p>
+                    </div>
+                    <Badge bg="white" text="primary" className="px-3 py-2 rounded-pill fw-semibold">
+                      📈 Live Data
+                    </Badge>
+                  </div>
                 </Card.Header>
                 <Card.Body>
                   <Row className="g-3">
@@ -526,17 +538,19 @@ export default function Dashboard() {
                       <h6 className=" text-muted text-center mb-3">
                         Pie Chart
                       </h6>
-                      <div style={{ height: "220px" }} className="flex-grow-1">
+                      <div style={{ height: "240px" }} className="flex-grow-1 p-2">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                             <Pie
                               data={statusChartData}
                               dataKey="value"
                               nameKey="name"
-                              outerRadius={70}
+                              outerRadius={75}
+                              innerRadius={25}
+                              paddingAngle={3}
                               label={({ percent }) =>
                                 percent !== undefined
-                                  ? `${(percent * 100).toFixed(0)}%`
+                                  ? `${(percent * 100).toFixed(1)}%`
                                   : ""
                               }
                             >
@@ -547,13 +561,27 @@ export default function Dashboard() {
                                     STATUS_COLORS[entry.name] ||
                                     COLORS[index % COLORS.length]
                                   }
+                                  stroke="#ffffff"
+                                  strokeWidth={2}
                                 />
                               ))}
                             </Pie>
                             <Tooltip
-                              formatter={(value, name) => [`${value}`, name]}
+                              contentStyle={{
+                                backgroundColor: '#ffffff',
+                                border: 'none',
+                                borderRadius: '12px',
+                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                                fontSize: '14px'
+                              }}
+                              formatter={(value, name) => [`${value} expenses`, `📋 ${name}`]}
                             />
-                            <Legend />
+                            <Legend
+                              verticalAlign="bottom"
+                              height={36}
+                              iconType="circle"
+                              wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }}
+                            />
                           </PieChart>
                         </ResponsiveContainer>
                       </div>
@@ -562,23 +590,51 @@ export default function Dashboard() {
                       <h6 className=" text-muted text-center mb-3">
                         Bar Chart
                       </h6>
-                      <div style={{ height: "220px" }} className="flex-grow-1">
+                      <div style={{ height: "240px" }} className="flex-grow-1 p-2">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart
                             data={statusChartData}
-                            margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
+                            margin={{ top: 20, right: 15, left: 0, bottom: 20 }}
                           >
+                            <defs>
+                              <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.9}/>
+                                <stop offset="95%" stopColor="#7C3AED" stopOpacity={0.7}/>
+                              </linearGradient>
+                            </defs>
                             <CartesianGrid
                               strokeDasharray="3 3"
-                              stroke="#eee"
+                              stroke="#f0f0f0"
+                              horizontal={true}
+                              vertical={false}
                             />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip />
+                            <XAxis
+                              dataKey="name"
+                              axisLine={false}
+                              tickLine={false}
+                              tick={{ fontSize: 11, fill: '#6b7280' }}
+                            />
+                            <YAxis
+                              axisLine={false}
+                              tickLine={false}
+                              tick={{ fontSize: 11, fill: '#6b7280' }}
+                            />
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: '#ffffff',
+                                border: 'none',
+                                borderRadius: '12px',
+                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                                fontSize: '14px'
+                              }}
+                              formatter={(value, name) => [`${value} expenses`, '📊 Count']}
+                            />
                             <Bar
                               dataKey="value"
-                              fill="#4F46E5"
-                              radius={[4, 4, 0, 0]}
+                              fill="url(#barGradient)"
+                              radius={[6, 6, 0, 0]}
+                              stroke="#ffffff"
+                              strokeWidth={1}
                             >
                               {statusChartData.map((entry, index) => (
                                 <Cell
@@ -600,8 +656,20 @@ export default function Dashboard() {
             </Col>
             <Col xl={6} className="mb-4">
               <Card className="h-100 shadow-sm border-0">
-                <Card.Header className="bg-white py-3">
-                  <h6 className="mb-0 fw-bold">Payment Status Distribution</h6>
+                <Card.Header className="bg-gradient-to-r from-green-500 to-emerald-600 py-4">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 className="mb-1 fw-bold text-white">
+                        💰 Payment Status Distribution
+                      </h6>
+                      <p className="mb-0 text-white opacity-75 small">
+                        Monitor payment processing states
+                      </p>
+                    </div>
+                    <Badge bg="white" text="success" className="px-3 py-2 rounded-pill fw-semibold">
+                      💳 Payment Data
+                    </Badge>
+                  </div>
                 </Card.Header>
                 <Card.Body>
                   <Row>
@@ -634,15 +702,21 @@ export default function Dashboard() {
                         )}
                       </ListGroup>
                     </Col>
-                    <Col md={6} style={{ height: "200px" }}>
+                    <Col md={6} style={{ height: "240px" }} className="p-2">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
                             data={paymentStatusChartData}
                             dataKey="value"
                             nameKey="name"
-                            outerRadius={80}
-                            label
+                            outerRadius={85}
+                            innerRadius={30}
+                            paddingAngle={3}
+                            label={({ percent }) =>
+                              percent !== undefined
+                                ? `${(percent * 100).toFixed(1)}%`
+                                : ""
+                            }
                           >
                             {paymentStatusChartData.map((entry, index) => (
                               <Cell
@@ -651,10 +725,27 @@ export default function Dashboard() {
                                   PAYMENT_STATUS_COLORS[entry.name] ||
                                   COLORS[index % COLORS.length]
                                 }
+                                stroke="#ffffff"
+                                strokeWidth={2}
                               />
                             ))}
                           </Pie>
-                          <Tooltip />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: '#ffffff',
+                              border: 'none',
+                              borderRadius: '12px',
+                              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                              fontSize: '14px'
+                            }}
+                            formatter={(value, name) => [`${value} payments`, `💰 ${name}`]}
+                          />
+                          <Legend
+                            verticalAlign="bottom"
+                            height={30}
+                            iconType="circle"
+                            wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }}
+                          />
                         </PieChart>
                       </ResponsiveContainer>
                     </Col>
@@ -668,8 +759,18 @@ export default function Dashboard() {
           <Row className="mb-4">
             <Col lg={6} className="mb-4">
               <Card className="h-100 shadow-sm border-0">
-                <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
-                  <h6 className="mb-0">Expenses by Category</h6>
+                <Card.Header className="bg-gradient-to-r from-orange-500 to-red-600 py-4 d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 className="mb-1 fw-bold text-white">
+                      📂 Expenses by Category
+                    </h6>
+                    <p className="mb-0 text-white opacity-75 small">
+                      Category-wise expense breakdown
+                    </p>
+                  </div>
+                  <Badge bg="white" text="warning" className="px-3 py-2 rounded-pill fw-semibold">
+                    📊 Analysis
+                  </Badge>
                 </Card.Header>
                 <Card.Body className="p-0">
                   <div className="table-responsive">
@@ -711,27 +812,51 @@ export default function Dashboard() {
                   </div>
                 </Card.Body>
                 <Card.Footer className="bg-white">
-                  <div style={{ height: "200px" }}>
+                  <div style={{ height: "240px" }} className="p-3">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={categoryChartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
+                      <BarChart data={categoryChartData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
+                        <defs>
+                          <linearGradient id="categoryGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#f97316" stopOpacity={0.9}/>
+                            <stop offset="95%" stopColor="#dc2626" stopOpacity={0.7}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={true} vertical={false} />
+                        <XAxis
+                          dataKey="name"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 11, fill: '#6b7280' }}
+                        />
+                        <YAxis
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 11, fill: '#6b7280' }}
+                        />
                         <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#ffffff',
+                            border: 'none',
+                            borderRadius: '12px',
+                            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                            fontSize: '14px'
+                          }}
                           formatter={(value) => [
                             `$${Number(value).toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}`,
-                            "Amount",
+                            "💰 Amount",
                           ]}
                         />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                         <Bar
                           dataKey="totalAmount"
-                          fill="#4F46E5"
-                          radius={[4, 4, 0, 0]}
-                          name="Total Amount"
+                          fill="url(#categoryGradient)"
+                          radius={[8, 8, 0, 0]}
+                          name="💰 Total Amount"
+                          stroke="#ffffff"
+                          strokeWidth={1}
                         />
                       </BarChart>
                     </ResponsiveContainer>
@@ -741,8 +866,18 @@ export default function Dashboard() {
             </Col>
             <Col lg={6} className="mb-4">
               <Card className="h-100 shadow-sm border-0">
-                <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
-                  <h6 className="mb-0">Expenses by Department</h6>
+                <Card.Header className="bg-gradient-to-r from-purple-500 to-pink-600 py-4 d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 className="mb-1 fw-bold text-white">
+                      🏢 Expenses by Department
+                    </h6>
+                    <p className="mb-0 text-white opacity-75 small">
+                      Department-wise spending analysis
+                    </p>
+                  </div>
+                  <Badge bg="white" text="info" className="px-3 py-2 rounded-pill fw-semibold">
+                    📈 Trends
+                  </Badge>
                 </Card.Header>
                 <Card.Body className="p-0">
                   <div className="table-responsive">
@@ -784,27 +919,51 @@ export default function Dashboard() {
                   </div>
                 </Card.Body>
                 <Card.Footer className="bg-white">
-                  <div style={{ height: "200px" }}>
+                  <div style={{ height: "240px" }} className="p-3">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={departmentChartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
+                      <BarChart data={departmentChartData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
+                        <defs>
+                          <linearGradient id="departmentGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.9}/>
+                            <stop offset="95%" stopColor="#ec4899" stopOpacity={0.7}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={true} vertical={false} />
+                        <XAxis
+                          dataKey="name"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 11, fill: '#6b7280' }}
+                        />
+                        <YAxis
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 11, fill: '#6b7280' }}
+                        />
                         <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#ffffff',
+                            border: 'none',
+                            borderRadius: '12px',
+                            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                            fontSize: '14px'
+                          }}
                           formatter={(value) => [
                             `$${Number(value).toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}`,
-                            "Amount",
+                            "🏢 Amount",
                           ]}
                         />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                         <Bar
                           dataKey="totalAmount"
-                          fill="#10B981"
-                          radius={[4, 4, 0, 0]}
-                          name="Total Amount"
+                          fill="url(#departmentGradient)"
+                          radius={[8, 8, 0, 0]}
+                          name="🏢 Total Amount"
+                          stroke="#ffffff"
+                          strokeWidth={1}
                         />
                       </BarChart>
                     </ResponsiveContainer>
@@ -915,6 +1074,47 @@ export default function Dashboard() {
           </Row>
         </Container>
       </div>
+
+      {/* Custom CSS for enhanced styling */}
+      <style jsx global>{`
+        .bg-gradient-to-r.from-blue-500.to-purple-600 {
+          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%) !important;
+        }
+
+        .bg-gradient-to-r.from-green-500.to-emerald-600 {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        }
+
+        .bg-gradient-to-r.from-orange-500.to-red-600 {
+          background: linear-gradient(135deg, #f97316 0%, #dc2626 100%) !important;
+        }
+
+        .bg-gradient-to-r.from-purple-500.to-pink-600 {
+          background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%) !important;
+        }
+
+        .text-white.opacity-75 {
+          color: rgba(255, 255, 255, 0.75) !important;
+        }
+
+        .chart-container {
+          transition: all 0.3s ease;
+        }
+
+        .chart-container:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+          transition: all 0.3s ease;
+        }
+
+        .card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+      `}</style>
     </AuthProvider>
   );
 }
