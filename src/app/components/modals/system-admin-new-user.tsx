@@ -6,15 +6,24 @@ import { PersonPlus, Briefcase } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 
-export default function AdminCreateUserModal({ roles }: { roles: any[] }) {
+interface AdminCreateUserModalProps {
+  institutions: any[];
+  roles: any[];
+  onSuccess?: () => void;
+}
+
+export default function AdminCreateUserModal({
+  institutions,
+  roles,
+  onSuccess,
+}: AdminCreateUserModalProps) {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
-
+  const [institution, setInstitution] = useState("");
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
@@ -28,6 +37,7 @@ export default function AdminCreateUserModal({ roles }: { roles: any[] }) {
         lastName,
         email,
         role,
+        institution,
       };
 
       const response = await fetch(`${BASE_API_URL}/system-admin/create-user`, {
@@ -49,7 +59,11 @@ export default function AdminCreateUserModal({ roles }: { roles: any[] }) {
         setLastName("");
         setEmail("");
         setRole("");
+        setInstitution("");
         setShow(false);
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         toast.error(`${data.message}`);
       }
@@ -176,6 +190,29 @@ export default function AdminCreateUserModal({ roles }: { roles: any[] }) {
                         {roles.map((r) => (
                           <option key={r.id} value={r.name}>
                             {r.name}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <Form.Text className="text-muted">
+                        Please select the user's role.
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="fw-semibold text-dark">
+                        Institution <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Select
+                        value={institution}
+                        onChange={(e) => setInstitution(e.target.value)}
+                        required
+                        className="rounded-3 py-2 px-3 modern-input"
+                      >
+                        <option value=""></option>
+                        {institutions.map((i) => (
+                          <option key={i.id} value={i.name}>
+                            {i.name}
                           </option>
                         ))}
                       </Form.Select>

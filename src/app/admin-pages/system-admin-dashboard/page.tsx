@@ -51,7 +51,6 @@ import { BASE_API_URL } from "../../static/apiConfig";
 import TopNavbar from "../../components/Navbar";
 import InstitutionCreationModal from "../../components/modals/create-institution";
 import { default as PageLoader } from "@/app/components/PageLoader";
-import { FaPlus } from "react-icons/fa";
 import RoleCreationModal from "@/app/components/modals/system-admin-role-creation";
 import DateTimeDisplay from "@/app/components/DateTimeDisplay";
 import AdminCreateUserModal from "@/app/components/modals/system-admin-new-user";
@@ -928,7 +927,11 @@ export default function SuperAdminDashboard() {
                         </InputGroup>
                       </Col>
                       <Col md={6} className="d-flex justify-content-end">
-                        <AdminCreateUserModal roles={roles} />
+                        <AdminCreateUserModal
+                          onSuccess={fetchData}
+                          roles={roles}
+                          institutions={institutions}
+                        />
                       </Col>
                     </Row>
                   </Card.Body>
