@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-// Removed unused PieLabelProps interface
-
 import {
   Container,
   Row,
@@ -51,9 +49,12 @@ import AuthProvider from "../../authPages/tokenData";
 import { toast } from "react-toastify";
 import { BASE_API_URL } from "../../static/apiConfig";
 import TopNavbar from "../../components/Navbar";
-import RoleCreationModal from "../../components/modals/admin-role-creation";
 import InstitutionCreationModal from "../../components/modals/create-institution";
 import { default as PageLoader } from "@/app/components/PageLoader";
+import { FaPlus } from "react-icons/fa";
+import RoleCreationModal from "@/app/components/modals/system-admin-role-creation";
+import DateTimeDisplay from "@/app/components/DateTimeDisplay";
+import AdminCreateUserModal from "@/app/components/modals/system-admin-new-user";
 
 interface User {
   id: number;
@@ -119,6 +120,15 @@ interface UsersByInstitution {
   country?: string;
 }
 
+interface Role {
+  id: number;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  adminCreatedRole: boolean;
+}
+
 export default function SuperAdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
@@ -129,6 +139,7 @@ export default function SuperAdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [searchTerm, setSearchTerm] = useState("");
+  const [roles, setRoles] = useState<Role[]>([]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -150,11 +161,11 @@ export default function SuperAdminDashboard() {
         setInstitutions(data.institutions || []);
         setStatistics(data.statistics || null);
         setUsersByInstitution(data.enhancedUsersByInstitution || []);
+        setRoles(data.roles || []);
       } else {
         toast.error(data.message || "Failed to fetch dashboard data");
       }
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
       toast.error(`Failed to fetch data: ${error}`);
     } finally {
       setLoading(false);
@@ -176,17 +187,16 @@ export default function SuperAdminDashboard() {
   const filteredInstitutions = institutions.filter(
     (institution) =>
       institution.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      institution.contactEmail?.toLowerCase().includes(searchTerm.toLowerCase())
+      (institution.contactEmail &&
+        institution.contactEmail
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()))
   );
 
-  // Format date for display
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString();
-  };
+  // Format date for display - using DateTimeDisplay component instead
 
   // Get status color for charts
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string | null) => {
     switch (status?.toUpperCase()) {
       case "ACTIVE":
         return "#28a745"; // Green
@@ -202,9 +212,14 @@ export default function SuperAdminDashboard() {
   };
 
   // Generate user growth data for the last 30 days
-  const generateUserGrowthData = (users: User[]) => {
+  interface UserGrowthData {
+    date: string;
+    count: number;
+  }
+
+  const generateUserGrowthData = (users: User[]): UserGrowthData[] => {
     const days = 30;
-    const result = [];
+    const result: UserGrowthData[] = [];
     const now = new Date();
 
     // Initialize data for each day
@@ -215,6 +230,7 @@ export default function SuperAdminDashboard() {
 
       // Count users created on or before this date
       const count = users.filter((user) => {
+        if (!user.createdAt) return false;
         const userDate = new Date(user.createdAt).toISOString().split("T")[0];
         return userDate <= dateString;
       }).length;
@@ -229,7 +245,7 @@ export default function SuperAdminDashboard() {
   };
 
   // Get status variant
-  const getStatusVariant = (status: string) => {
+  const getStatusVariant = (status?: string | null) => {
     switch (status?.toUpperCase()) {
       case "ACTIVE":
         return "success";
@@ -510,10 +526,10 @@ export default function SuperAdminDashboard() {
                                 labelLine={false}
                                 label={({
                                   name,
-                                  percent,
+                                  percent = 0,
                                 }: {
                                   name: string;
-                                  percent: number;
+                                  percent?: number;
                                 }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                                 outerRadius={80}
                                 fill="#8884d8"
@@ -587,10 +603,10 @@ export default function SuperAdminDashboard() {
                                 labelLine={false}
                                 label={({
                                   name,
-                                  percent,
+                                  percent = 0,
                                 }: {
                                   name: string;
-                                  percent: number;
+                                  percent?: number;
                                 }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                                 outerRadius={80}
                                 fill="#8884d8"
@@ -798,10 +814,10 @@ export default function SuperAdminDashboard() {
                                 labelLine={false}
                                 label={({
                                   name,
-                                  percent,
+                                  percent = 0,
                                 }: {
                                   name: string;
-                                  percent: number;
+                                  percent?: number;
                                 }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                                 outerRadius={80}
                                 fill="#8884d8"
@@ -912,7 +928,7 @@ export default function SuperAdminDashboard() {
                         </InputGroup>
                       </Col>
                       <Col md={6} className="d-flex justify-content-end">
-                        <Button variant="primary">Add New User</Button>
+                        <AdminCreateUserModal roles={roles} />
                       </Col>
                     </Row>
                   </Card.Body>
@@ -951,9 +967,11 @@ export default function SuperAdminDashboard() {
                             <td>{user.institution?.name || "None"}</td>
                             <td>
                               <small className="text-muted">
-                                {user.lastLogin
-                                  ? formatDate(user.lastLogin)
-                                  : "Never"}
+                                {user.lastLogin ? (
+                                  <DateTimeDisplay date={user.lastLogin} />
+                                ) : (
+                                  "Never"
+                                )}
                               </small>
                             </td>
                             <td>
@@ -1133,7 +1151,9 @@ export default function SuperAdminDashboard() {
                                   "inactive"}
                               </Badge>
                             </td>
-                            <td>{formatDate(institution.createdAt)}</td>
+                            <td>
+                              <DateTimeDisplay date={institution.createdAt} />
+                            </td>
                             <td>
                               <div className="d-flex">
                                 <Button
@@ -1225,7 +1245,7 @@ export default function SuperAdminDashboard() {
                         </InputGroup>
                       </Col>
                       <Col md={6} className="d-flex justify-content-end">
-                        <RoleCreationModal />
+                        <RoleCreationModal onSuccess={fetchData} />
                       </Col>
                     </Row>
                   </Card.Body>
@@ -1245,15 +1265,26 @@ export default function SuperAdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {tempRoles.map((role) => (
+                        {roles.map((role) => (
                           <tr key={role.id}>
                             <td>{role.id}</td>
-                            <td>{formatDate(role.createdAt)}</td>
-                            <td>{formatDate(role.updatedAt)}</td>
                             <td>
-                              <Badge bg="primary" className="text-uppercase">
-                                {role.role}
-                              </Badge>
+                              <DateTimeDisplay date={role.createdAt} />
+                            </td>
+                            <td
+                              style={{
+                                color:
+                                  role.updatedAt !== role.createdAt
+                                    ? "red"
+                                    : "inherit",
+                              }}
+                            >
+                              <DateTimeDisplay date={role.updatedAt} />
+                            </td>
+                            <td>
+                              <span className="text-uppercase bg-success bg-opacity-10 text-success fw-semibold px-2 py-1 rounded small">
+                                {role.name}
+                              </span>
                             </td>
                             <td>{role.description}</td>
                             <td>
