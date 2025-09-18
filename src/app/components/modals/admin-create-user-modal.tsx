@@ -20,7 +20,7 @@ export default function AdminCreateUserModal({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("");
+  const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
   const [institution, setInstitution] = useState("");
   const [phone, setPhone] = useState("");
   const handleClose = () => setShow(false);
@@ -28,6 +28,12 @@ export default function AdminCreateUserModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (selectedRoles.length === 0) {
+      toast.error("Please select at least one role for the user.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -35,12 +41,12 @@ export default function AdminCreateUserModal({
         firstName,
         lastName,
         email,
-        role: Number(role),
+        role: selectedRoles,
         institution: Number(institution),
         phone,
       };
 
-      const response = await fetch(`${BASE_API_URL}/system-admin/create-user`, {
+      const response = await fetch(`${BASE_API_URL}/company-admin/create-user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -58,7 +64,7 @@ export default function AdminCreateUserModal({
         setFirstName("");
         setLastName("");
         setEmail("");
-        setRole("");
+        setSelectedRoles([]);
         setPhone("");
         setInstitution("");
         setShow(false);
@@ -193,27 +199,47 @@ export default function AdminCreateUserModal({
                       </Form.Text>
                     </Form.Group>
                   </Col>
-                  <Col md={6}>
+                  <Col md={12}>
                     <Form.Group className="mb-3">
                       <Form.Label className="fw-semibold text-dark">
-                        Role <span className="text-danger">*</span>
+                        Roles <span className="text-danger">*</span>
                       </Form.Label>
-                      <Form.Select
-                        value={role}
-                        onChange={(e) => setRole(e.target.value)}
-                        required
-                        className="rounded-3 py-2 px-3 modern-input"
-                      >
-                        <option value=""></option>
-                        {roles.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.name}
-                          </option>
-                        ))}
-                      </Form.Select>
+                      <div className="border-0 rounded-3 p-3 modern-input" style={{maxHeight: '200px', overflowY: 'auto'}}>
+                        {roles.length === 0 ? (
+                          <div className="text-muted text-center py-3">
+                            No roles available
+                          </div>
+                        ) : (
+                          <div className="row">
+                            {roles.map((r) => (
+                              <div key={r.id} className="col-md-3 col-sm-6 mb-2">
+                                <Form.Check
+                                  type="checkbox"
+                                  id={`role-${r.id}`}
+                                  checked={selectedRoles.includes(r.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedRoles([...selectedRoles, r.id]);
+                                    } else {
+                                      setSelectedRoles(selectedRoles.filter(roleId => roleId !== r.id));
+                                    }
+                                  }}
+                                  label={r.name}
+                                  className="modern-checkbox"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       <Form.Text className="text-muted">
-                        Please select the user's role.
+                        Please select one or more roles for the user. Selected: {selectedRoles.length}
                       </Form.Text>
+                      {selectedRoles.length === 0 && (
+                        <div className="text-danger small mt-1">
+                          At least one role must be selected.
+                        </div>
+                      )}
                     </Form.Group>
                   </Col>
                 </Row>
@@ -411,6 +437,48 @@ export default function AdminCreateUserModal({
           border: none;
           border-radius: 16px;
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .modern-checkbox .form-check-input {
+          width: 1.25rem;
+          height: 1.25rem;
+          border: 2px solid #d1d5db;
+          border-radius: 4px;
+          transition: all 0.3s ease;
+          margin-top: 0.125rem;
+        }
+
+        .modern-checkbox .form-check-input:checked {
+          background-color: #06b6d4;
+          border-color: #06b6d4;
+          box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+        }
+
+        .modern-checkbox .form-check-input:focus {
+          border-color: #06b6d4;
+          box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+        }
+
+        .modern-checkbox .form-check-label {
+          font-weight: 500;
+          color: #374151;
+          margin-left: 0.5rem;
+          cursor: pointer;
+          transition: color 0.3s ease;
+        }
+
+        .modern-checkbox:hover .form-check-label {
+          color: #06b6d4;
+        }
+
+        .modern-checkbox {
+          padding: 0.5rem;
+          border-radius: 6px;
+          transition: background-color 0.3s ease;
+        }
+
+        .modern-checkbox:hover {
+          background-color: #f8fafc;
         }
       `}</style>
     </>

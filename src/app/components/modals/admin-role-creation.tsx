@@ -6,7 +6,11 @@ import { Modal, Button, Form, Row, Col, Card } from "react-bootstrap";
 import { PlusCircle, Person, Briefcase } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
 
-export default function RoleCreationModal() {
+type RoleCreationModalProps = {
+  onSuccess?: () => void;
+};
+
+export default function RoleCreationModal({ onSuccess }: RoleCreationModalProps) {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState("");
@@ -44,6 +48,10 @@ export default function RoleCreationModal() {
         // Reset form fields
         setRole("");
         setDescription("");
+        // Notify parent to refresh data
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         toast.error(`${data.message}`);
       }

@@ -661,7 +661,7 @@ export default function AdminDashboard() {
                       <AdminCreateUserModal
                         roles={roles}
                         onSuccess={() => {
-                          toast.success("User added successfully!");
+                          fetchData();
                           setSearchTerm("");
                           setActiveTab("users");
                         }}
@@ -869,7 +869,9 @@ export default function AdminDashboard() {
                         </InputGroup>
                       </div>
 
-                     <RoleCreationModal />
+                     <RoleCreationModal onSuccess={() => {
+                          fetchData();
+                        }} />
                     </div>
                   </Card.Body>
                 </Card>
