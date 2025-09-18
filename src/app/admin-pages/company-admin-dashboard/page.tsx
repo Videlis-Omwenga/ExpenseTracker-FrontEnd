@@ -36,6 +36,7 @@ import AdminCreateUserModal from "@/app/components/modals/admin-create-user-moda
 import { toast } from "react-toastify";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 import PageLoader from "@/app/components/PageLoader";
+import RoleCreationModal from "@/app/components/modals/admin-role-creation";
 
 enum UserStatus {
   ACTIVE = "ACTIVE",
@@ -343,11 +344,26 @@ export default function AdminDashboard() {
             {/* Dashboard Overview */}
             {activeTab === "dashboard" && (
               <>
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                  <h3 className="fw-bold text-dark">Dashboard Overview</h3>
-                  <Breadcrumb>
-                    <Breadcrumb.Item active>Dashboard</Breadcrumb.Item>
-                  </Breadcrumb>
+                <div className="mb-4">
+                  <div className="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                      <div className="d-flex align-items-center mb-2">
+                        <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                          <Grid3x3Gap className="text-primary" size={24} />
+                        </div>
+                        <div>
+                          <h2 className="fw-bold text-dark mb-0">Dashboard Overview</h2>
+                          <p className="text-muted mb-0 small">Monitor your company's key metrics and performance</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="d-flex align-items-center gap-3">
+                      <Breadcrumb className="bg-light rounded-pill px-3 py-2 mb-0 small">
+                        <Breadcrumb.Item active className="text-primary fw-semibold">Dashboard</Breadcrumb.Item>
+                      </Breadcrumb>
+                    </div>
+                  </div>
+                  <hr className="border-2 border-primary opacity-25 mb-4" />
                 </div>
 
                 <Alert variant="info" className="d-flex align-items-center">
@@ -594,17 +610,33 @@ export default function AdminDashboard() {
             {/* Users Tab */}
             {activeTab === "users" && (
               <>
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                  <h3 className="fw-bold text-dark">User Management</h3>
-                  <Breadcrumb>
-                    <Breadcrumb.Item
-                      href="#"
-                      onClick={() => setActiveTab("dashboard")}
-                    >
-                      Dashboard
-                    </Breadcrumb.Item>
-                    <Breadcrumb.Item active>Users</Breadcrumb.Item>
-                  </Breadcrumb>
+                <div className="mb-4">
+                  <div className="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                      <div className="d-flex align-items-center mb-2">
+                        <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
+                          <People className="text-success" size={24} />
+                        </div>
+                        <div>
+                          <h2 className="fw-bold text-dark mb-0">User Management</h2>
+                          <p className="text-muted mb-0 small">Manage company users, roles and permissions</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="d-flex align-items-center gap-3">
+                      <Breadcrumb className="bg-light rounded-pill px-3 py-2 mb-0 small">
+                        <Breadcrumb.Item
+                          href="#"
+                          onClick={() => setActiveTab("dashboard")}
+                          className="text-decoration-none"
+                        >
+                          Dashboard
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Item active className="text-success fw-semibold">Users</Breadcrumb.Item>
+                      </Breadcrumb>
+                    </div>
+                  </div>
+                  <hr className="border-2 border-success opacity-25 mb-4" />
                 </div>
 
                 <Card className="shadow-lg border-0 mb-4 modern-search-card">
@@ -788,17 +820,33 @@ export default function AdminDashboard() {
             {/* Roles Tab */}
             {activeTab === "roles" && (
               <>
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                  <h3 className="fw-bold text-dark">Role Management</h3>
-                  <Breadcrumb>
-                    <Breadcrumb.Item
-                      href="#"
-                      onClick={() => setActiveTab("dashboard")}
-                    >
-                      Dashboard
-                    </Breadcrumb.Item>
-                    <Breadcrumb.Item active>Roles</Breadcrumb.Item>
-                  </Breadcrumb>
+                <div className="mb-4">
+                  <div className="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                      <div className="d-flex align-items-center mb-2">
+                        <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
+                          <Gear className="text-warning" size={24} />
+                        </div>
+                        <div>
+                          <h2 className="fw-bold text-dark mb-0">Role Management</h2>
+                          <p className="text-muted mb-0 small">Configure roles and access permissions for your organization</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="d-flex align-items-center gap-3">
+                      <Breadcrumb className="bg-light rounded-pill px-3 py-2 mb-0 small">
+                        <Breadcrumb.Item
+                          href="#"
+                          onClick={() => setActiveTab("dashboard")}
+                          className="text-decoration-none"
+                        >
+                          Dashboard
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Item active className="text-warning fw-semibold">Roles</Breadcrumb.Item>
+                      </Breadcrumb>
+                    </div>
+                  </div>
+                  <hr className="border-2 border-warning opacity-25 mb-4" />
                 </div>
 
                 <Card className="shadow-lg border-0 mb-4 modern-search-card">
@@ -821,12 +869,7 @@ export default function AdminDashboard() {
                         </InputGroup>
                       </div>
 
-                      <Button
-                        variant="primary"
-                        className="d-flex align-items-center px-4 py-2 rounded-pill fw-semibold modern-action-btn"
-                      >
-                        <Plus className="me-2" size={18} /> Add Role
-                      </Button>
+                     <RoleCreationModal />
                     </div>
                   </Card.Body>
                 </Card>
