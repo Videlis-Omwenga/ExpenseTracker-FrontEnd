@@ -17,6 +17,7 @@ import {
   Alert,
   Modal,
   Form,
+  Pagination,
 } from "react-bootstrap";
 import {
   People,
@@ -29,6 +30,10 @@ import {
   Grid3x3Gap,
   StarFill,
   Bell,
+  Eye,
+  Filter,
+  X,
+  ShieldLock,
 } from "react-bootstrap-icons";
 import AuthProvider from "../../authPages/tokenData";
 import TopNavbar from "@/app/components/Navbar";
@@ -37,6 +42,35 @@ import { toast } from "react-toastify";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 import PageLoader from "@/app/components/PageLoader";
 import RoleCreationModal from "@/app/components/modals/admin-role-creation";
+import UserDetailsModal from "@/app/components/modals/user-details-modal";
+import RoleDetailsModal from "@/app/components/modals/role-details-modal";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  BarElement,
+} from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { Line, Pie, Bar } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  BarElement,
+  ChartDataLabels
+);
 
 enum UserStatus {
   ACTIVE = "ACTIVE",
@@ -208,8 +242,21 @@ interface Stats {
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [showUserModal, setShowUserModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<any>(null);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [institutionFilter, setInstitutionFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(100);
+  const [roleSearchTerm, setRoleSearchTerm] = useState("");
+  const [roleStatusFilter, setRoleStatusFilter] = useState("");
+  const [roleInstitutionFilter, setRoleInstitutionFilter] = useState("");
+  const [currentRolePage, setCurrentRolePage] = useState(1);
+  const [rolesPerPage] = useState(100);
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [stats, setStats] = useState<Stats>({
@@ -256,16 +303,263 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
-  // Filter data based on search term
-  const filteredUsers = users.filter(
-    (user) =>
+  // Filter data based on search term and filters
+  const filteredUsers = users.filter((user) => {
+    // Enhanced search term filter
+    const searchMatch = searchTerm === "" ||
       (user.name || `${user.firstName} ${user.lastName}`)
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.phone && user.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (user.institution?.name && user.institution.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (user.roles && user.roles.some((roleObj: any) => {
+        const roleName = roleObj.role?.name || roleObj.name || roleObj;
+        return roleName.toLowerCase().includes(searchTerm.toLowerCase());
+      }));
+
+    // Status filter
+    const statusMatch = statusFilter === "" || user.status === statusFilter;
+
+    // Role filter
+    const roleMatch = roleFilter === "" ||
+      (user.roles && user.roles.some((roleObj: any) => {
+        const roleName = roleObj.role?.name || roleObj.name || roleObj;
+        return roleName === roleFilter;
+      }));
+
+    // Institution filter
+    const institutionMatch = institutionFilter === "" ||
+      (user.institution?.name === institutionFilter);
+
+    return searchMatch && statusMatch && roleMatch && institutionMatch;
+  });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+
+  // Filter roles based on search term and filters
+  const filteredRoles = roles.filter((role) => {
+    // Enhanced role search filter
+    const searchMatch = roleSearchTerm === "" ||
+      role.name.toLowerCase().includes(roleSearchTerm.toLowerCase()) ||
+      (role.description && role.description.toLowerCase().includes(roleSearchTerm.toLowerCase())) ||
+      (role.institution?.name && role.institution.name.toLowerCase().includes(roleSearchTerm.toLowerCase()));
+
+    // Role status filter
+    const statusMatch = roleStatusFilter === "" ||
+      (roleStatusFilter === "active" && role.isActive) ||
+      (roleStatusFilter === "inactive" && !role.isActive);
+
+    // Role institution filter
+    const institutionMatch = roleInstitutionFilter === "" ||
+      (role.institution?.name === roleInstitutionFilter);
+
+    return searchMatch && statusMatch && institutionMatch;
+  });
+
+  // Role pagination calculations
+  const totalRolePages = Math.ceil(filteredRoles.length / rolesPerPage);
+  const indexOfLastRole = currentRolePage * rolesPerPage;
+  const indexOfFirstRole = indexOfLastRole - rolesPerPage;
+  const currentRoles = filteredRoles.slice(indexOfFirstRole, indexOfLastRole);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, roleFilter, institutionFilter]);
+
+  useEffect(() => {
+    setCurrentRolePage(1);
+  }, [roleSearchTerm, roleStatusFilter, roleInstitutionFilter]);
+
+  // Chart data calculations
+  const getUserStatusData = () => {
+    const statusCounts = users.reduce((acc, user) => {
+      acc[user.status] = (acc[user.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return {
+      labels: Object.keys(statusCounts),
+      datasets: [{
+        data: Object.values(statusCounts),
+        backgroundColor: [
+          '#10B981', // Green for ACTIVE
+          '#F59E0B', // Yellow for INACTIVE
+          '#EF4444', // Red for SUSPENDED
+          '#6B7280', // Gray for PENDING
+        ],
+        borderWidth: 2,
+        borderColor: '#ffffff',
+      }]
+    };
+  };
+
+  const getUserRolesData = () => {
+    const roleCounts = {} as Record<string, number>;
+    users.forEach(user => {
+      if (user.roles && user.roles.length > 0) {
+        user.roles.forEach((roleObj: any) => {
+          const roleName = roleObj.role?.name || roleObj.name || roleObj;
+          roleCounts[roleName] = (roleCounts[roleName] || 0) + 1;
+        });
+      }
+    });
+
+    const sortedRoles = Object.entries(roleCounts)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 8); // Top 8 roles
+
+    return {
+      labels: sortedRoles.map(([name]) => name),
+      datasets: [{
+        label: 'Users with Role',
+        data: sortedRoles.map(([,count]) => count),
+        backgroundColor: [
+          '#3B82F6', '#10B981', '#F59E0B', '#EF4444',
+          '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'
+        ],
+        borderWidth: 2,
+        borderColor: '#ffffff',
+      }]
+    };
+  };
+
+  const getRoleStatusData = () => {
+    const activeRoles = roles.filter(role => role.isActive).length;
+    const inactiveRoles = roles.filter(role => !role.isActive).length;
+
+    return {
+      labels: ['Active', 'Inactive'],
+      datasets: [{
+        data: [activeRoles, inactiveRoles],
+        backgroundColor: ['#10B981', '#EF4444'],
+        borderWidth: 2,
+        borderColor: '#ffffff',
+      }]
+    };
+  };
+
+  const getUserGrowthData = () => {
+    // Simulate user growth data by grouping users by creation date
+    const growthData = users.reduce((acc, user) => {
+      const month = new Date(user.createdAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short'
+      });
+      acc[month] = (acc[month] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const sortedData = Object.entries(growthData).sort(([a], [b]) =>
+      new Date(a).getTime() - new Date(b).getTime()
+    );
+
+    return {
+      labels: sortedData.map(([month]) => month),
+      datasets: [{
+        label: 'New Users',
+        data: sortedData.map(([,count]) => count),
+        borderColor: '#3B82F6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4,
+        fill: true,
+      }]
+    };
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+      },
+      datalabels: {
+        display: true,
+        color: '#ffffff',
+        font: {
+          weight: 'bold' as const,
+          size: 12,
+        },
+        formatter: (value: number, context: any) => {
+          if (context.chart.config.type === 'pie') {
+            const total = context.dataset.data.reduce((acc: number, val: number) => acc + val, 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${value}\n(${percentage}%)`;
+          }
+          return value;
+        },
+      },
+    },
+  };
+
+  const lineChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+      },
+      datalabels: {
+        display: true,
+        backgroundColor: '#3B82F6',
+        borderColor: '#ffffff',
+        borderRadius: 4,
+        borderWidth: 1,
+        color: '#ffffff',
+        font: {
+          weight: 'bold' as const,
+          size: 10,
+        },
+        padding: 4,
+        align: 'top' as const,
+        anchor: 'end' as const,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+        },
+      },
+    },
+  };
+
+  const barChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+      },
+      datalabels: {
+        display: true,
+        color: '#ffffff',
+        font: {
+          weight: 'bold' as const,
+          size: 11,
+        },
+        anchor: 'center' as const,
+        align: 'center' as const,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+        },
+      },
+    },
+  };
 
   if (loading) return <PageLoader />;
 
@@ -352,14 +646,23 @@ export default function AdminDashboard() {
                           <Grid3x3Gap className="text-primary" size={24} />
                         </div>
                         <div>
-                          <h2 className="fw-bold text-dark mb-0">Dashboard Overview</h2>
-                          <p className="text-muted mb-0 small">Monitor your company's key metrics and performance</p>
+                          <h2 className="fw-bold text-dark mb-0">
+                            Dashboard Overview
+                          </h2>
+                          <p className="text-muted mb-0 small">
+                            Monitor your company's key metrics and performance
+                          </p>
                         </div>
                       </div>
                     </div>
                     <div className="d-flex align-items-center gap-3">
                       <Breadcrumb className="bg-light rounded-pill px-3 py-2 mb-0 small">
-                        <Breadcrumb.Item active className="text-primary fw-semibold">Dashboard</Breadcrumb.Item>
+                        <Breadcrumb.Item
+                          active
+                          className="text-primary fw-semibold"
+                        >
+                          Dashboard
+                        </Breadcrumb.Item>
                       </Breadcrumb>
                     </div>
                   </div>
@@ -410,195 +713,79 @@ export default function AdminDashboard() {
                   </Col>
                 </Row>
 
-                <Row>
+                {/* Charts Section */}
+                <Row className="mb-5">
+                  <Col md={12} className="mb-4">
+                    <h4 className="fw-bold text-dark mb-4 d-flex align-items-center">
+                      <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
+                        <StarFill className="text-info" size={20} />
+                      </div>
+                      Analytics & Insights
+                    </h4>
+                  </Col>
+
+                  {/* User Analytics */}
                   <Col md={6} className="mb-4">
-                    <Card className="shadow-lg border-0 modern-table-card">
-                      <Card.Header className="bg-light border-0 py-4">
-                        <div className="d-flex justify-content-between align-items-center">
-                          <div className="d-flex align-items-center">
-                            <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                              <People className="text-primary" size={20} />
-                            </div>
-                            <div>
-                              <h5 className="mb-0 fw-bold text-dark">
-                                Recent Users
-                              </h5>
-                              <small className="text-muted">
-                                Latest registered members
-                              </small>
-                            </div>
-                          </div>
-                          <Button
-                            variant="outline-primary"
-                            size="sm"
-                            className="rounded-pill px-3 fw-semibold"
-                          >
-                            View All
-                          </Button>
-                        </div>
+                    <Card className="shadow-lg border-0 h-100">
+                      <Card.Header className="bg-light border-0 py-3">
+                        <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                          <People className="me-2 text-primary" size={18} />
+                          User Status Distribution
+                        </h6>
                       </Card.Header>
-                      <Card.Body className="p-0">
-                        <div className="table-responsive modern-table-container">
-                          <Table className="mb-0 modern-table">
-                            <thead className="table-light">
-                              <tr>
-                                <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                                  Name
-                                </th>
-                                <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                                  Status
-                                </th>
-                                <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                                  Role
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {users.slice(0, 5).map((user) => (
-                                <tr key={user.id} className="border-bottom">
-                                  <td className="py-3 px-4">
-                                    <div className="d-flex align-items-center">
-                                      <div
-                                        className="bg-primary bg-opacity-10 rounded-circle me-3 d-flex align-items-center justify-content-center"
-                                        style={{
-                                          width: "32px",
-                                          height: "32px",
-                                        }}
-                                      >
-                                        <PersonCircle
-                                          className="text-primary"
-                                          size={16}
-                                        />
-                                      </div>
-                                      <div>
-                                        <div className="fw-semibold text-dark">
-                                          {user.name ||
-                                            `${user.firstName} ${user.lastName}`}
-                                        </div>
-                                        <small className="text-muted">
-                                          {user.email}
-                                        </small>
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td className="py-3 px-4">
-                                    <Badge
-                                      bg={
-                                        user.status === UserStatus.ACTIVE
-                                          ? "success"
-                                          : "secondary"
-                                      }
-                                      className="px-2 py-1 rounded-pill fw-medium"
-                                    >
-                                      {user.status}
-                                    </Badge>
-                                  </td>
-                                  <td className="py-3 px-4">
-                                    <span className="fw-medium text-dark">
-                                      {user.role}
-                                    </span>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </Table>
+                      <Card.Body className="p-4">
+                        <div style={{ height: '300px' }}>
+                          <Pie data={getUserStatusData()} options={chartOptions} />
                         </div>
                       </Card.Body>
                     </Card>
                   </Col>
 
                   <Col md={6} className="mb-4">
-                    <Card className="shadow-lg border-0 modern-table-card">
-                      <Card.Header className="bg-light border-0 py-4">
-                        <div className="d-flex justify-content-between align-items-center">
-                          <div className="d-flex align-items-center">
-                            <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
-                              <Gear className="text-success" size={20} />
-                            </div>
-                            <div>
-                              <h5 className="mb-0 fw-bold text-dark">
-                                System Roles
-                              </h5>
-                              <small className="text-muted">
-                                User permission levels
-                              </small>
-                            </div>
-                          </div>
-                          <Button
-                            variant="outline-success"
-                            size="sm"
-                            className="rounded-pill px-3 fw-semibold"
-                            onClick={() => setActiveTab("roles")}
-                          >
-                            View All
-                          </Button>
-                        </div>
+                    <Card className="shadow-lg border-0 h-100">
+                      <Card.Header className="bg-light border-0 py-3">
+                        <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                          <ShieldLock className="me-2 text-success" size={18} />
+                          Role Status Distribution
+                        </h6>
                       </Card.Header>
-                      <Card.Body className="p-0">
-                        <div className="table-responsive modern-table-container">
-                          <Table className="mb-0 modern-table">
-                            <thead className="table-light">
-                              <tr>
-                                <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                                  Role
-                                </th>
-                                <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                                  Users
-                                </th>
-                                <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                                  Status
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {roles.slice(0, 5).map((role) => (
-                                <tr key={role.id} className="border-bottom">
-                                  <td className="py-3 px-4">
-                                    <div className="d-flex align-items-center">
-                                      <div
-                                        className="bg-success bg-opacity-10 rounded-circle me-3 d-flex align-items-center justify-content-center"
-                                        style={{
-                                          width: "32px",
-                                          height: "32px",
-                                        }}
-                                      >
-                                        <Gear
-                                          className="text-success"
-                                          size={16}
-                                        />
-                                      </div>
-                                      <div>
-                                        <div className="fw-semibold text-dark">
-                                          {role.name}
-                                        </div>
-                                        <small className="text-muted">
-                                          {role.description}
-                                        </small>
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td className="py-3 px-4">
-                                    <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1 fw-medium">
-                                      {typeof role.users === "number"
-                                        ? role.users
-                                        : role.users?.length || 0}{" "}
-                                      users
-                                    </span>
-                                  </td>
-                                  <td className="py-3 px-4">
-                                    <Badge
-                                      bg={
-                                        role.isActive ? "success" : "secondary"
-                                      }
-                                      className="px-2 py-1 rounded-pill fw-medium"
-                                    >
-                                      {role.isActive ? "Active" : "Inactive"}
-                                    </Badge>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </Table>
+                      <Card.Body className="p-4">
+                        <div style={{ height: '300px' }}>
+                          <Pie data={getRoleStatusData()} options={chartOptions} />
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  {/* User Growth Chart */}
+                  <Col md={12} className="mb-4">
+                    <Card className="shadow-lg border-0">
+                      <Card.Header className="bg-light border-0 py-3">
+                        <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                          <Grid3x3Gap className="me-2 text-info" size={18} />
+                          User Growth Over Time
+                        </h6>
+                      </Card.Header>
+                      <Card.Body className="p-4">
+                        <div style={{ height: '350px' }}>
+                          <Line data={getUserGrowthData()} options={lineChartOptions} />
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  {/* Role Distribution Bar Chart */}
+                  <Col md={12} className="mb-4">
+                    <Card className="shadow-lg border-0">
+                      <Card.Header className="bg-light border-0 py-3">
+                        <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                          <Gear className="me-2 text-warning" size={18} />
+                          Top User Roles Distribution
+                        </h6>
+                      </Card.Header>
+                      <Card.Body className="p-4">
+                        <div style={{ height: '350px' }}>
+                          <Bar data={getUserRolesData()} options={barChartOptions} />
                         </div>
                       </Card.Body>
                     </Card>
@@ -618,8 +805,12 @@ export default function AdminDashboard() {
                           <People className="text-success" size={24} />
                         </div>
                         <div>
-                          <h2 className="fw-bold text-dark mb-0">User Management</h2>
-                          <p className="text-muted mb-0 small">Manage company users, roles and permissions</p>
+                          <h2 className="fw-bold text-dark mb-0">
+                            User Management
+                          </h2>
+                          <p className="text-muted mb-0 small">
+                            Manage company users, roles and permissions
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -632,7 +823,12 @@ export default function AdminDashboard() {
                         >
                           Dashboard
                         </Breadcrumb.Item>
-                        <Breadcrumb.Item active className="text-success fw-semibold">Users</Breadcrumb.Item>
+                        <Breadcrumb.Item
+                          active
+                          className="text-success fw-semibold"
+                        >
+                          Users
+                        </Breadcrumb.Item>
                       </Breadcrumb>
                     </div>
                   </div>
@@ -641,7 +837,8 @@ export default function AdminDashboard() {
 
                 <Card className="shadow-lg border-0 mb-4 modern-search-card">
                   <Card.Body className="p-4">
-                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    {/* Search and Add User Row */}
+                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
                       <div className="search-container">
                         <InputGroup
                           style={{ width: "350px" }}
@@ -651,7 +848,7 @@ export default function AdminDashboard() {
                             <Search className="text-primary" />
                           </InputGroup.Text>
                           <FormControl
-                            placeholder="Search users by name or email..."
+                            placeholder="Search users by name, email, phone, or role..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="border-start-0 ps-0"
@@ -666,6 +863,98 @@ export default function AdminDashboard() {
                           setActiveTab("users");
                         }}
                       />
+                    </div>
+
+                    {/* Filters Row */}
+                    <div className="bg-light rounded-4 p-3 border-0">
+                      <div className="d-flex flex-wrap gap-3 align-items-center">
+                        <div className="d-flex align-items-center gap-2">
+                          <div className="bg-primary bg-opacity-10 p-2 rounded-circle">
+                            <Filter className="text-primary" size={14} />
+                          </div>
+                          <span className="text-dark fw-bold small text-uppercase letter-spacing">Filters</span>
+                        </div>
+
+                        {/* Status Filter */}
+                        <div className="filter-group">
+                          <label className="filter-label">Status</label>
+                          <Form.Select
+                            size="sm"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="modern-filter-select"
+                          >
+                            <option value="">All Status</option>
+                            <option value="ACTIVE">🟢 Active</option>
+                            <option value="INACTIVE">🟡 Inactive</option>
+                            <option value="SUSPENDED">🔴 Suspended</option>
+                            <option value="PENDING">⏳ Pending</option>
+                          </Form.Select>
+                        </div>
+
+                        {/* Role Filter */}
+                        <div className="filter-group">
+                          <label className="filter-label">Role</label>
+                          <Form.Select
+                            size="sm"
+                            value={roleFilter}
+                            onChange={(e) => setRoleFilter(e.target.value)}
+                            className="modern-filter-select"
+                          >
+                            <option value="">All Roles</option>
+                            {roles.map((role) => (
+                              <option key={role.id} value={role.name}>
+                                🛡️ {role.name}
+                              </option>
+                            ))}
+                          </Form.Select>
+                        </div>
+
+                        {/* Institution Filter */}
+                        <div className="filter-group">
+                          <label className="filter-label">Institution</label>
+                          <Form.Select
+                            size="sm"
+                            value={institutionFilter}
+                            onChange={(e) => setInstitutionFilter(e.target.value)}
+                            className="modern-filter-select"
+                          >
+                            <option value="">All Institutions</option>
+                            {[...new Set(users.map(user => user.institution?.name).filter(Boolean))].map((institution) => (
+                              <option key={institution} value={institution}>
+                                🏢 {institution}
+                              </option>
+                            ))}
+                          </Form.Select>
+                        </div>
+
+                        {/* Clear Filters & Results */}
+                        <div className="d-flex align-items-center gap-2 ms-auto">
+                          {/* Active Filter Count */}
+                          {(statusFilter || roleFilter || institutionFilter) && (
+                            <Badge bg="success" className="px-3 py-2 rounded-pill fw-semibold">
+                              📊 {filteredUsers.length} results
+                            </Badge>
+                          )}
+
+                          {/* Clear Filters */}
+                          {(statusFilter || roleFilter || institutionFilter) && (
+                            <Button
+                              size="sm"
+                              variant="outline-danger"
+                              onClick={() => {
+                                setStatusFilter("");
+                                setRoleFilter("");
+                                setInstitutionFilter("");
+                              }}
+                              className="rounded-pill px-3 py-2 d-flex align-items-center gap-2 fw-semibold"
+                            >
+                              <X size={14} />
+                              Clear All
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </Card.Body>
                 </Card>
@@ -716,13 +1005,16 @@ export default function AdminDashboard() {
                               #
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              User Details
+                              Name
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Role
+                              Email
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Last Login
+                              Phone
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Roles
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
                               Status
@@ -733,57 +1025,80 @@ export default function AdminDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {filteredUsers.map((user, idx) => (
-                            <tr
-                              key={user.id}
-                              className="border-bottom hover-row"
-                            >
+                          {currentUsers.map((user, idx) => (
+                            <tr key={user.id} className="border-bottom">
                               <td className="py-3 px-4">
                                 <span className="fw-semibold text-primary">
-                                  {idx + 1}
+                                  {indexOfFirstUser + idx + 1}
                                 </span>
                               </td>
                               <td className="py-3 px-4">
                                 <div className="d-flex align-items-center">
                                   <div
                                     className="bg-primary bg-opacity-10 rounded-circle me-3 d-flex align-items-center justify-content-center"
-                                    style={{ width: "40px", height: "40px" }}
+                                    style={{ width: "30px", height: "30px" }}
                                   >
                                     <PersonCircle
                                       className="text-primary"
-                                      size={20}
+                                      size={15}
                                     />
                                   </div>
-                                  <div>
-                                    <div className="fw-semibold text-dark">
-                                      {user.name ||
-                                        `${user.firstName} ${user.lastName}`}
-                                    </div>
-                                    <small className="text-muted">
-                                      {user.email}
-                                    </small>
+                                  <div className="text-muted">
+                                    {user.name ||
+                                      `${user.firstName} ${user.lastName}`}
                                   </div>
                                 </div>
                               </td>
                               <td className="py-3 px-4">
-                                <Badge
-                                  bg="light"
-                                  text="dark"
-                                  className="border rounded-pill px-3 py-1 fw-medium"
-                                >
-                                  {user.role}
-                                </Badge>
+                                <span className="text-muted fw-medium">
+                                  {user.email}
+                                </span>
                               </td>
                               <td className="py-3 px-4">
                                 <small className="text-muted fw-medium">
-                                  {user.lastLogin}
+                                  {user.phone || "N/A"}
                                 </small>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="d-flex flex-wrap gap-1">
+                                  {user.roles && user.roles.length > 0 ? (
+                                    user.roles.map(
+                                      (roleObj: any, index: number) => {
+                                        const roleName =
+                                          roleObj.role?.name ||
+                                          roleObj.name ||
+                                          roleObj;
+                                        const initials = roleName
+                                          .split(" ")
+                                          .map((word: string) =>
+                                            word.charAt(0).toUpperCase()
+                                          )
+                                          .join("");
+                                        return (
+                                          <small
+                                            key={index}
+                                            className="px-2 py-0 rounded-pill small bg-success bg-opacity-10 border text-success fw-bold"
+                                            title={roleName}
+                                          >
+                                            {initials}
+                                          </small>
+                                        );
+                                      }
+                                    )
+                                  ) : (
+                                    <small className="text-muted small">
+                                      No roles
+                                    </small>
+                                  )}
+                                </div>
                               </td>
                               <td className="py-3 px-4">
                                 <Badge
                                   bg={
                                     user.status === UserStatus.ACTIVE
                                       ? "success"
+                                      : user.status === UserStatus.INACTIVE
+                                      ? "warning"
                                       : "secondary"
                                   }
                                   className="px-3 py-1 rounded-pill fw-medium"
@@ -793,17 +1108,27 @@ export default function AdminDashboard() {
                               </td>
                               <td className="text-center">
                                 <div className="d-flex justify-content-center gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline-primary"
+                                    className="rounded-pill px-3 py-1 fw-medium"
+                                    onClick={() => {
+                                      setSelectedUser(user);
+                                      setShowUserModal(true);
+                                    }}
+                                    title="View Details"
+                                  >
+                                    <Eye size={14} className="me-1" />
+                                    View
+                                  </Button>
                                   <Badge
-                                    className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium"
+                                    className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
                                     title="Edit User"
                                   >
-                                    <Pencil className="text-primary" size={16} />
-                                  </Badge>
-                                  <Badge
-                                    className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium"
-                                    title="Delete User"
-                                  >
-                                    <Trash className="text-danger" size={16} />
+                                    <Pencil
+                                      className="text-primary"
+                                      size={16}
+                                    />
                                   </Badge>
                                 </div>
                               </td>
@@ -814,6 +1139,89 @@ export default function AdminDashboard() {
                     </div>
                   </Card.Body>
                 </Card>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <Card className="shadow-sm border-0 mt-3">
+                    <Card.Body className="p-4">
+                      <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        {/* Pagination Info */}
+                        <div className="d-flex align-items-center gap-3">
+                          <span className="text-muted small">
+                            Showing {indexOfFirstUser + 1}-{Math.min(indexOfLastUser, filteredUsers.length)} of {filteredUsers.length} users
+                          </span>
+                          <Badge bg="light" text="dark" className="px-3 py-2 rounded-pill">
+                            Page {currentPage} of {totalPages}
+                          </Badge>
+                        </div>
+
+                        {/* Pagination Controls */}
+                        <Pagination className="mb-0">
+                          <Pagination.First
+                            onClick={() => setCurrentPage(1)}
+                            disabled={currentPage === 1}
+                          />
+                          <Pagination.Prev
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                          />
+
+                          {/* Page Numbers */}
+                          {(() => {
+                            const pages = [];
+                            const startPage = Math.max(1, currentPage - 2);
+                            const endPage = Math.min(totalPages, currentPage + 2);
+
+                            if (startPage > 1) {
+                              pages.push(
+                                <Pagination.Item key={1} onClick={() => setCurrentPage(1)}>
+                                  1
+                                </Pagination.Item>
+                              );
+                              if (startPage > 2) {
+                                pages.push(<Pagination.Ellipsis key="start-ellipsis" />);
+                              }
+                            }
+
+                            for (let i = startPage; i <= endPage; i++) {
+                              pages.push(
+                                <Pagination.Item
+                                  key={i}
+                                  active={i === currentPage}
+                                  onClick={() => setCurrentPage(i)}
+                                >
+                                  {i}
+                                </Pagination.Item>
+                              );
+                            }
+
+                            if (endPage < totalPages) {
+                              if (endPage < totalPages - 1) {
+                                pages.push(<Pagination.Ellipsis key="end-ellipsis" />);
+                              }
+                              pages.push(
+                                <Pagination.Item key={totalPages} onClick={() => setCurrentPage(totalPages)}>
+                                  {totalPages}
+                                </Pagination.Item>
+                              );
+                            }
+
+                            return pages;
+                          })()}
+
+                          <Pagination.Next
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages}
+                          />
+                          <Pagination.Last
+                            onClick={() => setCurrentPage(totalPages)}
+                            disabled={currentPage === totalPages}
+                          />
+                        </Pagination>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                )}
               </>
             )}
 
@@ -828,8 +1236,13 @@ export default function AdminDashboard() {
                           <Gear className="text-warning" size={24} />
                         </div>
                         <div>
-                          <h2 className="fw-bold text-dark mb-0">Role Management</h2>
-                          <p className="text-muted mb-0 small">Configure roles and access permissions for your organization</p>
+                          <h2 className="fw-bold text-dark mb-0">
+                            Role Management
+                          </h2>
+                          <p className="text-muted mb-0 small">
+                            Configure roles and access permissions for your
+                            organization
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -842,7 +1255,12 @@ export default function AdminDashboard() {
                         >
                           Dashboard
                         </Breadcrumb.Item>
-                        <Breadcrumb.Item active className="text-warning fw-semibold">Roles</Breadcrumb.Item>
+                        <Breadcrumb.Item
+                          active
+                          className="text-warning fw-semibold"
+                        >
+                          Roles
+                        </Breadcrumb.Item>
                       </Breadcrumb>
                     </div>
                   </div>
@@ -851,7 +1269,8 @@ export default function AdminDashboard() {
 
                 <Card className="shadow-lg border-0 mb-4 modern-search-card">
                   <Card.Body className="p-4">
-                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    {/* Search and Add Role Row */}
+                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
                       <div className="search-container">
                         <InputGroup
                           style={{ width: "350px" }}
@@ -861,17 +1280,89 @@ export default function AdminDashboard() {
                             <Search className="text-primary" />
                           </InputGroup.Text>
                           <FormControl
-                            placeholder="Search roles by name..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Search roles by name, description..."
+                            value={roleSearchTerm}
+                            onChange={(e) => setRoleSearchTerm(e.target.value)}
                             className="border-start-0 ps-0"
                           />
                         </InputGroup>
                       </div>
-
-                     <RoleCreationModal onSuccess={() => {
+                      <RoleCreationModal
+                        onSuccess={() => {
                           fetchData();
-                        }} />
+                        }}
+                      />
+                    </div>
+
+                    {/* Filters Row */}
+                    <div className="bg-light rounded-4 p-3 border-0">
+                      <div className="d-flex flex-wrap gap-3 align-items-center">
+                        <div className="d-flex align-items-center gap-2">
+                          <div className="bg-warning bg-opacity-10 p-2 rounded-circle">
+                            <Filter className="text-warning" size={14} />
+                          </div>
+                          <span className="text-dark fw-bold small text-uppercase letter-spacing">Filters</span>
+                        </div>
+
+                        {/* Status Filter */}
+                        <div className="filter-group">
+                          <label className="filter-label">Status</label>
+                          <Form.Select
+                            size="sm"
+                            value={roleStatusFilter}
+                            onChange={(e) => setRoleStatusFilter(e.target.value)}
+                            className="modern-filter-select"
+                          >
+                            <option value="">All Status</option>
+                            <option value="active">🟢 Active</option>
+                            <option value="inactive">🔴 Inactive</option>
+                          </Form.Select>
+                        </div>
+
+                        {/* Institution Filter */}
+                        <div className="filter-group">
+                          <label className="filter-label">Institution</label>
+                          <Form.Select
+                            size="sm"
+                            value={roleInstitutionFilter}
+                            onChange={(e) => setRoleInstitutionFilter(e.target.value)}
+                            className="modern-filter-select"
+                          >
+                            <option value="">All Institutions</option>
+                            {[...new Set(roles.map(role => role.institution?.name).filter(Boolean))].map((institution) => (
+                              <option key={institution} value={institution}>
+                                🏢 {institution}
+                              </option>
+                            ))}
+                          </Form.Select>
+                        </div>
+
+                        {/* Clear Filters & Results */}
+                        <div className="d-flex align-items-center gap-2 ms-auto">
+                          {/* Active Filter Count */}
+                          {(roleStatusFilter || roleInstitutionFilter) && (
+                            <Badge bg="success" className="px-3 py-2 rounded-pill fw-semibold">
+                              📊 {filteredRoles.length} results
+                            </Badge>
+                          )}
+
+                          {/* Clear Filters */}
+                          {(roleStatusFilter || roleInstitutionFilter) && (
+                            <Button
+                              size="sm"
+                              variant="outline-danger"
+                              onClick={() => {
+                                setRoleStatusFilter("");
+                                setRoleInstitutionFilter("");
+                              }}
+                              className="rounded-pill px-3 py-2 d-flex align-items-center gap-2 fw-semibold"
+                            >
+                              <X size={14} />
+                              Clear All
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </Card.Body>
                 </Card>
@@ -917,13 +1408,16 @@ export default function AdminDashboard() {
                               #
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Role Details
+                              Role Name
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Permissions
+                              Description
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Users
+                              Institution
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Created By
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
                               Status
@@ -934,49 +1428,45 @@ export default function AdminDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {roles.map((role, idx) => (
-                            <tr
-                              key={role.id}
-                              className="border-bottom hover-row"
-                            >
+                          {currentRoles.map((role, idx) => (
+                            <tr key={role.id} className="border-bottom">
                               <td className="py-3 px-4">
                                 <span className="fw-semibold text-primary">
-                                  {idx + 1}
+                                  {indexOfFirstRole + idx + 1}
                                 </span>
                               </td>
                               <td className="py-3 px-4">
                                 <div className="d-flex align-items-center">
                                   <div
                                     className="bg-success bg-opacity-10 rounded-circle me-3 d-flex align-items-center justify-content-center"
-                                    style={{ width: "40px", height: "40px" }}
+                                    style={{ width: "35px", height: "35px" }}
                                   >
-                                    <Gear className="text-success" size={20} />
+                                    <Gear className="text-success" size={18} />
                                   </div>
-                                  <div>
-                                    <div className="fw-semibold text-dark">
-                                      {role.name}
-                                    </div>
-                                    <small className="text-muted">
-                                      {role.description}
-                                    </small>
+                                  <div className="fw-semibold text-dark">
+                                    {role.name}
                                   </div>
                                 </div>
                               </td>
                               <td className="py-3 px-4">
-                                <Badge
-                                  bg="info"
-                                  className="bg-opacity-10 text-info rounded-pill px-3 py-1 fw-medium"
-                                >
-                                  {role.permissions} permissions
-                                </Badge>
+                                <span className="text-muted fw-medium" title={role.description || "No description"}>
+                                  {role.description
+                                    ? role.description.length > 30
+                                      ? `${role.description.substring(0, 30)}...`
+                                      : role.description
+                                    : "No description"
+                                  }
+                                </span>
                               </td>
                               <td className="py-3 px-4">
                                 <span className="fw-medium text-dark">
-                                  {typeof role.users === "number"
-                                    ? role.users
-                                    : role.users?.length || 0}{" "}
-                                  users
+                                  {role.institution?.name || "N/A"}
                                 </span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <small className="text-muted fw-medium">
+                                  User #{role.createdBy || "System"}
+                                </small>
                               </td>
                               <td className="py-3 px-4">
                                 <Badge
@@ -989,25 +1479,25 @@ export default function AdminDashboard() {
                               <td className="py-3 px-4 text-center">
                                 <div className="d-flex justify-content-center gap-2">
                                   <Button
+                                    size="sm"
+                                    variant="outline-warning"
+                                    className="rounded-pill px-3 py-1 fw-medium"
+                                    onClick={() => {
+                                      setSelectedRole(role);
+                                      setShowRoleModal(true);
+                                    }}
+                                    title="View Details"
+                                  >
+                                    <Eye size={14} className="me-1" />
+                                    View
+                                  </Button>
+                                  <Button
                                     variant="outline-primary"
                                     size="sm"
                                     className="modern-action-btn border-0 bg-primary bg-opacity-10 text-primary"
                                     title="Edit Role"
                                   >
                                     <Pencil size={14} />
-                                  </Button>
-                                  <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    className="modern-action-btn border-0 bg-danger bg-opacity-10 text-danger"
-                                    title="Delete Role"
-                                    disabled={
-                                      (typeof role.users === "number"
-                                        ? role.users
-                                        : role.users?.length || 0) > 0
-                                    }
-                                  >
-                                    <Trash size={14} />
                                   </Button>
                                 </div>
                               </td>
@@ -1018,6 +1508,89 @@ export default function AdminDashboard() {
                     </div>
                   </Card.Body>
                 </Card>
+
+                {/* Role Pagination */}
+                {totalRolePages > 1 && (
+                  <Card className="shadow-sm border-0 mt-3">
+                    <Card.Body className="p-4">
+                      <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        {/* Pagination Info */}
+                        <div className="d-flex align-items-center gap-3">
+                          <span className="text-muted small">
+                            Showing {indexOfFirstRole + 1}-{Math.min(indexOfLastRole, filteredRoles.length)} of {filteredRoles.length} roles
+                          </span>
+                          <Badge bg="light" text="dark" className="px-3 py-2 rounded-pill">
+                            Page {currentRolePage} of {totalRolePages}
+                          </Badge>
+                        </div>
+
+                        {/* Pagination Controls */}
+                        <Pagination className="mb-0">
+                          <Pagination.First
+                            onClick={() => setCurrentRolePage(1)}
+                            disabled={currentRolePage === 1}
+                          />
+                          <Pagination.Prev
+                            onClick={() => setCurrentRolePage(prev => Math.max(1, prev - 1))}
+                            disabled={currentRolePage === 1}
+                          />
+
+                          {/* Page Numbers */}
+                          {(() => {
+                            const pages = [];
+                            const startPage = Math.max(1, currentRolePage - 2);
+                            const endPage = Math.min(totalRolePages, currentRolePage + 2);
+
+                            if (startPage > 1) {
+                              pages.push(
+                                <Pagination.Item key={1} onClick={() => setCurrentRolePage(1)}>
+                                  1
+                                </Pagination.Item>
+                              );
+                              if (startPage > 2) {
+                                pages.push(<Pagination.Ellipsis key="start-ellipsis" />);
+                              }
+                            }
+
+                            for (let i = startPage; i <= endPage; i++) {
+                              pages.push(
+                                <Pagination.Item
+                                  key={i}
+                                  active={i === currentRolePage}
+                                  onClick={() => setCurrentRolePage(i)}
+                                >
+                                  {i}
+                                </Pagination.Item>
+                              );
+                            }
+
+                            if (endPage < totalRolePages) {
+                              if (endPage < totalRolePages - 1) {
+                                pages.push(<Pagination.Ellipsis key="end-ellipsis" />);
+                              }
+                              pages.push(
+                                <Pagination.Item key={totalRolePages} onClick={() => setCurrentRolePage(totalRolePages)}>
+                                  {totalRolePages}
+                                </Pagination.Item>
+                              );
+                            }
+
+                            return pages;
+                          })()}
+
+                          <Pagination.Next
+                            onClick={() => setCurrentRolePage(prev => Math.min(totalRolePages, prev + 1))}
+                            disabled={currentRolePage === totalRolePages}
+                          />
+                          <Pagination.Last
+                            onClick={() => setCurrentRolePage(totalRolePages)}
+                            disabled={currentRolePage === totalRolePages}
+                          />
+                        </Pagination>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                )}
               </>
             )}
           </Col>
@@ -1169,11 +1742,6 @@ export default function AdminDashboard() {
 
           .modern-table tbody tr {
             transition: all 0.2s ease;
-          }
-
-          .hover-row:hover {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            transform: scale(1.01);
           }
 
           .modern-action-btn {
@@ -1336,8 +1904,70 @@ export default function AdminDashboard() {
           .small {
             font-size: 0.8rem;
           }
+
+          .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            min-width: 140px;
+          }
+
+          .filter-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0;
+          }
+
+          .modern-filter-select {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          }
+
+          .modern-filter-select:focus {
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+            transform: translateY(-1px);
+          }
+
+          .modern-filter-select:hover:not(:focus) {
+            border-color: #d1d5db;
+            background: #fafafa;
+          }
+
+          .letter-spacing {
+            letter-spacing: 0.75px;
+          }
         `}</style>
       </Container>
+
+      {/* User Details Modal */}
+      <UserDetailsModal
+        user={selectedUser}
+        show={showUserModal}
+        onHide={() => {
+          setShowUserModal(false);
+          setSelectedUser(null);
+        }}
+      />
+
+      {/* Role Details Modal */}
+      <RoleDetailsModal
+        role={selectedRole}
+        show={showRoleModal}
+        onHide={() => {
+          setShowRoleModal(false);
+          setSelectedRole(null);
+        }}
+      />
     </AuthProvider>
   );
 }

@@ -29,7 +29,7 @@ export default function RoleCreationModal({ onSuccess }: RoleCreationModalProps)
         description,
       };
 
-      const response = await fetch(`${BASE_API_URL}/system-admin/create-role`, {
+      const response = await fetch(`${BASE_API_URL}/company-admin/create-role`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
