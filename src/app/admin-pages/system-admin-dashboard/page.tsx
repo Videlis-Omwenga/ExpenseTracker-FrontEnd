@@ -155,6 +155,8 @@ export default function SuperAdminDashboard() {
 
       const data = await response.json();
 
+      console.log(data.roles);
+
       if (response.ok) {
         setUsers(data.recentUsers || []);
         setInstitutions(data.institutions || []);
@@ -2163,7 +2165,7 @@ export default function SuperAdminDashboard() {
                   </Card>
 
                   <Card className="shadow-lg border-0 modern-table-card">
-                    <Card.Header className="bg-success bg-opacity-10 py-4">
+                    <Card.Header className="bg-secondary bg-opacity-10 py-4">
                       <div className="d-flex justify-content-between align-items-center">
                         <div className="d-flex align-items-center">
                           <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
@@ -2381,24 +2383,26 @@ export default function SuperAdminDashboard() {
                                     </div>
                                   </div>
                                 </td>
-                                <td className="py-3 px-4 text-center">
+                                <td className="text-center">
                                   <div className="d-flex justify-content-center gap-2">
-                                    <Button
-                                      variant="outline-primary"
-                                      size="sm"
-                                      className="modern-action-btn bg-primary bg-opacity-20 text-primary"
+                                    <Badge
+                                      className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium"
                                       title="Edit User"
                                     >
-                                      <Pencil size={14} />
-                                    </Button>
-                                    <Button
-                                      variant="outline-danger"
-                                      size="sm"
-                                      className="modern-action-btn bg-danger bg-opacity-20 text-danger"
+                                      <Pencil
+                                        className="text-primary"
+                                        size={16}
+                                      />
+                                    </Badge>
+                                    <Badge
+                                      className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium"
                                       title="Delete User"
                                     >
-                                      <Trash size={14} />
-                                    </Button>
+                                      <Trash
+                                        className="text-danger"
+                                        size={16}
+                                      />
+                                    </Badge>
                                   </div>
                                 </td>
                               </tr>
@@ -2499,7 +2503,7 @@ export default function SuperAdminDashboard() {
                   </Card>
 
                   <Card className="shadow-lg border-0 modern-table-card">
-                    <Card.Header className="bg-info bg-opacity-10 py-4">
+                    <Card.Header className="bg-secondary bg-opacity-10 py-4">
                       <div className="d-flex justify-content-between align-items-center">
                         <div className="d-flex align-items-center">
                           <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
@@ -2784,24 +2788,20 @@ export default function SuperAdminDashboard() {
                                     </div>
                                   </div>
                                 </td>
-                                <td className="py-3 px-4 text-center">
+                                <td className="text-center">
                                   <div className="d-flex justify-content-center gap-2">
-                                    <Button
-                                      variant="outline-primary"
-                                      size="sm"
-                                      className="modern-action-btn bg-primary bg-opacity-20 text-primary"
+                                    <Badge
+                                      className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium"
                                       title="Edit Institution"
                                     >
-                                      <Pencil size={14} />
-                                    </Button>
-                                    <Button
-                                      variant="outline-danger"
-                                      size="sm"
-                                      className="modern-action-btn bg-danger bg-opacity-20 text-danger"
+                                      <Pencil className="text-primary" size={16} />
+                                    </Badge>
+                                    <Badge
+                                      className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium"
                                       title="Delete Institution"
                                     >
-                                      <Trash size={14} />
-                                    </Button>
+                                      <Trash className="text-danger" size={16} />
+                                    </Badge>
                                   </div>
                                 </td>
                               </tr>
@@ -3112,26 +3112,20 @@ export default function SuperAdminDashboard() {
                                     )}
                                   </div>
                                 </td>
-                                <td className="py-3 px-4 text-center">
+                                <td className="text-center">
                                   <div className="d-flex justify-content-center gap-2">
-                                    <Button
-                                      variant="outline-primary"
-                                      size="sm"
-                                      className="modern-action-btn bg-primary bg-opacity-20 text-primary"
+                                    <Badge
+                                      className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium"
                                       title="Edit Role"
-                                      disabled={role.adminCreatedRole}
                                     >
-                                      <Pencil size={14} />
-                                    </Button>
-                                    <Button
-                                      variant="outline-danger"
-                                      size="sm"
-                                      className="modern-action-btn bg-danger bg-opacity-20 text-danger"
+                                      <Pencil className="text-primary" size={16} />
+                                    </Badge>
+                                    <Badge
+                                      className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium"
                                       title="Delete Role"
-                                      disabled={role.adminCreatedRole}
                                     >
-                                      <Trash size={14} />
-                                    </Button>
+                                      <Trash className="text-danger" size={16} />
+                                    </Badge>
                                   </div>
                                 </td>
                               </tr>
@@ -3385,51 +3379,6 @@ export default function SuperAdminDashboard() {
             vertical-align: middle !important;
             padding: 20px 16px !important;
             position: relative;
-          }
-
-          .modern-action-btn {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 10px;
-            font-weight: 600;
-            border: none;
-            position: relative;
-            overflow: hidden;
-            width: 32px;
-            height: 32px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-          }
-
-          .modern-action-btn::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-              90deg,
-              transparent,
-              rgba(255, 255, 255, 0.2),
-              transparent
-            );
-            transition: left 0.5s;
-          }
-
-          .modern-action-btn:hover::before {
-            left: 100%;
-          }
-
-          .modern-action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-          }
-
-          .modern-action-btn:disabled {
-            opacity: 0.4;
-            transform: none !important;
-            cursor: not-allowed;
           }
 
           /* Enhanced Badge Styling */

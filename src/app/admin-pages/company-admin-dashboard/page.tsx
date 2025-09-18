@@ -35,12 +35,13 @@ import TopNavbar from "@/app/components/Navbar";
 import AdminCreateUserModal from "@/app/components/modals/admin-create-user-modal";
 import { toast } from "react-toastify";
 import { BASE_API_URL } from "@/app/static/apiConfig";
+import PageLoader from "@/app/components/PageLoader";
 
 enum UserStatus {
   ACTIVE = "ACTIVE",
   INACTIVE = "INACTIVE",
   SUSPENDED = "SUSPENDED",
-  PENDING = "PENDING"
+  PENDING = "PENDING",
 }
 
 interface User {
@@ -210,7 +211,6 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
-  const [institutions, setInstitutions] = useState<any[]>([]);
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     totalRoles: 0,
@@ -218,46 +218,55 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
 
   const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`${BASE_API_URL}/company-admin/get-data`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem(
-              "expenseTrackerToken"
-            )}`,
-          },
-        });
-  
-        const data = await response.json();
-  
-        if (response.ok) {
-          setUsers(data.getUsers || []);
-          setRoles(data.getRoles || []);
-        } else {
-          toast.error(data.message || "Failed to fetch dashboard data");
-        }
-      } catch (error) {
-        toast.error(`Failed to fetch data: ${error}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    useEffect(() => {
-      fetchData();
-    }, []);
+    setLoading(true);
+    try {
+      const response = await fetch(`${BASE_API_URL}/company-admin/get-data`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "expenseTrackerToken"
+          )}`,
+        },
+      });
 
+      const data = await response.json();
+
+      if (response.ok) {
+        const fetchedUsers = data.getUsers || [];
+        const fetchedRoles = data.getRoles || [];
+        setUsers(fetchedUsers);
+        setRoles(fetchedRoles);
+        setStats({
+          totalUsers: Array.isArray(fetchedUsers) ? fetchedUsers.length : 0,
+          totalRoles: Array.isArray(fetchedRoles) ? fetchedRoles.length : 0,
+        });
+      } else {
+        toast.error(data.message || "Failed to fetch dashboard data");
+      }
+    } catch (error) {
+      toast.error(`Failed to fetch data: ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   // Filter data based on search term
   const filteredUsers = users.filter(
     (user) =>
-      (user.name || `${user.firstName} ${user.lastName}`).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.name || `${user.firstName} ${user.lastName}`)
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.lastName.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) return <PageLoader />;
 
   return (
     <AuthProvider>
@@ -343,60 +352,41 @@ export default function AdminDashboard() {
 
                 <Alert variant="info" className="d-flex align-items-center">
                   <Bell className="me-2" />
-                  <span>
-                    Welcome back! You have 3 pending actions that need your
-                    attention.
-                  </span>
+                  <span>Welcome back!</span>
                 </Alert>
 
                 <Row className="mb-5 justify-content-center">
-                  <Col md={4} className="mb-4">
-                    <Card className="h-100 modern-stat-card border-0 overflow-hidden">
-                      <Card.Body className="stat-body-gradient-blue p-4">
+                  <Col md={6} className="mb-4">
+                    <Card className="h-100 rounded border overflow-hidden">
+                      <Card.Body className="bg-primary bg-opacity-10 p-4 border-start border-3 border-primary">
                         <div className="d-flex align-items-center justify-content-between">
                           <div>
-                            <div className="d-flex align-items-center mb-3">
-                              <div className="bg-primary bg-opacity-15 p-3 rounded-circle me-3">
-                                <People size={28} className="text-primary" />
+                            <div className="d-flex align-items-center justify-content-center">
+                              <div className="bg-primary bg-opacity-15 p-1 rounded me-1">
+                                <People size={15} className="text-light" />
                               </div>
+                              <h6 className="text-muted fw-semibold mb-2 text-uppercase letter-spacing">
+                                Total Users: {stats.totalUsers}
+                              </h6>
                             </div>
-                            <h6 className="text-muted fw-semibold mb-2 text-uppercase letter-spacing">
-                              Total Users
-                            </h6>
-                            <h2 className="fw-bold text-dark mb-0 display-6">
-                              {stats.totalUsers}
-                            </h2>
-                            <small className="text-success fw-medium">
-                              <span className="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1">
-                                Active system users
-                              </span>
-                            </small>
                           </div>
                         </div>
                       </Card.Body>
                     </Card>
                   </Col>
-                  <Col md={4} className="mb-4">
-                    <Card className="h-100 modern-stat-card border-0 overflow-hidden">
-                      <Card.Body className="stat-body-gradient-green p-4">
+                  <Col md={6} className="mb-4">
+                    <Card className="h-100 rounded modern-stat-card border overflow-hidden">
+                      <Card.Body className="bg-success bg-opacity-10 p-4 border-start border-3 border-success">
                         <div className="d-flex align-items-center justify-content-between">
                           <div>
-                            <div className="d-flex align-items-center mb-3">
-                              <div className="bg-success bg-opacity-15 p-3 rounded-circle me-3">
-                                <Gear size={28} className="text-success" />
+                            <div className="d-flex align-items-center justify-content-center mb-3">
+                              <div className="bg-success bg-opacity-15 p-1 rounded me-1">
+                                <Gear size={15} className="text-light" />
                               </div>
+                              <h6 className="text-muted fw-semibold mb-2 text-uppercase letter-spacing">
+                                Total Roles: {stats.totalRoles}
+                              </h6>
                             </div>
-                            <h6 className="text-muted fw-semibold mb-2 text-uppercase letter-spacing">
-                              Total Roles
-                            </h6>
-                            <h2 className="fw-bold text-dark mb-0 display-6">
-                              {stats.totalRoles}
-                            </h2>
-                            <small className="text-info fw-medium">
-                              <span className="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-1">
-                                Permission levels
-                              </span>
-                            </small>
                           </div>
                         </div>
                       </Card.Body>
@@ -448,7 +438,7 @@ export default function AdminDashboard() {
                               </tr>
                             </thead>
                             <tbody>
-                              {users.slice(0, 4).map((user) => (
+                              {users.slice(0, 5).map((user) => (
                                 <tr key={user.id} className="border-bottom">
                                   <td className="py-3 px-4">
                                     <div className="d-flex align-items-center">
@@ -466,7 +456,8 @@ export default function AdminDashboard() {
                                       </div>
                                       <div>
                                         <div className="fw-semibold text-dark">
-                                          {user.name || `${user.firstName} ${user.lastName}`}
+                                          {user.name ||
+                                            `${user.firstName} ${user.lastName}`}
                                         </div>
                                         <small className="text-muted">
                                           {user.email}
@@ -544,7 +535,7 @@ export default function AdminDashboard() {
                               </tr>
                             </thead>
                             <tbody>
-                              {roles.slice(0, 3).map((role) => (
+                              {roles.slice(0, 5).map((role) => (
                                 <tr key={role.id} className="border-bottom">
                                   <td className="py-3 px-4">
                                     <div className="d-flex align-items-center">
@@ -572,7 +563,10 @@ export default function AdminDashboard() {
                                   </td>
                                   <td className="py-3 px-4">
                                     <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1 fw-medium">
-                                      {typeof role.users === 'number' ? role.users : role.users?.length || 0} users
+                                      {typeof role.users === "number"
+                                        ? role.users
+                                        : role.users?.length || 0}{" "}
+                                      users
                                     </span>
                                   </td>
                                   <td className="py-3 px-4">
@@ -672,8 +666,9 @@ export default function AdminDashboard() {
                           className="px-3 py-2 rounded-pill fw-medium"
                         >
                           {
-                            filteredUsers.filter((u) => u.status === UserStatus.ACTIVE)
-                              .length
+                            filteredUsers.filter(
+                              (u) => u.status === UserStatus.ACTIVE
+                            ).length
                           }{" "}
                           Active
                         </Badge>
@@ -729,7 +724,8 @@ export default function AdminDashboard() {
                                   </div>
                                   <div>
                                     <div className="fw-semibold text-dark">
-                                      {user.name || `${user.firstName} ${user.lastName}`}
+                                      {user.name ||
+                                        `${user.firstName} ${user.lastName}`}
                                     </div>
                                     <small className="text-muted">
                                       {user.email}
@@ -763,24 +759,20 @@ export default function AdminDashboard() {
                                   {user.status}
                                 </Badge>
                               </td>
-                              <td className="py-3 px-4 text-center">
+                              <td className="text-center">
                                 <div className="d-flex justify-content-center gap-2">
-                                  <Button
-                                    variant="outline-primary"
-                                    size="sm"
-                                    className="modern-action-btn border-0 bg-primary bg-opacity-10 text-primary"
+                                  <Badge
+                                    className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium"
                                     title="Edit User"
                                   >
-                                    <Pencil size={14} />
-                                  </Button>
-                                  <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    className="modern-action-btn border-0 bg-danger bg-opacity-10 text-danger"
+                                    <Pencil className="text-primary" size={16} />
+                                  </Badge>
+                                  <Badge
+                                    className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium"
                                     title="Delete User"
                                   >
-                                    <Trash size={14} />
-                                  </Button>
+                                    <Trash className="text-danger" size={16} />
+                                  </Badge>
                                 </div>
                               </td>
                             </tr>
@@ -935,7 +927,10 @@ export default function AdminDashboard() {
                               </td>
                               <td className="py-3 px-4">
                                 <span className="fw-medium text-dark">
-                                  {typeof role.users === 'number' ? role.users : role.users?.length || 0} users
+                                  {typeof role.users === "number"
+                                    ? role.users
+                                    : role.users?.length || 0}{" "}
+                                  users
                                 </span>
                               </td>
                               <td className="py-3 px-4">
@@ -961,7 +956,11 @@ export default function AdminDashboard() {
                                     size="sm"
                                     className="modern-action-btn border-0 bg-danger bg-opacity-10 text-danger"
                                     title="Delete Role"
-                                    disabled={(typeof role.users === 'number' ? role.users : role.users?.length || 0) > 0}
+                                    disabled={
+                                      (typeof role.users === "number"
+                                        ? role.users
+                                        : role.users?.length || 0) > 0
+                                    }
                                   >
                                     <Trash size={14} />
                                   </Button>
