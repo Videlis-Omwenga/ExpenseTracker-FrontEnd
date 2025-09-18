@@ -207,11 +207,30 @@ export default function BudgetModalPage({
 
       {/* Modal */}
       <Modal show={showModal} onHide={handleClose} size="xl">
-        <Modal.Header closeButton className="border-0 pb-0">
-          <h5 className="fw-bold text-primary">
-            {modalType === "create" && "📝 Create New Budget"}
-            {modalType === "upload" && "📂 Upload Budget File"}
-            {modalType === "move" && "🔀 Move Budget"}
+        <Modal.Header
+          closeButton
+          className="border-0 pb-0 pt-4 px-4"
+          style={{ backgroundColor: "#f8f9fa" }}
+        >
+          <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+            <div
+              className="icon-wrapper bg-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
+              style={{ width: "48px", height: "48px" }}
+            >
+              {modalType === "create" && <CashStack size={24} className="text-white" />}
+              {modalType === "upload" && <Upload size={24} className="text-white" />}
+              {modalType === "move" && <ArrowLeftRight size={24} className="text-white" />}
+            </div>
+            <div>
+              {modalType === "create" && "Create New Budget"}
+              {modalType === "upload" && "Upload Budget File"}
+              {modalType === "move" && "Move Budget"}
+              <div className="text-muted fw-normal small">
+                {modalType === "create" && "Add a new budget allocation"}
+                {modalType === "upload" && "Import budget data from file"}
+                {modalType === "move" && "Transfer budget between categories"}
+              </div>
+            </div>
           </h5>
         </Modal.Header>
 
@@ -326,11 +345,14 @@ export default function BudgetModalPage({
                 </Card.Body>
               </Card>
 
-              <Modal.Footer className="border-0">
+              <Modal.Footer
+                className="border-0 pt-0 px-4 pb-4 mt-4"
+                style={{ backgroundColor: "#f8f9fa" }}
+              >
                 <Button
                   variant="light"
                   onClick={handleClose}
-                  className="rounded-2"
+                  className="rounded-3 px-4 py-2 fw-semibold"
                 >
                   Cancel
                 </Button>
@@ -338,8 +360,7 @@ export default function BudgetModalPage({
                   type="submit"
                   variant="primary"
                   onClick={handleSubmit}
-                  className="rounded-2 px-4 "
-                  style={{ backgroundColor: "#4361ee", border: "none" }}
+                  className="rounded-3 px-4 py-2 fw-semibold"
                 >
                   Create Budget
                 </Button>
@@ -427,19 +448,21 @@ export default function BudgetModalPage({
                   </Form.Control.Feedback>
                 </Form.Group>
               </div>
-              <Modal.Footer className="border-0">
+              <Modal.Footer
+                className="border-0 pt-0 px-4 pb-4 mt-4"
+                style={{ backgroundColor: "#f8f9fa" }}
+              >
                 <Button
                   variant="light"
                   onClick={handleClose}
-                  className="rounded-2"
+                  className="rounded-3 px-4 py-2 fw-semibold"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   variant="primary"
-                  className="rounded-2 px-4 "
-                  style={{ backgroundColor: "#4361ee", border: "none" }}
+                  className="rounded-3 px-4 py-2 fw-semibold"
                 >
                   Upload Budget
                 </Button>
@@ -540,6 +563,215 @@ export default function BudgetModalPage({
           )}
         </Modal.Body>
       </Modal>
+
+      <style jsx global>{`
+        .modern-input, .form-control, .form-select {
+          border: 2px solid #e9ecef;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          background: #ffffff;
+          font-size: 0.95rem;
+          line-height: 1.6;
+          position: relative;
+        }
+
+        .modern-input:focus, .form-control:focus, .form-select:focus {
+          border-color: #f59e0b;
+          box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+          transform: translateY(-1px);
+          background: #fefefe;
+        }
+
+        .modern-input:hover:not(:focus), .form-control:hover:not(:focus), .form-select:hover:not(:focus) {
+          border-color: #d1d5db;
+          background: #fafafa;
+        }
+
+        .form-label {
+          font-weight: 600;
+          font-size: 0.875rem;
+          letter-spacing: 0.025em;
+          margin-bottom: 0.5rem;
+          color: #374151;
+        }
+
+        .card {
+          border: 1px solid #e5e7eb;
+          transition: all 0.3s ease;
+          background: #ffffff;
+          border-radius: 12px;
+        }
+
+        .card:hover {
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          transform: translateY(-1px);
+        }
+
+        .card-body {
+          padding: 1.5rem;
+        }
+
+        .form-text {
+          font-size: 0.8rem;
+          font-weight: 500;
+          margin-top: 0.375rem;
+        }
+
+        .text-danger {
+          color: #ef4444 !important;
+        }
+
+        .text-muted {
+          color: #64748b !important;
+        }
+
+        .modal-header {
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+          border-bottom: 2px solid #e5e7eb;
+        }
+
+        .modal-footer {
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-top: 2px solid #e5e7eb;
+        }
+
+        .btn-primary {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          border: none;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          font-weight: 600;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+          background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-light {
+          border: 2px solid #d1d5db;
+          color: #6b7280;
+          font-weight: 600;
+          transition: all 0.3s ease;
+          background: #ffffff;
+        }
+
+        .btn-light:hover {
+          background: #f3f4f6;
+          border-color: #9ca3af;
+          color: #374151;
+          transform: translateY(-1px);
+        }
+
+        .icon-wrapper {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+        }
+
+        .border-dashed {
+          border: 2px dashed #d1d5db !important;
+          transition: all 0.3s ease;
+        }
+
+        .border-dashed:hover {
+          border-color: #f59e0b !important;
+          background-color: #fef3c7 !important;
+        }
+
+        .btn-outline-primary {
+          border: 2px solid #f59e0b;
+          color: #f59e0b;
+          font-weight: 600;
+          transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+          background: #f59e0b;
+          border-color: #f59e0b;
+          color: #ffffff;
+          transform: translateY(-1px);
+        }
+
+        .input-group-text {
+          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+          border: 2px solid #e9ecef;
+          border-right: none;
+          font-weight: 600;
+          color: #374151;
+        }
+
+        .input-group .form-control {
+          border-left: none;
+        }
+
+        .input-group .form-control:focus {
+          border-left: none;
+          box-shadow: none;
+        }
+
+        .input-group:focus-within .input-group-text {
+          border-color: #f59e0b;
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .modal-content {
+          animation: slideUp 0.3s ease-out;
+          border: none;
+          border-radius: 16px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .text-success {
+          color: #10b981 !important;
+        }
+
+        .text-info {
+          color: #3b82f6 !important;
+        }
+
+        .text-secondary {
+          color: #6b7280 !important;
+        }
+
+        .bg-light {
+          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+        }
+
+        .small {
+          font-size: 0.825rem;
+        }
+
+        textarea.form-control {
+          resize: vertical;
+          min-height: 100px;
+        }
+
+        .rounded-pill {
+          border-radius: 50rem !important;
+        }
+
+        .d-none {
+          display: none !important;
+        }
+
+        .btn[data-bs-toggle="tooltip"] {
+          position: relative;
+        }
+
+        .fw-semibold {
+          font-weight: 600 !important;
+        }
+      `}</style>
     </div>
   );
 }

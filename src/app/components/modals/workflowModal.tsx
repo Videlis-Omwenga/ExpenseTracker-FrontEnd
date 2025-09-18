@@ -191,19 +191,43 @@ export default function WorkflowCreatorModal({
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="lg">
-      <Modal.Header closeButton>
-        <Modal.Title>Create Workflow</Modal.Title>
-        <Badge bg="secondary" className="ms-3 fs-6">
-          {steps.length} {steps.length === 1 ? "Step" : "Steps"}
-        </Badge>
-      </Modal.Header>
-      <Modal.Body className="p-4">
-        <div className="border p-4 rounded">
+    <>
+      <Modal show={show} onHide={onHide} size="lg">
+        <Modal.Header
+          closeButton
+          className="border-0 pb-0 pt-4 px-4"
+          style={{ backgroundColor: "#f8f9fa" }}
+        >
+          <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+            <div
+              className="icon-wrapper bg-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
+              style={{ width: "48px", height: "48px" }}
+            >
+              <Inboxes size={24} className="text-white" />
+            </div>
+            <div>
+              Create Workflow
+              <div className="text-muted fw-normal small">
+                Design approval process steps
+              </div>
+            </div>
+            <Badge bg="secondary" className="ms-3 fs-6 rounded-pill">
+              {steps.length} {steps.length === 1 ? "Step" : "Steps"}
+            </Badge>
+          </h5>
+        </Modal.Header>
+        <Modal.Body className="px-4 py-4">
           <Form onSubmit={handleSubmit}>
-            <h5 className="mb-3 border-bottom pb-2">Workflow Details</h5>
             {/* Workflow Details */}
-            <Row className="mb-4 bg-info bg-opacity-10 p-3 rounded">
+            <div className="workflow-card mb-4">
+              <div className="workflow-card-header">
+                <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                  <CheckCircle className="me-2 text-primary" size={18} />
+                  Workflow Details
+                </h6>
+              </div>
+              <div className="workflow-card-body">
+                <Row className="g-3">
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label className="fw-semibold">Workflow Name</Form.Label>
@@ -232,13 +256,20 @@ export default function WorkflowCreatorModal({
                 </Form.Group>
               </Col>
             </Row>
+              </div>
+            </div>
 
             {/* Steps Section */}
-            <div className="mb-4">
-              <h5 className="mb-3 border-bottom pb-2">Workflow Steps</h5>
-
-              <div className="bg-info bg-opacity-10 p-3 rounded mb-3">
-                <Form.Label className="fw-semibold">Add New Step</Form.Label>
+            <div className="workflow-card">
+              <div className="workflow-card-header">
+                <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                  <PlusCircle className="me-2 text-primary" size={18} />
+                  Workflow Steps
+                </h6>
+              </div>
+              <div className="workflow-card-body">
+                <div className="add-step-section mb-3">
+                  <Form.Label className="fw-semibold">Add New Step</Form.Label>
                 <InputGroup>
                   <Form.Select
                     value={roleId}
@@ -347,11 +378,14 @@ export default function WorkflowCreatorModal({
                   </p>
                 </div>
               )}
+              </div>
             </div>
           </Form>
-        </div>
-      </Modal.Body>
-      <Modal.Footer>
+        </Modal.Body>
+        <Modal.Footer
+          className="border-0 pt-0 px-4 pb-4 mt-4"
+          style={{ backgroundColor: "#f8f9fa" }}
+        >
         <Button
           variant="outline-secondary"
           onClick={() => {
@@ -384,7 +418,167 @@ export default function WorkflowCreatorModal({
             </>
           )}
         </Button>
-      </Modal.Footer>
-    </Modal>
+        </Modal.Footer>
+      </Modal>
+
+      <style jsx global>{`
+        .workflow-card {
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          background: #ffffff;
+          transition: all 0.3s ease;
+          overflow: hidden;
+        }
+
+        .workflow-card:hover {
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          transform: translateY(-1px);
+        }
+
+        .workflow-card-header {
+          background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+          border-bottom: 1px solid #e5e7eb;
+          padding: 1rem 1.5rem;
+        }
+
+        .workflow-card-body {
+          padding: 1.5rem;
+        }
+
+        .add-step-section {
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+          border: 1px solid #bae6fd;
+          border-radius: 8px;
+          padding: 1rem;
+        }
+
+        .form-control, .form-select {
+          border: 2px solid #e9ecef;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          background: #ffffff;
+          font-size: 0.95rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+          transform: translateY(-1px);
+          background: #fefefe;
+        }
+
+        .form-control:hover:not(:focus), .form-select:hover:not(:focus) {
+          border-color: #d1d5db;
+          background: #fafafa;
+        }
+
+        .form-label {
+          font-weight: 600;
+          font-size: 0.875rem;
+          letter-spacing: 0.025em;
+          margin-bottom: 0.5rem;
+          color: #374151;
+        }
+
+        .btn-primary {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          border: none;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          font-weight: 600;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+          background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-outline-secondary {
+          border: 2px solid #d1d5db;
+          color: #6b7280;
+          font-weight: 600;
+          transition: all 0.3s ease;
+        }
+
+        .btn-outline-secondary:hover {
+          background: #f3f4f6;
+          border-color: #9ca3af;
+          color: #374151;
+          transform: translateY(-1px);
+        }
+
+        .modal-header {
+          background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+          border-bottom: 2px solid #e5e7eb;
+        }
+
+        .modal-footer {
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-top: 2px solid #e5e7eb;
+        }
+
+        .icon-wrapper {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+        }
+
+        .table {
+          background: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+
+        .table thead th {
+          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+          border: none;
+          font-weight: 600;
+          color: #374151;
+          padding: 1rem;
+        }
+
+        .table tbody td {
+          padding: 1rem;
+          border-top: 1px solid #e5e7eb;
+          vertical-align: middle;
+        }
+
+        .badge {
+          font-weight: 600;
+          padding: 0.5rem 0.75rem;
+        }
+
+        .form-check-input:checked {
+          background-color: #10b981;
+          border-color: #10b981;
+        }
+
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .modal-content {
+          animation: slideUp 0.3s ease-out;
+          border: none;
+          border-radius: 16px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-text {
+          font-size: 0.8rem;
+          font-weight: 500;
+          margin-top: 0.375rem;
+        }
+
+        .text-muted {
+          color: #64748b !important;
+        }
+      `}</style>
+    </>
   );
 }

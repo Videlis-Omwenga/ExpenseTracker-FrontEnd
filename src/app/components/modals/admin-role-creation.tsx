@@ -91,8 +91,7 @@ export default function RoleCreationModal() {
         </Modal.Header>
 
         <Form onSubmit={handleSubmit}>
-          <div className="border rounded p-4">
-            <Modal.Body className="px-4 py-3">
+          <Modal.Body className="px-4 py-4">
               {/* Section: Role Information */}
               <Card className="border shadow-sm">
                 <Card.Header className="bg-info bg-opacity-10 border-0 py-3">
@@ -144,8 +143,7 @@ export default function RoleCreationModal() {
                   </Row>
                 </Card.Body>
               </Card>
-            </Modal.Body>
-          </div>
+          </Modal.Body>
           <Modal.Footer
             className="border-0 pt-0 px-4 pb-4 mt-4"
             style={{ backgroundColor: "#f8f9fa" }}
@@ -185,21 +183,152 @@ export default function RoleCreationModal() {
 
       <style jsx global>{`
         .modern-input {
-          border: 1px solid #dee2e6;
-          transition: all 0.3s ease;
+          border: 2px solid #e9ecef;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          background: #ffffff;
+          font-size: 0.95rem;
+          line-height: 1.6;
+          position: relative;
         }
 
         .modern-input:focus {
-          border-color: #28a745;
-          box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+          border-color: #10b981;
+          box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+          transform: translateY(-1px);
+          background: #fefefe;
         }
 
-        .shadow-success-button {
-          box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        .modern-input:hover:not(:focus) {
+          border-color: #d1d5db;
+          background: #fafafa;
+        }
+
+        .form-label {
+          font-weight: 600;
+          font-size: 0.875rem;
+          letter-spacing: 0.025em;
+          margin-bottom: 0.5rem;
+          color: #374151;
+        }
+
+        .shadow-primary-button {
+          box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .shadow-primary-button:hover {
+          box-shadow: 0 12px 32px rgba(16, 185, 129, 0.3);
+          transform: translateY(-2px);
+        }
+
+        .gradient-button {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          border: none;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .gradient-button::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+          transition: left 0.5s;
+        }
+
+        .gradient-button:hover::before {
+          left: 100%;
         }
 
         .gradient-button:hover:not(:disabled) {
-          background: linear-gradient(135deg, #218838, #1aa179);
+          background: linear-gradient(135deg, #059669 0%, #047857 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
+        }
+
+        .gradient-button:active {
+          transform: translateY(0);
+        }
+
+        .card {
+          border: 1px solid #e5e7eb;
+          transition: all 0.3s ease;
+          background: #ffffff;
+        }
+
+        .card:hover {
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          transform: translateY(-1px);
+        }
+
+        .card-header {
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+          border-bottom: 1px solid #e5e7eb;
+        }
+
+        .form-text {
+          font-size: 0.8rem;
+          font-weight: 500;
+          margin-top: 0.375rem;
+        }
+
+        .text-danger {
+          color: #ef4444 !important;
+        }
+
+        .text-muted {
+          color: #64748b !important;
+        }
+
+        .modal-header {
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+          border-bottom: 2px solid #e5e7eb;
+        }
+
+        .modal-footer {
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-top: 2px solid #e5e7eb;
+        }
+
+        .btn-outline-secondary {
+          border: 2px solid #d1d5db;
+          color: #6b7280;
+          font-weight: 600;
+          transition: all 0.3s ease;
+        }
+
+        .btn-outline-secondary:hover {
+          background: #f3f4f6;
+          border-color: #9ca3af;
+          color: #374151;
+          transform: translateY(-1px);
+        }
+
+        .icon-wrapper {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+        }
+
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .modal-content {
+          animation: slideUp 0.3s ease-out;
+          border: none;
+          border-radius: 16px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
         }
       `}</style>
     </>

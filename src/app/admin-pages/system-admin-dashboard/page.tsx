@@ -624,79 +624,193 @@ export default function SuperAdminDashboard() {
                   <Row className="g-4">
                     {/* User Growth Over Time */}
                     <Col md={6}>
-                      <Card className="h-100 shadow-sm border-start border-primary border-3">
-                        <Card.Header className="bg-gradient-primary border-0 py-4">
+                      <Card className="h-100 modern-chart-card border-0 overflow-hidden">
+                        <Card.Header className="bg-light border-0 py-4">
                           <div className="d-flex justify-content-between align-items-center">
-                            <div>
-                              <h5 className="mb-1 fw-bold text-white">
-                                📈 User Growth Analytics
-                              </h5>
-                              <p className="mb-0 text-white-50 small">
-                                Track user acquisition trends
-                              </p>
+                            <div className="d-flex align-items-center">
+                              <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                                <Activity className="text-primary" size={24} />
+                              </div>
+                              <div>
+                                <h5 className="mb-1 fw-bold text-primary chart-title">
+                                  User Growth Analytics
+                                </h5>
+                                <p className="mb-0 text-muted small">
+                                  Real-time user acquisition trends
+                                </p>
+                              </div>
                             </div>
-                            <Badge
-                              bg="white"
-                              text="primary"
-                              className="px-3 py-2 rounded-pill fw-semibold"
-                            >
-                              📅 Last 30 Days
-                            </Badge>
+                            <div className="chart-badge-container">
+                              <Badge
+                                bg="primary"
+                                className="px-3 py-2 fw-semibold"
+                              >
+                                <i className="fas fa-chart-line me-2"></i>
+                                Last 30 Days
+                              </Badge>
+                            </div>
                           </div>
                         </Card.Header>
-                        <Card.Body>
-                          <div style={{ height: "320px" }} className="p-3">
+                        <Card.Body className="chart-body-gradient p-0">
+                          <div
+                            style={{ height: "350px" }}
+                            className="p-4 position-relative"
+                          >
+                            <div className="chart-background-pattern"></div>
                             <ResponsiveContainer width="100%" height="100%">
                               <AreaChart
                                 data={generateUserGrowthData(users)}
                                 margin={{
                                   top: 20,
                                   right: 30,
-                                  left: 0,
-                                  bottom: 5,
+                                  left: 10,
+                                  bottom: 20,
                                 }}
                               >
                                 <defs>
-                                  <linearGradient id="userGrowthGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#667eea" stopOpacity={0.8}/>
-                                    <stop offset="95%" stopColor="#764ba2" stopOpacity={0.1}/>
+                                  <linearGradient
+                                    id="modernUserGrowthGradient"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#4f46e5"
+                                      stopOpacity={0.9}
+                                    />
+                                    <stop
+                                      offset="50%"
+                                      stopColor="#7c3aed"
+                                      stopOpacity={0.6}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#ec4899"
+                                      stopOpacity={0.1}
+                                    />
                                   </linearGradient>
+                                  <linearGradient
+                                    id="modernStrokeGradient"
+                                    x1="0"
+                                    y1="0"
+                                    x2="1"
+                                    y2="0"
+                                  >
+                                    <stop offset="0%" stopColor="#4f46e5" />
+                                    <stop offset="50%" stopColor="#7c3aed" />
+                                    <stop offset="100%" stopColor="#ec4899" />
+                                  </linearGradient>
+                                  <filter id="modernGlow">
+                                    <feGaussianBlur
+                                      stdDeviation="3"
+                                      result="coloredBlur"
+                                    />
+                                    <feMerge>
+                                      <feMergeNode in="coloredBlur" />
+                                      <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                  </filter>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={true} vertical={false} />
+                                <CartesianGrid
+                                  strokeDasharray="2 4"
+                                  stroke="rgba(148, 163, 184, 0.3)"
+                                  horizontal={true}
+                                  vertical={false}
+                                  strokeWidth={1}
+                                />
                                 <XAxis
                                   dataKey="date"
                                   axisLine={false}
                                   tickLine={false}
-                                  tick={{ fontSize: 12, fill: '#6b7280' }}
-                                  tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  tick={{
+                                    fontSize: 11,
+                                    fill: "#64748b",
+                                    fontWeight: 500,
+                                  }}
+                                  tickFormatter={(value) =>
+                                    new Date(value).toLocaleDateString(
+                                      "en-US",
+                                      { month: "short", day: "numeric" }
+                                    )
+                                  }
+                                  interval="preserveStartEnd"
                                 />
                                 <YAxis
                                   axisLine={false}
                                   tickLine={false}
-                                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                                  tick={{
+                                    fontSize: 11,
+                                    fill: "#64748b",
+                                    fontWeight: 500,
+                                  }}
+                                  width={40}
                                 />
                                 <Tooltip
                                   contentStyle={{
-                                    backgroundColor: '#ffffff',
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                                    fontSize: '14px'
+                                    backgroundColor:
+                                      "rgba(255, 255, 255, 0.95)",
+                                    border: "none",
+                                    borderRadius: "16px",
+                                    boxShadow:
+                                      "0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.1)",
+                                    fontSize: "13px",
+                                    fontWeight: "500",
+                                    backdropFilter: "blur(20px)",
                                   }}
                                   formatter={(value) => [
-                                    `${value} users`,
-                                    "👥 Total Users",
+                                    <span
+                                      style={{
+                                        color: "#4f46e5",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      {value} users
+                                    </span>,
+                                    <span style={{ color: "#6b7280" }}>
+                                      Total Active Users
+                                    </span>,
                                   ]}
-                                  labelFormatter={(label) => `📅 ${new Date(label).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`}
+                                  labelFormatter={(label) => (
+                                    <span
+                                      style={{
+                                        color: "#1f2937",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      {new Date(label).toLocaleDateString(
+                                        "en-US",
+                                        {
+                                          weekday: "short",
+                                          month: "short",
+                                          day: "numeric",
+                                        }
+                                      )}
+                                    </span>
+                                  )}
                                 />
                                 <Area
                                   type="monotone"
                                   dataKey="count"
-                                  stroke="#667eea"
-                                  strokeWidth={3}
-                                  fill="url(#userGrowthGradient)"
-                                  dot={{ fill: '#667eea', strokeWidth: 2, r: 4 }}
-                                  activeDot={{ r: 6, stroke: '#667eea', strokeWidth: 2, fill: '#ffffff' }}
+                                  stroke="url(#modernStrokeGradient)"
+                                  strokeWidth={4}
+                                  fill="url(#modernUserGrowthGradient)"
+                                  dot={{
+                                    fill: "#ffffff",
+                                    stroke: "#4f46e5",
+                                    strokeWidth: 3,
+                                    r: 5,
+                                    filter: "url(#modernGlow)",
+                                  }}
+                                  activeDot={{
+                                    r: 8,
+                                    stroke: "#4f46e5",
+                                    strokeWidth: 4,
+                                    fill: "#ffffff",
+                                    filter: "url(#modernGlow)",
+                                    style: { cursor: "pointer" },
+                                  }}
                                 />
                               </AreaChart>
                             </ResponsiveContainer>
@@ -707,37 +821,60 @@ export default function SuperAdminDashboard() {
 
                     {/* Institutions by Country */}
                     <Col md={6}>
-                      <Card className="h-100 shadow-sm border-start border-info border-3">
-                        <Card.Header className="bg-gradient-info border-0 py-4">
+                      <Card className="h-100 modern-chart-card border-0 overflow-hidden">
+                        <Card.Header className="bg-light border-0 py-4">
                           <div className="d-flex justify-content-between align-items-center">
-                            <div>
-                              <h5 className="mb-1 fw-bold text-white">
-                                🌍 Geographic Distribution
-                              </h5>
-                              <p className="mb-0 text-white-50 small">
-                                Institution spread across regions
-                              </p>
+                            <div className="d-flex align-items-center">
+                              <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
+                                <Globe className="text-info" size={24} />
+                              </div>
+                              <div>
+                                <h5 className="mb-1 fw-bold text-info chart-title">
+                                  Geographic Distribution
+                                </h5>
+                                <p className="mb-0 text-muted small">
+                                  Global institution presence
+                                </p>
+                              </div>
                             </div>
-                            <Badge
-                              bg="white"
-                              text="info"
-                              className="px-3 py-2 rounded-pill fw-semibold"
-                            >
-                              🏁 By Country
-                            </Badge>
+                            <div className="chart-badge-container">
+                              <Badge
+                                bg="info"
+                                className="px-3 py-2 fw-semibold"
+                              >
+                                <i className="fas fa-globe me-2"></i>
+                                By Country
+                              </Badge>
+                            </div>
                           </div>
                         </Card.Header>
-                        <Card.Body>
-                          <div style={{ height: "320px" }} className="p-3">
+                        <Card.Body className="chart-body-gradient-cyan p-0">
+                          <div
+                            style={{ height: "350px" }}
+                            className="p-4 position-relative"
+                          >
+                            <div className="chart-background-pattern-cyan"></div>
                             <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
+                                <defs>
+                                  <filter id="pieGlow">
+                                    <feGaussianBlur
+                                      stdDeviation="4"
+                                      result="coloredBlur"
+                                    />
+                                    <feMerge>
+                                      <feMergeNode in="coloredBlur" />
+                                      <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                  </filter>
+                                </defs>
                                 <Pie
                                   data={institutions.reduce(
                                     (
                                       acc: { name: string; value: number }[],
                                       inst
                                     ) => {
-                                      const country = inst.country || "🌐 Unknown";
+                                      const country = inst.country || "Unknown";
                                       const existing = acc.find(
                                         (item) => item.name === country
                                       );
@@ -751,7 +888,7 @@ export default function SuperAdminDashboard() {
                                     []
                                   )}
                                   cx="50%"
-                                  cy="50%"
+                                  cy="45%"
                                   labelLine={false}
                                   label={({
                                     name,
@@ -759,17 +896,19 @@ export default function SuperAdminDashboard() {
                                   }: {
                                     name: string;
                                     percent?: number;
-                                  }) =>
-                                    `${(percent * 100).toFixed(1)}%`
-                                  }
-                                  outerRadius={85}
-                                  innerRadius={35}
-                                  paddingAngle={2}
-                                  fill="#8884d8"
+                                  }) => {
+                                    if (percent > 0.05) {
+                                      return `${(percent * 100).toFixed(1)}%`;
+                                    }
+                                    return "";
+                                  }}
+                                  outerRadius={100}
+                                  innerRadius={45}
+                                  paddingAngle={3}
                                   dataKey="value"
                                 >
                                   {[
-                                    "#4f46e5",
+                                    "#6366f1",
                                     "#06b6d4",
                                     "#10b981",
                                     "#f59e0b",
@@ -777,28 +916,58 @@ export default function SuperAdminDashboard() {
                                     "#8b5cf6",
                                     "#ec4899",
                                     "#f97316",
+                                    "#14b8a6",
+                                    "#84cc16",
                                   ].map((color, index) => (
-                                    <Cell key={`cell-${index}`} fill={color} stroke="#ffffff" strokeWidth={2} />
+                                    <Cell
+                                      key={`cell-${index}`}
+                                      fill={color}
+                                      stroke="#ffffff"
+                                      strokeWidth={3}
+                                      filter="url(#pieGlow)"
+                                      style={{
+                                        filter:
+                                          "drop-shadow(0 4px 8px rgba(0,0,0,0.1))",
+                                      }}
+                                    />
                                   ))}
                                 </Pie>
                                 <Tooltip
                                   contentStyle={{
-                                    backgroundColor: '#ffffff',
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                                    fontSize: '14px'
+                                    backgroundColor:
+                                      "rgba(255, 255, 255, 0.95)",
+                                    border: "none",
+                                    borderRadius: "16px",
+                                    boxShadow:
+                                      "0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.1)",
+                                    fontSize: "13px",
+                                    fontWeight: "500",
+                                    backdropFilter: "blur(20px)",
                                   }}
                                   formatter={(value, name) => [
-                                    `${value} institutions`,
-                                    `🏢 ${name}`,
+                                    <span
+                                      style={{
+                                        color: "#06b6d4",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      {value} institutions
+                                    </span>,
+                                    <span style={{ color: "#6b7280" }}>
+                                      {name}
+                                    </span>,
                                   ]}
                                 />
                                 <Legend
                                   verticalAlign="bottom"
-                                  height={36}
+                                  height={50}
                                   iconType="circle"
-                                  wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                                  wrapperStyle={{
+                                    fontSize: "11px",
+                                    paddingTop: "15px",
+                                    fontWeight: "500",
+                                    color: "#64748b",
+                                  }}
                                 />
                               </PieChart>
                             </ResponsiveContainer>
@@ -810,25 +979,104 @@ export default function SuperAdminDashboard() {
 
                   <Row className="g-4 mt-2">
                     <Col md={6}>
-                      <Card className="h-100 shadow-sm border-start border-success border-3">
-                        <Card.Header className="bg-white border-0 py-3">
+                      <Card className="h-100 modern-chart-card border-0 overflow-hidden">
+                        <Card.Header className="bg-light border-0 py-4">
                           <div className="d-flex justify-content-between align-items-center">
-                            <h5 className="mb-0 fw-bold text-primary">
-                              User Status Analysis
-                            </h5>
-                            <Badge
-                              bg="light"
-                              text="muted"
-                              className="px-2 py-1"
-                            >
-                              Active vs Inactive
-                            </Badge>
+                            <div className="d-flex align-items-center">
+                              <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
+                                <People className="text-success" size={24} />
+                              </div>
+                              <div>
+                                <h5 className="mb-1 fw-bold text-success chart-title">
+                                  User Status Analysis
+                                </h5>
+                                <p className="mb-0 text-muted small">
+                                  Active vs inactive user distribution
+                                </p>
+                              </div>
+                            </div>
+                            <div className="chart-badge-container">
+                              <Badge
+                                bg="success"
+                                className="px-3 py-2 fw-semibold"
+                              >
+                                <i className="fas fa-users me-2"></i>
+                                User Health
+                              </Badge>
+                            </div>
                           </div>
                         </Card.Header>
-                        <Card.Body>
-                          <div style={{ height: "300px" }}>
+                        <Card.Body className="chart-body-gradient-green p-0">
+                          <div
+                            style={{ height: "350px" }}
+                            className="p-4 position-relative"
+                          >
+                            <div className="chart-background-pattern-green"></div>
                             <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
+                                <defs>
+                                  <filter id="statusGlow">
+                                    <feGaussianBlur
+                                      stdDeviation="5"
+                                      result="coloredBlur"
+                                    />
+                                    <feMerge>
+                                      <feMergeNode in="coloredBlur" />
+                                      <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                  </filter>
+                                  <radialGradient
+                                    id="activeGradient"
+                                    cx="0.5"
+                                    cy="0.5"
+                                    r="0.8"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#22c55e"
+                                      stopOpacity={1}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#16a34a"
+                                      stopOpacity={0.8}
+                                    />
+                                  </radialGradient>
+                                  <radialGradient
+                                    id="inactiveGradient"
+                                    cx="0.5"
+                                    cy="0.5"
+                                    r="0.8"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#f87171"
+                                      stopOpacity={1}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#dc2626"
+                                      stopOpacity={0.8}
+                                    />
+                                  </radialGradient>
+                                  <radialGradient
+                                    id="suspendedGradient"
+                                    cx="0.5"
+                                    cy="0.5"
+                                    r="0.8"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#fbbf24"
+                                      stopOpacity={1}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#f59e0b"
+                                      stopOpacity={0.8}
+                                    />
+                                  </radialGradient>
+                                </defs>
                                 <Pie
                                   data={users.reduce(
                                     (
@@ -846,10 +1094,19 @@ export default function SuperAdminDashboard() {
                                       if (existing) {
                                         existing.value += 1;
                                       } else {
+                                        const gradientMap: {
+                                          [key: string]: string;
+                                        } = {
+                                          ACTIVE: "url(#activeGradient)",
+                                          INACTIVE: "url(#inactiveGradient)",
+                                          SUSPENDED: "url(#suspendedGradient)",
+                                          UNKNOWN: "#94a3b8",
+                                        };
                                         acc.push({
                                           name: status,
                                           value: 1,
-                                          color: getStatusColor(status),
+                                          color:
+                                            gradientMap[status] || "#94a3b8",
                                         });
                                       }
                                       return acc;
@@ -857,7 +1114,7 @@ export default function SuperAdminDashboard() {
                                     []
                                   )}
                                   cx="50%"
-                                  cy="50%"
+                                  cy="45%"
                                   labelLine={false}
                                   label={({
                                     name,
@@ -865,11 +1122,17 @@ export default function SuperAdminDashboard() {
                                   }: {
                                     name: string;
                                     percent?: number;
-                                  }) =>
-                                    `${name}: ${(percent * 100).toFixed(0)}%`
-                                  }
-                                  outerRadius={80}
-                                  fill="#8884d8"
+                                  }) => {
+                                    if (percent > 0.05) {
+                                      return `${name}\n${(
+                                        percent * 100
+                                      ).toFixed(1)}%`;
+                                    }
+                                    return "";
+                                  }}
+                                  outerRadius={100}
+                                  innerRadius={55}
+                                  paddingAngle={4}
                                   dataKey="value"
                                 >
                                   {users
@@ -888,10 +1151,20 @@ export default function SuperAdminDashboard() {
                                             (item) => item.name === status
                                           )
                                         ) {
+                                          const gradientMap: {
+                                            [key: string]: string;
+                                          } = {
+                                            ACTIVE: "url(#activeGradient)",
+                                            INACTIVE: "url(#inactiveGradient)",
+                                            SUSPENDED:
+                                              "url(#suspendedGradient)",
+                                            UNKNOWN: "#94a3b8",
+                                          };
                                           acc.push({
                                             name: status,
                                             value: 1,
-                                            color: getStatusColor(status),
+                                            color:
+                                              gradientMap[status] || "#94a3b8",
                                           });
                                         }
                                         return acc;
@@ -902,16 +1175,53 @@ export default function SuperAdminDashboard() {
                                       <Cell
                                         key={`cell-${index}`}
                                         fill={entry.color}
+                                        stroke="#ffffff"
+                                        strokeWidth={4}
+                                        filter="url(#statusGlow)"
+                                        style={{
+                                          filter:
+                                            "drop-shadow(0 6px 12px rgba(0,0,0,0.15))",
+                                        }}
                                       />
                                     ))}
                                 </Pie>
                                 <Tooltip
+                                  contentStyle={{
+                                    backgroundColor:
+                                      "rgba(255, 255, 255, 0.95)",
+                                    border: "none",
+                                    borderRadius: "16px",
+                                    boxShadow:
+                                      "0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.1)",
+                                    fontSize: "13px",
+                                    fontWeight: "500",
+                                    backdropFilter: "blur(20px)",
+                                  }}
                                   formatter={(value, name) => [
-                                    `${value} users`,
-                                    name,
+                                    <span
+                                      style={{
+                                        color: "#059669",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      {value} users
+                                    </span>,
+                                    <span style={{ color: "#6b7280" }}>
+                                      {name}
+                                    </span>,
                                   ]}
                                 />
-                                <Legend />
+                                <Legend
+                                  verticalAlign="bottom"
+                                  height={40}
+                                  iconType="circle"
+                                  wrapperStyle={{
+                                    fontSize: "11px",
+                                    paddingTop: "15px",
+                                    fontWeight: "500",
+                                    color: "#64748b",
+                                  }}
+                                />
                               </PieChart>
                             </ResponsiveContainer>
                           </div>
@@ -919,28 +1229,49 @@ export default function SuperAdminDashboard() {
                       </Card>
                     </Col>
                     <Col md={6}>
-                      <Card className="h-100 shadow-sm border-start border-warning border-3">
-                        <Card.Header className="bg-white border-0 py-3">
+                      <Card className="h-100 modern-chart-card border-0 overflow-hidden">
+                        <Card.Header className="bg-light border-0 py-4">
                           <div className="d-flex justify-content-between align-items-center">
-                            <h5 className="mb-0 fw-bold text-primary">
-                              Institution Status
-                            </h5>
-                            <Badge
-                              bg="light"
-                              text="muted"
-                              className="px-2 py-1"
-                            >
-                              Status Distribution
-                            </Badge>
+                            <div className="d-flex align-items-center">
+                              <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
+                                <Globe className="text-warning" size={24} />
+                              </div>
+                              <div>
+                                <h5 className="mb-1 fw-bold text-warning chart-title">
+                                  Institution Status
+                                </h5>
+                                <p className="mb-0 text-muted small">
+                                  Organization health metrics
+                                </p>
+                              </div>
+                            </div>
+                            <div className="chart-badge-container">
+                              <Badge
+                                bg="warning"
+                                text="dark"
+                                className="px-3 py-2 fw-semibold"
+                              >
+                                <i className="fas fa-chart-bar me-2"></i>
+                                Status Overview
+                              </Badge>
+                            </div>
                           </div>
                         </Card.Header>
-                        <Card.Body>
-                          <div style={{ height: "300px" }}>
+                        <Card.Body className="chart-body-gradient-orange p-0">
+                          <div
+                            style={{ height: "350px" }}
+                            className="p-4 position-relative"
+                          >
+                            <div className="chart-background-pattern-orange"></div>
                             <ResponsiveContainer width="100%" height="100%">
                               <BarChart
                                 data={institutions.reduce(
                                   (
-                                    acc: { status: string; count: number }[],
+                                    acc: {
+                                      status: string;
+                                      count: number;
+                                      color: string;
+                                    }[],
                                     inst
                                   ) => {
                                     const status = inst.status || "UNKNOWN";
@@ -950,34 +1281,232 @@ export default function SuperAdminDashboard() {
                                     if (existing) {
                                       existing.count += 1;
                                     } else {
-                                      acc.push({ status, count: 1 });
+                                      const colorMap: {
+                                        [key: string]: string;
+                                      } = {
+                                        ACTIVE: "#22c55e",
+                                        INACTIVE: "#ef4444",
+                                        SUSPENDED: "#f59e0b",
+                                        TRIAL: "#8b5cf6",
+                                        UNKNOWN: "#94a3b8",
+                                      };
+                                      acc.push({
+                                        status,
+                                        count: 1,
+                                        color: colorMap[status] || "#94a3b8",
+                                      });
                                     }
                                     return acc;
                                   },
                                   []
                                 )}
                                 margin={{
-                                  top: 5,
+                                  top: 20,
                                   right: 30,
                                   left: 20,
-                                  bottom: 5,
+                                  bottom: 20,
                                 }}
                               >
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="status" />
-                                <YAxis />
-                                <Tooltip
-                                  formatter={(value) => [
-                                    `${value} institutions`,
-                                    "Count",
-                                  ]}
+                                <defs>
+                                  <linearGradient
+                                    id="barGradient1"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#22c55e"
+                                      stopOpacity={0.9}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#16a34a"
+                                      stopOpacity={0.7}
+                                    />
+                                  </linearGradient>
+                                  <linearGradient
+                                    id="barGradient2"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#ef4444"
+                                      stopOpacity={0.9}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#dc2626"
+                                      stopOpacity={0.7}
+                                    />
+                                  </linearGradient>
+                                  <linearGradient
+                                    id="barGradient3"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#f59e0b"
+                                      stopOpacity={0.9}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#d97706"
+                                      stopOpacity={0.7}
+                                    />
+                                  </linearGradient>
+                                  <linearGradient
+                                    id="barGradient4"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#8b5cf6"
+                                      stopOpacity={0.9}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#7c3aed"
+                                      stopOpacity={0.7}
+                                    />
+                                  </linearGradient>
+                                  <filter id="barGlow">
+                                    <feGaussianBlur
+                                      stdDeviation="3"
+                                      result="coloredBlur"
+                                    />
+                                    <feMerge>
+                                      <feMergeNode in="coloredBlur" />
+                                      <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                  </filter>
+                                </defs>
+                                <CartesianGrid
+                                  strokeDasharray="2 4"
+                                  stroke="rgba(148, 163, 184, 0.3)"
+                                  horizontal={true}
+                                  vertical={false}
                                 />
-                                <Legend />
+                                <XAxis
+                                  dataKey="status"
+                                  axisLine={false}
+                                  tickLine={false}
+                                  tick={{
+                                    fontSize: 11,
+                                    fill: "#64748b",
+                                    fontWeight: 500,
+                                  }}
+                                  interval={0}
+                                />
+                                <YAxis
+                                  axisLine={false}
+                                  tickLine={false}
+                                  tick={{
+                                    fontSize: 11,
+                                    fill: "#64748b",
+                                    fontWeight: 500,
+                                  }}
+                                  width={40}
+                                />
+                                <Tooltip
+                                  contentStyle={{
+                                    backgroundColor:
+                                      "rgba(255, 255, 255, 0.95)",
+                                    border: "none",
+                                    borderRadius: "16px",
+                                    boxShadow:
+                                      "0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.1)",
+                                    fontSize: "13px",
+                                    fontWeight: "500",
+                                    backdropFilter: "blur(20px)",
+                                  }}
+                                  formatter={(value, name) => [
+                                    <span
+                                      style={{
+                                        color: "#f59e0b",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      {value} institutions
+                                    </span>,
+                                    <span style={{ color: "#6b7280" }}>
+                                      Total Count
+                                    </span>,
+                                  ]}
+                                  labelFormatter={(label) => (
+                                    <span
+                                      style={{
+                                        color: "#1f2937",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      Status: {label}
+                                    </span>
+                                  )}
+                                />
                                 <Bar
                                   dataKey="count"
-                                  fill="#8884d8"
+                                  fill="url(#barGradient1)"
                                   name="Institutions"
-                                />
+                                  radius={[8, 8, 0, 0]}
+                                  filter="url(#barGlow)"
+                                  style={{
+                                    filter:
+                                      "drop-shadow(0 4px 8px rgba(0,0,0,0.1))",
+                                  }}
+                                >
+                                  {institutions
+                                    .reduce(
+                                      (
+                                        acc: {
+                                          status: string;
+                                          count: number;
+                                        }[],
+                                        inst
+                                      ) => {
+                                        const status = inst.status || "UNKNOWN";
+                                        const existing = acc.find(
+                                          (item) => item.status === status
+                                        );
+                                        if (existing) {
+                                          existing.count += 1;
+                                        } else {
+                                          acc.push({ status, count: 1 });
+                                        }
+                                        return acc;
+                                      },
+                                      []
+                                    )
+                                    .map((entry, index) => {
+                                      const gradientMap: {
+                                        [key: string]: string;
+                                      } = {
+                                        ACTIVE: "url(#barGradient1)",
+                                        INACTIVE: "url(#barGradient2)",
+                                        SUSPENDED: "url(#barGradient3)",
+                                        TRIAL: "url(#barGradient4)",
+                                      };
+                                      return (
+                                        <Cell
+                                          key={`cell-${index}`}
+                                          fill={
+                                            gradientMap[entry.status] ||
+                                            "#94a3b8"
+                                          }
+                                        />
+                                      );
+                                    })}
+                                </Bar>
                               </BarChart>
                             </ResponsiveContainer>
                           </div>
@@ -989,23 +1518,39 @@ export default function SuperAdminDashboard() {
                   <Row className="g-4 mt-2">
                     {/* Users per Institution */}
                     <Col md={6}>
-                      <Card className="h-100 shadow-sm border-start border-info border-3">
-                        <Card.Header className="bg-white border-0 py-3">
+                      <Card className="h-100 modern-chart-card border-0 overflow-hidden">
+                        <Card.Header className="bg-light border-0 py-4">
                           <div className="d-flex justify-content-between align-items-center">
-                            <h5 className="mb-0 fw-bold text-primary">
-                              User Distribution
-                            </h5>
-                            <Badge
-                              bg="light"
-                              text="muted"
-                              className="px-2 py-1"
-                            >
-                              Top 5 Institutions
-                            </Badge>
+                            <div className="d-flex align-items-center">
+                              <div className="bg-secondary bg-opacity-10 p-2 rounded-circle me-3">
+                                <People className="text-secondary" size={24} />
+                              </div>
+                              <div>
+                                <h5 className="mb-1 fw-bold text-secondary chart-title">
+                                  User Distribution
+                                </h5>
+                                <p className="mb-0 text-muted small">
+                                  Top performing institutions
+                                </p>
+                              </div>
+                            </div>
+                            <div className="chart-badge-container">
+                              <Badge
+                                bg="secondary"
+                                className="px-3 py-2 fw-semibold"
+                              >
+                                <i className="fas fa-trophy me-2"></i>
+                                Top 5
+                              </Badge>
+                            </div>
                           </div>
                         </Card.Header>
-                        <Card.Body>
-                          <div style={{ height: "300px" }}>
+                        <Card.Body className="chart-body-gradient-purple p-0">
+                          <div
+                            style={{ height: "350px" }}
+                            className="p-4 position-relative"
+                          >
+                            <div className="chart-background-pattern-purple"></div>
                             <ResponsiveContainer width="100%" height="100%">
                               <BarChart
                                 data={usersByInstitution
@@ -1017,34 +1562,234 @@ export default function SuperAdminDashboard() {
                                   }))}
                                 layout="vertical"
                                 margin={{
-                                  top: 5,
+                                  top: 20,
                                   right: 30,
-                                  left: 20,
-                                  bottom: 5,
+                                  left: 120,
+                                  bottom: 20,
                                 }}
                               >
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis type="number" />
+                                <defs>
+                                  <linearGradient
+                                    id="horizontalGradient1"
+                                    x1="0"
+                                    y1="0"
+                                    x2="1"
+                                    y2="0"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#8b5cf6"
+                                      stopOpacity={0.9}
+                                    />
+                                    <stop
+                                      offset="50%"
+                                      stopColor="#a855f7"
+                                      stopOpacity={0.8}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#c084fc"
+                                      stopOpacity={0.7}
+                                    />
+                                  </linearGradient>
+                                  <linearGradient
+                                    id="horizontalGradient2"
+                                    x1="0"
+                                    y1="0"
+                                    x2="1"
+                                    y2="0"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#06b6d4"
+                                      stopOpacity={0.9}
+                                    />
+                                    <stop
+                                      offset="50%"
+                                      stopColor="#0891b2"
+                                      stopOpacity={0.8}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#0e7490"
+                                      stopOpacity={0.7}
+                                    />
+                                  </linearGradient>
+                                  <linearGradient
+                                    id="horizontalGradient3"
+                                    x1="0"
+                                    y1="0"
+                                    x2="1"
+                                    y2="0"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#10b981"
+                                      stopOpacity={0.9}
+                                    />
+                                    <stop
+                                      offset="50%"
+                                      stopColor="#059669"
+                                      stopOpacity={0.8}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#047857"
+                                      stopOpacity={0.7}
+                                    />
+                                  </linearGradient>
+                                  <linearGradient
+                                    id="horizontalGradient4"
+                                    x1="0"
+                                    y1="0"
+                                    x2="1"
+                                    y2="0"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#f59e0b"
+                                      stopOpacity={0.9}
+                                    />
+                                    <stop
+                                      offset="50%"
+                                      stopColor="#d97706"
+                                      stopOpacity={0.8}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#b45309"
+                                      stopOpacity={0.7}
+                                    />
+                                  </linearGradient>
+                                  <linearGradient
+                                    id="horizontalGradient5"
+                                    x1="0"
+                                    y1="0"
+                                    x2="1"
+                                    y2="0"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#ef4444"
+                                      stopOpacity={0.9}
+                                    />
+                                    <stop
+                                      offset="50%"
+                                      stopColor="#dc2626"
+                                      stopOpacity={0.8}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#b91c1c"
+                                      stopOpacity={0.7}
+                                    />
+                                  </linearGradient>
+                                  <filter id="horizontalGlow">
+                                    <feGaussianBlur
+                                      stdDeviation="3"
+                                      result="coloredBlur"
+                                    />
+                                    <feMerge>
+                                      <feMergeNode in="coloredBlur" />
+                                      <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                  </filter>
+                                </defs>
+                                <CartesianGrid
+                                  strokeDasharray="2 4"
+                                  stroke="rgba(148, 163, 184, 0.3)"
+                                  horizontal={false}
+                                  vertical={true}
+                                />
+                                <XAxis
+                                  type="number"
+                                  axisLine={false}
+                                  tickLine={false}
+                                  tick={{
+                                    fontSize: 11,
+                                    fill: "#64748b",
+                                    fontWeight: 500,
+                                  }}
+                                />
                                 <YAxis
                                   dataKey="name"
                                   type="category"
-                                  width={100}
+                                  axisLine={false}
+                                  tickLine={false}
+                                  tick={{
+                                    fontSize: 11,
+                                    fill: "#64748b",
+                                    fontWeight: 500,
+                                  }}
+                                  width={120}
                                 />
                                 <Tooltip
+                                  contentStyle={{
+                                    backgroundColor:
+                                      "rgba(255, 255, 255, 0.95)",
+                                    border: "none",
+                                    borderRadius: "16px",
+                                    boxShadow:
+                                      "0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.1)",
+                                    fontSize: "13px",
+                                    fontWeight: "500",
+                                    backdropFilter: "blur(20px)",
+                                  }}
                                   formatter={(value, name) => [
-                                    value,
-                                    name === "users" ? "Number of Users" : name,
+                                    <span
+                                      style={{
+                                        color: "#8b5cf6",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      {value} users
+                                    </span>,
+                                    <span style={{ color: "#6b7280" }}>
+                                      Active Members
+                                    </span>,
                                   ]}
-                                  labelFormatter={(label) =>
-                                    `Institution: ${label}`
-                                  }
+                                  labelFormatter={(label) => (
+                                    <span
+                                      style={{
+                                        color: "#1f2937",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      {label}
+                                    </span>
+                                  )}
                                 />
-                                <Legend />
                                 <Bar
                                   dataKey="users"
-                                  fill="#8884d8"
+                                  fill="url(#horizontalGradient1)"
                                   name="Users"
-                                />
+                                  radius={[0, 8, 8, 0]}
+                                  filter="url(#horizontalGlow)"
+                                  style={{
+                                    filter:
+                                      "drop-shadow(0 4px 8px rgba(0,0,0,0.1))",
+                                  }}
+                                >
+                                  {usersByInstitution
+                                    .slice(0, 5)
+                                    .map((entry, index) => {
+                                      const gradients = [
+                                        "url(#horizontalGradient1)",
+                                        "url(#horizontalGradient2)",
+                                        "url(#horizontalGradient3)",
+                                        "url(#horizontalGradient4)",
+                                        "url(#horizontalGradient5)",
+                                      ];
+                                      return (
+                                        <Cell
+                                          key={`cell-${index}`}
+                                          fill={
+                                            gradients[index] || gradients[0]
+                                          }
+                                        />
+                                      );
+                                    })}
+                                </Bar>
                               </BarChart>
                             </ResponsiveContainer>
                           </div>
@@ -1054,25 +1799,121 @@ export default function SuperAdminDashboard() {
 
                     {/* Institution Status Distribution */}
                     <Col md={6}>
-                      <Card className="h-100 shadow-sm border-start border-secondary border-3">
-                        <Card.Header className="bg-white border-0 py-3">
+                      <Card className="h-100 modern-chart-card border-0 overflow-hidden">
+                        <Card.Header className="bg-light border-0 py-4">
                           <div className="d-flex justify-content-between align-items-center">
-                            <h5 className="mb-0 fw-bold text-primary">
-                              Subscription Overview
-                            </h5>
-                            <Badge
-                              bg="light"
-                              text="muted"
-                              className="px-2 py-1"
-                            >
-                              Plans & Status
-                            </Badge>
+                            <div className="d-flex align-items-center">
+                              <div className="bg-danger bg-opacity-10 p-2 rounded-circle me-3">
+                                <Wallet className="text-danger" size={24} />
+                              </div>
+                              <div>
+                                <h5 className="mb-1 fw-bold text-danger chart-title">
+                                  Subscription Overview
+                                </h5>
+                                <p className="mb-0 text-muted small">
+                                  Revenue and plan distribution
+                                </p>
+                              </div>
+                            </div>
+                            <div className="chart-badge-container">
+                              <Badge
+                                bg="danger"
+                                className="px-3 py-2 fw-semibold"
+                              >
+                                <i className="fas fa-credit-card me-2"></i>
+                                Plans & Revenue
+                              </Badge>
+                            </div>
                           </div>
                         </Card.Header>
-                        <Card.Body>
-                          <div style={{ height: "300px" }}>
+                        <Card.Body className="chart-body-gradient-pink p-0">
+                          <div
+                            style={{ height: "350px" }}
+                            className="p-4 position-relative"
+                          >
+                            <div className="chart-background-pattern-pink"></div>
                             <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
+                                <defs>
+                                  <filter id="subscriptionGlow">
+                                    <feGaussianBlur
+                                      stdDeviation="5"
+                                      result="coloredBlur"
+                                    />
+                                    <feMerge>
+                                      <feMergeNode in="coloredBlur" />
+                                      <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                  </filter>
+                                  <radialGradient
+                                    id="premiumGradient"
+                                    cx="0.5"
+                                    cy="0.5"
+                                    r="0.8"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#8b5cf6"
+                                      stopOpacity={1}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#7c3aed"
+                                      stopOpacity={0.8}
+                                    />
+                                  </radialGradient>
+                                  <radialGradient
+                                    id="enterpriseGradient"
+                                    cx="0.5"
+                                    cy="0.5"
+                                    r="0.8"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#1f2937"
+                                      stopOpacity={1}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#374151"
+                                      stopOpacity={0.8}
+                                    />
+                                  </radialGradient>
+                                  <radialGradient
+                                    id="freeGradient"
+                                    cx="0.5"
+                                    cy="0.5"
+                                    r="0.8"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#06b6d4"
+                                      stopOpacity={1}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#0891b2"
+                                      stopOpacity={0.8}
+                                    />
+                                  </radialGradient>
+                                  <radialGradient
+                                    id="trialGradient"
+                                    cx="0.5"
+                                    cy="0.5"
+                                    r="0.8"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#f59e0b"
+                                      stopOpacity={1}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#d97706"
+                                      stopOpacity={0.8}
+                                    />
+                                  </radialGradient>
+                                </defs>
                                 <Pie
                                   data={institutions.reduce(
                                     (
@@ -1083,17 +1924,29 @@ export default function SuperAdminDashboard() {
                                       }[],
                                       inst
                                     ) => {
-                                      const status = inst.status || "UNKNOWN";
+                                      const plan =
+                                        inst.subscriptionPlan || "FREE";
                                       const existing = acc.find(
-                                        (item) => item.name === status
+                                        (item) => item.name === plan
                                       );
                                       if (existing) {
                                         existing.value += 1;
                                       } else {
+                                        const gradientMap: {
+                                          [key: string]: string;
+                                        } = {
+                                          PREMIUM: "url(#premiumGradient)",
+                                          ENTERPRISE:
+                                            "url(#enterpriseGradient)",
+                                          FREE: "url(#freeGradient)",
+                                          TRIAL: "url(#trialGradient)",
+                                        };
                                         acc.push({
-                                          name: status,
+                                          name: plan,
                                           value: 1,
-                                          color: getStatusColor(status),
+                                          color:
+                                            gradientMap[plan] ||
+                                            "url(#freeGradient)",
                                         });
                                       }
                                       return acc;
@@ -1101,7 +1954,7 @@ export default function SuperAdminDashboard() {
                                     []
                                   )}
                                   cx="50%"
-                                  cy="50%"
+                                  cy="45%"
                                   labelLine={false}
                                   label={({
                                     name,
@@ -1109,11 +1962,17 @@ export default function SuperAdminDashboard() {
                                   }: {
                                     name: string;
                                     percent?: number;
-                                  }) =>
-                                    `${name}: ${(percent * 100).toFixed(0)}%`
-                                  }
-                                  outerRadius={80}
-                                  fill="#8884d8"
+                                  }) => {
+                                    if (percent > 0.05) {
+                                      return `${name}\n${(
+                                        percent * 100
+                                      ).toFixed(1)}%`;
+                                    }
+                                    return "";
+                                  }}
+                                  outerRadius={100}
+                                  innerRadius={50}
+                                  paddingAngle={5}
                                   dataKey="value"
                                 >
                                   {institutions
@@ -1126,16 +1985,28 @@ export default function SuperAdminDashboard() {
                                         }[],
                                         inst
                                       ) => {
-                                        const status = inst.status || "UNKNOWN";
+                                        const plan =
+                                          inst.subscriptionPlan || "FREE";
                                         if (
                                           !acc.find(
-                                            (item) => item.name === status
+                                            (item) => item.name === plan
                                           )
                                         ) {
+                                          const gradientMap: {
+                                            [key: string]: string;
+                                          } = {
+                                            PREMIUM: "url(#premiumGradient)",
+                                            ENTERPRISE:
+                                              "url(#enterpriseGradient)",
+                                            FREE: "url(#freeGradient)",
+                                            TRIAL: "url(#trialGradient)",
+                                          };
                                           acc.push({
-                                            name: status,
+                                            name: plan,
                                             value: 1,
-                                            color: getStatusColor(status),
+                                            color:
+                                              gradientMap[plan] ||
+                                              "url(#freeGradient)",
                                           });
                                         }
                                         return acc;
@@ -1146,16 +2017,53 @@ export default function SuperAdminDashboard() {
                                       <Cell
                                         key={`cell-${index}`}
                                         fill={entry.color}
+                                        stroke="#ffffff"
+                                        strokeWidth={4}
+                                        filter="url(#subscriptionGlow)"
+                                        style={{
+                                          filter:
+                                            "drop-shadow(0 6px 12px rgba(0,0,0,0.15))",
+                                        }}
                                       />
                                     ))}
                                 </Pie>
                                 <Tooltip
+                                  contentStyle={{
+                                    backgroundColor:
+                                      "rgba(255, 255, 255, 0.95)",
+                                    border: "none",
+                                    borderRadius: "16px",
+                                    boxShadow:
+                                      "0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.1)",
+                                    fontSize: "13px",
+                                    fontWeight: "500",
+                                    backdropFilter: "blur(20px)",
+                                  }}
                                   formatter={(value, name) => [
-                                    `${value} institutions`,
-                                    name,
+                                    <span
+                                      style={{
+                                        color: "#ec4899",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      {value} institutions
+                                    </span>,
+                                    <span style={{ color: "#6b7280" }}>
+                                      {name} Plan
+                                    </span>,
                                   ]}
                                 />
-                                <Legend />
+                                <Legend
+                                  verticalAlign="bottom"
+                                  height={40}
+                                  iconType="circle"
+                                  wrapperStyle={{
+                                    fontSize: "11px",
+                                    paddingTop: "15px",
+                                    fontWeight: "500",
+                                    color: "#64748b",
+                                  }}
+                                />
                               </PieChart>
                             </ResponsiveContainer>
                           </div>
@@ -1254,18 +2162,34 @@ export default function SuperAdminDashboard() {
                     </Card.Body>
                   </Card>
 
-                  <Card className="shadow-sm">
-                    <Card.Header className="bg-white border-0 py-3">
+                  <Card className="shadow-lg border-0 modern-table-card">
+                    <Card.Header className="bg-success bg-opacity-10 py-4">
                       <div className="d-flex justify-content-between align-items-center">
-                        <h5 className="mb-0 fw-bold text-primary">
-                          User Directory
-                        </h5>
+                        <div className="d-flex align-items-center">
+                          <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
+                            <People className="text-success" size={20} />
+                          </div>
+                          <div>
+                            <h5 className="mb-0 fw-bold text-success">
+                              User Directory
+                            </h5>
+                            <small className="text-muted">
+                              Manage system users and their access
+                            </small>
+                          </div>
+                        </div>
                         <div className="d-flex align-items-center gap-2">
-                          <Badge bg="success" className="px-2 py-1">
+                          <Badge
+                            bg="success"
+                            className="px-3 py-2 rounded-pill fw-medium"
+                          >
                             {users.filter((u) => u.status === "ACTIVE").length}{" "}
                             Active
                           </Badge>
-                          <Badge bg="secondary" className="px-2 py-1">
+                          <Badge
+                            bg="secondary"
+                            className="px-3 py-2 rounded-pill fw-medium"
+                          >
                             {users.filter((u) => u.status !== "ACTIVE").length}{" "}
                             Inactive
                           </Badge>
@@ -1273,133 +2197,215 @@ export default function SuperAdminDashboard() {
                       </div>
                     </Card.Header>
                     <Card.Body className="p-0">
-                      <Table hover responsive className="mb-0">
-                        <thead className="bg-light">
-                          <tr>
-                            <th className="fw-bold text-muted small px-4 py-3">
-                              #
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              User
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Email
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Department
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Institution
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Last Login
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Status
-                            </th>
-                            <th className="fw-bold text-muted small text-center py-3">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredUsers.map((user, idx) => (
-                            <tr key={user.id} className="border-0">
-                              <td className="px-4 py-3 text-muted small">
-                                {idx + 1}
-                              </td>
-                              <td className="py-3">
+                      <div className="table-responsive modern-table-container">
+                        <Table className="mb-0 modern-table">
+                          <thead>
+                            <tr>
+                              <th className="table-header px-4 py-4">
                                 <div className="d-flex align-items-center">
-                                  <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                                    <PersonCircle
-                                      className="text-primary"
-                                      size={20}
-                                    />
-                                  </div>
-                                  <div>
-                                    <div className="fw-medium">
-                                      {user.firstName + " " + user.lastName}
-                                    </div>
-                                    <small className="text-muted">
-                                      {user.role || "No role assigned"}
-                                    </small>
-                                  </div>
+                                  <span className="fw-bold text-dark">#</span>
                                 </div>
-                              </td>
-                              <td className="py-3">
-                                <span className="fw-medium">{user.email}</span>
-                              </td>
-                              <td className="py-3">
-                                <span className="text-muted">
-                                  {user.department?.name || "N/A"}
-                                </span>
-                              </td>
-                              <td className="py-3">
+                              </th>
+                              <th className="table-header py-4">
                                 <div className="d-flex align-items-center">
-                                  <div
-                                    className="bg-light rounded-circle me-2 d-flex align-items-center justify-content-center"
-                                    style={{
-                                      width: "20px",
-                                      height: "20px",
-                                      fontSize: "10px",
-                                    }}
-                                  >
-                                    {user.institution?.name?.charAt(0) || "N"}
-                                  </div>
-                                  <span className="text-muted small">
-                                    {user.institution?.name || "None"}
+                                  <PersonCircle
+                                    className="me-2 text-primary"
+                                    size={16}
+                                  />
+                                  <span className="fw-bold text-dark">
+                                    User Information
                                   </span>
                                 </div>
-                              </td>
-                              <td className="py-3">
-                                <small className="text-muted">
-                                  {user.lastLogin ? (
-                                    <DateTimeDisplay date={user.lastLogin} />
-                                  ) : (
-                                    "Never"
-                                  )}
-                                </small>
-                              </td>
-                              <td className="py-3">
-                                <Badge
-                                  bg={getStatusVariant(user.status)}
-                                  className="px-3 py-2 fw-medium"
-                                >
-                                  {user.status}
-                                </Badge>
-                              </td>
-                              <td className="text-center py-3">
-                                <div className="d-flex justify-content-center gap-1">
-                                  <Button
-                                    variant="outline-info"
-                                    size="sm"
-                                    className="action-btn border-0"
-                                    title="View Details"
-                                  >
-                                    <Eye size={14} />
-                                  </Button>
-                                  <Button
-                                    variant="outline-warning"
-                                    size="sm"
-                                    className="action-btn border-0"
-                                    title="Edit User"
-                                  >
-                                    <Pencil size={14} />
-                                  </Button>
-                                  <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    className="action-btn border-0"
-                                    title="Delete User"
-                                  >
-                                    <Trash size={14} />
-                                  </Button>
+                              </th>
+                              <th className="table-header py-4">
+                                <div className="d-flex align-items-center">
+                                  <span className="fw-bold text-dark">
+                                    Contact & Role
+                                  </span>
                                 </div>
-                              </td>
+                              </th>
+                              <th className="table-header py-4">
+                                <div className="d-flex align-items-center">
+                                  <Globe className="me-2 text-info" size={16} />
+                                  <span className="fw-bold text-dark">
+                                    Organization
+                                  </span>
+                                </div>
+                              </th>
+                              <th className="table-header py-4">
+                                <div className="d-flex align-items-center">
+                                  <Activity
+                                    className="me-2 text-warning"
+                                    size={16}
+                                  />
+                                  <span className="fw-bold text-dark">
+                                    Activity
+                                  </span>
+                                </div>
+                              </th>
+                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">
+                                Actions
+                              </th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </Table>
+                          </thead>
+                          <tbody>
+                            {filteredUsers.map((user, idx) => (
+                              <tr key={user.id} className="table-row">
+                                <td className="px-4 py-4">
+                                  <div
+                                    className="bg-light rounded-circle d-flex align-items-center justify-content-center fw-bold text-primary"
+                                    style={{
+                                      width: "32px",
+                                      height: "32px",
+                                      fontSize: "12px",
+                                    }}
+                                  >
+                                    {idx + 1}
+                                  </div>
+                                </td>
+                                <td className="py-4">
+                                  <div className="d-flex align-items-center">
+                                    <div className="position-relative me-3">
+                                      <div
+                                        className="bg-gradient-to-br from-blue-400 to-purple-500 rounded-circle d-flex align-items-center justify-content-center"
+                                        style={{
+                                          width: "48px",
+                                          height: "48px",
+                                        }}
+                                      >
+                                        <span
+                                          className="text-white fw-bold"
+                                          style={{ fontSize: "16px" }}
+                                        >
+                                          {user.firstName
+                                            ?.charAt(0)
+                                            ?.toUpperCase()}
+                                          {user.lastName
+                                            ?.charAt(0)
+                                            ?.toUpperCase()}
+                                        </span>
+                                      </div>
+                                      <div
+                                        className={`position-absolute bottom-0 end-0 rounded-circle border-2 border-white ${
+                                          user.status === "ACTIVE"
+                                            ? "bg-success"
+                                            : "bg-secondary"
+                                        }`}
+                                        style={{
+                                          width: "12px",
+                                          height: "12px",
+                                        }}
+                                      ></div>
+                                    </div>
+                                    <div className="flex-grow-1">
+                                      <div
+                                        className="fw-bold text-dark mb-1"
+                                        style={{ fontSize: "15px" }}
+                                      >
+                                        {user.firstName} {user.lastName}
+                                      </div>
+                                      <div className="d-flex align-items-center gap-2">
+                                        <Badge
+                                          bg={user.role ? "primary" : "light"}
+                                          text={user.role ? "white" : "dark"}
+                                          className="small px-2 py-1"
+                                        >
+                                          {user.role || "No Role"}
+                                        </Badge>
+                                        <Badge
+                                          bg={getStatusVariant(user.status)}
+                                          className="small px-2 py-1"
+                                        >
+                                          {user.status}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-4">
+                                  <div>
+                                    <div className="fw-medium text-dark mb-1">
+                                      {user.email}
+                                    </div>
+                                    <div className="text-muted small">
+                                      <i className="fas fa-building me-1"></i>
+                                      {user.department?.name || "No Department"}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-4">
+                                  <div className="d-flex align-items-center">
+                                    <div
+                                      className="bg-info bg-opacity-10 rounded-circle me-3 d-flex align-items-center justify-content-center"
+                                      style={{ width: "36px", height: "36px" }}
+                                    >
+                                      <span
+                                        className="text-info fw-bold"
+                                        style={{ fontSize: "14px" }}
+                                      >
+                                        {user.institution?.name
+                                          ?.charAt(0)
+                                          ?.toUpperCase() || "N"}
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <div
+                                        className="fw-medium text-dark"
+                                        style={{ fontSize: "14px" }}
+                                      >
+                                        {user.institution?.name ||
+                                          "No Institution"}
+                                      </div>
+                                      <small className="text-muted">
+                                        {user.institution?.country ||
+                                          "Unknown Location"}
+                                      </small>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-4">
+                                  <div>
+                                    <div className="small fw-medium text-dark mb-1">
+                                      Last Login
+                                    </div>
+                                    <div className="text-muted small">
+                                      {user.lastLogin ? (
+                                        <DateTimeDisplay
+                                          date={user.lastLogin}
+                                        />
+                                      ) : (
+                                        <span className="text-warning">
+                                          Never logged in
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4 text-center">
+                                  <div className="d-flex justify-content-center gap-2">
+                                    <Button
+                                      variant="outline-primary"
+                                      size="sm"
+                                      className="modern-action-btn bg-primary bg-opacity-20 text-primary"
+                                      title="Edit User"
+                                    >
+                                      <Pencil size={14} />
+                                    </Button>
+                                    <Button
+                                      variant="outline-danger"
+                                      size="sm"
+                                      className="modern-action-btn bg-danger bg-opacity-20 text-danger"
+                                      title="Delete User"
+                                    >
+                                      <Trash size={14} />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </div>
                     </Card.Body>
                   </Card>
                 </>
@@ -1492,21 +2498,37 @@ export default function SuperAdminDashboard() {
                     </Card.Body>
                   </Card>
 
-                  <Card className="shadow-sm">
-                    <Card.Header className="bg-white border-0 py-3">
+                  <Card className="shadow-lg border-0 modern-table-card">
+                    <Card.Header className="bg-info bg-opacity-10 py-4">
                       <div className="d-flex justify-content-between align-items-center">
-                        <h5 className="mb-0 fw-bold text-primary">
-                          Institution Directory
-                        </h5>
+                        <div className="d-flex align-items-center">
+                          <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
+                            <Globe className="text-info" size={20} />
+                          </div>
+                          <div>
+                            <h5 className="mb-0 fw-bold text-info">
+                              Institution Directory
+                            </h5>
+                            <small className="text-muted">
+                              Manage organizations and subscriptions
+                            </small>
+                          </div>
+                        </div>
                         <div className="d-flex align-items-center gap-2">
-                          <Badge bg="success" className="px-2 py-1">
+                          <Badge
+                            bg="success"
+                            className="px-3 py-2 rounded-pill fw-medium"
+                          >
                             {
                               institutions.filter((i) => i.status === "ACTIVE")
                                 .length
                             }{" "}
                             Active
                           </Badge>
-                          <Badge bg="warning" className="px-2 py-1">
+                          <Badge
+                            bg="warning"
+                            className="px-3 py-2 rounded-pill fw-medium"
+                          >
                             {
                               institutions.filter(
                                 (i) => i.subscriptionPlan === "PREMIUM"
@@ -1518,132 +2540,275 @@ export default function SuperAdminDashboard() {
                       </div>
                     </Card.Header>
                     <Card.Body className="p-0">
-                      <Table hover responsive className="mb-0">
-                        <thead className="bg-light">
-                          <tr>
-                            <th className="fw-bold text-muted small px-4 py-3">
-                              ID
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Organization
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Users
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Departments
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Subscription
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Status
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Created
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredInstitutions.map((institution) => (
-                            <tr key={institution.id}>
-                              <td>{institution.id}</td>
-                              <td>
+                      <div className="table-responsive modern-table-container">
+                        <Table className="mb-0 modern-table">
+                          <thead>
+                            <tr>
+                              <th className="table-header px-4 py-4">
                                 <div className="d-flex align-items-center">
-                                  {institution.logoUrl ? (
-                                    <img
-                                      src={institution.logoUrl}
-                                      alt={institution.name}
-                                      style={{
-                                        width: "24px",
-                                        height: "24px",
-                                        borderRadius: "50%",
-                                        marginRight: "8px",
-                                      }}
-                                    />
-                                  ) : (
-                                    <div
-                                      className="d-flex align-items-center justify-content-center"
-                                      style={{
-                                        width: "24px",
-                                        height: "24px",
-                                        borderRadius: "50%",
-                                        backgroundColor: "#f0f0f0",
-                                        marginRight: "8px",
-                                        fontSize: "12px",
-                                        fontWeight: "bold",
-                                        color: "#666",
-                                      }}
-                                    >
-                                      {institution.name.charAt(0).toUpperCase()}
-                                    </div>
-                                  )}
-                                  <span>{institution.name}</span>
+                                  <span className="fw-bold text-dark">ID</span>
                                 </div>
-                              </td>
-                              <td>{institution._count.users}</td>
-                              <td>{institution._count.departments}</td>
-                              <td>
-                                <Badge
-                                  bg={
-                                    institution.subscriptionPlan === "PREMIUM"
-                                      ? "primary"
-                                      : institution.subscriptionPlan ===
-                                        "ENTERPRISE"
-                                      ? "dark"
-                                      : "secondary"
-                                  }
-                                  className="text-uppercase"
-                                >
-                                  {institution.subscriptionPlan || "FREE"}
-                                </Badge>
-                              </td>
-                              <td>
-                                <Badge
-                                  bg={getStatusVariant(institution.status)}
-                                  className="text-capitalize"
-                                >
-                                  {institution.status?.toLowerCase() ||
-                                    "inactive"}
-                                </Badge>
-                              </td>
-                              <td>
-                                <DateTimeDisplay date={institution.createdAt} />
-                              </td>
-                              <td>
-                                <div className="d-flex">
-                                  <Button
-                                    variant="outline-primary"
-                                    size="sm"
-                                    className="me-2"
-                                    title="Edit"
-                                  >
-                                    <Pencil size={14} />
-                                  </Button>
-                                  <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    title="Delete"
-                                    className="me-2"
-                                  >
-                                    <Trash size={14} />
-                                  </Button>
-                                  <Button
-                                    variant="outline-secondary"
-                                    size="sm"
-                                    title="View Details"
-                                  >
-                                    <Eye size={14} />
-                                  </Button>
+                              </th>
+                              <th className="table-header py-4">
+                                <div className="d-flex align-items-center">
+                                  <Globe className="me-2 text-info" size={16} />
+                                  <span className="fw-bold text-dark">
+                                    Organization
+                                  </span>
                                 </div>
-                              </td>
+                              </th>
+                              <th className="table-header py-4">
+                                <div className="d-flex align-items-center">
+                                  <People
+                                    className="me-2 text-success"
+                                    size={16}
+                                  />
+                                  <span className="fw-bold text-dark">
+                                    Members
+                                  </span>
+                                </div>
+                              </th>
+                              <th className="table-header py-4">
+                                <div className="d-flex align-items-center">
+                                  <Wallet
+                                    className="me-2 text-warning"
+                                    size={16}
+                                  />
+                                  <span className="fw-bold text-dark">
+                                    Subscription
+                                  </span>
+                                </div>
+                              </th>
+                              <th className="table-header py-4">
+                                <div className="d-flex align-items-center">
+                                  <Activity
+                                    className="me-2 text-primary"
+                                    size={16}
+                                  />
+                                  <span className="fw-bold text-dark">
+                                    Status & Timeline
+                                  </span>
+                                </div>
+                              </th>
+                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">
+                                Actions
+                              </th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </Table>
+                          </thead>
+                          <tbody>
+                            {filteredInstitutions.map((institution) => (
+                              <tr key={institution.id} className="table-row">
+                                <td className="px-4 py-4">
+                                  <div
+                                    className="bg-light rounded-circle d-flex align-items-center justify-content-center fw-bold text-primary"
+                                    style={{
+                                      width: "32px",
+                                      height: "32px",
+                                      fontSize: "12px",
+                                    }}
+                                  >
+                                    {institution.id}
+                                  </div>
+                                </td>
+                                <td className="py-4">
+                                  <div className="d-flex align-items-center">
+                                    <div className="position-relative me-3">
+                                      {institution.logoUrl ? (
+                                        <img
+                                          src={institution.logoUrl}
+                                          alt={institution.name}
+                                          className="rounded-circle border border-light shadow-sm"
+                                          style={{
+                                            width: "48px",
+                                            height: "48px",
+                                            objectFit: "cover",
+                                          }}
+                                        />
+                                      ) : (
+                                        <div
+                                          className="bg-gradient-to-br from-cyan-400 to-blue-500 rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                          style={{
+                                            width: "48px",
+                                            height: "48px",
+                                          }}
+                                        >
+                                          <span
+                                            className="text-white fw-bold"
+                                            style={{ fontSize: "16px" }}
+                                          >
+                                            {institution.name
+                                              .charAt(0)
+                                              .toUpperCase()}
+                                          </span>
+                                        </div>
+                                      )}
+                                      <div
+                                        className={`position-absolute bottom-0 end-0 rounded-circle border-2 border-white ${
+                                          institution.status === "ACTIVE"
+                                            ? "bg-success"
+                                            : "bg-secondary"
+                                        }`}
+                                        style={{
+                                          width: "12px",
+                                          height: "12px",
+                                        }}
+                                      ></div>
+                                    </div>
+                                    <div className="flex-grow-1">
+                                      <div
+                                        className="fw-bold text-dark mb-1"
+                                        style={{ fontSize: "15px" }}
+                                      >
+                                        {institution.name}
+                                      </div>
+                                      <div className="d-flex align-items-center gap-2">
+                                        <small className="text-muted">
+                                          {institution.contactEmail ||
+                                            "No contact email"}
+                                        </small>
+                                      </div>
+                                      <div className="d-flex align-items-center gap-2 mt-1">
+                                        <small className="text-muted">
+                                          <i className="fas fa-map-marker-alt me-1"></i>
+                                          {institution.country || "Unknown"}
+                                        </small>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-4">
+                                  <div>
+                                    <div className="d-flex align-items-center mb-2">
+                                      <div
+                                        className="bg-success bg-opacity-10 rounded-circle me-2 d-flex align-items-center justify-content-center"
+                                        style={{
+                                          width: "24px",
+                                          height: "24px",
+                                        }}
+                                      >
+                                        <People
+                                          className="text-success"
+                                          size={12}
+                                        />
+                                      </div>
+                                      <span className="fw-bold text-success">
+                                        {institution._count.users}
+                                      </span>
+                                      <span className="text-muted small ms-1">
+                                        users
+                                      </span>
+                                    </div>
+                                    <div className="d-flex align-items-center">
+                                      <div
+                                        className="bg-info bg-opacity-10 rounded-circle me-2 d-flex align-items-center justify-content-center"
+                                        style={{
+                                          width: "24px",
+                                          height: "24px",
+                                        }}
+                                      >
+                                        <Globe
+                                          className="text-info"
+                                          size={12}
+                                        />
+                                      </div>
+                                      <span className="fw-bold text-info">
+                                        {institution._count.departments}
+                                      </span>
+                                      <span className="text-muted small ms-1">
+                                        depts
+                                      </span>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-4">
+                                  <div>
+                                    <Badge
+                                      bg={
+                                        institution.subscriptionPlan ===
+                                        "PREMIUM"
+                                          ? "primary"
+                                          : institution.subscriptionPlan ===
+                                            "ENTERPRISE"
+                                          ? "dark"
+                                          : "secondary"
+                                      }
+                                      className="px-3 py-2 rounded-pill fw-medium mb-2"
+                                    >
+                                      {institution.subscriptionPlan || "FREE"}
+                                    </Badge>
+                                    <div className="small text-muted">
+                                      {institution.subscriptionStartDate ? (
+                                        <span>
+                                          Started:{" "}
+                                          <DateTimeDisplay
+                                            date={
+                                              institution.subscriptionStartDate
+                                            }
+                                          />
+                                        </span>
+                                      ) : (
+                                        "No subscription"
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-4">
+                                  <div>
+                                    <div className="mb-2">
+                                      <Badge
+                                        bg={getStatusVariant(
+                                          institution.status
+                                        )}
+                                        className="px-3 py-2 rounded-pill fw-medium"
+                                      >
+                                        {institution.status?.toLowerCase() ||
+                                          "inactive"}
+                                      </Badge>
+                                    </div>
+                                    <div className="small text-muted">
+                                      <div>
+                                        Created:{" "}
+                                        <DateTimeDisplay
+                                          date={institution.createdAt}
+                                        />
+                                      </div>
+                                      {institution.updatedAt !==
+                                        institution.createdAt && (
+                                        <div className="text-warning">
+                                          Updated:{" "}
+                                          <DateTimeDisplay
+                                            date={institution.updatedAt}
+                                          />
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4 text-center">
+                                  <div className="d-flex justify-content-center gap-2">
+                                    <Button
+                                      variant="outline-primary"
+                                      size="sm"
+                                      className="modern-action-btn bg-primary bg-opacity-20 text-primary"
+                                      title="Edit Institution"
+                                    >
+                                      <Pencil size={14} />
+                                    </Button>
+                                    <Button
+                                      variant="outline-danger"
+                                      size="sm"
+                                      className="modern-action-btn bg-danger bg-opacity-20 text-danger"
+                                      title="Delete Institution"
+                                    >
+                                      <Trash size={14} />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </div>
                     </Card.Body>
                   </Card>
                 </>
@@ -1738,18 +2903,34 @@ export default function SuperAdminDashboard() {
                     </Card.Body>
                   </Card>
 
-                  <Card className="shadow-sm">
-                    <Card.Header className="bg-white border-0 py-3">
+                  <Card className="shadow-lg border-0 modern-table-card">
+                    <Card.Header className="bg-light border-bottom py-4">
                       <div className="d-flex justify-content-between align-items-center">
-                        <h5 className="mb-0 fw-bold text-primary">
-                          System Roles
-                        </h5>
+                        <div className="d-flex align-items-center">
+                          <div className="bg-secondary bg-opacity-10 p-2 rounded-circle me-3">
+                            <ShieldLock className="text-secondary" size={20} />
+                          </div>
+                          <div>
+                            <h5 className="mb-0 fw-bold text-secondary">
+                              System Roles
+                            </h5>
+                            <small className="text-muted">
+                              Manage access controls and permissions
+                            </small>
+                          </div>
+                        </div>
                         <div className="d-flex align-items-center gap-2">
-                          <Badge bg="primary" className="px-2 py-1">
+                          <Badge
+                            bg="primary"
+                            className="px-3 py-2 rounded-pill fw-medium"
+                          >
                             {roles.filter((r) => r.adminCreatedRole).length}{" "}
                             Admin Roles
                           </Badge>
-                          <Badge bg="secondary" className="px-2 py-1">
+                          <Badge
+                            bg="success"
+                            className="px-3 py-2 rounded-pill fw-medium"
+                          >
                             {roles.filter((r) => !r.adminCreatedRole).length}{" "}
                             Custom Roles
                           </Badge>
@@ -1757,133 +2938,207 @@ export default function SuperAdminDashboard() {
                       </div>
                     </Card.Header>
                     <Card.Body className="p-0">
-                      <Table hover responsive className="mb-0">
-                        <thead className="bg-light">
-                          <tr>
-                            <th className="fw-bold text-muted small px-4 py-3">
-                              ID
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Created
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Updated
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Role Name
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Description
-                            </th>
-                            <th className="fw-bold text-muted small py-3">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {roles.map((role) => (
-                            <tr key={role.id} className="border-0">
-                              <td className="px-4 py-3 text-muted small fw-medium">
-                                {role.id}
-                              </td>
-                              <td className="py-3">
-                                <small className="text-muted">
-                                  <DateTimeDisplay date={role.createdAt} />
-                                </small>
-                              </td>
-                              <td className="py-3">
+                      <div className="table-responsive modern-table-container">
+                        <Table className="mb-0 modern-table">
+                          <thead>
+                            <tr>
+                              <th className="table-header px-4 py-4">
                                 <div className="d-flex align-items-center">
-                                  <small
-                                    className={
-                                      role.updatedAt !== role.createdAt
-                                        ? "text-warning"
-                                        : "text-muted"
-                                    }
-                                  >
-                                    <DateTimeDisplay date={role.updatedAt} />
-                                  </small>
-                                  {role.updatedAt !== role.createdAt && (
-                                    <Badge bg="warning" className="ms-2 small">
-                                      Modified
-                                    </Badge>
-                                  )}
+                                  <span className="fw-bold text-dark">ID</span>
                                 </div>
-                              </td>
-                              <td className="py-3">
+                              </th>
+                              <th className="table-header py-4">
                                 <div className="d-flex align-items-center">
+                                  <ShieldLock
+                                    className="me-2 text-secondary"
+                                    size={16}
+                                  />
+                                  <span className="fw-bold text-dark">
+                                    Role Information
+                                  </span>
+                                </div>
+                              </th>
+                              <th className="table-header py-4">
+                                <div className="d-flex align-items-center">
+                                  <span className="fw-bold text-dark">
+                                    Description & Permissions
+                                  </span>
+                                </div>
+                              </th>
+                              <th className="table-header py-4">
+                                <div className="d-flex align-items-center">
+                                  <Activity
+                                    className="me-2 text-info"
+                                    size={16}
+                                  />
+                                  <span className="fw-bold text-dark">
+                                    Timeline
+                                  </span>
+                                </div>
+                              </th>
+                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">
+                                Actions
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {roles.map((role) => (
+                              <tr key={role.id} className="table-row">
+                                <td className="px-4 py-4">
                                   <div
-                                    className={`bg-${
-                                      role.adminCreatedRole
-                                        ? "primary"
-                                        : "success"
-                                    } bg-opacity-10 p-2 rounded me-2`}
+                                    className="bg-light rounded-circle d-flex align-items-center justify-content-center fw-bold text-primary"
+                                    style={{
+                                      width: "32px",
+                                      height: "32px",
+                                      fontSize: "12px",
+                                    }}
                                   >
-                                    <ShieldLock
-                                      className={`text-${
-                                        role.adminCreatedRole
-                                          ? "primary"
-                                          : "success"
-                                      }`}
-                                      size={16}
-                                    />
+                                    {role.id}
                                   </div>
-                                  <div>
-                                    <span
-                                      className={`fw-bold text-${
-                                        role.adminCreatedRole
-                                          ? "primary"
-                                          : "success"
-                                      }`}
-                                    >
-                                      {role.name.toUpperCase()}
-                                    </span>
-                                    <div>
-                                      <Badge
-                                        bg={
+                                </td>
+                                <td className="py-4">
+                                  <div className="d-flex align-items-center">
+                                    <div className="position-relative me-3">
+                                      <div
+                                        className={`bg-gradient-to-br ${
                                           role.adminCreatedRole
-                                            ? "primary"
-                                            : "success"
-                                        }
-                                        className="small"
+                                            ? "from-blue-400 to-purple-500"
+                                            : "from-green-400 to-emerald-500"
+                                        } rounded-circle d-flex align-items-center justify-content-center shadow-sm`}
+                                        style={{
+                                          width: "48px",
+                                          height: "48px",
+                                        }}
                                       >
-                                        {role.adminCreatedRole
-                                          ? "System Role"
-                                          : "Custom Role"}
+                                        <ShieldLock
+                                          className="text-white"
+                                          size={20}
+                                        />
+                                      </div>
+                                      <div
+                                        className={`position-absolute bottom-0 end-0 rounded-circle border-2 border-white ${
+                                          role.adminCreatedRole
+                                            ? "bg-primary"
+                                            : "bg-success"
+                                        }`}
+                                        style={{
+                                          width: "12px",
+                                          height: "12px",
+                                        }}
+                                      ></div>
+                                    </div>
+                                    <div className="flex-grow-1">
+                                      <div
+                                        className="fw-bold text-dark mb-1"
+                                        style={{ fontSize: "15px" }}
+                                      >
+                                        {role.name.toUpperCase()}
+                                      </div>
+                                      <div className="d-flex align-items-center gap-2">
+                                        <Badge
+                                          bg={
+                                            role.adminCreatedRole
+                                              ? "primary"
+                                              : "success"
+                                          }
+                                          className="small px-2 py-1 rounded-pill"
+                                        >
+                                          {role.adminCreatedRole
+                                            ? "System Role"
+                                            : "Custom Role"}
+                                        </Badge>
+                                        {role.updatedAt !== role.createdAt && (
+                                          <Badge
+                                            bg="warning"
+                                            className="small px-2 py-1 rounded-pill"
+                                          >
+                                            Modified
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-4">
+                                  <div>
+                                    <div
+                                      className="fw-medium text-dark mb-2"
+                                      style={{ fontSize: "14px" }}
+                                    >
+                                      {role.description}
+                                    </div>
+                                    <div className="d-flex align-items-center gap-2">
+                                      <Badge
+                                        bg="light"
+                                        text="dark"
+                                        className="small px-2 py-1"
+                                      >
+                                        <ShieldLock
+                                          size={10}
+                                          className="me-1"
+                                        />
+                                        Access Control
+                                      </Badge>
+                                      <Badge
+                                        bg="light"
+                                        text="dark"
+                                        className="small px-2 py-1"
+                                      >
+                                        <People size={10} className="me-1" />
+                                        User Management
                                       </Badge>
                                     </div>
                                   </div>
-                                </div>
-                              </td>
-                              <td className="py-3">
-                                <span className="text-muted">
-                                  {role.description}
-                                </span>
-                              </td>
-                              <td className="py-3">
-                                <div className="d-flex gap-1">
-                                  <Button
-                                    variant="outline-primary"
-                                    size="sm"
-                                    className="action-btn border-0"
-                                    title="Edit Role"
-                                  >
-                                    <Pencil size={14} />
-                                  </Button>
-                                  <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    className="action-btn border-0"
-                                    title="Delete Role"
-                                    disabled={role.adminCreatedRole}
-                                  >
-                                    <Trash size={14} />
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
+                                </td>
+                                <td className="py-4">
+                                  <div>
+                                    <div className="small fw-medium text-dark mb-1">
+                                      Created
+                                    </div>
+                                    <div className="text-muted small mb-2">
+                                      <DateTimeDisplay date={role.createdAt} />
+                                    </div>
+                                    {role.updatedAt !== role.createdAt && (
+                                      <div>
+                                        <div className="small fw-medium text-warning mb-1">
+                                          Updated
+                                        </div>
+                                        <div className="text-muted small">
+                                          <DateTimeDisplay
+                                            date={role.updatedAt}
+                                          />
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4 text-center">
+                                  <div className="d-flex justify-content-center gap-2">
+                                    <Button
+                                      variant="outline-primary"
+                                      size="sm"
+                                      className="modern-action-btn bg-primary bg-opacity-20 text-primary"
+                                      title="Edit Role"
+                                      disabled={role.adminCreatedRole}
+                                    >
+                                      <Pencil size={14} />
+                                    </Button>
+                                    <Button
+                                      variant="outline-danger"
+                                      size="sm"
+                                      className="modern-action-btn bg-danger bg-opacity-20 text-danger"
+                                      title="Delete Role"
+                                      disabled={role.adminCreatedRole}
+                                    >
+                                      <Trash size={14} />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </div>
                     </Card.Body>
                   </Card>
                 </>
@@ -1912,19 +3167,99 @@ export default function SuperAdminDashboard() {
           }
 
           .bg-gradient-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background: linear-gradient(
+              135deg,
+              #667eea 0%,
+              #764ba2 100%
+            ) !important;
           }
 
           .bg-gradient-info {
-            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+            background: linear-gradient(
+              135deg,
+              #06b6d4 0%,
+              #0891b2 100%
+            ) !important;
           }
 
           .bg-gradient-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            background: linear-gradient(
+              135deg,
+              #10b981 0%,
+              #059669 100%
+            ) !important;
           }
 
           .bg-gradient-warning {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            background: linear-gradient(
+              135deg,
+              #f59e0b 0%,
+              #d97706 100%
+            ) !important;
+          }
+
+          .bg-gradient-to-r {
+            background: linear-gradient(
+              90deg,
+              var(--tw-gradient-from),
+              var(--tw-gradient-to)
+            ) !important;
+          }
+
+          .from-blue-50 {
+            --tw-gradient-from: #eff6ff;
+          }
+
+          .to-indigo-50 {
+            --tw-gradient-to: #eef2ff;
+          }
+
+          .from-cyan-50 {
+            --tw-gradient-from: #ecfeff;
+          }
+
+          .to-blue-50 {
+            --tw-gradient-to: #eff6ff;
+          }
+
+          .from-purple-50 {
+            --tw-gradient-from: #faf5ff;
+          }
+
+          .to-pink-50 {
+            --tw-gradient-to: #fdf2f8;
+          }
+
+          .bg-gradient-to-br {
+            background: linear-gradient(
+              135deg,
+              var(--tw-gradient-from),
+              var(--tw-gradient-to)
+            ) !important;
+          }
+
+          .from-blue-400 {
+            --tw-gradient-from: #60a5fa;
+          }
+
+          .to-purple-500 {
+            --tw-gradient-to: #8b5cf6;
+          }
+
+          .from-cyan-400 {
+            --tw-gradient-from: #22d3ee;
+          }
+
+          .to-blue-500 {
+            --tw-gradient-to: #3b82f6;
+          }
+
+          .from-green-400 {
+            --tw-gradient-from: #4ade80;
+          }
+
+          .to-emerald-500 {
+            --tw-gradient-to: #10b981;
           }
 
           .sidebar {
@@ -1970,43 +3305,151 @@ export default function SuperAdminDashboard() {
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
           }
 
-          .action-btn {
-            border-radius: 8px;
+          /* Modern Table Styling */
+          .modern-table-card {
+            border-radius: 20px !important;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+            transition: all 0.3s ease;
+          }
+
+          .modern-table-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12) !important;
+          }
+
+          .modern-table-container {
+            border-radius: 0 0 20px 20px;
+            overflow: hidden;
+          }
+
+          .modern-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+          }
+
+          .modern-table .table-header {
+            background: linear-gradient(
+              135deg,
+              #f8fafc 0%,
+              #f1f5f9 100%
+            ) !important;
+            border: none !important;
+            font-weight: 700;
+            color: #334155 !important;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 20px 16px !important;
+            position: relative;
+          }
+
+          .modern-table .table-header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(
+              90deg,
+              transparent,
+              #e2e8f0,
+              transparent
+            );
+          }
+
+          .modern-table .table-row {
+            border: none !important;
+            transition: all 0.2s ease;
+            background: #ffffff;
+          }
+
+          .modern-table .table-row:hover {
+            background: linear-gradient(
+              135deg,
+              #f8fafc 0%,
+              #f1f5f9 100%
+            ) !important;
+            transform: scale(1.005);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+          }
+
+          .modern-table .table-row:not(:last-child) {
+            border-bottom: 1px solid rgba(226, 232, 240, 0.5) !important;
+          }
+
+          .modern-table td {
+            border: none !important;
+            vertical-align: middle !important;
+            padding: 20px 16px !important;
+            position: relative;
+          }
+
+          .modern-action-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            position: relative;
+            overflow: hidden;
             width: 32px;
             height: 32px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
           }
 
-          .action-btn:hover {
-            transform: scale(1.1);
+          .modern-action-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+              90deg,
+              transparent,
+              rgba(255, 255, 255, 0.2),
+              transparent
+            );
+            transition: left 0.5s;
           }
 
-          .table th {
-            border: none !important;
+          .modern-action-btn:hover::before {
+            left: 100%;
+          }
+
+          .modern-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+          }
+
+          .modern-action-btn:disabled {
+            opacity: 0.4;
+            transform: none !important;
+            cursor: not-allowed;
+          }
+
+          /* Enhanced Badge Styling */
+          .badge {
+            border-radius: 12px !important;
             font-weight: 600;
-            color: #6c757d;
             font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            background-color: #f8f9fc !important;
+            padding: 6px 12px !important;
+            letter-spacing: 0.5px;
           }
 
-          .table td {
-            border: none !important;
-            vertical-align: middle;
-            border-bottom: 1px solid #f1f3f4 !important;
+          .rounded-pill {
+            border-radius: 50px !important;
           }
 
-          .table-hover tbody tr:hover {
-            background-color: #f8f9fc;
-          }
-
+          /* Card Enhancements */
           .card {
-            border-radius: 16px !important;
+            border-radius: 20px !important;
             transition: all 0.3s ease;
+            border: none !important;
           }
 
           .card:hover {
@@ -2017,15 +3460,11 @@ export default function SuperAdminDashboard() {
             border-radius: 12px !important;
             font-weight: 500;
             transition: all 0.2s ease;
+            padding: 10px 20px !important;
           }
 
           .btn:hover {
             transform: translateY(-1px);
-          }
-
-          .badge {
-            border-radius: 8px !important;
-            font-weight: 500;
           }
 
           .hover-text-white:hover {
@@ -2036,6 +3475,7 @@ export default function SuperAdminDashboard() {
             backdrop-filter: blur(10px);
           }
 
+          /* Animation Improvements */
           @keyframes fadeInUp {
             from {
               opacity: 0;
@@ -2047,12 +3487,445 @@ export default function SuperAdminDashboard() {
             }
           }
 
-          .card {
-            animation: fadeInUp 0.5s ease-out;
+          @keyframes slideInRight {
+            from {
+              opacity: 0;
+              transform: translateX(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+
+          .modern-table-card {
+            animation: fadeInUp 0.6s ease-out;
+          }
+
+          .modern-table .table-row {
+            animation: slideInRight 0.4s ease-out;
+          }
+
+          .modern-table .table-row:nth-child(even) {
+            animation-delay: 0.1s;
+          }
+
+          .modern-table .table-row:nth-child(odd) {
+            animation-delay: 0.05s;
           }
 
           .breadcrumb-item + .breadcrumb-item::before {
             color: rgba(255, 255, 255, 0.5) !important;
+          }
+
+          /* Scrollbar Styling */
+          .modern-table-container::-webkit-scrollbar {
+            height: 8px;
+          }
+
+          .modern-table-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+          }
+
+          .modern-table-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+            border-radius: 4px;
+          }
+
+          .modern-table-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+          }
+
+          /* Modern Chart Styling */
+          .modern-chart-card {
+            border-radius: 24px !important;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+          }
+
+          .modern-chart-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15) !important;
+          }
+
+          .chart-header-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+          }
+
+          .chart-header-gradient-cyan {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            position: relative;
+          }
+
+          .chart-header-gradient-green {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            position: relative;
+          }
+
+          .chart-header-gradient-orange {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            position: relative;
+          }
+
+          .chart-header-gradient-purple {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            position: relative;
+          }
+
+          .chart-header-gradient-pink {
+            background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+            position: relative;
+          }
+
+          .chart-header-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+              135deg,
+              rgba(255, 255, 255, 0.1) 0%,
+              rgba(255, 255, 255, 0.05) 100%
+            );
+            backdrop-filter: blur(10px);
+          }
+
+          .chart-icon-container {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+          }
+
+          .chart-title {
+            font-size: 1.3rem !important;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+
+          .text-white-75 {
+            color: rgba(255, 255, 255, 0.75) !important;
+          }
+
+          .chart-badge {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #4f46e5 !important;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            border-radius: 16px !important;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+          }
+
+          .chart-badge-cyan {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #0891b2 !important;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            border-radius: 16px !important;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+          }
+
+          .chart-badge-green {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #059669 !important;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            border-radius: 16px !important;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+          }
+
+          .chart-badge-orange {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #d97706 !important;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            border-radius: 16px !important;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+          }
+
+          .chart-badge-purple {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #7c3aed !important;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            border-radius: 16px !important;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+          }
+
+          .chart-badge-pink {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #db2777 !important;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            border-radius: 16px !important;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+          }
+
+          .chart-body-gradient {
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+            position: relative;
+          }
+
+          .chart-body-gradient-cyan {
+            background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%);
+            position: relative;
+          }
+
+          .chart-body-gradient-green {
+            background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+            position: relative;
+          }
+
+          .chart-body-gradient-orange {
+            background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);
+            position: relative;
+          }
+
+          .chart-body-gradient-purple {
+            background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);
+            position: relative;
+          }
+
+          .chart-body-gradient-pink {
+            background: linear-gradient(180deg, #fdf2f8 0%, #ffffff 100%);
+            position: relative;
+          }
+
+          .chart-background-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(
+                circle at 20% 80%,
+                rgba(120, 119, 198, 0.05) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at 80% 20%,
+                rgba(120, 119, 198, 0.05) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at 40% 40%,
+                rgba(120, 119, 198, 0.05) 0%,
+                transparent 50%
+              );
+            pointer-events: none;
+          }
+
+          .chart-background-pattern-cyan {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(
+                circle at 20% 80%,
+                rgba(6, 182, 212, 0.05) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at 80% 20%,
+                rgba(6, 182, 212, 0.05) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at 40% 40%,
+                rgba(6, 182, 212, 0.05) 0%,
+                transparent 50%
+              );
+            pointer-events: none;
+          }
+
+          .chart-background-pattern-green {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(
+                circle at 20% 80%,
+                rgba(16, 185, 129, 0.05) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at 80% 20%,
+                rgba(16, 185, 129, 0.05) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at 40% 40%,
+                rgba(16, 185, 129, 0.05) 0%,
+                transparent 50%
+              );
+            pointer-events: none;
+          }
+
+          .chart-background-pattern-orange {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(
+                circle at 20% 80%,
+                rgba(245, 158, 11, 0.05) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at 80% 20%,
+                rgba(245, 158, 11, 0.05) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at 40% 40%,
+                rgba(245, 158, 11, 0.05) 0%,
+                transparent 50%
+              );
+            pointer-events: none;
+          }
+
+          .chart-background-pattern-purple {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(
+                circle at 20% 80%,
+                rgba(139, 92, 246, 0.05) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at 80% 20%,
+                rgba(139, 92, 246, 0.05) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at 40% 40%,
+                rgba(139, 92, 246, 0.05) 0%,
+                transparent 50%
+              );
+            pointer-events: none;
+          }
+
+          .chart-background-pattern-pink {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(
+                circle at 20% 80%,
+                rgba(236, 72, 153, 0.05) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at 80% 20%,
+                rgba(236, 72, 153, 0.05) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at 40% 40%,
+                rgba(236, 72, 153, 0.05) 0%,
+                transparent 50%
+              );
+            pointer-events: none;
+          }
+
+          /* Chart Animation Enhancements */
+          @keyframes chartFadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(40px) scale(0.95);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+            }
+          }
+
+          @keyframes chartSlideInLeft {
+            from {
+              opacity: 0;
+              transform: translateX(-30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+
+          @keyframes chartSlideInRight {
+            from {
+              opacity: 0;
+              transform: translateX(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+
+          .modern-chart-card:nth-child(odd) {
+            animation: chartSlideInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .modern-chart-card:nth-child(even) {
+            animation: chartSlideInRight 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .modern-chart-card:nth-child(1) {
+            animation-delay: 0.1s;
+          }
+          .modern-chart-card:nth-child(2) {
+            animation-delay: 0.2s;
+          }
+          .modern-chart-card:nth-child(3) {
+            animation-delay: 0.3s;
+          }
+          .modern-chart-card:nth-child(4) {
+            animation-delay: 0.4s;
+          }
+          .modern-chart-card:nth-child(5) {
+            animation-delay: 0.5s;
+          }
+          .modern-chart-card:nth-child(6) {
+            animation-delay: 0.6s;
+          }
+
+          /* Responsive Chart Enhancements */
+          @media (max-width: 768px) {
+            .modern-chart-card {
+              margin-bottom: 2rem;
+            }
+
+            .chart-title {
+              font-size: 1.1rem !important;
+            }
+
+            .chart-icon-container {
+              width: 40px;
+              height: 40px;
+            }
           }
         `}</style>
       </Container>

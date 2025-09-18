@@ -133,11 +133,10 @@ export default function InstitutionCreationModal() {
         </Modal.Header>
 
         <Form onSubmit={handleSubmit}>
-          <div className="border rounded p-4">
-            <Modal.Body
-              className="px-4 py-3 modal-body-scroll"
-              style={{ maxHeight: "70vh", overflowY: "auto" }}
-            >
+          <Modal.Body
+            className="px-4 py-4 modal-body-scroll"
+            style={{ maxHeight: "75vh", overflowY: "auto" }}
+          >
               {/* Section: Basic Info */}
               <Card className="border shadow-sm mb-4">
                 <Card.Header className="bg-info bg-opacity-10 border-0 py-3">
@@ -424,8 +423,7 @@ export default function InstitutionCreationModal() {
                   </Form.Group>
                 </Card.Body>
               </Card>
-            </Modal.Body>
-          </div>
+          </Modal.Body>
           <Modal.Footer
             className="border-0 pt-0 px-4 pb-4 mt-4"
             style={{ backgroundColor: "#f8f9fa" }}
@@ -465,39 +463,170 @@ export default function InstitutionCreationModal() {
 
       <style jsx global>{`
         .modern-input {
-          border: 1px solid #dee2e6;
-          transition: all 0.3s ease;
+          border: 2px solid #e9ecef;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          background: #ffffff;
+          font-size: 0.95rem;
+          line-height: 1.6;
+          position: relative;
         }
 
         .modern-input:focus {
-          border-color: #4e54c8;
-          box-shadow: 0 0 0 0.2rem rgba(78, 84, 200, 0.25);
+          border-color: #6366f1;
+          box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+          transform: translateY(-1px);
+          background: #fefefe;
+        }
+
+        .modern-input:hover:not(:focus) {
+          border-color: #d1d5db;
+          background: #fafafa;
+        }
+
+        .form-label {
+          font-weight: 600;
+          font-size: 0.875rem;
+          letter-spacing: 0.025em;
+          margin-bottom: 0.5rem;
+          color: #374151;
         }
 
         .modal-body-scroll::-webkit-scrollbar {
-          width: 6px;
+          width: 8px;
         }
 
         .modal-body-scroll::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
+          background: #f8f9fa;
+          border-radius: 12px;
         }
 
         .modal-body-scroll::-webkit-scrollbar-thumb {
-          background: #c1c1c1;
-          border-radius: 10px;
+          background: linear-gradient(180deg, #cbd5e1, #94a3b8);
+          border-radius: 12px;
         }
 
         .modal-body-scroll::-webkit-scrollbar-thumb:hover {
-          background: #a8a8a8;
+          background: linear-gradient(180deg, #94a3b8, #64748b);
         }
 
         .shadow-primary-button {
-          box-shadow: 0 4px 8px rgba(78, 84, 200, 0.3);
+          box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .shadow-primary-button:hover {
+          box-shadow: 0 12px 32px rgba(99, 102, 241, 0.3);
+          transform: translateY(-2px);
+        }
+
+        .gradient-button {
+          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+          border: none;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .gradient-button::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+          transition: left 0.5s;
+        }
+
+        .gradient-button:hover::before {
+          left: 100%;
         }
 
         .gradient-button:hover:not(:disabled) {
-          background: linear-gradient(135deg, #3a3f99, #6f74e0);
+          background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4);
+        }
+
+        .gradient-button:active {
+          transform: translateY(0);
+        }
+
+        .card {
+          border: 1px solid #e5e7eb;
+          transition: all 0.3s ease;
+          background: #ffffff;
+        }
+
+        .card:hover {
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          transform: translateY(-1px);
+        }
+
+        .modal .card-header {
+          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+          border-bottom: 1px solid #e5e7eb;
+        }
+
+        .form-text {
+          font-size: 0.8rem;
+          font-weight: 500;
+          margin-top: 0.375rem;
+        }
+
+        .text-danger {
+          color: #ef4444 !important;
+        }
+
+        .text-muted {
+          color: #64748b !important;
+        }
+
+        .modal-header {
+          background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+          border-bottom: 2px solid #e5e7eb;
+        }
+
+        .modal-footer {
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-top: 2px solid #e5e7eb;
+        }
+
+        .btn-outline-secondary {
+          border: 2px solid #d1d5db;
+          color: #6b7280;
+          font-weight: 600;
+          transition: all 0.3s ease;
+        }
+
+        .btn-outline-secondary:hover {
+          background: #f3f4f6;
+          border-color: #9ca3af;
+          color: #374151;
+          transform: translateY(-1px);
+        }
+
+        .icon-wrapper {
+          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+          box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .modal-content {
+          animation: slideUp 0.3s ease-out;
+          border: none;
+          border-radius: 16px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
         }
       `}</style>
     </>
