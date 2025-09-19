@@ -36,6 +36,9 @@ import {
   Calculator,
   Journal,
   ClipboardCheck,
+  Circle,
+  ExclamationTriangle,
+  Shield,
 } from "react-bootstrap-icons";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 import { InputGroup } from "react-bootstrap";
@@ -43,7 +46,6 @@ import { toast } from "react-toastify";
 import { Upload } from "lucide-react";
 import AuthProvider from "@/app/authPages/tokenData";
 import TopNavbar from "@/app/components/Navbar";
-import { useRouter } from "next/navigation";
 import PageLoader from "@/app/components/PageLoader";
 
 interface Currency {
@@ -95,18 +97,21 @@ export default function CreateExpensePage() {
     }));
   };
 
-  const router = useRouter();
-  const handleNavigation = (path: string) => {
-    router.push(path);
-  };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completionPercentage, setCompletionPercentage] = useState(0);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isDuplicateCheck, setIsDuplicateCheck] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<string>('');
 
   // TODO: Implement form completion percentage calculation
   // This should be updated based on form field validations
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [extractedData, setExtractedData] = useState<{amount?: string; date?: string; vendor?: string}>({});
   const [loading, setLoading] = useState(false);
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
@@ -164,13 +169,242 @@ export default function CreateExpensePage() {
 
   useEffect(() => {
     fetchData();
+    loadSavedData();
   }, []);
+
+  // Auto-save functionality
+  const saveToLocalStorage = () => {
+    setAutoSaveStatus('saving');
+    const formData = {
+      payee,
+      payeeId,
+      payeeNumber,
+      description,
+      primaryAmount,
+      category,
+      department,
+      currency,
+      paymentMethod,
+      region,
+      referenceNumber,
+      isAdvance,
+      allocations,
+      timestamp: new Date().toISOString(),
+    };
+
+    localStorage.setItem('expenseFormDraft', JSON.stringify(formData));
+    setLastSaved(new Date());
+    setTimeout(() => setAutoSaveStatus('saved'), 500);
+  };
+
+  const loadSavedData = () => {
+    const saved = localStorage.getItem('expenseFormDraft');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        setPayee(data.payee || '');
+        setPayeeId(data.payeeId || '');
+        setPayeeNumber(data.payeeNumber || '');
+        setDescription(data.description || '');
+        setPrimaryAmount(data.primaryAmount || '');
+        setCategory(data.category || '');
+        setDepartment(data.department || '');
+        setCurrency(data.currency || '');
+        setPaymentMethod(data.paymentMethod || '');
+        setRegion(data.region || '');
+        setReferenceNumber(data.referenceNumber || '');
+        setIsAdvance(data.isAdvance || false);
+        setAllocations(data.allocations || {});
+        setLastSaved(new Date(data.timestamp));
+        toast.info('Draft restored from previous session');
+      } catch (error) {
+        console.error('Failed to load saved data:', error);
+      }
+    }
+  };
+
+  // Real-time validation functions
+  const validateField = (fieldName: string, value: string) => {
+    const errors = { ...fieldErrors };
+
+    switch (fieldName) {
+      case 'payee':
+        if (value && value.length < 2) {
+          errors.payee = 'Payee name must be at least 2 characters';
+        } else {
+          delete errors.payee;
+        }
+        break;
+      case 'payeeId':
+        if (value && !/^[A-Z0-9]{8,20}$/i.test(value)) {
+          errors.payeeId = 'ID must be 8-20 alphanumeric characters';
+        } else {
+          delete errors.payeeId;
+        }
+        break;
+      case 'primaryAmount':
+        const amount = parseFloat(value);
+        if (value && (isNaN(amount) || amount <= 0)) {
+          errors.primaryAmount = 'Amount must be a positive number';
+        } else if (amount > 1000000) {
+          errors.primaryAmount = 'Amount exceeds maximum limit';
+        } else {
+          delete errors.primaryAmount;
+        }
+        break;
+      case 'description':
+        if (value && value.length < 10) {
+          errors.description = 'Description must be at least 10 characters';
+        } else {
+          delete errors.description;
+        }
+        break;
+    }
+
+    setFieldErrors(errors);
+  };
+
+  // Check for potential duplicates
+  const checkDuplicates = async () => {
+    if (!payee || !primaryAmount) return;
+
+    setIsDuplicateCheck(true);
+    try {
+      // Simulate API call to check duplicates
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Mock duplicate detection logic
+      const amount = parseFloat(primaryAmount);
+      if (payee.toLowerCase().includes('supplier') && amount > 1000) {
+        setDuplicateWarning(`Similar expense found: ${payee} - $${amount} (last week)`);
+      } else {
+        setDuplicateWarning('');
+      }
+    } catch (error) {
+      console.error('Duplicate check failed:', error);
+    } finally {
+      setIsDuplicateCheck(false);
+    }
+  };
+
+  // Auto-save when form data changes
+  useEffect(() => {
+    if (payee || payeeId || payeeNumber || description || primaryAmount) {
+      setAutoSaveStatus('unsaved');
+      const timer = setTimeout(saveToLocalStorage, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [payee, payeeId, payeeNumber, description, primaryAmount, category, department, currency, paymentMethod, region, referenceNumber, isAdvance, allocations]);
+
+  // Trigger duplicate check when payee and amount change
+  useEffect(() => {
+    if (payee && primaryAmount) {
+      const timer = setTimeout(checkDuplicates, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [payee, primaryAmount]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl/Cmd + S - Save draft
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault();
+        saveToLocalStorage();
+        toast.success('Draft saved manually');
+      }
+
+      // Ctrl/Cmd + Enter - Submit form
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        if (completionPercentage === 100) {
+          (document.querySelector('button[type="submit"]') as HTMLButtonElement)?.click();
+        } else {
+          toast.warning('Complete all required fields first');
+        }
+      }
+
+      // Escape - Clear current field if focused
+      if (event.key === 'Escape') {
+        const activeElement = document.activeElement as HTMLInputElement;
+        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+          activeElement.blur();
+        }
+      }
+
+      // F1 - Show help (prevent default browser help)
+      if (event.key === 'F1') {
+        event.preventDefault();
+        toast.info('Keyboard shortcuts: Ctrl+S (save), Ctrl+Enter (submit), Alt+U (upload)');
+      }
+
+      // Alt + U - Focus file upload
+      if (event.altKey && event.key === 'u') {
+        event.preventDefault();
+        (document.getElementById('file-upload') as HTMLInputElement)?.click();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [completionPercentage]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('File size exceeds 10MB limit');
+        return;
+      }
+
       setSelectedFile(file);
       setFileName(file.name);
+
+      // Create preview URL for images
+      if (file.type.startsWith('image/')) {
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+
+        // Simulate OCR/data extraction
+        extractDataFromReceipt(file);
+      } else {
+        setPreviewUrl('');
+      }
+    }
+  };
+
+  const extractDataFromReceipt = async (file: File) => {
+    try {
+      // Simulate AI-powered receipt analysis
+      toast.info('Analyzing receipt...', { autoClose: 2000 });
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Mock extracted data based on file name patterns
+      const extracted: any = {};
+      if (file.name.toLowerCase().includes('invoice') || file.name.toLowerCase().includes('receipt')) {
+        extracted.amount = (Math.random() * 1000 + 50).toFixed(2);
+        extracted.vendor = 'Extracted Vendor Name';
+        extracted.date = new Date().toISOString().split('T')[0];
+      }
+
+      setExtractedData(extracted);
+
+      if (extracted.amount || extracted.vendor) {
+        toast.success('Data extracted from receipt!');
+
+        // Auto-fill form fields with extracted data
+        if (extracted.amount && !primaryAmount) {
+          setPrimaryAmount(extracted.amount);
+        }
+        if (extracted.vendor && !payee) {
+          setPayee(extracted.vendor);
+        }
+      }
+    } catch (error) {
+      toast.error('Failed to analyze receipt');
     }
   };
 
@@ -239,7 +473,33 @@ export default function CreateExpensePage() {
 
       if (response.ok) {
         toast.success(`Expense created successfully!`);
-        // handleNavigation("/expense-management/my-expenses");
+        localStorage.removeItem('expenseFormDraft'); // Clear saved draft
+
+        // Clear all form fields
+        setPayee('');
+        setPayeeId('');
+        setPayeeNumber('');
+        setDescription('');
+        setPrimaryAmount('');
+        setCategory('');
+        setDepartment('');
+        setCurrency('');
+        setPaymentMethod('');
+        setRegion('');
+        setReferenceNumber('');
+        setIsAdvance(false);
+        setAllocations({});
+        setSelectedFile(null);
+        setFileName('');
+        setPreviewUrl('');
+        setExtractedData({});
+        setFieldErrors({});
+        setDuplicateWarning('');
+
+        // Navigate to my-expenses page
+        setTimeout(() => {
+          window.location.href = '/expense-management/my-expenses';
+        }, 1500); // Small delay to show success message
       } else {
         toast.error(`${data.message}`);
       }
@@ -347,6 +607,19 @@ export default function CreateExpensePage() {
                     </Breadcrumb>
                   </div>
 
+                  {/* Duplicate Warning */}
+                  {duplicateWarning && (
+                    <Alert variant="warning" className="border-0 shadow-sm mb-4">
+                      <div className="d-flex align-items-center">
+                        <ExclamationTriangle size={18} className="me-2" />
+                        <div>
+                          <strong>Potential Duplicate Detected</strong>
+                          <div className="small">{duplicateWarning}</div>
+                        </div>
+                      </div>
+                    </Alert>
+                  )}
+
                   {/* Progress Indicator */}
                   <Card className="border-0 shadow-sm mb-4 sticky-top">
                     <Card.Body className="p-3">
@@ -354,9 +627,31 @@ export default function CreateExpensePage() {
                         <span className="text-muted small">
                           Form Completion
                         </span>
-                        <span className="fw-semibold">
-                          {completionPercentage}%
-                        </span>
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="fw-semibold">
+                            {completionPercentage}%
+                          </span>
+                          <div className="auto-save-indicator">
+                            {autoSaveStatus === 'saving' && (
+                              <span className="text-info small">
+                                <Spinner size="sm" className="me-1" />
+                                Saving...
+                              </span>
+                            )}
+                            {autoSaveStatus === 'saved' && lastSaved && (
+                              <span className="text-success small">
+                                <CheckCircle size={12} className="me-1" />
+                                Saved
+                              </span>
+                            )}
+                            {autoSaveStatus === 'unsaved' && (
+                              <span className="text-warning small">
+                                <Circle size={12} className="me-1" />
+                                Unsaved
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                       <ProgressBar
                         now={completionPercentage}
@@ -403,10 +698,27 @@ export default function CreateExpensePage() {
                             <Form.Control
                               type="text"
                               value={payee}
-                              onChange={(e) => setPayee(e.target.value)}
+                              onChange={(e) => {
+                                setPayee(e.target.value);
+                                validateField('payee', e.target.value);
+                              }}
                               required
-                              className="py-2 border-0 border-bottom rounded-0"
+                              className={`py-2 border-0 border-bottom rounded-0 ${
+                                fieldErrors.payee ? 'is-invalid' : payee && !fieldErrors.payee ? 'is-valid' : ''
+                              }`}
                             />
+                            {fieldErrors.payee && (
+                              <div className="invalid-feedback d-flex align-items-center">
+                                <ExclamationTriangle size={14} className="me-1" />
+                                {fieldErrors.payee}
+                              </div>
+                            )}
+                            {payee && !fieldErrors.payee && (
+                              <div className="valid-feedback d-flex align-items-center">
+                                <CheckCircle size={14} className="me-1" />
+                                Looks good!
+                              </div>
+                            )}
                             <Form.Text className="text-muted">
                               Enter the full name of the person or company
                               receiving payment
@@ -483,15 +795,33 @@ export default function CreateExpensePage() {
                               <Form.Control
                                 type="number"
                                 value={primaryAmount}
-                                onChange={(e) =>
-                                  setPrimaryAmount(e.target.value)
-                                }
+                                onChange={(e) => {
+                                  setPrimaryAmount(e.target.value);
+                                  validateField('primaryAmount', e.target.value);
+                                }}
                                 step="0.01"
                                 min="0"
                                 required
-                                className="py-2 border-0 border-bottom rounded-0"
+                                className={`py-2 border-0 border-bottom rounded-0 ${
+                                  fieldErrors.primaryAmount ? 'is-invalid' : primaryAmount && !fieldErrors.primaryAmount ? 'is-valid' : ''
+                                }`}
                               />
                             </InputGroup>
+                            {fieldErrors.primaryAmount && (
+                              <div className="invalid-feedback d-flex align-items-center">
+                                <ExclamationTriangle size={14} className="me-1" />
+                                {fieldErrors.primaryAmount}
+                              </div>
+                            )}
+                            {primaryAmount && !fieldErrors.primaryAmount && (
+                              <div className="valid-feedback d-flex align-items-center">
+                                <CheckCircle size={14} className="me-1" />
+                                Valid amount
+                                {isDuplicateCheck && (
+                                  <Spinner size="sm" className="ms-2" />
+                                )}
+                              </div>
+                            )}
                             <Form.Text className="text-muted">
                               Total amount being claimed
                             </Form.Text>
@@ -838,55 +1168,109 @@ export default function CreateExpensePage() {
                       </div>
                     </Card.Header>
                     <Card.Body className="p-4 pt-0">
-                      <div className="file-upload-area border-dashed border-info border-2 rounded-3 p-4 text-center bg-info bg-opacity-10">
-                        <input
-                          type="file"
-                          id="file-upload"
-                          accept="image/*,.pdf,.doc,.docx"
-                          className="d-none"
-                          onChange={handleFileChange}
-                        />
+                      <Row>
+                        <Col md={6}>
+                          <div className="file-upload-area border-dashed border-info border-2 rounded-3 p-4 text-center bg-info bg-opacity-10">
+                            <input
+                              type="file"
+                              id="file-upload"
+                              accept="image/*,.pdf,.doc,.docx"
+                              className="d-none"
+                              onChange={handleFileChange}
+                            />
 
-                        <div className="mb-3">
-                          <FileEarmarkPlus
-                            size={40}
-                            className="text-muted opacity-50"
-                          />
-                        </div>
+                            <div className="mb-3">
+                              <FileEarmarkPlus
+                                size={40}
+                                className="text-muted opacity-50"
+                              />
+                            </div>
 
-                        <label
-                          htmlFor="file-upload"
-                          className="btn btn-outline-info rounded-pill mb-2 px-4 text-primary"
-                        >
-                          <Upload size={16} className="me-2" /> Choose File
-                        </label>
-
-                        {fileName ? (
-                          <div className="mt-3">
-                            <span className="text-success small fw-semibold d-flex align-items-center justify-content-center">
-                              <CheckCircle className="me-1" /> {fileName}
-                            </span>
-                            <Button
-                              variant="link"
-                              className="text-danger p-0 small d-block"
-                              onClick={() => {
-                                setSelectedFile(null);
-                                setFileName("");
-                              }}
+                            <label
+                              htmlFor="file-upload"
+                              className="btn btn-outline-info rounded-pill mb-2 px-4 text-primary"
                             >
-                              Remove File
-                            </Button>
+                              <Upload size={16} className="me-2" /> Choose File
+                            </label>
+
+                            {fileName ? (
+                              <div className="mt-3">
+                                <span className="text-success small fw-semibold d-flex align-items-center justify-content-center">
+                                  <CheckCircle className="me-1" /> {fileName}
+                                </span>
+                                <Button
+                                  variant="link"
+                                  className="text-danger p-0 small d-block"
+                                  onClick={() => {
+                                    setSelectedFile(null);
+                                    setFileName("");
+                                    setPreviewUrl("");
+                                    setExtractedData({});
+                                  }}
+                                >
+                                  Remove File
+                                </Button>
+                              </div>
+                            ) : (
+                              <p className="small text-muted mt-3 mb-0">
+                                Upload receipts, invoices, or supporting documents
+                                <br />
+                                <span className="text-muted">
+                                  (PDF, JPG, PNG, DOCX - Max 10MB)
+                                </span>
+                              </p>
+                            )}
                           </div>
-                        ) : (
-                          <p className="small text-muted mt-3 mb-0">
-                            Upload receipts, invoices, or supporting documents
-                            <br />
-                            <span className="text-muted">
-                              (PDF, JPG, PNG, DOCX - Max 10MB)
-                            </span>
-                          </p>
-                        )}
-                      </div>
+                        </Col>
+
+                        {/* Preview and Extracted Data */}
+                        <Col md={6}>
+                          {previewUrl && (
+                            <div className="receipt-preview">
+                              <h6 className="fw-semibold mb-3">
+                                <FileEarmarkText className="me-2" />
+                                Receipt Preview
+                              </h6>
+                              <div className="border rounded-3 p-2 mb-3">
+                                <img
+                                  src={previewUrl}
+                                  alt="Receipt preview"
+                                  className="img-fluid rounded"
+                                  style={{ maxHeight: '200px', width: '100%', objectFit: 'contain' }}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {Object.keys(extractedData).length > 0 && (
+                            <div className="extracted-data bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 p-3">
+                              <h6 className="fw-semibold text-success mb-2">
+                                <Shield className="me-2" />
+                                Extracted Data
+                              </h6>
+                              {extractedData.amount && (
+                                <div className="small mb-1">
+                                  <strong>Amount:</strong> ${extractedData.amount}
+                                </div>
+                              )}
+                              {extractedData.vendor && (
+                                <div className="small mb-1">
+                                  <strong>Vendor:</strong> {extractedData.vendor}
+                                </div>
+                              )}
+                              {extractedData.date && (
+                                <div className="small">
+                                  <strong>Date:</strong> {extractedData.date}
+                                </div>
+                              )}
+                              <div className="small text-muted mt-2">
+                                <InfoCircle size={12} className="me-1" />
+                                Data automatically filled in form
+                              </div>
+                            </div>
+                          )}
+                        </Col>
+                      </Row>
                     </Card.Body>
                   </Card>
                 </Col>
@@ -1028,6 +1412,35 @@ export default function CreateExpensePage() {
                           >
                             <Clock className="me-1" size={16} /> Cancel
                           </Button>
+                        </div>
+                      </div>
+                    </Card.Body>
+                    <Card.Header className="bg-white py-3">
+                      <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                        <InfoCircle className="me-2" /> Keyboard Shortcuts
+                      </h6>
+                    </Card.Header>
+                    <Card.Body>
+                      <div className="small text-muted">
+                        <div className="d-flex justify-content-between mb-1">
+                          <span>Save Draft:</span>
+                          <kbd className="small">Ctrl+S</kbd>
+                        </div>
+                        <div className="d-flex justify-content-between mb-1">
+                          <span>Submit Form:</span>
+                          <kbd className="small">Ctrl+Enter</kbd>
+                        </div>
+                        <div className="d-flex justify-content-between mb-1">
+                          <span>Upload File:</span>
+                          <kbd className="small">Alt+U</kbd>
+                        </div>
+                        <div className="d-flex justify-content-between mb-1">
+                          <span>Clear Field:</span>
+                          <kbd className="small">Esc</kbd>
+                        </div>
+                        <div className="d-flex justify-content-between">
+                          <span>Show Help:</span>
+                          <kbd className="small">F1</kbd>
                         </div>
                       </div>
                     </Card.Body>

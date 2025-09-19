@@ -16,7 +16,6 @@ import {
   OverlayTrigger,
   Tooltip,
   ProgressBar,
-  Dropdown,
 } from "react-bootstrap";
 import {
   ArrowDownCircle,
@@ -35,12 +34,38 @@ import {
   Clipboard2Data,
   PieChart,
   Wallet2,
+  Search,
+  XCircleFill,
+  Lightbulb,
+  Funnel,
+  BarChart,
+  Download,
+  Eye,
+  Person,
+  PlusCircle,
+  ListUl,
+  GraphUp,
+  GraphUpArrow,
+  Calendar,
+  Award,
+  Star,
+  Activity,
+  Share,
+  Printer,
+  Filter,
+  SortDown,
+  CheckAll,
+  FiletypeXlsx,
+  FiletypePdf,
+  Lightning,
+  ChevronRight,
+  Stopwatch,
+  HourglassSplit,
+  CheckSquareFill,
 } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
 import { BASE_API_URL } from "../../static/apiConfig";
 import AuthProvider from "../../authPages/tokenData";
-import { BarChart2, Download, Eye, User } from "lucide-react";
-import { FaListAlt, FaPlusCircle } from "react-icons/fa";
 import TopNavbar from "../../components/Navbar";
 import PageLoader from "@/app/components/PageLoader";
 import DateTimeDisplay from "@/app/components/DateTimeDisplay";
@@ -259,6 +284,10 @@ export default function FinanceDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [dateRangeFilter, setDateRangeFilter] = useState("All Time");
+  const [categoryFilter, setCategoryFilter] = useState("All Categories");
+  const [minAmount, setMinAmount] = useState("");
+  const [maxAmount, setMaxAmount] = useState("");
+  const [approvalFilter, setApprovalFilter] = useState("All Approval Status");
   const [expenses, setExpenses] = useState<ExpenseRow[]>([]);
   const [budgetSummary, setBudgetSummary] = useState<BudgetSummary | null>(
     null
@@ -266,8 +295,9 @@ export default function FinanceDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const itemsPerPage = 50;
+  const itemsPerPage = 100;
+  const [selectedExpenses, setSelectedExpenses] = useState<Set<number>>(new Set());
+  const [showBulkActions, setShowBulkActions] = useState(false);
 
   const router = useRouter();
   const handleNavigation = (path: string) => router.push(path);
@@ -440,19 +470,154 @@ export default function FinanceDashboard() {
 
   /** ===== Derived/UI state ===== */
 
+  // Get unique categories for filter dropdown
+  const uniqueCategories = useMemo(() => {
+    const categories = expenses
+      .map((expense) => expense.category?.name)
+      .filter((name): name is string => !!name);
+    return [...new Set(categories)].sort();
+  }, [expenses]);
+
+  // Analytics calculations
+  const analyticsData = useMemo(() => {
+    const now = new Date();
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const thisYear = new Date(now.getFullYear(), 0, 1);
+
+    // Filter expenses for different periods
+    const thisMonthExpenses = expenses.filter(e => new Date(e.createdAt) >= thisMonth);
+    const lastMonthExpenses = expenses.filter(e =>
+      new Date(e.createdAt) >= lastMonth && new Date(e.createdAt) < thisMonth
+    );
+    const thisYearExpenses = expenses.filter(e => new Date(e.createdAt) >= thisYear);
+
+    // Calculate totals
+    const thisMonthTotal = thisMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const lastMonthTotal = lastMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const thisYearTotal = thisYearExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+    // Status breakdown
+    const statusBreakdown = expenses.reduce((acc, expense) => {
+      acc[expense.status] = (acc[expense.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Category spending
+    const categorySpending = expenses.reduce((acc, expense) => {
+      const category = expense.category?.name || 'Uncategorized';
+      acc[category] = (acc[category] || 0) + expense.amount;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Top categories
+    const topCategories = Object.entries(categorySpending)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5);
+
+    // Monthly trend (last 6 months)
+    const monthlyTrend = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+      const monthExpenses = expenses.filter(e =>
+        new Date(e.createdAt) >= date && new Date(e.createdAt) < nextMonth
+      );
+      const total = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
+      monthlyTrend.push({
+        month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        amount: total,
+        count: monthExpenses.length
+      });
+    }
+
+    // Calculate growth
+    const monthlyGrowth = lastMonthTotal === 0 ? 0 :
+      ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100;
+
+    // Average expense
+    const averageExpense = expenses.length > 0 ?
+      expenses.reduce((sum, e) => sum + e.amount, 0) / expenses.length : 0;
+
+    // Pending approvals count
+    const pendingCount = expenses.filter(e =>
+      e.expenseSteps.some(step => normalizeStatus(step.status) === 'PENDING')
+    ).length;
+
+    return {
+      thisMonthTotal,
+      lastMonthTotal,
+      thisYearTotal,
+      monthlyGrowth,
+      statusBreakdown,
+      categorySpending,
+      topCategories,
+      monthlyTrend,
+      averageExpense,
+      pendingCount,
+      totalExpenses: expenses.length
+    };
+  }, [expenses]);
+
   const filteredExpenses = useMemo(() => {
     return expenses.filter((expense) => {
-      // Search by description, amount, or reference number
+      // Search by description, amount, reference number, or payee
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch =
         expense.description?.toLowerCase().includes(searchLower) ||
         expense.amount?.toString().includes(searchQuery) ||
-        expense.referenceNumber?.toLowerCase().includes(searchLower);
+        expense.referenceNumber?.toLowerCase().includes(searchLower) ||
+        expense.payee?.toLowerCase().includes(searchLower);
 
       // Filter by status
       const matchesStatus =
         statusFilter === "All Statuses" ||
         expense.status?.toLowerCase() === statusFilter.toLowerCase();
+
+      // Filter by category
+      const matchesCategory =
+        categoryFilter === "All Categories" ||
+        expense.category?.name === categoryFilter;
+
+      // Filter by amount range
+      const matchesAmount = (() => {
+        const amount = expense.amount || 0;
+        const min = minAmount ? parseFloat(minAmount) : 0;
+        const max = maxAmount ? parseFloat(maxAmount) : Number.MAX_VALUE;
+        return amount >= min && amount <= max;
+      })();
+
+      // Filter by approval process
+      const matchesApproval = (() => {
+        if (approvalFilter === "All Approval Status") return true;
+
+        const steps = expense.expenseSteps || [];
+        if (approvalFilter === "Fully Approved") {
+          return (
+            steps.length > 0 &&
+            steps.every((step) => normalizeStatus(step.status) === "APPROVED")
+          );
+        }
+        if (approvalFilter === "Pending Approval") {
+          return steps.some(
+            (step) => normalizeStatus(step.status) === "PENDING"
+          );
+        }
+        if (approvalFilter === "Has Rejections") {
+          return steps.some(
+            (step) => normalizeStatus(step.status) === "REJECTED"
+          );
+        }
+        if (approvalFilter === "Not Started") {
+          return (
+            steps.length === 0 ||
+            steps.every(
+              (step) => normalizeStatus(step.status) === "NOT_STARTED"
+            )
+          );
+        }
+        return true;
+      })();
 
       // Filter by date range
       const now = new Date();
@@ -471,9 +636,25 @@ export default function FinanceDashboard() {
           expenseDate.getFullYear() === now.getFullYear();
       }
 
-      return matchesSearch && matchesStatus && matchesDateRange;
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesCategory &&
+        matchesAmount &&
+        matchesApproval &&
+        matchesDateRange
+      );
     });
-  }, [expenses, searchQuery, statusFilter, dateRangeFilter]);
+  }, [
+    expenses,
+    searchQuery,
+    statusFilter,
+    dateRangeFilter,
+    categoryFilter,
+    minAmount,
+    maxAmount,
+    approvalFilter,
+  ]);
 
   // Pagination logic
   const totalPages = Math.max(
@@ -492,10 +673,84 @@ export default function FinanceDashboard() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Reset to first page when search query changes
+  // Bulk operations handlers
+  const handleSelectExpense = (expenseId: number) => {
+    const newSelected = new Set(selectedExpenses);
+    if (newSelected.has(expenseId)) {
+      newSelected.delete(expenseId);
+    } else {
+      newSelected.add(expenseId);
+    }
+    setSelectedExpenses(newSelected);
+    setShowBulkActions(newSelected.size > 0);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedExpenses.size === currentItems.length) {
+      setSelectedExpenses(new Set());
+      setShowBulkActions(false);
+    } else {
+      const allIds = new Set(currentItems.map(expense => expense.id));
+      setSelectedExpenses(allIds);
+      setShowBulkActions(true);
+    }
+  };
+
+  const handleBulkExport = () => {
+    const selectedData = currentItems.filter(e => selectedExpenses.has(e.id));
+    const csvContent = [
+      ["ID", "Date", "Payee", "Category", "Description", "Amount", "Status"],
+      ...selectedData.map(e => [
+        e.id,
+        new Date(e.createdAt).toLocaleDateString(),
+        e.payee,
+        e.category?.name || "N/A",
+        e.description,
+        e.amount,
+        e.status
+      ])
+    ].map(row => row.join(",")).join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `selected_expenses_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${selectedExpenses.size} selected expenses!`);
+  };
+
+  const handleBulkFilter = (filterType: string) => {
+    const selectedData = currentItems.filter(e => selectedExpenses.has(e.id));
+    switch (filterType) {
+      case 'pending':
+        setStatusFilter('PENDING');
+        break;
+      case 'approved':
+        setStatusFilter('APPROVED');
+        break;
+      case 'rejected':
+        setStatusFilter('REJECTED');
+        break;
+    }
+    setSelectedExpenses(new Set());
+    setShowBulkActions(false);
+    toast.info(`Applied ${filterType} filter`);
+  };
+
+  // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
+  }, [
+    searchQuery,
+    statusFilter,
+    categoryFilter,
+    minAmount,
+    maxAmount,
+    approvalFilter,
+    dateRangeFilter,
+  ]);
 
   if (loading) {
     return <PageLoader />;
@@ -576,7 +831,7 @@ export default function FinanceDashboard() {
                     <div className="bg-success p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-success border-2">
                       <div className="d-flex align-items-center">
                         <div className="bg-warning bg-opacity-10 p-2 rounded me-3">
-                          <BarChart2 size={20} className="text-warning" />
+                          <BarChart size={20} className="text-warning" />
                         </div>
                         <div>
                           <p className="text-muted small mb-1">Spent</p>
@@ -643,117 +898,369 @@ export default function FinanceDashboard() {
           </Col>
         </Row>
 
+        {/* Quick Actions Bar */}
+        <Row className="mb-4">
+          <Col>
+            <Card className="border-0 shadow-sm">
+              <Card.Body className="p-3">
+                <div className="d-flex align-items-center justify-content-between">
+                  <div className="d-flex align-items-center">
+                    <Lightning size={20} className="text-warning me-2" />
+                    <h6 className="fw-bold mb-0">Quick Actions</h6>
+                  </div>
+                  <div className="d-flex gap-2 flex-wrap">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      className="d-flex align-items-center gap-1"
+                      onClick={() => handleNavigation("create-expense")}
+                    >
+                      <PlusCircle size={14} />
+                      New Expense
+                    </Button>
+                    <Button
+                      variant="outline-success"
+                      size="sm"
+                      className="d-flex align-items-center gap-1"
+                      onClick={() => {
+                        const csvContent = [
+                          ["ID", "Date", "Payee", "Category", "Description", "Amount", "Status"],
+                          ...filteredExpenses.map(e => [
+                            e.id,
+                            new Date(e.createdAt).toLocaleDateString(),
+                            e.payee,
+                            e.category?.name || "N/A",
+                            e.description,
+                            e.amount,
+                            e.status
+                          ])
+                        ].map(row => row.join(",")).join("\n");
+                        const blob = new Blob([csvContent], { type: "text/csv" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `expenses_${new Date().toISOString().split('T')[0]}.csv`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        toast.success("Expenses exported successfully!");
+                      }}
+                    >
+                      <FiletypeXlsx size={14} />
+                      Export CSV
+                    </Button>
+                    <Button
+                      variant="outline-info"
+                      size="sm"
+                      className="d-flex align-items-center gap-1"
+                      onClick={() => window.print()}
+                    >
+                      <Printer size={14} />
+                      Print
+                    </Button>
+                    <Button
+                      variant="outline-secondary"
+                      size="sm"
+                      className="d-flex align-items-center gap-1"
+                      onClick={() => {
+                        setStatusFilter("PENDING");
+                        toast.info("Filtered to show pending expenses");
+                      }}
+                    >
+                      <Filter size={14} />
+                      Show Pending
+                    </Button>
+                    <Button
+                      variant="outline-warning"
+                      size="sm"
+                      className="d-flex align-items-center gap-1"
+                      onClick={() => {
+                        const pendingApprovals = expenses.filter(e =>
+                          e.expenseSteps.some(step => normalizeStatus(step.status) === 'PENDING')
+                        );
+                        if (pendingApprovals.length > 0) {
+                          setApprovalFilter("Pending Approval");
+                          toast.info(`Found ${pendingApprovals.length} expenses awaiting approval`);
+                        } else {
+                          toast.info("No expenses pending approval");
+                        }
+                      }}
+                    >
+                      <Clock size={14} />
+                      Pending Approvals
+                    </Button>
+                    <Button
+                      variant="outline-dark"
+                      size="sm"
+                      className="d-flex align-items-center gap-1"
+                      onClick={() => {
+                        if (navigator.share) {
+                          navigator.share({
+                            title: "My Expenses Summary",
+                            text: `I have ${expenses.length} expenses totaling KES ${expenses.reduce((sum, e) => sum + e.amount, 0).toLocaleString()}`,
+                            url: window.location.href
+                          });
+                        } else {
+                          navigator.clipboard.writeText(window.location.href);
+                          toast.success("Page URL copied to clipboard!");
+                        }
+                      }}
+                    >
+                      <Share size={14} />
+                      Share
+                    </Button>
+                  </div>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Analytics Dashboard */}
+        <Row className="mb-4">
+          <Col>
+            <Card className="border-0 shadow-sm">
+              <Card.Body className="p-4">
+                <div className="d-flex align-items-center mb-4">
+                  <div className="bg-info bg-opacity-10 p-3 rounded-circle me-3">
+                    <GraphUp size={24} className="text-info" />
+                  </div>
+                  <div>
+                    <h5 className="fw-bold mb-1">Expense Analytics</h5>
+                    <p className="text-muted mb-0 small">Insights and trends from your expense data</p>
+                  </div>
+                </div>
+
+                <Row className="g-4">
+                  {/* Key Metrics */}
+                  <Col md={8}>
+                    <Row className="g-3">
+                      <Col sm={6} md={3}>
+                        <div className="analytics-card bg-primary bg-opacity-10 p-3 rounded-3 border-start border-primary border-3">
+                          <div className="d-flex align-items-center">
+                            <GraphUpArrow size={20} className="text-primary me-2" />
+                            <div>
+                              <p className="text-muted small mb-1">This Month</p>
+                              <h6 className="mb-0 fw-bold">
+                                KES {analyticsData.thisMonthTotal.toLocaleString()}
+                              </h6>
+                              <small className={`fw-medium ${analyticsData.monthlyGrowth >= 0 ? 'text-success' : 'text-danger'}`}>
+                                {analyticsData.monthlyGrowth >= 0 ? '+' : ''}{analyticsData.monthlyGrowth.toFixed(1)}% vs last month
+                              </small>
+                            </div>
+                          </div>
+                        </div>
+                      </Col>
+                      <Col sm={6} md={3}>
+                        <div className="analytics-card bg-success bg-opacity-10 p-3 rounded-3 border-start border-success border-3">
+                          <div className="d-flex align-items-center">
+                            <Calendar size={20} className="text-success me-2" />
+                            <div>
+                              <p className="text-muted small mb-1">This Year</p>
+                              <h6 className="mb-0 fw-bold">
+                                KES {analyticsData.thisYearTotal.toLocaleString()}
+                              </h6>
+                              <small className="text-muted">
+                                {analyticsData.totalExpenses} total expenses
+                              </small>
+                            </div>
+                          </div>
+                        </div>
+                      </Col>
+                      <Col sm={6} md={3}>
+                        <div className="analytics-card bg-warning bg-opacity-10 p-3 rounded-3 border-start border-warning border-3">
+                          <div className="d-flex align-items-center">
+                            <Activity size={20} className="text-warning me-2" />
+                            <div>
+                              <p className="text-muted small mb-1">Average</p>
+                              <h6 className="mb-0 fw-bold">
+                                KES {analyticsData.averageExpense.toLocaleString()}
+                              </h6>
+                              <small className="text-muted">per expense</small>
+                            </div>
+                          </div>
+                        </div>
+                      </Col>
+                      <Col sm={6} md={3}>
+                        <div className="analytics-card bg-danger bg-opacity-10 p-3 rounded-3 border-start border-danger border-3">
+                          <div className="d-flex align-items-center">
+                            <Clock size={20} className="text-danger me-2" />
+                            <div>
+                              <p className="text-muted small mb-1">Pending</p>
+                              <h6 className="mb-0 fw-bold">{analyticsData.pendingCount}</h6>
+                              <small className="text-muted">awaiting approval</small>
+                            </div>
+                          </div>
+                        </div>
+                      </Col>
+                    </Row>
+
+                    {/* Monthly Trend Chart */}
+                    <div className="mt-4 p-3 bg-light bg-opacity-50 rounded-3">
+                      <h6 className="fw-bold mb-3">
+                        <BarChart className="me-2" size={16} />
+                        6-Month Spending Trend
+                      </h6>
+                      <div className="chart-container">
+                        <div className="d-flex align-items-end justify-content-between" style={{ height: '120px' }}>
+                          {analyticsData.monthlyTrend.map((data, index) => {
+                            const maxAmount = Math.max(...analyticsData.monthlyTrend.map(d => d.amount));
+                            const height = maxAmount > 0 ? (data.amount / maxAmount) * 80 : 0;
+                            return (
+                              <div key={index} className="d-flex flex-column align-items-center">
+                                <div
+                                  className="bg-primary rounded-top"
+                                  style={{
+                                    width: '30px',
+                                    height: `${height + 20}px`,
+                                    minHeight: '20px',
+                                    opacity: 0.8,
+                                    transition: 'all 0.3s ease'
+                                  }}
+                                  title={`${data.month}: KES ${data.amount.toLocaleString()} (${data.count} expenses)`}
+                                ></div>
+                                <small className="text-muted mt-1" style={{ fontSize: '0.7rem' }}>
+                                  {data.month.split(' ')[0]}
+                                </small>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
+
+                  {/* Category Breakdown */}
+                  <Col md={4}>
+                    <div className="h-100 p-3 bg-light bg-opacity-50 rounded-3">
+                      <h6 className="fw-bold mb-3">
+                        <PieChart className="me-2" size={16} />
+                        Top Categories
+                      </h6>
+                      <div className="category-breakdown">
+                        {analyticsData.topCategories.map(([category, amount], index) => {
+                          const percentage = (amount / analyticsData.thisYearTotal) * 100;
+                          const colors = ['primary', 'success', 'warning', 'info', 'secondary'];
+                          const color = colors[index] || 'secondary';
+
+                          return (
+                            <div key={category} className="mb-3">
+                              <div className="d-flex justify-content-between align-items-center mb-1">
+                                <span className="small fw-medium">{category}</span>
+                                <span className="small text-muted">
+                                  KES {amount.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="progress" style={{ height: '6px' }}>
+                                <div
+                                  className={`progress-bar bg-${color}`}
+                                  style={{ width: `${percentage}%` }}
+                                ></div>
+                              </div>
+                              <small className="text-muted">{percentage.toFixed(1)}% of total</small>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Status Overview */}
+                      <div className="mt-4 pt-3 border-top">
+                        <h6 className="fw-bold mb-3">
+                          <Award className="me-2" size={16} />
+                          Status Overview
+                        </h6>
+                        <div className="status-overview">
+                          {Object.entries(analyticsData.statusBreakdown).map(([status, count]) => {
+                            const badge = statusBadge(status);
+                            const percentage = (count / analyticsData.totalExpenses) * 100;
+
+                            return (
+                              <div key={status} className="d-flex justify-content-between align-items-center mb-2">
+                                <div className="d-flex align-items-center">
+                                  <Badge
+                                    bg={badge.bg}
+                                    className="me-2 d-inline-flex align-items-center py-1 px-2 rounded-pill"
+                                  >
+                                    {badge.icon}
+                                    <span className="ms-1 small">{badge.label}</span>
+                                  </Badge>
+                                </div>
+                                <div className="text-end">
+                                  <span className="fw-bold">{count}</span>
+                                  <small className="text-muted ms-1">({percentage.toFixed(0)}%)</small>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+
         {/* Expenses Table */}
         <Container fluid className="mt-2">
           <Card className="mb-4">
             <Card.Header className="bg-white p-3">
-              <Row className="align-items-center g-3">
+              {/* Search and Action Row */}
+              <Row className="align-items-center g-3 mb-3">
                 <Col xs={12} md={4}>
-                  <small className="text-muted">
-                    Showing {indexOfFirstItem + 1}-
-                    {Math.min(indexOfLastItem, filteredExpenses.length)} of{" "}
-                    {filteredExpenses.length} expenses
-                  </small>
+                  <div className="d-flex align-items-center gap-2">
+                    <small className="text-muted">
+                      Showing {indexOfFirstItem + 1}-
+                      {Math.min(indexOfLastItem, filteredExpenses.length)} of{" "}
+                      {filteredExpenses.length} expenses
+                    </small>
+                    {selectedExpenses.size > 0 && (
+                      <Badge bg="primary" className="ms-2">
+                        {selectedExpenses.size} selected
+                      </Badge>
+                    )}
+                  </div>
                 </Col>
                 <Col xs={12} md={5} className="mb-2 mb-md-0">
-                  <div className="input-group">
-                    <span className="input-group-text bg-white border-end-0">
-                      <i className="bi bi-search text-muted"></i>
-                    </span>
-                    <Form.Control
-                      type="search"
-                      placeholder="Search expenses by reference, amount, or description..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="border-start-0 px-2 py-2"
-                      style={{
-                        borderRight: "none",
-                        boxShadow: "none",
-                        borderColor: "#dee2e6",
-                      }}
-                    />
-                    <Dropdown
-                      className="border-start-0"
-                      style={{
-                        borderTopRightRadius: "0.375rem",
-                        borderBottomRightRadius: "0.375rem",
-                      }}
-                      show={dropdownOpen}
-                      onToggle={(isOpen: boolean) => setDropdownOpen(isOpen)}
-                    >
-                      <Dropdown.Toggle
-                        variant="light"
-                        className="bg-white border-start-0"
-                        style={{
-                          borderTopLeftRadius: 0,
-                          borderBottomLeftRadius: 0,
-                          borderColor: "#dee2e6",
-                          borderLeft: "none",
-                          height: "100%",
-                          boxShadow: "none",
-                        }}
-                      >
-                        <i className="bi bi-funnel me-1"></i>
-                        <span className="d-none d-md-inline">Filter</span>
-                      </Dropdown.Toggle>
-                      <Dropdown.Menu
-                        className="p-3"
-                        style={{ minWidth: "200px" }}
-                      >
-                        <div className="mb-2">
-                          <small className="text-muted d-block mb-1">
-                            Status
-                          </small>
-                          <Form.Select
-                            size="sm"
-                            className="mb-2"
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
+                  <div className="modern-search-container position-relative">
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="search-icon-external border">
+                        <Search size={18} className="text-primary" />
+                      </div>
+                      <div className="search-input-wrapper flex-grow-1">
+                        <Form.Control
+                          type="search"
+                          placeholder="Search by description, amount, reference, payee..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="modern-search-input"
+                        />
+                        {searchQuery && (
+                          <button
+                            type="button"
+                            className="clear-search-btn"
+                            onClick={() => setSearchQuery("")}
+                            aria-label="Clear search"
                           >
-                            <option value="All Statuses">All Statuses</option>
-                            <option value="PENDING">Pending</option>
-                            <option value="APPROVED">Approved</option>
-                            <option value="REJECTED">Rejected</option>
-                            <option value="PAID">Paid</option>
-                          </Form.Select>
+                            <XCircleFill size={16} />
+                          </button>
+                        )}
+                        <div className="search-suggestions">
+                          <span className="search-suggestion-text">
+                            <Lightbulb size={12} className="me-1" />
+                            Try: amount, description, reference number, or payee
+                          </span>
                         </div>
-                        <div className="mb-2">
-                          <small className="text-muted d-block mb-1">
-                            Date Range
-                          </small>
-                          <Form.Select
-                            size="sm"
-                            value={dateRangeFilter}
-                            onChange={(e) => setDateRangeFilter(e.target.value)}
-                          >
-                            <option value="All Time">All Time</option>
-                            <option value="Today">Today</option>
-                            <option value="This Week">This Week</option>
-                            <option value="This Month">This Month</option>
-                          </Form.Select>
-                        </div>
-                        <div className="d-grid gap-2 mt-2">
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => setDropdownOpen(false)}
-                          >
-                            Apply Filters
-                          </Button>
-                          <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            onClick={() => {
-                              setStatusFilter("All Statuses");
-                              setDateRangeFilter("All Time");
-                              setSearchQuery("");
-                            }}
-                          >
-                            Reset All
-                          </Button>
-                        </div>
-                      </Dropdown.Menu>
-                    </Dropdown>
+                      </div>
+                    </div>
+                    {searchQuery && (
+                      <div className="search-results-count">
+                        <small className="text-primary fw-medium">
+                          <Funnel size={12} className="me-1" />
+                          {filteredExpenses.length} results found
+                        </small>
+                      </div>
+                    )}
                   </div>
                 </Col>
                 <Col xs={12} md={3} className="text-end">
@@ -767,11 +1274,215 @@ export default function FinanceDashboard() {
                       fontWeight: 500,
                     }}
                   >
-                    <FaPlusCircle size={16} className="me-2" />
+                    <PlusCircle size={16} className="me-2" />
                     Create expense
                   </Button>
                 </Col>
               </Row>
+
+              {/* Horizontal Filters Row */}
+              <div className="filters-section">
+                <div className="filter-header-bar d-flex align-items-center justify-content-between mb-3 p-3 bg-success bg-opacity-10 rounded border">
+                  <h6 className="mb-0 fw-bold text-success">
+                    <Funnel className="me-2" size={16} />
+                    Filters
+                  </h6>
+                  <Button
+                    variant="outline-success"
+                    size="sm"
+                    className="btn-modern text-success"
+                    onClick={() => {
+                      setStatusFilter("All Statuses");
+                      setDateRangeFilter("All Time");
+                      setCategoryFilter("All Categories");
+                      setMinAmount("");
+                      setMaxAmount("");
+                      setApprovalFilter("All Approval Status");
+                      setSearchQuery("");
+                    }}
+                  >
+                    <ArrowRepeat className="me-1" size={14} />
+                    Reset All
+                  </Button>
+                </div>
+
+                <Row className="g-3">
+                  {/* Status Filter */}
+                  <Col xs={12} sm={6} md={2}>
+                    <div className="filter-item">
+                      <label className="filter-label">
+                        <Circle className="me-1" size={12} />
+                        Status
+                      </label>
+                      <Form.Select
+                        size="sm"
+                        className="form-select-modern"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                      >
+                        <option value="All Statuses">All</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="REJECTED">Rejected</option>
+                        <option value="PAID">Paid</option>
+                      </Form.Select>
+                    </div>
+                  </Col>
+
+                  {/* Category Filter */}
+                  <Col xs={12} sm={6} md={2}>
+                    <div className="filter-item">
+                      <label className="filter-label">
+                        <Tag className="me-1" size={12} />
+                        Category
+                      </label>
+                      <Form.Select
+                        size="sm"
+                        className="form-select-modern"
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                      >
+                        <option value="All Categories">All</option>
+                        {uniqueCategories.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </div>
+                  </Col>
+
+                  {/* Amount Range */}
+                  <Col xs={12} sm={6} md={3}>
+                    <div className="filter-item">
+                      <label className="filter-label">
+                        <CashStack className="me-1" size={12} />
+                        Amount Range (KES)
+                      </label>
+                      <Row className="g-1">
+                        <Col xs={6}>
+                          <Form.Control
+                            size="sm"
+                            type="number"
+                            placeholder="Min"
+                            value={minAmount}
+                            onChange={(e) => setMinAmount(e.target.value)}
+                            className="form-control-modern"
+                          />
+                        </Col>
+                        <Col xs={6}>
+                          <Form.Control
+                            size="sm"
+                            type="number"
+                            placeholder="Max"
+                            value={maxAmount}
+                            onChange={(e) => setMaxAmount(e.target.value)}
+                            className="form-control-modern"
+                          />
+                        </Col>
+                      </Row>
+                    </div>
+                  </Col>
+
+                  {/* Approval Process Filter */}
+                  <Col xs={12} sm={6} md={3}>
+                    <div className="filter-item">
+                      <label className="filter-label">
+                        <CheckCircle className="me-1" size={12} />
+                        Approval Process
+                      </label>
+                      <Form.Select
+                        size="sm"
+                        className="form-select-modern"
+                        value={approvalFilter}
+                        onChange={(e) => setApprovalFilter(e.target.value)}
+                      >
+                        <option value="All Approval Status">All</option>
+                        <option value="Fully Approved">Fully Approved</option>
+                        <option value="Pending Approval">Pending</option>
+                        <option value="Has Rejections">Has Rejections</option>
+                        <option value="Not Started">Not Started</option>
+                      </Form.Select>
+                    </div>
+                  </Col>
+
+                  {/* Date Range Filter */}
+                  <Col xs={12} sm={6} md={2}>
+                    <div className="filter-item">
+                      <label className="filter-label">
+                        <Clock className="me-1" size={12} />
+                        Date Range
+                      </label>
+                      <Form.Select
+                        size="sm"
+                        className="form-select-modern"
+                        value={dateRangeFilter}
+                        onChange={(e) => setDateRangeFilter(e.target.value)}
+                      >
+                        <option value="All Time">All Time</option>
+                        <option value="Today">Today</option>
+                        <option value="This Week">This Week</option>
+                        <option value="This Month">This Month</option>
+                      </Form.Select>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              {/* Bulk Actions Bar */}
+              {showBulkActions && (
+                <div className="bulk-actions-bar mt-3 p-3 bg-primary bg-opacity-10 rounded-3 border-start border-primary border-3">
+                  <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div className="d-flex align-items-center">
+                      <CheckSquareFill size={18} className="text-primary me-2" />
+                      <span className="fw-bold text-primary">
+                        {selectedExpenses.size} expense{selectedExpenses.size > 1 ? 's' : ''} selected
+                      </span>
+                    </div>
+                    <div className="d-flex gap-2 flex-wrap">
+                      <Button
+                        variant="outline-success"
+                        size="sm"
+                        onClick={handleBulkExport}
+                        className="d-flex align-items-center gap-1"
+                      >
+                        <Download size={14} />
+                        Export Selected
+                      </Button>
+                      <Button
+                        variant="outline-warning"
+                        size="sm"
+                        onClick={() => handleBulkFilter('pending')}
+                        className="d-flex align-items-center gap-1"
+                      >
+                        <Clock size={14} />
+                        Filter Pending
+                      </Button>
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() => handleBulkFilter('approved')}
+                        className="d-flex align-items-center gap-1"
+                      >
+                        <CheckCircle size={14} />
+                        Filter Approved
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedExpenses(new Set());
+                          setShowBulkActions(false);
+                        }}
+                        className="d-flex align-items-center gap-1"
+                      >
+                        <XCircle size={14} />
+                        Clear Selection
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </Card.Header>
             <br />
             <br />
@@ -796,10 +1507,18 @@ export default function FinanceDashboard() {
                       <Table hover className="mb-0 transactions-table small">
                         <thead className="table-light">
                           <tr>
-                            <th className="ps-4">#ID</th>
+                            <th className="ps-4" style={{ width: "50px" }}>
+                              <Form.Check
+                                type="checkbox"
+                                checked={selectedExpenses.size === currentItems.length && currentItems.length > 0}
+                                onChange={handleSelectAll}
+                                id="select-all"
+                              />
+                            </th>
+                            <th>#ID</th>
                             <th>Created</th>
                             <th>Payee</th>
-                            <th>Payee Number</th>
+                            <th>Category</th>
                             <th>Description</th>
                             <th>Amount</th>
                             <th>Owner</th>
@@ -821,10 +1540,20 @@ export default function FinanceDashboard() {
                             return (
                               <tr
                                 key={expense.id}
-                                onClick={() => handleViewDetails(expense)}
-                                className="cursor-pointer"
+                                className={`cursor-pointer ${selectedExpenses.has(expense.id) ? 'table-active' : ''}`}
                               >
-                                <td className="ps-4 fw-semibold text-muted">
+                                <td className="ps-4" onClick={(e) => e.stopPropagation()}>
+                                  <Form.Check
+                                    type="checkbox"
+                                    checked={selectedExpenses.has(expense.id)}
+                                    onChange={() => handleSelectExpense(expense.id)}
+                                    id={`expense-${expense.id}`}
+                                  />
+                                </td>
+                                <td
+                                  className="fw-semibold text-muted"
+                                  onClick={() => handleViewDetails(expense)}
+                                >
                                   <div className="d-flex align-items-center">
                                     <Tag
                                       size={14}
@@ -833,7 +1562,7 @@ export default function FinanceDashboard() {
                                     <span>{expense.id}</span>
                                   </div>
                                 </td>
-                                <td>
+                                <td onClick={() => handleViewDetails(expense)}>
                                   <div className="d-flex flex-column">
                                     <div className="">
                                       Created:{" "}
@@ -853,12 +1582,29 @@ export default function FinanceDashboard() {
                                     </div>
                                   </div>
                                 </td>
-                                <td>{expense.payee}</td>
-                                <td>{expense.payeeNumber}</td>
-                                <td>
+                                <td onClick={() => handleViewDetails(expense)}>
+                                  <div className="fw-medium">
+                                    {expense.payee}
+                                  </div>
+                                  <div className="text-muted small">
+                                    {expense.payeeNumber}
+                                  </div>
+                                </td>
+                                <td onClick={() => handleViewDetails(expense)}>
+                                  <div className="d-flex align-items-center">
+                                    <div className="category-badge bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill">
+                                      <Tag className="me-1" size={12} />
+                                      <span className="fw-medium">
+                                        {expense.category?.name ||
+                                          "Uncategorized"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td onClick={() => handleViewDetails(expense)}>
                                   <div className="d-flex align-items-center">
                                     <div className="transaction-icon me-2 bg-light border bg-opacity-10 p-1 rounded-3">
-                                      <FaListAlt
+                                      <ListUl
                                         className="text-success"
                                         size={14}
                                       />
@@ -877,7 +1623,7 @@ export default function FinanceDashboard() {
                                     </div>
                                   </div>
                                 </td>
-                                <td className="text-success">
+                                <td className="text-success" onClick={() => handleViewDetails(expense)}>
                                   <div className="d-flex flex-column">
                                     <span className="text-success fw-bold">
                                       {expense?.amount?.toLocaleString() ||
@@ -897,7 +1643,7 @@ export default function FinanceDashboard() {
                                     </span>
                                   </div>
                                 </td>
-                                <td>
+                                <td onClick={() => handleViewDetails(expense)}>
                                   <div className="d-flex align-items-center">
                                     <div className="avatar-sm bg-primary bg-opacity-10 text-primary fw-medium d-flex align-items-center justify-content-center rounded-circle me-2">
                                       {expense.user.firstName.charAt(0)}
@@ -911,7 +1657,7 @@ export default function FinanceDashboard() {
                                     </div>
                                   </div>
                                 </td>
-                                <td>
+                                <td onClick={() => handleViewDetails(expense)}>
                                   <Badge
                                     bg={badge.bg}
                                     className="d-inline-flex align-items-center py-2 px-3 rounded-pill bg-opacity-10 text-opacity-100"
@@ -929,75 +1675,119 @@ export default function FinanceDashboard() {
                                   </Badge>
                                 </td>
                                 <td>
-                                  <div className="p-2 rounded-3 d-flex flex-column gap-2">
-                                    {/* Steps Row */}
-                                    <div className="d-flex align-items-center justify-content-between flex-row">
-                                      <div className="d-flex align-items-center flex-wrap gap-1">
-                                        {expense.expenseSteps.map((step) => {
-                                          const pill = stepPillStyle(step);
-                                          const label = `${step.order}${
-                                            step.isOptional ? " (opt)" : ""
-                                          }`;
-                                          const title = `${label} • ${normalizeStatus(
-                                            step.status
-                                          )}${
-                                            step.role?.name
-                                              ? " • " + step.role?.name
-                                              : ""
-                                          }`;
+                                  <div className="approval-timeline-compact p-2 rounded-3">
+                                    {expense.expenseSteps.length > 0 ? (
+                                      <div className="timeline-steps d-flex flex-column gap-1">
+                                        {/* Progress Header */}
+                                        <div className="d-flex align-items-center justify-content-between mb-2">
+                                          <span className="badge bg-secondary-subtle text-dark fw-semibold">
+                                            {completed}/{total} Steps
+                                          </span>
+                                          <span className="text-muted small">
+                                            {progress}% complete
+                                          </span>
+                                          {progress === 100 && (
+                                            <CheckCircleFill
+                                              size={16}
+                                              className="text-success"
+                                            />
+                                          )}
+                                        </div>
 
-                                          return (
-                                            <OverlayTrigger
-                                              key={step.id}
-                                              placement="top"
-                                              overlay={
-                                                <Tooltip id={`ts-${step.id}`}>
-                                                  {title}
-                                                </Tooltip>
-                                              }
-                                            >
-                                              <span
-                                                className={`step-pill ${pill.className} rounded-circle border`}
-                                                style={{
-                                                  width: "18px",
-                                                  height: "18px",
-                                                }}
-                                              ></span>
-                                            </OverlayTrigger>
+                                        {/* Timeline Steps */}
+                                        <div className="steps-flow d-flex align-items-center gap-1 mb-2">
+                                          {expense.expenseSteps.map((step, index) => {
+                                            const status = normalizeStatus(step.status);
+                                            const isLast = index === expense.expenseSteps.length - 1;
+
+                                            return (
+                                              <div key={step.id} className="d-flex align-items-center">
+                                                <OverlayTrigger
+                                                  placement="top"
+                                                  overlay={
+                                                    <Tooltip id={`timeline-${step.id}`}>
+                                                      <div className="text-start">
+                                                        <div className="fw-bold">Step {step.order} {step.isOptional && "(Optional)"}</div>
+                                                        <div>{step.role?.name || "No role assigned"}</div>
+                                                        <div className="text-capitalize">{status.toLowerCase()}</div>
+                                                        {step.approver && (
+                                                          <div className="small">
+                                                            Approver: {step.approver.firstName} {step.approver.lastName}
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                    </Tooltip>
+                                                  }
+                                                >
+                                                  <div
+                                                    className={`timeline-node ${status.toLowerCase()}`}
+                                                    style={{
+                                                      width: "20px",
+                                                      height: "20px",
+                                                      borderRadius: "50%",
+                                                      display: "flex",
+                                                      alignItems: "center",
+                                                      justifyContent: "center",
+                                                      fontSize: "10px",
+                                                      fontWeight: "bold",
+                                                      color: "white",
+                                                      cursor: "pointer",
+                                                      transition: "all 0.2s ease"
+                                                    }}
+                                                  >
+                                                    {status === "APPROVED" && <CheckCircle size={12} />}
+                                                    {status === "REJECTED" && <XCircle size={12} />}
+                                                    {status === "PENDING" && <Stopwatch size={12} />}
+                                                    {status === "NOT_STARTED" && <HourglassSplit size={12} />}
+                                                  </div>
+                                                </OverlayTrigger>
+
+                                                {!isLast && (
+                                                  <ChevronRight
+                                                    size={12}
+                                                    className={`mx-1 ${
+                                                      status === "APPROVED" ? "text-success" : "text-muted"
+                                                    }`}
+                                                  />
+                                                )}
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+
+                                        {/* Progress Bar */}
+                                        <ProgressBar
+                                          now={progress}
+                                          variant={progress === 100 ? "success" : "info"}
+                                          animated={normalizeStatus(expense.status) === "PENDING"}
+                                          className="rounded-pill shadow-sm"
+                                          style={{ height: "6px" }}
+                                        />
+
+                                        {/* Current Step Info */}
+                                        {(() => {
+                                          const currentStep = expense.expenseSteps.find(
+                                            step => normalizeStatus(step.status) === "PENDING"
                                           );
-                                        })}
+                                          if (currentStep) {
+                                            return (
+                                              <div className="current-step-info text-center mt-1">
+                                                <small className="text-muted">
+                                                  <Clock size={10} className="me-1" />
+                                                  Waiting for: {currentStep.role?.name || "Unknown"}
+                                                </small>
+                                              </div>
+                                            );
+                                          }
+                                          return null;
+                                        })()}
                                       </div>
-                                      <span className="badge bg-secondary-subtle text-dark fw-semibold">
-                                        {completed}/{total}
-                                      </span>
-
-                                      {/* Progress Row */}
-                                      <div className="d-flex align-items-center justify-content-between">
-                                        <span className="text-muted small">
-                                          {progress}% complete
-                                        </span>
-                                        {progress === 100 && (
-                                          <CheckCircleFill
-                                            size={16}
-                                            className="text-success"
-                                          />
-                                        )}
+                                    ) : (
+                                      <div className="text-center text-muted py-2">
+                                        <Circle size={16} className="mb-1" />
+                                        <div className="small">No workflow steps</div>
                                       </div>
-                                    </div>
-
-                                    {/* Progress Bar */}
-                                    <ProgressBar
-                                      now={progress}
-                                      variant={
-                                        progress === 100 ? "success" : "info"
-                                      }
-                                      animated={
-                                        normalizeStatus(expense.status) ===
-                                        "PENDING"
-                                      }
-                                      className="rounded-pill shadow-sm"
-                                      style={{ height: "8px" }}
-                                    />
+                                    )}
                                   </div>
                                 </td>
                               </tr>
@@ -1391,7 +2181,7 @@ export default function FinanceDashboard() {
 
                                     <div className="approver-info">
                                       <small className="text-muted">
-                                        <User className="me-1" size={12} />
+                                        <Person className="me-1" size={12} />
                                         {name || "Pending approval"}
                                       </small>
                                     </div>
@@ -1449,35 +2239,300 @@ export default function FinanceDashboard() {
         {/* Custom CSS */}
         <style jsx>{`
           .dashboard-container {
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            position: relative;
           }
+          .dashboard-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+              rgba(102, 126, 234, 0.1) 0%,
+              rgba(118, 75, 162, 0.1) 100%);
+            backdrop-filter: blur(10px);
+            z-index: -1;
+          }
+
+          /* Horizontal Filter Styles */
+          .filters-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          }
+          .filter-header-bar {
+            background: rgba(248, 249, 250, 0.8);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(222, 226, 230, 0.3);
+          }
+          .filter-item {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+            height: 100%;
+          }
+          .filter-item:hover {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+          }
+          .filter-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          .form-select-modern,
+          .form-control-modern {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+            background-color: white;
+          }
+          .form-select-modern:focus,
+          .form-control-modern:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
+            background-color: white;
+          }
+          .btn-modern {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-width: 1.5px;
+          }
+          .btn-modern:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          }
+
+          /* Enhanced Table Styles */
           .transactions-table {
             border-collapse: separate;
             border-spacing: 0;
+            background: white;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
           }
           .transactions-table tr {
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #f1f3f4;
           }
           .transactions-table tr:hover {
-            background-color: rgba(0, 0, 0, 0.02);
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+          }
+          .transactions-table tr:last-child {
+            border-bottom: none;
           }
           .transactions-table td {
-            border-top: 1px solid #f0f0f0;
+            border-top: none;
             vertical-align: middle;
-            padding: 1rem;
+            padding: 1.25rem 1rem;
+            position: relative;
           }
           .transactions-table th {
             border: none;
-            padding: 0.75rem 1rem;
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: #6c757d;
+            padding: 1rem;
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.75rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+          }
+          .transactions-table th:first-child {
+            border-top-left-radius: 0.75rem;
+          }
+          .transactions-table th:last-child {
+            border-top-right-radius: 0.75rem;
+          }
+
+          /* Enhanced Element Styles */
+          .category-badge {
+            font-size: 0.75rem;
+            border: 1px solid rgba(0, 123, 255, 0.2);
+            transition: all 0.2s ease;
+          }
+          .category-badge:hover {
+            background: rgba(0, 123, 255, 0.15) !important;
+            transform: scale(1.05);
           }
           .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+            border: 1px solid #dee2e6;
+            transition: all 0.2s ease;
+          }
+          .transaction-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          }
+          .avatar-sm {
             width: 36px;
             height: 36px;
-            border-radius: 8px;
+            font-size: 0.8rem;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+          }
+          .avatar-sm:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+          }
+
+          /* Progress Enhancement */
+          .step-pill {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease;
+          }
+          .step-pill:hover {
+            transform: scale(1.2);
+          }
+
+          /* Badge Enhancement */
+          .badge {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+          }
+
+          /* Modern Search Enhancement */
+          .modern-search-container {
+            width: 100%;
+          }
+          .search-input-wrapper {
+            position: relative;
+            background: white;
+            border-radius: 0.75rem;
+            border: none;
+            transition: all 0.3s ease;
+            overflow: hidden;
+          }
+          .search-input-wrapper:hover {
+            transform: translateY(-1px);
+          }
+          .search-input-wrapper:focus-within {
+            transform: translateY(-1px);
+          }
+          .search-icon-external {
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+          }
+          .search-icon-external:hover {
+            background: #e9ecef;
+            transform: scale(1.05);
+          }
+          .modern-search-input {
+            border: none !important;
+            padding: 0.75rem 3rem 0.75rem 1rem;
+            font-size: 0.95rem;
+            background: transparent;
+            outline: none;
+            box-shadow: none !important;
+            border-radius: 0;
+          }
+          .modern-search-input::placeholder {
+            color: #adb5bd;
+            font-style: italic;
+          }
+          .modern-search-input:focus::placeholder {
+            color: #6c757d;
+          }
+          .clear-search-btn {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            font-size: 1.1rem;
+            cursor: pointer;
+            z-index: 5;
+            padding: 0.25rem;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+          }
+          .clear-search-btn:hover {
+            color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+            transform: translateY(-50%) scale(1.1);
+          }
+          .search-suggestions {
+            position: absolute;
+            bottom: -1.75rem;
+            left: 0;
+            right: 0;
+            z-index: 4;
+          }
+          .search-suggestion-text {
+            font-size: 0.7rem;
+            color: #6c757d;
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+          }
+          .search-input-wrapper:focus-within .search-suggestion-text {
+            opacity: 1;
+          }
+          .search-results-count {
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(0, 123, 255, 0.05);
+            border-radius: 0.5rem;
+            border-left: 3px solid #007bff;
+            animation: slideInFromTop 0.3s ease;
+          }
+          @keyframes slideInFromTop {
+            from {
+              opacity: 0;
+              transform: translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          /* Card Enhancement */
+          .card {
+            border: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+          }
+          .card:hover {
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+          }
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1719,6 +2774,125 @@ export default function FinanceDashboard() {
           }
           .comments-box {
             border-left: 3px solid #dee2e6;
+          }
+
+          /* Analytics Dashboard Styles */
+          .analytics-card {
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+          }
+          .analytics-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+          }
+          .analytics-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            pointer-events: none;
+          }
+          .chart-container {
+            position: relative;
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            border: 1px solid rgba(0,0,0,0.05);
+          }
+          .chart-container .bg-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+            cursor: pointer;
+            transition: all 0.3s ease;
+          }
+          .chart-container .bg-primary:hover {
+            transform: scaleY(1.1);
+            filter: brightness(1.1);
+          }
+          .category-breakdown .progress {
+            background-color: rgba(0,0,0,0.05);
+            border-radius: 3px;
+          }
+          .category-breakdown .progress-bar {
+            transition: width 0.8s ease;
+            border-radius: 3px;
+          }
+          .status-overview .badge {
+            font-size: 0.7rem;
+            font-weight: 500;
+          }
+
+          /* Timeline Visualization Styles */
+          .approval-timeline-compact {
+            background: rgba(248, 249, 250, 0.5);
+            border: 1px solid rgba(222, 226, 230, 0.3);
+            min-width: 200px;
+          }
+          .timeline-node {
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+          }
+          .timeline-node:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          }
+          .timeline-node.approved {
+            background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+          }
+          .timeline-node.rejected {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+          }
+          .timeline-node.pending {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            animation: pulse 2s infinite;
+          }
+          .timeline-node.not_started {
+            background: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
+          }
+          @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+          }
+          .steps-flow {
+            padding: 0.5rem;
+            background: white;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+          }
+          .current-step-info {
+            background: rgba(255, 193, 7, 0.1);
+            border-radius: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-left: 3px solid #ffc107;
+          }
+
+          /* Bulk Operations Styles */
+          .bulk-actions-bar {
+            animation: slideInFromTop 0.3s ease;
+            transition: all 0.3s ease;
+          }
+          .table-active {
+            background-color: rgba(13, 110, 253, 0.1) !important;
+            border-left: 3px solid #0d6efd;
+          }
+          .table-active:hover {
+            background-color: rgba(13, 110, 253, 0.15) !important;
+          }
+          @keyframes slideInFromTop {
+            from {
+              opacity: 0;
+              transform: translateY(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
           }
         `}</style>
       </Container>

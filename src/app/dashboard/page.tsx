@@ -282,7 +282,7 @@ export default function Dashboard() {
           {/* Time filter controls */}
           <Row className="mb-1">
             <Col>
-              <Card className="border-0 ">
+              <Card className="border-0  shadow">
                 <Card.Body className="py-3 px-4">
                   <div className="d-flex flex-wrap justify-content-between align-items-center">
                     {/* Left side: Filter */}
@@ -335,12 +335,12 @@ export default function Dashboard() {
               </Card>
             </Col>
           </Row>
-
+          <br />
           {/* SUMMARY CARDS */}
           <Row className="mb-4">
             <Col xxl={2} lg={4} md={6} className="mb-3">
               <Card
-                className="h-100 shadow-sm bg-primary bg-opacity-10"
+                className="border-0 border-start border-3 border-primary h-100 shadow-sm bg-primary bg-opacity-10"
                 style={{ borderLeft: "4px solid var(--bs-primary)" }}
               >
                 <Card.Body className="p-3">
@@ -362,7 +362,7 @@ export default function Dashboard() {
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
               <Card
-                className="h-100 shadow-sm bg-success bg-opacity-10"
+                className="border-0 border-start border-3 border-success h-100 shadow-sm bg-success bg-opacity-10"
                 style={{ borderLeft: "4px solid var(--bs-success)" }}
               >
                 <Card.Body className="p-3">
@@ -388,7 +388,7 @@ export default function Dashboard() {
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
               <Card
-                className="h-100 shadow-sm bg-info bg-opacity-10"
+                className="border-0 border-start border-3 border-info h-100 shadow-sm bg-info bg-opacity-10"
                 style={{ borderLeft: "4px solid var(--bs-info)" }}
               >
                 <Card.Body className="p-3">
@@ -413,7 +413,7 @@ export default function Dashboard() {
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
               <Card
-                className="h-100 shadow-sm bg-warning bg-opacity-10"
+                className="border-0 border-start border-3 border-warning h-100 shadow-sm bg-warning bg-opacity-10"
                 style={{ borderLeft: "4px solid var(--bs-warning)" }}
               >
                 <Card.Body className="p-3">
@@ -436,7 +436,7 @@ export default function Dashboard() {
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
               <Card
-                className="h-100 shadow-sm bg-secondary bg-opacity-10"
+                className="border-0 border-start border-3 border-secondary h-100 shadow-sm bg-secondary bg-opacity-10"
                 style={{ borderLeft: "4px solid var(--bs-secondary)" }}
               >
                 <Card.Body className="p-3">
@@ -459,7 +459,7 @@ export default function Dashboard() {
             </Col>
             <Col xxl={2} lg={4} md={6} className="mb-3">
               <Card
-                className="h-100 shadow-sm bg-danger bg-opacity-10"
+                className="border-0 border-start border-3 border-warning h-100 shadow-sm bg-danger bg-opacity-10"
                 style={{ borderLeft: "4px solid var(--bs-danger)" }}
               >
                 <Card.Body className="p-3">
@@ -481,22 +481,25 @@ export default function Dashboard() {
               </Card>
             </Col>
           </Row>
-
+          <br />
           {/* CHARTS ROW */}
           <Row className="mb-4">
             <Col xl={6} className="mb-4">
-              <Card className="h-100 shadow-sm border-0">
-                <Card.Header className="bg-gradient-to-r from-blue-500 to-purple-600 py-4">
+              <Card className="h-100 shadow-sm border">
+                <Card.Header className="bg-primary bg-opacity-10 py-4">
                   <div className="d-flex justify-content-between align-items-center">
                     <div>
-                      <h6 className="mb-1 fw-bold text-white">
+                      <h6 className="mb-1 fw-bold text-primary">
                         📊 Expense Status Distribution
                       </h6>
-                      <p className="mb-0 text-white opacity-75 small">
+                      <p className="mb-0 text-muted small">
                         Track expense approval states
                       </p>
                     </div>
-                    <Badge bg="white" text="primary" className="px-3 py-2 rounded-pill fw-semibold">
+                    <Badge
+                      bg="primary"
+                      className="px-3 py-2 rounded-pill fw-semibold text-white"
+                    >
                       📈 Live Data
                     </Badge>
                   </div>
@@ -538,7 +541,10 @@ export default function Dashboard() {
                       <h6 className=" text-muted text-center mb-3">
                         Pie Chart
                       </h6>
-                      <div style={{ height: "240px" }} className="flex-grow-1 p-2">
+                      <div
+                        style={{ height: "240px" }}
+                        className="flex-grow-1 p-2"
+                      >
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                             <Pie
@@ -568,19 +574,25 @@ export default function Dashboard() {
                             </Pie>
                             <Tooltip
                               contentStyle={{
-                                backgroundColor: '#ffffff',
-                                border: 'none',
-                                borderRadius: '12px',
-                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                                fontSize: '14px'
+                                backgroundColor: "#ffffff",
+                                border: "none",
+                                borderRadius: "12px",
+                                boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                                fontSize: "14px",
                               }}
-                              formatter={(value, name) => [`${value} expenses`, `📋 ${name}`]}
+                              formatter={(value, name) => [
+                                `${value} expenses`,
+                                `📋 ${name}`,
+                              ]}
                             />
                             <Legend
                               verticalAlign="bottom"
                               height={36}
                               iconType="circle"
-                              wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }}
+                              wrapperStyle={{
+                                fontSize: "12px",
+                                paddingTop: "8px",
+                              }}
                             />
                           </PieChart>
                         </ResponsiveContainer>
@@ -590,16 +602,33 @@ export default function Dashboard() {
                       <h6 className=" text-muted text-center mb-3">
                         Bar Chart
                       </h6>
-                      <div style={{ height: "240px" }} className="flex-grow-1 p-2">
+                      <div
+                        style={{ height: "240px" }}
+                        className="flex-grow-1 p-2"
+                      >
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart
                             data={statusChartData}
                             margin={{ top: 20, right: 15, left: 0, bottom: 20 }}
                           >
                             <defs>
-                              <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.9}/>
-                                <stop offset="95%" stopColor="#7C3AED" stopOpacity={0.7}/>
+                              <linearGradient
+                                id="barGradient"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                              >
+                                <stop
+                                  offset="5%"
+                                  stopColor="#4F46E5"
+                                  stopOpacity={0.9}
+                                />
+                                <stop
+                                  offset="95%"
+                                  stopColor="#7C3AED"
+                                  stopOpacity={0.7}
+                                />
                               </linearGradient>
                             </defs>
                             <CartesianGrid
@@ -612,22 +641,25 @@ export default function Dashboard() {
                               dataKey="name"
                               axisLine={false}
                               tickLine={false}
-                              tick={{ fontSize: 11, fill: '#6b7280' }}
+                              tick={{ fontSize: 11, fill: "#6b7280" }}
                             />
                             <YAxis
                               axisLine={false}
                               tickLine={false}
-                              tick={{ fontSize: 11, fill: '#6b7280' }}
+                              tick={{ fontSize: 11, fill: "#6b7280" }}
                             />
                             <Tooltip
                               contentStyle={{
-                                backgroundColor: '#ffffff',
-                                border: 'none',
-                                borderRadius: '12px',
-                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                                fontSize: '14px'
+                                backgroundColor: "#ffffff",
+                                border: "none",
+                                borderRadius: "12px",
+                                boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                                fontSize: "14px",
                               }}
-                              formatter={(value, name) => [`${value} expenses`, '📊 Count']}
+                              formatter={(value, name) => [
+                                `${value} expenses`,
+                                "📊 Count",
+                              ]}
                             />
                             <Bar
                               dataKey="value"
@@ -655,18 +687,21 @@ export default function Dashboard() {
               </Card>
             </Col>
             <Col xl={6} className="mb-4">
-              <Card className="h-100 shadow-sm border-0">
-                <Card.Header className="bg-gradient-to-r from-green-500 to-emerald-600 py-4">
+              <Card className="h-100 shadow-sm border">
+                <Card.Header className="bg-success bg-opacity-10 py-4">
                   <div className="d-flex justify-content-between align-items-center">
                     <div>
-                      <h6 className="mb-1 fw-bold text-white">
+                      <h6 className="mb-1 fw-bold text-success">
                         💰 Payment Status Distribution
                       </h6>
-                      <p className="mb-0 text-white opacity-75 small">
+                      <p className="mb-0 text-muted small">
                         Monitor payment processing states
                       </p>
                     </div>
-                    <Badge bg="white" text="success" className="px-3 py-2 rounded-pill fw-semibold">
+                    <Badge
+                      bg="success"
+                      className="px-3 py-2 rounded-pill fw-semibold text-white"
+                    >
                       💳 Payment Data
                     </Badge>
                   </div>
@@ -732,19 +767,25 @@ export default function Dashboard() {
                           </Pie>
                           <Tooltip
                             contentStyle={{
-                              backgroundColor: '#ffffff',
-                              border: 'none',
-                              borderRadius: '12px',
-                              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                              fontSize: '14px'
+                              backgroundColor: "#ffffff",
+                              border: "none",
+                              borderRadius: "12px",
+                              boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                              fontSize: "14px",
                             }}
-                            formatter={(value, name) => [`${value} payments`, `💰 ${name}`]}
+                            formatter={(value, name) => [
+                              `${value} payments`,
+                              `💰 ${name}`,
+                            ]}
                           />
                           <Legend
                             verticalAlign="bottom"
                             height={30}
                             iconType="circle"
-                            wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }}
+                            wrapperStyle={{
+                              fontSize: "12px",
+                              paddingTop: "8px",
+                            }}
                           />
                         </PieChart>
                       </ResponsiveContainer>
@@ -758,17 +799,20 @@ export default function Dashboard() {
           {/* CATEGORIES AND DEPARTMENTS */}
           <Row className="mb-4">
             <Col lg={6} className="mb-4">
-              <Card className="h-100 shadow-sm border-0">
-                <Card.Header className="bg-gradient-to-r from-orange-500 to-red-600 py-4 d-flex justify-content-between align-items-center">
+              <Card className="h-100 shadow-sm border">
+                <Card.Header className="bg-warning bg-opacity-10 py-4 d-flex justify-content-between align-items-center">
                   <div>
-                    <h6 className="mb-1 fw-bold text-white">
+                    <h6 className="mb-1 fw-bold text-warning">
                       📂 Expenses by Category
                     </h6>
-                    <p className="mb-0 text-white opacity-75 small">
+                    <p className="mb-0 text-muted small">
                       Category-wise expense breakdown
                     </p>
                   </div>
-                  <Badge bg="white" text="warning" className="px-3 py-2 rounded-pill fw-semibold">
+                  <Badge
+                    bg="warning"
+                    className="px-3 py-2 rounded-pill fw-semibold text-white"
+                  >
                     📊 Analysis
                   </Badge>
                 </Card.Header>
@@ -814,32 +858,54 @@ export default function Dashboard() {
                 <Card.Footer className="bg-white">
                   <div style={{ height: "240px" }} className="p-3">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={categoryChartData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
+                      <BarChart
+                        data={categoryChartData}
+                        margin={{ top: 20, right: 20, left: 0, bottom: 20 }}
+                      >
                         <defs>
-                          <linearGradient id="categoryGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#f97316" stopOpacity={0.9}/>
-                            <stop offset="95%" stopColor="#dc2626" stopOpacity={0.7}/>
+                          <linearGradient
+                            id="categoryGradient"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="5%"
+                              stopColor="#f97316"
+                              stopOpacity={0.9}
+                            />
+                            <stop
+                              offset="95%"
+                              stopColor="#dc2626"
+                              stopOpacity={0.7}
+                            />
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={true} vertical={false} />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="#f0f0f0"
+                          horizontal={true}
+                          vertical={false}
+                        />
                         <XAxis
                           dataKey="name"
                           axisLine={false}
                           tickLine={false}
-                          tick={{ fontSize: 11, fill: '#6b7280' }}
+                          tick={{ fontSize: 11, fill: "#6b7280" }}
                         />
                         <YAxis
                           axisLine={false}
                           tickLine={false}
-                          tick={{ fontSize: 11, fill: '#6b7280' }}
+                          tick={{ fontSize: 11, fill: "#6b7280" }}
                         />
                         <Tooltip
                           contentStyle={{
-                            backgroundColor: '#ffffff',
-                            border: 'none',
-                            borderRadius: '12px',
-                            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                            fontSize: '14px'
+                            backgroundColor: "#ffffff",
+                            border: "none",
+                            borderRadius: "12px",
+                            boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                            fontSize: "14px",
                           }}
                           formatter={(value) => [
                             `$${Number(value).toLocaleString(undefined, {
@@ -849,7 +915,12 @@ export default function Dashboard() {
                             "💰 Amount",
                           ]}
                         />
-                        <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                        <Legend
+                          wrapperStyle={{
+                            fontSize: "12px",
+                            paddingTop: "10px",
+                          }}
+                        />
                         <Bar
                           dataKey="totalAmount"
                           fill="url(#categoryGradient)"
@@ -865,17 +936,20 @@ export default function Dashboard() {
               </Card>
             </Col>
             <Col lg={6} className="mb-4">
-              <Card className="h-100 shadow-sm border-0">
-                <Card.Header className="bg-gradient-to-r from-purple-500 to-pink-600 py-4 d-flex justify-content-between align-items-center">
+              <Card className="h-100 shadow-sm border">
+                <Card.Header className="bg-info bg-opacity-10 py-4 d-flex justify-content-between align-items-center">
                   <div>
-                    <h6 className="mb-1 fw-bold text-white">
+                    <h6 className="mb-1 fw-bold text-info">
                       🏢 Expenses by Department
                     </h6>
-                    <p className="mb-0 text-white opacity-75 small">
+                    <p className="mb-0 text-muted small">
                       Department-wise spending analysis
                     </p>
                   </div>
-                  <Badge bg="white" text="info" className="px-3 py-2 rounded-pill fw-semibold">
+                  <Badge
+                    bg="info"
+                    className="px-3 py-2 rounded-pill fw-semibold text-white"
+                  >
                     📈 Trends
                   </Badge>
                 </Card.Header>
@@ -921,32 +995,54 @@ export default function Dashboard() {
                 <Card.Footer className="bg-white">
                   <div style={{ height: "240px" }} className="p-3">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={departmentChartData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
+                      <BarChart
+                        data={departmentChartData}
+                        margin={{ top: 20, right: 20, left: 0, bottom: 20 }}
+                      >
                         <defs>
-                          <linearGradient id="departmentGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.9}/>
-                            <stop offset="95%" stopColor="#ec4899" stopOpacity={0.7}/>
+                          <linearGradient
+                            id="departmentGradient"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="5%"
+                              stopColor="#8b5cf6"
+                              stopOpacity={0.9}
+                            />
+                            <stop
+                              offset="95%"
+                              stopColor="#ec4899"
+                              stopOpacity={0.7}
+                            />
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={true} vertical={false} />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="#f0f0f0"
+                          horizontal={true}
+                          vertical={false}
+                        />
                         <XAxis
                           dataKey="name"
                           axisLine={false}
                           tickLine={false}
-                          tick={{ fontSize: 11, fill: '#6b7280' }}
+                          tick={{ fontSize: 11, fill: "#6b7280" }}
                         />
                         <YAxis
                           axisLine={false}
                           tickLine={false}
-                          tick={{ fontSize: 11, fill: '#6b7280' }}
+                          tick={{ fontSize: 11, fill: "#6b7280" }}
                         />
                         <Tooltip
                           contentStyle={{
-                            backgroundColor: '#ffffff',
-                            border: 'none',
-                            borderRadius: '12px',
-                            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                            fontSize: '14px'
+                            backgroundColor: "#ffffff",
+                            border: "none",
+                            borderRadius: "12px",
+                            boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                            fontSize: "14px",
                           }}
                           formatter={(value) => [
                             `$${Number(value).toLocaleString(undefined, {
@@ -956,7 +1052,12 @@ export default function Dashboard() {
                             "🏢 Amount",
                           ]}
                         />
-                        <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                        <Legend
+                          wrapperStyle={{
+                            fontSize: "12px",
+                            paddingTop: "10px",
+                          }}
+                        />
                         <Bar
                           dataKey="totalAmount"
                           fill="url(#departmentGradient)"
@@ -976,7 +1077,7 @@ export default function Dashboard() {
           {/* APPROVAL STEPS AND CATEGORY DETAILS */}
           <Row className="mb-4">
             <Col md={6} className="mb-4">
-              <Card className="h-100 shadow-sm border-0">
+              <Card className="h-100 shadow-sm border">
                 <Card.Header className="bg-white py-3">
                   <h6 className="mb-0">Approval Steps</h6>
                 </Card.Header>
@@ -1006,7 +1107,7 @@ export default function Dashboard() {
               </Card>
             </Col>
             <Col md={6} className="mb-4">
-              <Card className="h-100 shadow-sm border-0">
+              <Card className="h-100 shadow-sm border">
                 <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
                   <h6 className="mb-0">Top Categories</h6>
                 </Card.Header>
@@ -1077,26 +1178,6 @@ export default function Dashboard() {
 
       {/* Custom CSS for enhanced styling */}
       <style jsx global>{`
-        .bg-gradient-to-r.from-blue-500.to-purple-600 {
-          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%) !important;
-        }
-
-        .bg-gradient-to-r.from-green-500.to-emerald-600 {
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-        }
-
-        .bg-gradient-to-r.from-orange-500.to-red-600 {
-          background: linear-gradient(135deg, #f97316 0%, #dc2626 100%) !important;
-        }
-
-        .bg-gradient-to-r.from-purple-500.to-pink-600 {
-          background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%) !important;
-        }
-
-        .text-white.opacity-75 {
-          color: rgba(255, 255, 255, 0.75) !important;
-        }
-
         .chart-container {
           transition: all 0.3s ease;
         }

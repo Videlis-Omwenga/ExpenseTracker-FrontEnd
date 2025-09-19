@@ -7,7 +7,6 @@ import {
   Card,
   Col,
   Container,
-  Dropdown,
   Form,
   Modal,
   Pagination,
@@ -15,9 +14,7 @@ import {
   Row,
   Table,
 } from "react-bootstrap";
-import { FaInfoCircle, FaUser, FaClock, FaComment } from "react-icons/fa";
 import {
-  Filter,
   ListCheck,
   CheckCircle,
   ClockHistory,
@@ -29,9 +26,19 @@ import {
   ExclamationTriangle,
   InfoCircle,
   XCircle,
+  ArrowDownCircle,
+  Tag,
+  Person,
+  Clock,
+  ChatText,
+  Search,
+  CashStack,
+  CalendarEvent,
+  ArrowRepeat,
+  Funnel,
+  Building,
 } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
-import { ArrowDownCircle, Tag } from "lucide-react";
 import TopNavbar from "@/app/components/Navbar";
 import AuthProvider from "@/app/authPages/tokenData";
 import { BASE_API_URL } from "@/app/static/apiConfig";
@@ -144,6 +151,16 @@ export default function ExpenseApprovalPage() {
   const [approvalFilter, setApprovalFilter] = useState<string>("all");
   const [selectedExpenses, setSelectedExpenses] = useState<number[]>([]);
 
+  // Enhanced filter state
+  const [departmentFilter, setDepartmentFilter] = useState<number | "all">(
+    "all"
+  );
+  const [minAmount, setMinAmount] = useState("");
+  const [maxAmount, setMaxAmount] = useState("");
+  const [dateRangeFilter, setDateRangeFilter] = useState("All Time");
+  const [submissionPeriodFilter, setSubmissionPeriodFilter] =
+    useState("All Periods");
+
   // Helper function to get approval progress string (e.g. "1/2")
   const getApprovalProgress = (expense: Expense): string => {
     const totalSteps = expense.expenseSteps?.length || 0;
@@ -180,12 +197,23 @@ export default function ExpenseApprovalPage() {
     });
     return Array.from(categoryMap.values());
   }, [expenses]);
+
+  // Extract unique departments from expenses
+  const departments = useMemo(() => {
+    const departmentMap = new Map<number, Department>();
+    expenses.forEach((expense) => {
+      if (expense.department) {
+        departmentMap.set(expense.department.id, expense.department);
+      }
+    });
+    return Array.from(departmentMap.values());
+  }, [expenses]);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  const itemsPerPage = 100;
 
   // Check if all selected expenses have the same category and if total amount is within budget
   const { hasSameCategory, exceedsBudget, budgetRemaining, totalAmount } =
@@ -397,6 +425,7 @@ export default function ExpenseApprovalPage() {
   const filteredExpenses = useMemo(() => {
     const q = searchQuery.toLowerCase();
     return expenses.filter((exp) => {
+      // Enhanced search functionality
       const employee = `${exp.user?.firstName ?? ""} ${
         exp.user?.lastName ?? ""
       }`.trim();
@@ -404,8 +433,8 @@ export default function ExpenseApprovalPage() {
         exp.department?.name || exp.user?.department?.name || "";
       const category = exp.category?.name || "";
       const description = exp.description || "";
-      const regionName = exp.region?.name || "";
-      const paymentMethodName = exp.paymentMethod?.name || "";
+      const payee = exp.payee || "";
+      const payeeNumber = exp.payeeNumber || "";
 
       const matchesSearch =
         q.length === 0 ||
@@ -413,26 +442,98 @@ export default function ExpenseApprovalPage() {
         department.toLowerCase().includes(q) ||
         category.toLowerCase().includes(q) ||
         description.toLowerCase().includes(q) ||
-        regionName.toLowerCase().includes(q) ||
-        paymentMethodName.toLowerCase().includes(q);
+        payee.toLowerCase().includes(q) ||
+        payeeNumber.toLowerCase().includes(q);
 
+      // Existing filters
       const matchesStatus =
         statusFilter === "all" || exp.status === statusFilter;
       const matchesCategory =
         categoryFilter === "all" || exp.category?.id === categoryFilter;
-
-      // Filter by approval progress (e.g. "1/2")
       const matchesApprovalProgress =
         approvalFilter === "all" || getApprovalProgress(exp) === approvalFilter;
+
+      // New filters
+      const matchesDepartment =
+        departmentFilter === "all" || exp.department?.id === departmentFilter;
+
+      // Amount range filter
+      const matchesAmount = (() => {
+        const amount = exp.amount || 0;
+        const min = minAmount ? parseFloat(minAmount) : 0;
+        const max = maxAmount ? parseFloat(maxAmount) : Number.MAX_VALUE;
+        return amount >= min && amount <= max;
+      })();
+
+      // Date range filter
+      const matchesDateRange = (() => {
+        if (dateRangeFilter === "All Time") return true;
+
+        const now = new Date();
+        const expenseDate = new Date(exp.createdAt);
+
+        if (dateRangeFilter === "Today") {
+          return expenseDate.toDateString() === now.toDateString();
+        } else if (dateRangeFilter === "This Week") {
+          const startOfWeek = new Date(now);
+          startOfWeek.setDate(now.getDate() - now.getDay());
+          return expenseDate >= startOfWeek;
+        } else if (dateRangeFilter === "This Month") {
+          return (
+            expenseDate.getMonth() === now.getMonth() &&
+            expenseDate.getFullYear() === now.getFullYear()
+          );
+        } else if (dateRangeFilter === "Last 30 Days") {
+          const thirtyDaysAgo = new Date(now);
+          thirtyDaysAgo.setDate(now.getDate() - 30);
+          return expenseDate >= thirtyDaysAgo;
+        }
+        return true;
+      })();
+
+      // Submission period filter (based on updatedAt)
+      const matchesSubmissionPeriod = (() => {
+        if (submissionPeriodFilter === "All Periods") return true;
+
+        const now = new Date();
+        const submissionDate = new Date(exp.updatedAt);
+
+        if (submissionPeriodFilter === "Recently Updated") {
+          const sevenDaysAgo = new Date(now);
+          sevenDaysAgo.setDate(now.getDate() - 7);
+          return submissionDate >= sevenDaysAgo;
+        } else if (submissionPeriodFilter === "This Month") {
+          return (
+            submissionDate.getMonth() === now.getMonth() &&
+            submissionDate.getFullYear() === now.getFullYear()
+          );
+        }
+        return true;
+      })();
 
       return (
         matchesSearch &&
         matchesStatus &&
         matchesCategory &&
-        matchesApprovalProgress
+        matchesApprovalProgress &&
+        matchesDepartment &&
+        matchesAmount &&
+        matchesDateRange &&
+        matchesSubmissionPeriod
       );
     });
-  }, [expenses, searchQuery, statusFilter, categoryFilter, approvalFilter]);
+  }, [
+    expenses,
+    searchQuery,
+    statusFilter,
+    categoryFilter,
+    approvalFilter,
+    departmentFilter,
+    minAmount,
+    maxAmount,
+    dateRangeFilter,
+    submissionPeriodFilter,
+  ]);
 
   /** Pagination */
   const totalPages = Math.max(
@@ -778,135 +879,274 @@ export default function ExpenseApprovalPage() {
           </Modal.Footer>
         </Modal>
 
-        {/* Table */}
+        {/* Enhanced Search and Filters */}
         <Card className="mb-4">
-          <Card.Header className="bg-white border-bottom-0 d-flex justify-content-between align-items-center flex-wrap">
-            <h5 className="mb-0 me-3">Expense Requests</h5>
-            <div className="d-flex flex-wrap gap-2 mt-2 mt-md-0">
-              <div className="search-box d-flex">
-                <Form.Control
-                  type="search"
-                  placeholder="Search expenses..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setCurrentPage(1);
-                    setSearchQuery(e.target.value);
+          <Card.Header className="bg-white p-3">
+            {/* Search and Action Row */}
+            <Row className="align-items-center g-3 mb-3">
+              <Col xs={12} md={4}>
+                <h5 className="mb-0">Expense Requests</h5>
+                <small className="text-muted">
+                  Showing{" "}
+                  {Math.min(
+                    (currentPage - 1) * itemsPerPage + 1,
+                    filteredExpenses.length
+                  )}
+                  -
+                  {Math.min(
+                    currentPage * itemsPerPage,
+                    filteredExpenses.length
+                  )}{" "}
+                  of {filteredExpenses.length} expenses
+                </small>
+              </Col>
+              <Col xs={12} md={5} className="mb-2 mb-md-0">
+                <div className="modern-search-container position-relative">
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="search-icon-external border">
+                      <Search size={18} className="text-primary" />
+                    </div>
+                    <div className="search-input-wrapper flex-grow-1">
+                      <Form.Control
+                        type="search"
+                        placeholder="Search by payee, payee number, description, employee, category..."
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setCurrentPage(1);
+                          setSearchQuery(e.target.value);
+                        }}
+                        className="modern-search-input"
+                      />
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          className="clear-search-btn"
+                          onClick={() => setSearchQuery("")}
+                          aria-label="Clear search"
+                        >
+                          <XCircle size={16} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  {searchQuery && (
+                    <div className="search-results-count">
+                      <small className="text-primary fw-medium">
+                        <Funnel size={12} className="me-1" />
+                        {filteredExpenses.length} results found
+                      </small>
+                    </div>
+                  )}
+                </div>
+              </Col>
+              <Col xs={12} md={3} className="text-end">
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  onClick={() => window.print()}
+                  title="Quick export via browser print"
+                  className="me-2"
+                >
+                  <Download size={16} className="me-1" />
+                  Export
+                </Button>
+              </Col>
+            </Row>
+
+            {/* Horizontal Filters Row */}
+            <div className="filters-section">
+              <div className="filter-header-bar d-flex align-items-center justify-content-between mb-3 p-3 bg-success bg-opacity-10 rounded border">
+                <h6 className="mb-0 fw-bold text-success">
+                  <Funnel className="me-2" size={16} />
+                  Filters
+                </h6>
+                <Button
+                  variant="outline-success"
+                  size="sm"
+                  className="btn-modern text-success"
+                  onClick={() => {
+                    setStatusFilter("All Statuses");
+                    setDateRangeFilter("All Time");
+                    setCategoryFilter("All Categories");
+                    setMinAmount("");
+                    setMaxAmount("");
+                    setApprovalFilter("All Approval Status");
+                    setSearchQuery("");
                   }}
-                  className="ps-4"
-                />
+                >
+                  <ArrowRepeat className="me-1" size={14} />
+                  Reset All
+                </Button>
               </div>
-              <Dropdown className="me-2">
-                <Dropdown.Toggle variant="outline-secondary" size="sm">
-                  <Filter size={16} className="me-1" />
-                  Status:{" "}
-                  {statusFilter === "all" ? "All" : humanStatus(statusFilter)}
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setStatusFilter("all");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    All
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setStatusFilter("PENDING");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    Pending
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setStatusFilter("APPROVED");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    Approved
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setStatusFilter("REJECTED");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    Rejected
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
 
-              <Dropdown className="me-2">
-                <Dropdown.Toggle variant="outline-secondary" size="sm">
-                  <ListCheck size={16} className="me-1" />
-                  Approval: {approvalFilter === "all" ? "All" : approvalFilter}
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setApprovalFilter("all");
-                      setCurrentPage(1);
-                    }}
-                    active={approvalFilter === "all"}
-                  >
-                    All Approvals
-                  </Dropdown.Item>
-                  {approvalStatuses.map((status) => (
-                    <Dropdown.Item
-                      key={status}
-                      onClick={() => {
-                        setApprovalFilter(status);
-                        setCurrentPage(1);
-                      }}
-                      active={approvalFilter === status}
-                    >
-                      {status}
-                    </Dropdown.Item>
-                  ))}
-                </Dropdown.Menu>
-              </Dropdown>
-
-              <Dropdown>
-                <Dropdown.Toggle variant="outline-secondary" size="sm">
-                  <Filter size={16} className="me-1" />
-                  Category:{" "}
-                  {categoryFilter === "all"
-                    ? "All"
-                    : categories.find((c) => c.id === categoryFilter)?.name ||
-                      "All"}
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setCategoryFilter("all");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    All Categories
-                  </Dropdown.Item>
-                  {categories.map((category) => (
-                    <Dropdown.Item
-                      key={category.id}
-                      onClick={() => {
-                        setCategoryFilter(category.id);
+              <Row className="g-3">
+                {/* Status Filter */}
+                <Col xs={12} sm={6} md={2}>
+                  <div className="filter-item">
+                    <label className="filter-label">
+                      <CheckCircle className="me-1" size={12} />
+                      Status
+                    </label>
+                    <Form.Select
+                      size="sm"
+                      className="form-select-modern"
+                      value={statusFilter}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value as any);
                         setCurrentPage(1);
                       }}
                     >
-                      {category.name}
-                    </Dropdown.Item>
-                  ))}
-                </Dropdown.Menu>
-              </Dropdown>
-              <Button
-                variant="outline-primary"
-                size="sm"
-                onClick={() => window.print()}
-                title="Quick export via browser print"
-              >
-                <Download size={16} className="me-1" />
-                Export
-              </Button>
+                      <option value="all">All</option>
+                      <option value="PENDING">Pending</option>
+                      <option value="APPROVED">Approved</option>
+                      <option value="REJECTED">Rejected</option>
+                      <option value="PAID">Paid</option>
+                    </Form.Select>
+                  </div>
+                </Col>
+
+                {/* Category Filter */}
+                <Col xs={12} sm={6} md={2}>
+                  <div className="filter-item">
+                    <label className="filter-label">
+                      <Tag className="me-1" size={12} />
+                      Category
+                    </label>
+                    <Form.Select
+                      size="sm"
+                      className="form-select-modern"
+                      value={categoryFilter}
+                      onChange={(e) => {
+                        setCategoryFilter(
+                          e.target.value === "all"
+                            ? "all"
+                            : Number(e.target.value)
+                        );
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <option value="all">All</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </div>
+                </Col>
+
+                {/* Department Filter */}
+                <Col xs={12} sm={6} md={2}>
+                  <div className="filter-item">
+                    <label className="filter-label">
+                      <Building className="me-1" size={12} />
+                      Department
+                    </label>
+                    <Form.Select
+                      size="sm"
+                      className="form-select-modern"
+                      value={departmentFilter}
+                      onChange={(e) => {
+                        setDepartmentFilter(
+                          e.target.value === "all"
+                            ? "all"
+                            : Number(e.target.value)
+                        );
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <option value="all">All</option>
+                      {departments.map((department) => (
+                        <option key={department.id} value={department.id}>
+                          {department.name}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </div>
+                </Col>
+
+                {/* Amount Range */}
+                <Col xs={12} sm={6} md={2}>
+                  <div className="filter-item">
+                    <label className="filter-label">
+                      <CashStack className="me-1" size={12} />
+                      Amount Range (KES)
+                    </label>
+                    <Row className="g-1">
+                      <Col xs={6}>
+                        <Form.Control
+                          size="sm"
+                          type="number"
+                          placeholder="Min"
+                          value={minAmount}
+                          onChange={(e) => setMinAmount(e.target.value)}
+                          className="form-control-modern"
+                        />
+                      </Col>
+                      <Col xs={6}>
+                        <Form.Control
+                          size="sm"
+                          type="number"
+                          placeholder="Max"
+                          value={maxAmount}
+                          onChange={(e) => setMaxAmount(e.target.value)}
+                          className="form-control-modern"
+                        />
+                      </Col>
+                    </Row>
+                  </div>
+                </Col>
+
+                {/* Date Range Filter */}
+                <Col xs={12} sm={6} md={2}>
+                  <div className="filter-item">
+                    <label className="filter-label">
+                      <CalendarEvent className="me-1" size={12} />
+                      Created Date
+                    </label>
+                    <Form.Select
+                      size="sm"
+                      className="form-select-modern"
+                      value={dateRangeFilter}
+                      onChange={(e) => setDateRangeFilter(e.target.value)}
+                    >
+                      <option value="All Time">All Time</option>
+                      <option value="Today">Today</option>
+                      <option value="This Week">This Week</option>
+                      <option value="This Month">This Month</option>
+                      <option value="Last 30 Days">Last 30 Days</option>
+                    </Form.Select>
+                  </div>
+                </Col>
+
+                {/* Approval Progress Filter */}
+                <Col xs={12} sm={6} md={2}>
+                  <div className="filter-item">
+                    <label className="filter-label">
+                      <ListCheck className="me-1" size={12} />
+                      Approval Progress
+                    </label>
+                    <Form.Select
+                      size="sm"
+                      className="form-select-modern"
+                      value={approvalFilter}
+                      onChange={(e) => {
+                        setApprovalFilter(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <option value="all">All</option>
+                      {approvalStatuses
+                        .filter((status) => status !== "all")
+                        .map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                    </Form.Select>
+                  </div>
+                </Col>
+              </Row>
             </div>
           </Card.Header>
 
@@ -1370,7 +1610,7 @@ export default function ExpenseApprovalPage() {
                       <div className="bg-secondary bg-opacity-10 p-3 rounded-3">
                         {selectedExpense.expenseSteps.length === 0 ? (
                           <div className="text-muted fst-italic d-flex align-items-center bg-light p-3 rounded-3">
-                            <FaInfoCircle
+                            <InfoCircle
                               size={16}
                               className="me-2 text-secondary"
                             />
@@ -1430,7 +1670,7 @@ export default function ExpenseApprovalPage() {
 
                                   <div className="small text-muted d-flex flex-wrap gap-3">
                                     <span className="d-flex align-items-center">
-                                      <FaUser className="me-1 text-secondary" />
+                                      <Person className="me-1 text-secondary" />
                                       {step.approver
                                         ? `${step.approver.firstName} ${step.approver.lastName}`
                                         : "—"}
@@ -1438,14 +1678,14 @@ export default function ExpenseApprovalPage() {
 
                                     {step.updatedAt && (
                                       <span className="d-flex align-items-center">
-                                        <FaClock className="me-1 text-secondary" />
+                                        <Clock className="me-1 text-secondary" />
                                         {formatDate(step.updatedAt)}
                                       </span>
                                     )}
 
                                     {step.comments && (
                                       <span className="d-flex align-items-center">
-                                        <FaComment className="me-1 text-secondary" />
+                                        <ChatText className="me-1 text-secondary" />
                                         {step.comments}
                                       </span>
                                     )}
@@ -1509,6 +1749,151 @@ export default function ExpenseApprovalPage() {
             </>
           )}
         </Modal>
+
+        {/* Enhanced CSS Styles */}
+        <style jsx>{`
+          /* Modern Search Styles */
+          .modern-search-container {
+            width: 100%;
+          }
+          .search-icon-external {
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+          }
+          .search-icon-external:hover {
+            background: #e9ecef;
+            transform: scale(1.05);
+          }
+          .search-input-wrapper {
+            position: relative;
+            background: white;
+            border-radius: 0.75rem;
+            border: none;
+            transition: all 0.3s ease;
+            overflow: hidden;
+          }
+          .search-input-wrapper:hover {
+            transform: translateY(-1px);
+          }
+          .search-input-wrapper:focus-within {
+            transform: translateY(-1px);
+          }
+          .modern-search-input {
+            border: none !important;
+            padding: 0.75rem 3rem 0.75rem 1rem;
+            font-size: 0.95rem;
+            background: transparent;
+            outline: none;
+            box-shadow: none !important;
+            border-radius: 0;
+          }
+          .modern-search-input::placeholder {
+            color: #adb5bd;
+            font-style: italic;
+          }
+          .clear-search-btn {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            z-index: 5;
+            padding: 0.25rem;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+          }
+          .clear-search-btn:hover {
+            color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+            transform: translateY(-50%) scale(1.1);
+          }
+          .search-results-count {
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(0, 123, 255, 0.05);
+            border-radius: 0.5rem;
+            border-left: 3px solid #007bff;
+            animation: slideInFromTop 0.3s ease;
+          }
+          @keyframes slideInFromTop {
+            from {
+              opacity: 0;
+              transform: translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          /* Filter Styles */
+          .filters-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          }
+          .filter-header-bar {
+            background: rgba(248, 249, 250, 0.8);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(222, 226, 230, 0.3);
+          }
+          .filter-item {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+            height: 100%;
+          }
+          .filter-item:hover {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+          }
+          .filter-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          .form-select-modern,
+          .form-control-modern {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+            background-color: white;
+          }
+          .form-select-modern:focus,
+          .form-control-modern:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
+            background-color: white;
+          }
+          .btn-modern {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-width: 1.5px;
+          }
+          .btn-modern:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          }
+        `}</style>
       </Container>
     </AuthProvider>
   );

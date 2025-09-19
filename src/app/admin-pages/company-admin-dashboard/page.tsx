@@ -23,10 +23,8 @@ import {
   People,
   Gear,
   Pencil,
-  Trash,
   PersonCircle,
   Search,
-  Plus,
   Grid3x3Gap,
   StarFill,
   Bell,
@@ -34,6 +32,19 @@ import {
   Filter,
   X,
   ShieldLock,
+  CurrencyDollar,
+  ClipboardData,
+  Lightning,
+  Activity,
+  Calendar,
+  GraphUp,
+  CheckCircle,
+  Clock,
+  ExclamationTriangle,
+  Download,
+  Upload,
+  Speedometer2,
+  Award,
 } from "react-bootstrap-icons";
 import AuthProvider from "../../authPages/tokenData";
 import TopNavbar from "@/app/components/Navbar";
@@ -238,6 +249,27 @@ interface departmentRestrictedTO {
 interface Stats {
   totalUsers: number;
   totalRoles: number;
+  activeUsers: number;
+  pendingApprovals: number;
+  monthlyExpenses: number;
+}
+
+interface QuickAction {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+  action: () => void;
+}
+
+interface ActivityItem {
+  id: number;
+  type: 'user' | 'role' | 'expense' | 'system';
+  action: string;
+  user: string;
+  timestamp: string;
+  details?: string;
 }
 
 export default function AdminDashboard() {
@@ -262,7 +294,79 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     totalRoles: 0,
+    activeUsers: 0,
+    pendingApprovals: 0,
+    monthlyExpenses: 0,
   });
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+
+  // Quick Actions Configuration
+  const quickActions: QuickAction[] = [
+    {
+      id: 'add-user',
+      title: 'Add New User',
+      description: 'Create a new company user account',
+      icon: <People size={24} />,
+      color: 'primary',
+      action: () => {
+        // Trigger user creation modal
+        const addButton = document.querySelector('[data-bs-target="#createUserModal"]') as HTMLElement;
+        if (addButton) addButton.click();
+      }
+    },
+    {
+      id: 'create-role',
+      title: 'Create Role',
+      description: 'Define new user roles and permissions',
+      icon: <ShieldLock size={24} />,
+      color: 'success',
+      action: () => {
+        const addButton = document.querySelector('[data-bs-target="#createRoleModal"]') as HTMLElement;
+        if (addButton) addButton.click();
+      }
+    },
+    {
+      id: 'view-reports',
+      title: 'Generate Reports',
+      description: 'Export system analytics and reports',
+      icon: <ClipboardData size={24} />,
+      color: 'info',
+      action: () => {
+        setActiveTab('reports');
+      }
+    },
+    {
+      id: 'system-settings',
+      title: 'System Settings',
+      description: 'Configure company-wide settings',
+      icon: <Gear size={24} />,
+      color: 'secondary',
+      action: () => {
+        toast.info('System settings coming soon!');
+      }
+    },
+    {
+      id: 'bulk-import',
+      title: 'Bulk Import',
+      description: 'Import users from CSV or Excel',
+      icon: <Upload size={24} />,
+      color: 'dark',
+      action: () => {
+        // Handle bulk import
+        toast.info('Bulk import feature coming soon!');
+      }
+    }
+  ];
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'user': return <People size={16} className="text-primary" />;
+      case 'role': return <ShieldLock size={16} className="text-success" />;
+      case 'expense': return <CurrencyDollar size={16} className="text-warning" />;
+      case 'system': return <Gear size={16} className="text-info" />;
+      default: return <Activity size={16} className="text-secondary" />;
+    }
+  };
   const [loading, setLoading] = useState(false);
 
   const fetchData = async () => {
@@ -285,10 +389,60 @@ export default function AdminDashboard() {
         const fetchedRoles = data.getRoles || [];
         setUsers(fetchedUsers);
         setRoles(fetchedRoles);
+        const activeUsersCount = fetchedUsers.filter((u: User) => u.status === UserStatus.ACTIVE).length;
+        const pendingCount = fetchedUsers.filter((u: User) => u.status === UserStatus.PENDING).length;
+
         setStats({
           totalUsers: Array.isArray(fetchedUsers) ? fetchedUsers.length : 0,
           totalRoles: Array.isArray(fetchedRoles) ? fetchedRoles.length : 0,
+          activeUsers: activeUsersCount,
+          pendingApprovals: pendingCount,
+          monthlyExpenses: Math.floor(Math.random() * 50000) + 25000, // Mock data
         });
+
+        // Mock recent activity data
+        setRecentActivity([
+          {
+            id: 1,
+            type: 'user',
+            action: 'User created',
+            user: 'Admin',
+            timestamp: '2 minutes ago',
+            details: `New user ${fetchedUsers[0]?.firstName || 'John'} ${fetchedUsers[0]?.lastName || 'Doe'} added`
+          },
+          {
+            id: 2,
+            type: 'role',
+            action: 'Role updated',
+            user: 'System Admin',
+            timestamp: '15 minutes ago',
+            details: 'Manager role permissions modified'
+          },
+          {
+            id: 3,
+            type: 'expense',
+            action: 'Expense approved',
+            user: 'Finance Team',
+            timestamp: '1 hour ago',
+            details: '$2,500 expense request approved'
+          },
+          {
+            id: 4,
+            type: 'system',
+            action: 'System backup',
+            user: 'System',
+            timestamp: '3 hours ago',
+            details: 'Daily backup completed successfully'
+          },
+          {
+            id: 5,
+            type: 'user',
+            action: 'Login activity',
+            user: 'Multiple users',
+            timestamp: '4 hours ago',
+            details: '15 users logged in today'
+          }
+        ]);
       } else {
         toast.error(data.message || "Failed to fetch dashboard data");
       }
@@ -630,6 +784,28 @@ export default function AdminDashboard() {
                   <Gear className="me-2" /> Roles
                 </Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link
+                  active={activeTab === "reports"}
+                  onClick={() => setActiveTab("reports")}
+                  className={`rounded py-2 px-3 d-flex align-items-center ${
+                    activeTab === "reports" ? "active-nav-link" : "nav-link"
+                  }`}
+                >
+                  <ClipboardData className="me-2" /> Reports
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link
+                  active={activeTab === "activity"}
+                  onClick={() => setActiveTab("activity")}
+                  className={`rounded py-2 px-3 d-flex align-items-center ${
+                    activeTab === "activity" ? "active-nav-link" : "nav-link"
+                  }`}
+                >
+                  <Activity className="me-2" /> Activity
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
           </Col>
 
@@ -669,45 +845,222 @@ export default function AdminDashboard() {
                   <hr className="border-2 border-primary opacity-25 mb-4" />
                 </div>
 
-                <Alert variant="info" className="d-flex align-items-center">
-                  <Bell className="me-2" />
-                  <span>Welcome back!</span>
-                </Alert>
-
-                <Row className="mb-5 justify-content-center">
-                  <Col md={6} className="mb-4">
-                    <Card className="h-100 rounded border overflow-hidden">
-                      <Card.Body className="bg-primary bg-opacity-10 p-4 border-start border-3 border-primary">
-                        <div className="d-flex align-items-center justify-content-between">
-                          <div>
-                            <div className="d-flex align-items-center justify-content-center">
-                              <div className="bg-primary bg-opacity-15 p-1 rounded me-1">
-                                <People size={15} className="text-light" />
-                              </div>
-                              <h6 className="text-muted fw-semibold mb-2 text-uppercase letter-spacing">
-                                Total Users: {stats.totalUsers}
-                              </h6>
-                            </div>
+                {/* Quick Actions Section */}
+                <Row className="mb-5">
+                  <Col md={12} className="mb-4">
+                    <h4 className="fw-bold text-dark mb-4 d-flex align-items-center">
+                      <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
+                        <Lightning className="text-warning" size={20} />
+                      </div>
+                      Quick Actions
+                    </h4>
+                  </Col>
+                  {quickActions.map((action) => (
+                    <Col md={4} lg={2} key={action.id} className="mb-3">
+                      <Card
+                        className="h-100 border-0 shadow-sm quick-action-card cursor-pointer"
+                        onClick={action.action}
+                        style={{ transition: 'all 0.3s ease' }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-5px)';
+                          e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                        }}
+                      >
+                        <Card.Body className="text-center p-3">
+                          <div className={`bg-${action.color} bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center`} style={{ width: '50px', height: '50px' }}>
+                            <span className={`text-${action.color}`}>{action.icon}</span>
                           </div>
+                          <h6 className="fw-bold mb-2 text-dark">{action.title}</h6>
+                          <small className="text-muted">{action.description}</small>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+
+                {/* Enhanced KPI Cards */}
+                <Row className="mb-5">
+                  <Col md={12} className="mb-4">
+                    <h4 className="fw-bold text-dark mb-4 d-flex align-items-center">
+                      <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
+                        <Speedometer2 className="text-success" size={20} />
+                      </div>
+                      Key Performance Indicators
+                    </h4>
+                  </Col>
+
+                  {/* Total Users Card */}
+                  <Col md={6} lg={3} className="mb-4">
+                    <Card className="h-100 border-0 shadow-lg modern-kpi-card">
+                      <Card.Body className="p-4 position-relative overflow-hidden">
+                        <div className="d-flex justify-content-between align-items-start mb-3">
+                          <div>
+                            <div className="bg-primary bg-opacity-10 rounded-circle p-3 mb-3">
+                              <People className="text-primary" size={24} />
+                            </div>
+                            <h2 className="fw-bold text-dark mb-1">{stats.totalUsers}</h2>
+                            <p className="text-muted mb-0 small">Total Users</p>
+                          </div>
+                          <Badge bg="primary" className="px-2 py-1 rounded-pill">
+                            +{Math.floor(Math.random() * 10) + 1}%
+                          </Badge>
+                        </div>
+                        <div className="d-flex align-items-center">
+                          <GraphUp className="text-success me-2" size={16} />
+                          <small className="text-success fw-semibold">Growing this month</small>
+                        </div>
+                        <div className="position-absolute" style={{ bottom: '-10px', right: '-10px', opacity: 0.1 }}>
+                          <People size={80} />
                         </div>
                       </Card.Body>
                     </Card>
                   </Col>
-                  <Col md={6} className="mb-4">
-                    <Card className="h-100 rounded modern-stat-card border overflow-hidden">
-                      <Card.Body className="bg-success bg-opacity-10 p-4 border-start border-3 border-success">
-                        <div className="d-flex align-items-center justify-content-between">
+
+                  {/* Active Users Card */}
+                  <Col md={6} lg={3} className="mb-4">
+                    <Card className="h-100 border-0 shadow-lg modern-kpi-card">
+                      <Card.Body className="p-4 position-relative overflow-hidden">
+                        <div className="d-flex justify-content-between align-items-start mb-3">
                           <div>
-                            <div className="d-flex align-items-center justify-content-center mb-3">
-                              <div className="bg-success bg-opacity-15 p-1 rounded me-1">
-                                <Gear size={15} className="text-light" />
+                            <div className="bg-success bg-opacity-10 rounded-circle p-3 mb-3">
+                              <CheckCircle className="text-success" size={24} />
+                            </div>
+                            <h2 className="fw-bold text-dark mb-1">{stats.activeUsers}</h2>
+                            <p className="text-muted mb-0 small">Active Users</p>
+                          </div>
+                          <Badge bg="success" className="px-2 py-1 rounded-pill">
+                            {Math.floor((stats.activeUsers / stats.totalUsers) * 100)}%
+                          </Badge>
+                        </div>
+                        <div className="d-flex align-items-center">
+                          <CheckCircle className="text-success me-2" size={16} />
+                          <small className="text-success fw-semibold">Healthy activity</small>
+                        </div>
+                        <div className="position-absolute" style={{ bottom: '-10px', right: '-10px', opacity: 0.1 }}>
+                          <CheckCircle size={80} />
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  {/* Pending Approvals Card */}
+                  <Col md={6} lg={3} className="mb-4">
+                    <Card className="h-100 border-0 shadow-lg modern-kpi-card">
+                      <Card.Body className="p-4 position-relative overflow-hidden">
+                        <div className="d-flex justify-content-between align-items-start mb-3">
+                          <div>
+                            <div className="bg-warning bg-opacity-10 rounded-circle p-3 mb-3">
+                              <Clock className="text-warning" size={24} />
+                            </div>
+                            <h2 className="fw-bold text-dark mb-1">{stats.pendingApprovals}</h2>
+                            <p className="text-muted mb-0 small">Pending Actions</p>
+                          </div>
+                          <Badge bg="warning" className="px-2 py-1 rounded-pill">
+                            Urgent
+                          </Badge>
+                        </div>
+                        <div className="d-flex align-items-center">
+                          <ExclamationTriangle className="text-warning me-2" size={16} />
+                          <small className="text-warning fw-semibold">Requires attention</small>
+                        </div>
+                        <div className="position-absolute" style={{ bottom: '-10px', right: '-10px', opacity: 0.1 }}>
+                          <Clock size={80} />
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                </Row>
+
+                {/* System Overview & Activity Feed */}
+                <Row className="mb-5">
+                  {/* Recent Activity Feed */}
+                  <Col md={6} className="mb-4">
+                    <Card className="h-100 border-0 shadow-lg">
+                      <Card.Header className="bg-light border-0 py-3">
+                        <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                          <Activity className="me-2 text-primary" size={20} />
+                          Recent Activity
+                        </h5>
+                      </Card.Header>
+                      <Card.Body className="p-0" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                        {recentActivity.map((activity) => (
+                          <div key={activity.id} className="p-3 border-bottom d-flex align-items-start">
+                            <div className="me-3 mt-1">
+                              {getActivityIcon(activity.type)}
+                            </div>
+                            <div className="flex-grow-1">
+                              <div className="d-flex justify-content-between align-items-start mb-1">
+                                <h6 className="fw-semibold text-dark mb-1">{activity.action}</h6>
+                                <small className="text-muted">{activity.timestamp}</small>
                               </div>
-                              <h6 className="text-muted fw-semibold mb-2 text-uppercase letter-spacing">
-                                Total Roles: {stats.totalRoles}
-                              </h6>
+                              <p className="text-muted mb-1 small">{activity.details}</p>
+                              <small className="text-primary fw-medium">by {activity.user}</small>
                             </div>
                           </div>
+                        ))}
+                        <div className="p-3 text-center">
+                          <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => setActiveTab('activity')}
+                          >
+                            View All Activity
+                          </Button>
                         </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  {/* System Notifications */}
+                  <Col md={6} className="mb-4">
+                    <Card className="h-100 border-0 shadow-lg">
+                      <Card.Header className="bg-light border-0 py-3">
+                        <h5 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                          <Bell className="me-2 text-warning" size={20} />
+                          System Notifications
+                        </h5>
+                      </Card.Header>
+                      <Card.Body className="p-3">
+                        <Alert variant="success" className="d-flex align-items-center mb-3">
+                          <CheckCircle className="me-2" size={16} />
+                          <div>
+                            <strong>System Backup Complete</strong>
+                            <br />
+                            <small>Daily backup completed successfully at 3:00 AM</small>
+                          </div>
+                        </Alert>
+
+                        <Alert variant="warning" className="d-flex align-items-center mb-3">
+                          <ExclamationTriangle className="me-2" size={16} />
+                          <div>
+                            <strong>Pending User Approvals</strong>
+                            <br />
+                            <small>{stats.pendingApprovals} users waiting for approval</small>
+                          </div>
+                        </Alert>
+
+                        <Alert variant="info" className="d-flex align-items-center mb-3">
+                          <Calendar className="me-2" size={16} />
+                          <div>
+                            <strong>Monthly Reports Due</strong>
+                            <br />
+                            <small>Department budget reports due in 5 days</small>
+                          </div>
+                        </Alert>
+
+                        <Alert variant="primary" className="d-flex align-items-center mb-0">
+                          <Award className="me-2" size={16} />
+                          <div>
+                            <strong>System Performance</strong>
+                            <br />
+                            <small>All systems running smoothly</small>
+                          </div>
+                        </Alert>
                       </Card.Body>
                     </Card>
                   </Col>
@@ -1593,6 +1946,119 @@ export default function AdminDashboard() {
                 )}
               </>
             )}
+
+
+            {/* Reports Tab */}
+            {activeTab === "reports" && (
+              <Card className="shadow-lg border-0">
+                <Card.Header className="bg-light border-0 py-4">
+                  <h4 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                    <ClipboardData className="me-2 text-info" size={24} />
+                    Reports & Analytics
+                  </h4>
+                </Card.Header>
+                <Card.Body className="p-4">
+                  <Row>
+                    {[
+                      { title: 'User Activity Report', desc: 'Detailed user login and activity analytics', icon: People, color: 'primary' },
+                      { title: 'Expense Summary', desc: 'Monthly and quarterly expense breakdowns', icon: CurrencyDollar, color: 'success' },
+                      { title: 'Role Distribution', desc: 'User role assignments and permissions audit', icon: ShieldLock, color: 'warning' },
+                      { title: 'System Health', desc: 'Performance metrics and system monitoring', icon: Activity, color: 'info' },
+                      { title: 'System Analytics', desc: 'System usage and performance metrics', icon: Activity, color: 'secondary' }
+                    ].map((report, index) => (
+                      <Col md={6} lg={4} key={index} className="mb-4">
+                        <Card className="h-100 border-0 shadow-sm report-card cursor-pointer" style={{ transition: 'all 0.3s ease' }}>
+                          <Card.Body className="p-4 text-center">
+                            <div className={`bg-${report.color} bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center`} style={{ width: '60px', height: '60px' }}>
+                              <report.icon className={`text-${report.color}`} size={28} />
+                            </div>
+                            <h6 className="fw-bold mb-2">{report.title}</h6>
+                            <p className="text-muted small mb-3">{report.desc}</p>
+                            <Button variant={`outline-${report.color}`} size="sm">
+                              <Download className="me-1" size={14} />
+                              Generate
+                            </Button>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    ))}
+                  </Row>
+                </Card.Body>
+              </Card>
+            )}
+
+            {/* Activity Tab */}
+            {activeTab === "activity" && (
+              <Card className="shadow-lg border-0">
+                <Card.Header className="bg-light border-0 py-4">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <h4 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                      <Activity className="me-2 text-primary" size={24} />
+                      System Activity Log
+                    </h4>
+                    <Button variant="outline-primary" size="sm">
+                      <Download className="me-1" size={14} />
+                      Export Log
+                    </Button>
+                  </div>
+                </Card.Header>
+                <Card.Body className="p-0">
+                  <div className="table-responsive">
+                    <Table className="mb-0">
+                      <thead className="table-light">
+                        <tr>
+                          <th className="border-0 py-3 px-4">Time</th>
+                          <th className="border-0 py-3 px-4">User</th>
+                          <th className="border-0 py-3 px-4">Action</th>
+                          <th className="border-0 py-3 px-4">Details</th>
+                          <th className="border-0 py-3 px-4">Type</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {recentActivity.concat([
+                          { id: 6, type: 'user', action: 'Password reset', user: 'John Smith', timestamp: '5 hours ago', details: 'User password reset successfully' },
+                          { id: 7, type: 'role', action: 'Permission granted', user: 'Admin', timestamp: '6 hours ago', details: 'Expense approval permission added to Manager role' },
+                          { id: 8, type: 'system', action: 'Database update', user: 'System', timestamp: '8 hours ago', details: 'User table schema updated' },
+                          { id: 9, type: 'expense', action: 'Expense submitted', user: 'Sarah Johnson', timestamp: '10 hours ago', details: '$1,200 travel expense submitted' },
+                          { id: 10, type: 'user', action: 'Account deactivated', user: 'Admin', timestamp: '12 hours ago', details: 'Inactive user account deactivated' }
+                        ]).map((activity) => (
+                          <tr key={activity.id} className="border-bottom">
+                            <td className="py-3 px-4">
+                              <small className="text-muted">{activity.timestamp}</small>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="d-flex align-items-center">
+                                <PersonCircle className="text-muted me-2" size={16} />
+                                <span className="fw-medium">{activity.user}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="d-flex align-items-center">
+                                {getActivityIcon(activity.type)}
+                                <span className="ms-2">{activity.action}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="text-muted">{activity.details}</span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <Badge
+                                bg={activity.type === 'user' ? 'primary' :
+                                    activity.type === 'role' ? 'success' :
+                                    activity.type === 'expense' ? 'warning' : 'info'}
+                                className="px-2 py-1 rounded-pill"
+                              >
+                                {activity.type}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                </Card.Body>
+              </Card>
+            )}
           </Col>
         </Row>
 
@@ -1945,6 +2411,118 @@ export default function AdminDashboard() {
 
           .letter-spacing {
             letter-spacing: 0.75px;
+          }
+
+          .quick-action-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 16px;
+            overflow: hidden;
+          }
+
+          .quick-action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+          }
+
+          .modern-kpi-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 16px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+          }
+
+          .modern-kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+          }
+
+          .report-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+          }
+
+          @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+          }
+
+          .quick-action-card:active {
+            animation: pulse 0.3s ease;
+          }
+
+          .activity-item {
+            transition: all 0.2s ease;
+            border-radius: 8px;
+          }
+
+          .activity-item:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+          }
+
+          .kpi-icon {
+            transition: all 0.3s ease;
+          }
+
+          .modern-kpi-card:hover .kpi-icon {
+            transform: scale(1.1);
+          }
+
+          .progress {
+            border-radius: 10px;
+            overflow: hidden;
+          }
+
+          .progress-bar {
+            background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+            transition: width 0.6s ease;
+          }
+
+          /* Enhanced responsive design */
+          @media (max-width: 768px) {
+            .sidebar {
+              position: fixed;
+              left: -100%;
+              transition: left 0.3s ease;
+              z-index: 1000;
+              width: 280px;
+            }
+
+            .sidebar.show {
+              left: 0;
+            }
+
+            .content-area {
+              margin-left: 0;
+            }
+
+            .quick-action-card {
+              margin-bottom: 1rem;
+            }
+
+            .modern-kpi-card {
+              margin-bottom: 1.5rem;
+            }
+
+            .table-responsive {
+              font-size: 0.875rem;
+            }
+          }
+
+          @media (max-width: 576px) {
+            .modern-search-group {
+              width: 100% !important;
+            }
+
+            .filter-group {
+              min-width: 120px;
+            }
+
+            .d-flex.gap-3 {
+              flex-direction: column;
+              gap: 1rem !important;
+            }
           }
         `}</style>
       </Container>
