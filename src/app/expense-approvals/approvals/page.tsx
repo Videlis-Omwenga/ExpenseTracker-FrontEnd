@@ -2445,6 +2445,98 @@ export default function ExpenseApprovalPage() {
             transform: translateY(-1px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
           }
+
+          /* Analytics Dashboard Styles */
+          .analytics-card {
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+          }
+          .analytics-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+          }
+          .analytics-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            pointer-events: none;
+          }
+          .chart-container {
+            position: relative;
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            border: 1px solid rgba(0,0,0,0.05);
+          }
+          .chart-bar:hover {
+            transform: scaleY(1.05) !important;
+            filter: brightness(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          }
+          .category-breakdown .progress {
+            background-color: rgba(0,0,0,0.05);
+            border-radius: 3px;
+          }
+          .category-breakdown .progress-bar {
+            transition: width 0.8s ease;
+            border-radius: 3px;
+          }
+          .status-overview .badge {
+            font-size: 0.7rem;
+            font-weight: 500;
+          }
+
+          /* Timeline Visualization Styles */
+          .approval-timeline-compact {
+            background: rgba(248, 249, 250, 0.5);
+            border: 1px solid rgba(222, 226, 230, 0.3);
+            min-width: 200px;
+          }
+          .timeline-node {
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+          }
+          .timeline-node:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          }
+          .timeline-node.approved {
+            background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+          }
+          .timeline-node.rejected {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+          }
+          .timeline-node.pending {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            animation: pulse 2s infinite;
+          }
+          .timeline-node.not_started {
+            background: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
+          }
+          @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+          }
+          .steps-flow {
+            padding: 0.5rem;
+            background: white;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+          }
+          .current-step-info {
+            background: rgba(255, 193, 7, 0.1);
+            border-radius: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-left: 3px solid #ffc107;
+          }
         `}</style>
       </Container>
     </AuthProvider>

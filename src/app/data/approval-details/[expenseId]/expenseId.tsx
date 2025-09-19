@@ -452,7 +452,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
   return (
     <AuthProvider>
       <TopNavbar />
-      <Container className="mt-5">
+      <Container fluid className="mt-5">
         <Card className="border-0 bg-light shadow border-start rounded-3 border-3 border-success mb-5">
           <Row className="mb-4">
             <Col className="p-4">
