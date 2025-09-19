@@ -116,7 +116,7 @@ const BudgetOverview = () => {
   return (
     <>
       {/* ===== Activator Card ===== */}
-      <Col xs={6} md={3} onClick={handleOpen}>
+      <Col xs={6} md={2} onClick={handleOpen}>
         <div className="bg-danger p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-warning border-2">
           <div className="d-flex align-items-center">
             <div className="bg-danger bg-opacity-10 p-2 rounded me-3">

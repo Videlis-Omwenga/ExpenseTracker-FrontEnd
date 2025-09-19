@@ -243,6 +243,15 @@ const countCompletedSteps = (steps: ExpenseStep[]) =>
 
 const getProgressPercent = (steps: ExpenseStep[]) => {
   if (!steps?.length) return 0;
+
+  // If any step is rejected, stop progress calculation at that point
+  const hasRejectedStep = steps.some(step => normalizeStatus(step.status) === "REJECTED");
+  if (hasRejectedStep) {
+    // Find the index of the rejected step and calculate progress up to that point
+    const rejectedIndex = steps.findIndex(step => normalizeStatus(step.status) === "REJECTED");
+    return Math.floor(((rejectedIndex + 1) / steps.length) * 100);
+  }
+
   const total = steps.length;
   const completed = countCompletedSteps(steps);
   return Math.floor((completed / total) * 100);
@@ -510,10 +519,10 @@ export default function FinanceDashboard() {
       return acc;
     }, {} as Record<string, number>);
 
-    // Top categories
+    // Top categories (only first 2)
     const topCategories = Object.entries(categorySpending)
       .sort(([,a], [,b]) => b - a)
-      .slice(0, 5);
+      .slice(0, 2);
 
     // Monthly trend (last 6 months)
     const monthlyTrend = [];
@@ -809,7 +818,7 @@ export default function FinanceDashboard() {
 
                 {/* Stats Row */}
                 <Row className="mt-4 g-3">
-                  <Col xs={6} md={3}>
+                  <Col xs={6} md={2}>
                     <div className="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-primary border-2">
                       <div className="d-flex align-items-center">
                         <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
@@ -827,7 +836,7 @@ export default function FinanceDashboard() {
                       </div>
                     </div>
                   </Col>
-                  <Col xs={6} md={3}>
+                  <Col xs={6} md={2}>
                     <div className="bg-success p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-success border-2">
                       <div className="d-flex align-items-center">
                         <div className="bg-warning bg-opacity-10 p-2 rounded me-3">
@@ -842,7 +851,7 @@ export default function FinanceDashboard() {
                       </div>
                     </div>
                   </Col>
-                  <Col xs={6} md={3}>
+                  <Col xs={6} md={2}>
                     <div className="bg-info p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-info border-2">
                       <div className="d-flex align-items-center">
                         <div className="bg-success bg-opacity-10 p-2 rounded me-3">
@@ -860,7 +869,7 @@ export default function FinanceDashboard() {
                       </div>
                     </div>
                   </Col>
-                  <Col xs={6} md={3}>
+                  <Col xs={6} md={2}>
                     <div className="bg-warning p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-warning border-2">
                       <div className="d-flex align-items-center">
                         <div className="bg-info bg-opacity-10 p-2 rounded me-3">
@@ -876,7 +885,7 @@ export default function FinanceDashboard() {
                       </div>
                     </div>
                   </Col>
-                  <Col xs={6} md={3}>
+                  <Col xs={6} md={2}>
                     <div className="bg-secondary p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-secondary border-2">
                       <div className="d-flex align-items-center">
                         <div className="bg-secondary bg-opacity-10 p-2 rounded me-3">
@@ -910,7 +919,7 @@ export default function FinanceDashboard() {
                   </div>
                   <div className="d-flex gap-2 flex-wrap">
                     <Button
-                      variant="outline-primary"
+                      variant="primary"
                       size="sm"
                       className="d-flex align-items-center gap-1"
                       onClick={() => handleNavigation("create-expense")}
@@ -919,7 +928,7 @@ export default function FinanceDashboard() {
                       New Expense
                     </Button>
                     <Button
-                      variant="outline-success"
+                      variant="success"
                       size="sm"
                       className="d-flex align-items-center gap-1"
                       onClick={() => {
@@ -956,37 +965,6 @@ export default function FinanceDashboard() {
                     >
                       <Printer size={14} />
                       Print
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      className="d-flex align-items-center gap-1"
-                      onClick={() => {
-                        setStatusFilter("PENDING");
-                        toast.info("Filtered to show pending expenses");
-                      }}
-                    >
-                      <Filter size={14} />
-                      Show Pending
-                    </Button>
-                    <Button
-                      variant="outline-warning"
-                      size="sm"
-                      className="d-flex align-items-center gap-1"
-                      onClick={() => {
-                        const pendingApprovals = expenses.filter(e =>
-                          e.expenseSteps.some(step => normalizeStatus(step.status) === 'PENDING')
-                        );
-                        if (pendingApprovals.length > 0) {
-                          setApprovalFilter("Pending Approval");
-                          toast.info(`Found ${pendingApprovals.length} expenses awaiting approval`);
-                        } else {
-                          toast.info("No expenses pending approval");
-                        }
-                      }}
-                    >
-                      <Clock size={14} />
-                      Pending Approvals
                     </Button>
                     <Button
                       variant="outline-dark"
@@ -1043,9 +1021,13 @@ export default function FinanceDashboard() {
                               <h6 className="mb-0 fw-bold">
                                 KES {analyticsData.thisMonthTotal.toLocaleString()}
                               </h6>
-                              <small className={`fw-medium ${analyticsData.monthlyGrowth >= 0 ? 'text-success' : 'text-danger'}`}>
-                                {analyticsData.monthlyGrowth >= 0 ? '+' : ''}{analyticsData.monthlyGrowth.toFixed(1)}% vs last month
-                              </small>
+                              {analyticsData.lastMonthTotal > 0 ? (
+                                <small className={`fw-medium ${analyticsData.monthlyGrowth >= 0 ? 'text-success' : 'text-danger'}`}>
+                                  {analyticsData.monthlyGrowth >= 0 ? '+' : ''}{analyticsData.monthlyGrowth.toFixed(1)}% vs last month
+                                </small>
+                              ) : (
+                                <small className="text-muted">First month data</small>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1073,9 +1055,11 @@ export default function FinanceDashboard() {
                             <div>
                               <p className="text-muted small mb-1">Average</p>
                               <h6 className="mb-0 fw-bold">
-                                KES {analyticsData.averageExpense.toLocaleString()}
+                                KES {Math.round(analyticsData.averageExpense).toLocaleString()}
                               </h6>
-                              <small className="text-muted">per expense</small>
+                              <small className="text-muted">
+                                {analyticsData.totalExpenses > 0 ? 'per expense' : 'no expenses yet'}
+                              </small>
                             </div>
                           </div>
                         </div>
@@ -1103,22 +1087,63 @@ export default function FinanceDashboard() {
                       <div className="chart-container">
                         <div className="d-flex align-items-end justify-content-between" style={{ height: '120px' }}>
                           {analyticsData.monthlyTrend.map((data, index) => {
-                            const maxAmount = Math.max(...analyticsData.monthlyTrend.map(d => d.amount));
-                            const height = maxAmount > 0 ? (data.amount / maxAmount) * 80 : 0;
+                            const maxAmount = Math.max(...analyticsData.monthlyTrend.map(d => d.amount), 1);
+                            const height = data.amount > 0 ? Math.max((data.amount / maxAmount) * 80, 8) : 8;
+
+                            // Create more realistic visual variation
+                            const hasData = data.amount > 0;
+                            const barColor = hasData ? (data.amount > analyticsData.thisMonthTotal * 0.8 ? '#dc3545' :
+                                                      data.amount > analyticsData.thisMonthTotal * 0.5 ? '#ffc107' : '#0d6efd') : '#e9ecef';
+
                             return (
                               <div key={index} className="d-flex flex-column align-items-center">
-                                <div
-                                  className="bg-primary rounded-top"
-                                  style={{
-                                    width: '30px',
-                                    height: `${height + 20}px`,
-                                    minHeight: '20px',
-                                    opacity: 0.8,
-                                    transition: 'all 0.3s ease'
-                                  }}
-                                  title={`${data.month}: KES ${data.amount.toLocaleString()} (${data.count} expenses)`}
-                                ></div>
-                                <small className="text-muted mt-1" style={{ fontSize: '0.7rem' }}>
+                                <OverlayTrigger
+                                  placement="top"
+                                  overlay={
+                                    <Tooltip>
+                                      <div className="text-start">
+                                        <div className="fw-bold">{data.month}</div>
+                                        <div>Amount: KES {data.amount.toLocaleString()}</div>
+                                        <div>Expenses: {data.count}</div>
+                                        {data.count > 0 && (
+                                          <div>Avg: KES {(data.amount / data.count).toLocaleString()}</div>
+                                        )}
+                                      </div>
+                                    </Tooltip>
+                                  }
+                                >
+                                  <div
+                                    className="rounded-top chart-bar"
+                                    style={{
+                                      width: '32px',
+                                      height: `${height + 12}px`,
+                                      minHeight: '12px',
+                                      backgroundColor: barColor,
+                                      opacity: hasData ? 0.9 : 0.3,
+                                      cursor: 'pointer',
+                                      transition: 'all 0.3s ease',
+                                      position: 'relative',
+                                      border: hasData ? `2px solid ${barColor}` : '1px solid #dee2e6'
+                                    }}
+                                  >
+                                    {hasData && (
+                                      <div
+                                        style={{
+                                          position: 'absolute',
+                                          top: '-18px',
+                                          left: '50%',
+                                          transform: 'translateX(-50%)',
+                                          fontSize: '8px',
+                                          color: '#6c757d',
+                                          fontWeight: 'bold'
+                                        }}
+                                      >
+                                        {data.count}
+                                      </div>
+                                    )}
+                                  </div>
+                                </OverlayTrigger>
+                                <small className="text-muted mt-1" style={{ fontSize: '0.65rem', fontWeight: '500' }}>
                                   {data.month.split(' ')[0]}
                                 </small>
                               </div>
@@ -1137,29 +1162,48 @@ export default function FinanceDashboard() {
                         Top Categories
                       </h6>
                       <div className="category-breakdown">
-                        {analyticsData.topCategories.map(([category, amount], index) => {
-                          const percentage = (amount / analyticsData.thisYearTotal) * 100;
-                          const colors = ['primary', 'success', 'warning', 'info', 'secondary'];
-                          const color = colors[index] || 'secondary';
+                        {analyticsData.topCategories.length > 0 ? (
+                          analyticsData.topCategories.map(([category, amount], index) => {
+                            const totalSpending = analyticsData.thisYearTotal || 1;
+                            const percentage = (amount / totalSpending) * 100;
+                            const colors = ['primary', 'success'];
+                            const color = colors[index] || 'primary';
 
-                          return (
-                            <div key={category} className="mb-3">
-                              <div className="d-flex justify-content-between align-items-center mb-1">
-                                <span className="small fw-medium">{category}</span>
-                                <span className="small text-muted">
-                                  KES {amount.toLocaleString()}
-                                </span>
+                            return (
+                              <div key={category} className="mb-4">
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                  <div className="d-flex align-items-center">
+                                    <Tag size={12} className={`text-${color} me-2`} />
+                                    <span className="fw-medium">{category}</span>
+                                  </div>
+                                  <span className="small text-muted fw-bold">
+                                    KES {amount.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="progress" style={{ height: '8px' }}>
+                                  <div
+                                    className={`progress-bar bg-${color}`}
+                                    style={{
+                                      width: `${Math.max(percentage, 5)}%`,
+                                      background: `linear-gradient(135deg, var(--bs-${color}) 0%, var(--bs-${color === 'primary' ? 'info' : 'warning'}) 100%)`
+                                    }}
+                                  ></div>
+                                </div>
+                                <div className="d-flex justify-content-between mt-1">
+                                  <small className="text-muted">{percentage.toFixed(1)}% of total spending</small>
+                                  <small className="text-muted">
+                                    {Math.round(amount / (analyticsData.averageExpense || 1))} expenses
+                                  </small>
+                                </div>
                               </div>
-                              <div className="progress" style={{ height: '6px' }}>
-                                <div
-                                  className={`progress-bar bg-${color}`}
-                                  style={{ width: `${percentage}%` }}
-                                ></div>
-                              </div>
-                              <small className="text-muted">{percentage.toFixed(1)}% of total</small>
-                            </div>
-                          );
-                        })}
+                            );
+                          })
+                        ) : (
+                          <div className="text-center py-3 text-muted">
+                            <Tag size={24} className="mb-2" />
+                            <div className="small">No category data available</div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Status Overview */}
@@ -1694,81 +1738,56 @@ export default function FinanceDashboard() {
                                           )}
                                         </div>
 
-                                        {/* Timeline Steps */}
-                                        <div className="steps-flow d-flex align-items-center gap-1 mb-2">
-                                          {expense.expenseSteps.map((step, index) => {
-                                            const status = normalizeStatus(step.status);
-                                            const isLast = index === expense.expenseSteps.length - 1;
-
-                                            return (
-                                              <div key={step.id} className="d-flex align-items-center">
-                                                <OverlayTrigger
-                                                  placement="top"
-                                                  overlay={
-                                                    <Tooltip id={`timeline-${step.id}`}>
-                                                      <div className="text-start">
-                                                        <div className="fw-bold">Step {step.order} {step.isOptional && "(Optional)"}</div>
-                                                        <div>{step.role?.name || "No role assigned"}</div>
-                                                        <div className="text-capitalize">{status.toLowerCase()}</div>
-                                                        {step.approver && (
-                                                          <div className="small">
-                                                            Approver: {step.approver.firstName} {step.approver.lastName}
-                                                          </div>
-                                                        )}
-                                                      </div>
-                                                    </Tooltip>
-                                                  }
-                                                >
-                                                  <div
-                                                    className={`timeline-node ${status.toLowerCase()}`}
-                                                    style={{
-                                                      width: "20px",
-                                                      height: "20px",
-                                                      borderRadius: "50%",
-                                                      display: "flex",
-                                                      alignItems: "center",
-                                                      justifyContent: "center",
-                                                      fontSize: "10px",
-                                                      fontWeight: "bold",
-                                                      color: "white",
-                                                      cursor: "pointer",
-                                                      transition: "all 0.2s ease"
-                                                    }}
-                                                  >
-                                                    {status === "APPROVED" && <CheckCircle size={12} />}
-                                                    {status === "REJECTED" && <XCircle size={12} />}
-                                                    {status === "PENDING" && <Stopwatch size={12} />}
-                                                    {status === "NOT_STARTED" && <HourglassSplit size={12} />}
-                                                  </div>
-                                                </OverlayTrigger>
-
-                                                {!isLast && (
-                                                  <ChevronRight
-                                                    size={12}
-                                                    className={`mx-1 ${
-                                                      status === "APPROVED" ? "text-success" : "text-muted"
-                                                    }`}
-                                                  />
-                                                )}
-                                              </div>
-                                            );
-                                          })}
-                                        </div>
-
                                         {/* Progress Bar */}
-                                        <ProgressBar
-                                          now={progress}
-                                          variant={progress === 100 ? "success" : "info"}
-                                          animated={normalizeStatus(expense.status) === "PENDING"}
-                                          className="rounded-pill shadow-sm"
-                                          style={{ height: "6px" }}
-                                        />
+                                        {(() => {
+                                          const hasRejectedStep = expense.expenseSteps.some(
+                                            step => normalizeStatus(step.status) === "REJECTED"
+                                          );
+                                          const allApproved = expense.expenseSteps.length > 0 &&
+                                            expense.expenseSteps.every(step => normalizeStatus(step.status) === "APPROVED");
+
+                                          let variant = "info";
+                                          if (hasRejectedStep) variant = "danger";
+                                          else if (allApproved) variant = "success";
+
+                                          return (
+                                            <ProgressBar
+                                              now={progress}
+                                              variant={variant}
+                                              animated={!hasRejectedStep && !allApproved && normalizeStatus(expense.status) === "PENDING"}
+                                              className="rounded-pill shadow-sm"
+                                              style={{ height: "6px" }}
+                                            />
+                                          );
+                                        })()}
 
                                         {/* Current Step Info */}
                                         {(() => {
+                                          // Check if any step has been rejected
+                                          const hasRejectedStep = expense.expenseSteps.some(
+                                            step => normalizeStatus(step.status) === "REJECTED"
+                                          );
+
+                                          // If rejected, show rejection info instead of next approver
+                                          if (hasRejectedStep) {
+                                            const rejectedStep = expense.expenseSteps.find(
+                                              step => normalizeStatus(step.status) === "REJECTED"
+                                            );
+                                            return (
+                                              <div className="current-step-info text-center mt-1 bg-danger bg-opacity-10 border-danger">
+                                                <small className="text-danger fw-medium">
+                                                  <XCircle size={10} className="me-1" />
+                                                  Rejected at: {rejectedStep?.role?.name || "Unknown step"}
+                                                </small>
+                                              </div>
+                                            );
+                                          }
+
+                                          // If not rejected, find current pending step
                                           const currentStep = expense.expenseSteps.find(
                                             step => normalizeStatus(step.status) === "PENDING"
                                           );
+
                                           if (currentStep) {
                                             return (
                                               <div className="current-step-info text-center mt-1">
@@ -1779,6 +1798,22 @@ export default function FinanceDashboard() {
                                               </div>
                                             );
                                           }
+
+                                          // If all steps are completed (approved)
+                                          const allApproved = expense.expenseSteps.length > 0 &&
+                                            expense.expenseSteps.every(step => normalizeStatus(step.status) === "APPROVED");
+
+                                          if (allApproved) {
+                                            return (
+                                              <div className="current-step-info text-center mt-1 bg-success bg-opacity-10 border-success">
+                                                <small className="text-success fw-medium">
+                                                  <CheckCircle size={10} className="me-1" />
+                                                  Fully Approved
+                                                </small>
+                                              </div>
+                                            );
+                                          }
+
                                           return null;
                                         })()}
                                       </div>
@@ -2812,6 +2847,11 @@ export default function FinanceDashboard() {
           .chart-container .bg-primary:hover {
             transform: scaleY(1.1);
             filter: brightness(1.1);
+          }
+          .chart-bar:hover {
+            transform: scaleY(1.05) !important;
+            filter: brightness(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
           }
           .category-breakdown .progress {
             background-color: rgba(0,0,0,0.05);
