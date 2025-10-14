@@ -510,46 +510,50 @@ export default function SuperAdminDashboard() {
           {/* Sidebar */}
           <Col
             md={2}
-            className="sidebar d-flex flex-column p-0 border-end-0 shadow-sm"
-            style={{ minHeight: "100vh", backgroundColor: "#f8f9fc" }}
+            className="sidebar d-flex flex-column p-0 border-end shadow-sm"
+            style={{
+              backgroundColor: "#f8f9fc",
+              maxHeight: "calc(100vh - 80px)",
+              overflowY: "auto",
+            }}
           >
-            <div className="p-4">
-              <Nav className="flex-column gap-2">
-                <div className="small text-muted text-uppercase fw-bold mb-2 px-2">
+            <div className="p-3">
+              <Nav className="flex-column gap-1">
+                <div className="small text-muted text-uppercase fw-bold mb-1 px-2">
                   Overview
                 </div>
                 <Nav.Item>
                   <Nav.Link
                     active={activeTab === "dashboard"}
                     onClick={() => setActiveTab("dashboard")}
-                    className={`rounded-3 py-3 px-3 d-flex align-items-center position-relative ${
-                      activeTab === "dashboard" ? "active-nav-link" : "nav-link"
+                    className={`rounded-3 py-2 px-3 d-flex align-items-center position-relative ${
+                      activeTab === "dashboard" ? "nav-link active" : "nav-link"
                     }`}
                   >
-                    <Grid3x3Gap className="me-3" size={18} />
+                    <Grid3x3Gap className="me-2" size={16} />
                     <span className="fw-medium">Dashboard</span>
                     {activeTab === "dashboard" && (
                       <div
                         className="position-absolute top-50 start-0 translate-middle-y bg-primary rounded-end"
-                        style={{ width: "4px", height: "60%" }}
+                        style={{ width: "3px", height: "70%" }}
                       ></div>
                     )}
                   </Nav.Link>
                 </Nav.Item>
 
-                <div className="small text-muted text-uppercase fw-bold mb-2 mt-3 px-2">
+                <div className="small text-muted text-uppercase fw-bold mb-1 mt-2 px-2">
                   Management
                 </div>
                 <Nav.Item>
                   <Nav.Link
                     active={activeTab === "users"}
                     onClick={() => setActiveTab("users")}
-                    className={`rounded-3 py-3 px-3 d-flex align-items-center justify-content-between position-relative ${
-                      activeTab === "users" ? "active-nav-link" : "nav-link"
+                    className={`rounded-3 py-2 px-3 d-flex align-items-center justify-content-between position-relative ${
+                      activeTab === "users" ? "nav-link active" : "nav-link"
                     }`}
                   >
                     <div className="d-flex align-items-center">
-                      <People className="me-3" size={18} />
+                      <People className="me-2" size={16} />
                       <span className="fw-medium">Users</span>
                     </div>
                     <Badge
@@ -562,7 +566,7 @@ export default function SuperAdminDashboard() {
                     {activeTab === "users" && (
                       <div
                         className="position-absolute top-50 start-0 translate-middle-y bg-primary rounded-end"
-                        style={{ width: "4px", height: "60%" }}
+                        style={{ width: "3px", height: "70%" }}
                       ></div>
                     )}
                   </Nav.Link>
@@ -571,14 +575,14 @@ export default function SuperAdminDashboard() {
                   <Nav.Link
                     active={activeTab === "institutions"}
                     onClick={() => setActiveTab("institutions")}
-                    className={`rounded-3 py-3 px-3 d-flex align-items-center justify-content-between position-relative ${
+                    className={`rounded-3 py-2 px-3 d-flex align-items-center justify-content-between position-relative ${
                       activeTab === "institutions"
-                        ? "active-nav-link"
+                        ? "nav-link active"
                         : "nav-link"
                     }`}
                   >
                     <div className="d-flex align-items-center">
-                      <Globe className="me-3" size={18} />
+                      <Globe className="me-2" size={16} />
                       <span className="fw-medium">Institutions</span>
                     </div>
                     <Badge
@@ -591,7 +595,7 @@ export default function SuperAdminDashboard() {
                     {activeTab === "institutions" && (
                       <div
                         className="position-absolute top-50 start-0 translate-middle-y bg-primary rounded-end"
-                        style={{ width: "4px", height: "60%" }}
+                        style={{ width: "3px", height: "70%" }}
                       ></div>
                     )}
                   </Nav.Link>
@@ -600,12 +604,12 @@ export default function SuperAdminDashboard() {
                   <Nav.Link
                     active={activeTab === "roles"}
                     onClick={() => setActiveTab("roles")}
-                    className={`rounded-3 py-3 px-3 d-flex align-items-center justify-content-between position-relative ${
-                      activeTab === "roles" ? "active-nav-link" : "nav-link"
+                    className={`rounded-3 py-2 px-3 d-flex align-items-center justify-content-between position-relative ${
+                      activeTab === "roles" ? "nav-link active" : "nav-link"
                     }`}
                   >
                     <div className="d-flex align-items-center">
-                      <ShieldLock className="me-3" size={18} />
+                      <ShieldLock className="me-2" size={16} />
                       <span className="fw-medium">Roles</span>
                     </div>
                     <Badge
@@ -618,29 +622,29 @@ export default function SuperAdminDashboard() {
                     {activeTab === "roles" && (
                       <div
                         className="position-absolute top-50 start-0 translate-middle-y bg-primary rounded-end"
-                        style={{ width: "4px", height: "60%" }}
+                        style={{ width: "3px", height: "70%" }}
                       ></div>
                     )}
                   </Nav.Link>
                 </Nav.Item>
 
-                <div className="small text-muted text-uppercase fw-bold mb-2 mt-3 px-2">
+                <div className="small text-muted text-uppercase fw-bold mb-1 mt-2 px-2">
                   Finance
                 </div>
                 <Nav.Item>
                   <Nav.Link
                     active={activeTab === "billing"}
                     onClick={() => setActiveTab("billing")}
-                    className={`rounded-3 py-3 px-3 d-flex align-items-center position-relative ${
-                      activeTab === "billing" ? "active-nav-link" : "nav-link"
+                    className={`rounded-3 py-2 px-3 d-flex align-items-center position-relative ${
+                      activeTab === "billing" ? "nav-link active" : "nav-link"
                     }`}
                   >
-                    <Wallet className="me-3" size={18} />
+                    <Wallet className="me-2" size={16} />
                     <span className="fw-medium">Billing</span>
                     {activeTab === "billing" && (
                       <div
                         className="position-absolute top-50 start-0 translate-middle-y bg-primary rounded-end"
-                        style={{ width: "4px", height: "60%" }}
+                        style={{ width: "3px", height: "70%" }}
                       ></div>
                     )}
                   </Nav.Link>
@@ -648,20 +652,20 @@ export default function SuperAdminDashboard() {
               </Nav>
             </div>
 
-            <div className="mt-auto p-4 border-top">
+            <div className="mt-auto p-2 border-top">
               <div className="text-center">
-                <div className="d-flex align-items-center justify-content-center mb-2">
+                <div className="d-flex align-items-center justify-content-center mb-1">
                   <div className="bg-success bg-opacity-10 p-1 rounded me-2">
-                    <Activity size={12} className="text-success" />
+                    <Activity size={10} className="text-success" />
                   </div>
                   <small className="text-success fw-medium">
                     System Healthy
                   </small>
                 </div>
-                <Badge bg="light" text="primary" className="mb-2 px-3 py-1">
+                <Badge bg="light" text="primary" className="mb-1 px-2 py-1">
                   v3.2.1
                 </Badge>
-                <div className="small text-muted">Updated: Oct 24, 2023</div>
+                <div className="small text-muted">Updated: Oct 24</div>
               </div>
             </div>
           </Col>
@@ -676,10 +680,10 @@ export default function SuperAdminDashboard() {
               {/* Dashboard Overview */}
               {activeTab === "dashboard" && (
                 <>
-                  <div className="border border-start border-primary border-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-4 rounded-4 shadow-sm border-0 position-relative overflow-hidden bg-primary bg-opacity-10">
+                  <div className="border border-start border-primary border-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-4 rounded-4 shadow-sm bg-light position-relative">
                     <div className="d-flex align-items-center mb-3 mb-md-0 position-relative">
-                      <div className="bg-primary bg-opacity-20 p-3 rounded-circle me-3 shadow-sm">
-                        <Grid3x3Gap size={28} className="text-light" />
+                      <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3 shadow-sm">
+                        <Grid3x3Gap size={28} className="text-primary" />
                       </div>
                       <div>
                         <h5 className="fw-bold text-primary mb-1">
@@ -689,8 +693,8 @@ export default function SuperAdminDashboard() {
                           Monitor and manage your entire system from one central
                           location
                         </p>
-                        <div className="d-flex align-items-center mt-2">
-                          <Badge bg="primary" className="me-2 px-2 py-1">
+                        <div className="d-flex align-items-center mt-2 gap-2">
+                          <Badge bg="primary" className="px-2 py-1">
                             Live Data
                           </Badge>
                           <Badge bg="success" className="px-2 py-1">
@@ -700,7 +704,7 @@ export default function SuperAdminDashboard() {
                       </div>
                     </div>
                     <div className="d-flex flex-column align-items-end">
-                      <Breadcrumb className="mb-2 rounded-pill px-3 py-2">
+                      <Breadcrumb className="mb-2 rounded-pill px-3 py-2 bg-white">
                         <Breadcrumb.Item
                           active
                           className="d-flex align-items-center text-primary fw-medium"
@@ -714,12 +718,15 @@ export default function SuperAdminDashboard() {
 
                   <Row className="g-4 mb-4">
                     <Col md={3}>
-                      <Card className="h-100 shadow-sm stat-card bg-primary bg-opacity-10 border-start border-primary border-3">
+                      <Card className="h-100 shadow-sm border-start border-primary border-3 bg-light">
                         <Card.Body className="p-4 position-relative">
                           <div className="d-flex justify-content-between align-items-start">
                             <div>
                               <div className="d-flex align-items-center mb-2">
-                                <Globe className="me-2 text-primary" size={20} />
+                                <Globe
+                                  className="me-2 text-primary"
+                                  size={20}
+                                />
                                 <span className="small text-primary fw-medium">
                                   Total Institutions
                                 </span>
@@ -728,16 +735,12 @@ export default function SuperAdminDashboard() {
                                 {statistics?.totalInstitutions || 0}
                               </h2>
                               <div className="d-flex align-items-center">
-                                <Badge
-                                  bg="light"
-                                  text="primary"
-                                  className="small px-2 py-1"
-                                >
+                                <Badge bg="primary" className="small px-2 py-1">
                                   +12% this month
                                 </Badge>
                               </div>
                             </div>
-                            <div className="bg-white bg-opacity-20 p-2 rounded">
+                            <div className="bg-primary bg-opacity-10 p-2 rounded">
                               <Globe size={24} className="text-primary" />
                             </div>
                           </div>
@@ -745,12 +748,15 @@ export default function SuperAdminDashboard() {
                       </Card>
                     </Col>
                     <Col md={3}>
-                      <Card className="h-100 shadow-sm stat-card bg-success bg-opacity-10 border-start border-success border-3">
+                      <Card className="h-100 shadow-sm border-start border-success border-3 bg-light">
                         <Card.Body className="p-4 position-relative">
                           <div className="d-flex justify-content-between align-items-start">
                             <div>
                               <div className="d-flex align-items-center mb-2">
-                                <People className="me-2 text-success" size={20} />
+                                <People
+                                  className="me-2 text-success"
+                                  size={20}
+                                />
                                 <span className="small text-success fw-medium">
                                   Active Users
                                 </span>
@@ -762,16 +768,12 @@ export default function SuperAdminDashboard() {
                                 }
                               </h2>
                               <div className="d-flex align-items-center">
-                                <Badge
-                                  bg="light"
-                                  text="success"
-                                  className="small px-2 py-1"
-                                >
+                                <Badge bg="success" className="small px-2 py-1">
                                   +8% this week
                                 </Badge>
                               </div>
                             </div>
-                            <div className="bg-white bg-opacity-20 p-2 rounded">
+                            <div className="bg-success bg-opacity-10 p-2 rounded">
                               <People size={24} className="text-success" />
                             </div>
                           </div>
@@ -779,7 +781,7 @@ export default function SuperAdminDashboard() {
                       </Card>
                     </Col>
                     <Col md={3}>
-                      <Card className="h-100 shadow-sm stat-card bg-warning bg-opacity-10 border-start border-warning border-3">
+                      <Card className="h-100 shadow-sm border-start border-warning border-3 bg-light">
                         <Card.Body className="p-4 position-relative">
                           <div className="d-flex justify-content-between align-items-start">
                             <div>
@@ -796,12 +798,15 @@ export default function SuperAdminDashboard() {
                                 {roles.length}
                               </h2>
                               <div className="d-flex align-items-center">
-                                <Badge bg="white" className="small px-2 py-1 text-warning">
+                                <Badge
+                                  bg="warning"
+                                  className="small px-2 py-1 text-dark"
+                                >
                                   {users.filter((u) => u.role).length} assigned
                                 </Badge>
                               </div>
                             </div>
-                            <div className="bg-white bg-opacity-20 p-2 rounded">
+                            <div className="bg-warning bg-opacity-10 p-2 rounded">
                               <ShieldLock size={24} className="text-warning" />
                             </div>
                           </div>
@@ -809,7 +814,7 @@ export default function SuperAdminDashboard() {
                       </Card>
                     </Col>
                     <Col md={3}>
-                      <Card className="h-100 shadow-sm stat-card bg-info bg-opacity-10 border-start border-info border-3">
+                      <Card className="h-100 shadow-sm border-start border-info border-3 bg-light">
                         <Card.Body className="p-4 position-relative">
                           <div className="d-flex justify-content-between align-items-start">
                             <div>
@@ -822,18 +827,14 @@ export default function SuperAdminDashboard() {
                                   System Health
                                 </span>
                               </div>
-                              <h5 className="mb-3 fw-bold text-info">100%</h5>
+                              <h5 className="mb-1 fw-bold text-info">100%</h5>
                               <div className="d-flex align-items-center">
-                                <Badge
-                                  bg="light"
-                                  text="info"
-                                  className="small px-2 py-1"
-                                >
+                                <Badge bg="info" className="small px-2 py-1">
                                   All Systems Up
                                 </Badge>
                               </div>
                             </div>
-                            <div className="bg-white bg-opacity-20 p-2 rounded">
+                            <div className="bg-info bg-opacity-10 p-2 rounded">
                               <Activity size={24} className="text-info" />
                             </div>
                           </div>
@@ -4182,9 +4183,18 @@ export default function SuperAdminDashboard() {
             box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
           }
 
-          .focus-ring-success:focus {
-            border-color: #198754 !important;
-            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
+          .nav-link.active,
+          .nav-link[aria-current="page"] {
+            background-color: #0d6efd !important;
+            color: white !important;
+            border-radius: 8px;
+            font-weight: 600;
+          }
+
+          .nav-link.active .badge,
+          .nav-link[aria-current="page"] .badge {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
           }
         `}</style>
 
@@ -4193,25 +4203,25 @@ export default function SuperAdminDashboard() {
           show={showViewModal}
           onHide={() => setShowViewModal(false)}
           size="xl"
-          className="user-details-modal"
           centered
         >
-          <Modal.Header className="bg-gradient-primary text-white border-0 position-relative overflow-hidden">
-            <div className="position-absolute top-0 start-0 w-100 h-100 opacity-10">
-              <div className="bg-info bg-opacity-50 rounded-circle position-absolute" style={{ width: '150px', height: '150px', bottom: '-30px', left: '-30px' }}></div>
-            </div>
-            <Modal.Title className="fw-bold d-flex align-items-center gap-3 text-white position-relative">
-              <div className="bg-primary bg-opacity-20 p-3 rounded-circle">
-                <FaPersonCircleCheck size={28} className="text-white" />
+          <Modal.Header className="border-0 position-relative overflow-hidden" style={{ backgroundColor: '#f8f9fa' }}>
+            <Modal.Title className="fw-bold d-flex align-items-center gap-3 text-dark position-relative">
+              <div className="bg-primary bg-opacity-15 p-3 rounded-circle">
+                <FaPersonCircleCheck size={20} className="text-primary" />
               </div>
               <div>
-                <small className="opacity-75">User details</small>
+                <h6 className="mb-1 fw-bold text-primary">User Details</h6>
+                <small className="text-muted">
+                  Complete profile information
+                </small>
               </div>
             </Modal.Title>
+
             <button
               type="button"
-              className="btn-close btn-close-white position-absolute"
-              style={{ top: '20px', right: '20px' }}
+              className="btn-close position-absolute"
+              style={{ top: "18px", right: "18px" }}
               onClick={() => setShowViewModal(false)}
             ></button>
           </Modal.Header>
@@ -4220,18 +4230,34 @@ export default function SuperAdminDashboard() {
               <div className="p-4">
                 {/* Header Section */}
                 <div className="text-center mb-5 position-relative">
-                  <div className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4 position-relative" style={{ width: '120px', height: '120px' }}>
-                    <div className="bg-gradient-to-br from-primary to-info rounded-circle d-flex align-items-center justify-content-center shadow-lg" style={{ width: '80px', height: '80px' }}>
+                  <div
+                    className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4 position-relative"
+                    style={{ width: "120px", height: "120px" }}
+                  >
+                    <div
+                      className="bg-gradient-to-br from-primary to-info rounded-circle d-flex align-items-center justify-content-center shadow-lg"
+                      style={{ width: "80px", height: "80px" }}
+                    >
                       <PersonCircle size={40} className="text-white" />
                     </div>
                   </div>
-                  <h3 className="fw-bold text-primary mb-2">{selectedUser.firstName} {selectedUser.lastName}</h3>
+                  <h3 className="fw-bold text-primary mb-2">
+                    {selectedUser.firstName} {selectedUser.lastName}
+                  </h3>
                   <p className="text-muted mb-3 fs-6">{selectedUser.email}</p>
                   <div className="d-flex justify-content-center gap-2 flex-wrap">
-                    <Badge bg={getStatusVariant(selectedUser.status)} className="px-3 py-2 fs-6">
+                    <Badge
+                      bg={getStatusVariant(selectedUser.status)}
+                      className="px-3 py-2 fs-6"
+                    >
                       {selectedUser.status}
                     </Badge>
-                    <Badge bg={selectedUser.institution?.name ? "primary" : "secondary"} className="px-3 py-2 fs-6">
+                    <Badge
+                      bg={
+                        selectedUser.institution?.name ? "primary" : "secondary"
+                      }
+                      className="px-3 py-2 fs-6"
+                    >
                       {selectedUser.institution?.name || "No Institution"}
                     </Badge>
                   </div>
@@ -4246,26 +4272,46 @@ export default function SuperAdminDashboard() {
                           <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
                             <PersonCircle size={20} className="text-primary" />
                           </div>
-                          <h6 className="fw-bold text-dark mb-0">Personal Details</h6>
+                          <h6 className="fw-bold text-dark mb-0">
+                            Personal Details
+                          </h6>
                         </div>
                         <div className="space-y-3">
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">First Name</small>
-                            <span className="fw-semibold text-dark">{selectedUser.firstName}</span>
+                            <small className="text-muted fw-medium">
+                              First Name
+                            </small>
+                            <span className="fw-semibold text-dark">
+                              {selectedUser.firstName}
+                            </span>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Last Name</small>
-                            <span className="fw-semibold">{selectedUser.lastName}</span>
+                            <small className="text-muted fw-medium">
+                              Last Name
+                            </small>
+                            <span className="fw-semibold">
+                              {selectedUser.lastName}
+                            </span>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Email</small>
-                            <span className="fw-semibold text-truncate" style={{ maxWidth: '200px' }}>
+                            <small className="text-muted fw-medium">
+                              Email
+                            </small>
+                            <span
+                              className="fw-semibold text-truncate"
+                              style={{ maxWidth: "200px" }}
+                            >
                               {selectedUser.email}
                             </span>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2">
-                            <small className="text-muted fw-medium">Status</small>
-                            <Badge bg={getStatusVariant(selectedUser.status)} className="px-2 py-1">
+                            <small className="text-muted fw-medium">
+                              Status
+                            </small>
+                            <Badge
+                              bg={getStatusVariant(selectedUser.status)}
+                              className="px-2 py-1"
+                            >
                               {selectedUser.status}
                             </Badge>
                           </div>
@@ -4282,22 +4328,39 @@ export default function SuperAdminDashboard() {
                           <div className="bg-info bg-opacity-10 p-3 rounded-circle me-3">
                             <Globe size={20} className="text-info" />
                           </div>
-                          <h6 className="fw-bold text-dark mb-0">Organization</h6>
+                          <h6 className="fw-bold text-dark mb-0">
+                            Organization
+                          </h6>
                         </div>
                         <div className="space-y-3">
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Institution</small>
-                            <span className="fw-semibold text-truncate" style={{ maxWidth: '200px' }}>
-                              {selectedUser.institution?.name || "No Institution"}
+                            <small className="text-muted fw-medium">
+                              Institution
+                            </small>
+                            <span
+                              className="fw-semibold text-truncate"
+                              style={{ maxWidth: "200px" }}
+                            >
+                              {selectedUser.institution?.name ||
+                                "No Institution"}
                             </span>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Country</small>
-                            <span className="fw-semibold">{selectedUser.institution?.country || "N/A"}</span>
+                            <small className="text-muted fw-medium">
+                              Country
+                            </small>
+                            <span className="fw-semibold">
+                              {selectedUser.institution?.country || "N/A"}
+                            </span>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2">
-                            <small className="text-muted fw-medium">Department</small>
-                            <span className="fw-semibold text-truncate" style={{ maxWidth: '200px' }}>
+                            <small className="text-muted fw-medium">
+                              Department
+                            </small>
+                            <span
+                              className="fw-semibold text-truncate"
+                              style={{ maxWidth: "200px" }}
+                            >
                               {selectedUser.department?.name || "No Department"}
                             </span>
                           </div>
@@ -4314,22 +4377,32 @@ export default function SuperAdminDashboard() {
                           <div className="bg-success bg-opacity-10 p-3 rounded-circle me-3">
                             <Activity size={20} className="text-success" />
                           </div>
-                          <h6 className="fw-bold text-dark mb-0">Account Activity</h6>
+                          <h6 className="fw-bold text-dark mb-0">
+                            Account Activity
+                          </h6>
                         </div>
                         <div className="space-y-3">
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Created At</small>
+                            <small className="text-muted fw-medium">
+                              Created At
+                            </small>
                             <small className="fw-semibold">
                               <DateTimeDisplay date={selectedUser.createdAt} />
                             </small>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2">
-                            <small className="text-muted fw-medium">Last Login</small>
+                            <small className="text-muted fw-medium">
+                              Last Login
+                            </small>
                             <small className="fw-semibold">
                               {selectedUser.lastLogin ? (
-                                <DateTimeDisplay date={selectedUser.lastLogin} />
+                                <DateTimeDisplay
+                                  date={selectedUser.lastLogin}
+                                />
                               ) : (
-                                <span className="text-primary">Never logged in</span>
+                                <span className="text-primary">
+                                  Never logged in
+                                </span>
                               )}
                             </small>
                           </div>
@@ -4346,16 +4419,27 @@ export default function SuperAdminDashboard() {
                           <div className="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
                             <ShieldLock size={20} className="text-warning" />
                           </div>
-                          <h6 className="fw-bold text-dark mb-0">Account Security</h6>
+                          <h6 className="fw-bold text-dark mb-0">
+                            Account Security
+                          </h6>
                         </div>
                         <div className="space-y-3">
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">User ID</small>
-                            <Badge bg="secondary" className="px-2 py-1">#{selectedUser.id}</Badge>
+                            <small className="text-muted fw-medium">
+                              User ID
+                            </small>
+                            <Badge bg="secondary" className="px-2 py-1">
+                              #{selectedUser.id}
+                            </Badge>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2">
-                            <small className="text-muted fw-medium">Account Status</small>
-                            <Badge bg={getStatusVariant(selectedUser.status)} className="px-2 py-1">
+                            <small className="text-muted fw-medium">
+                              Account Status
+                            </small>
+                            <Badge
+                              bg={getStatusVariant(selectedUser.status)}
+                              className="px-2 py-1"
+                            >
                               {selectedUser.status}
                             </Badge>
                           </div>
@@ -5130,22 +5214,45 @@ export default function SuperAdminDashboard() {
           className="view-institution-modal"
           centered
         >
-          <Modal.Header className="bg-gradient-primary text-white border-0 position-relative overflow-hidden">
-            <div className="position-absolute top-0 start-0 w-100 h-100 opacity-10">
-              <div className="bg-info bg-opacity-50 rounded-circle position-absolute" style={{ width: '150px', height: '150px', bottom: '-30px', left: '-30px' }}></div>
+          <Modal.Header className="bg-light border-0 position-relative overflow-hidden shadow-sm">
+            {/* Subtle background elements */}
+            <div className="position-absolute top-0 start-0 w-100 h-100 opacity-5">
+              <div
+                className="bg-primary opacity-10 rounded-circle position-absolute"
+                style={{
+                  width: "120px",
+                  height: "120px",
+                  top: "-30px",
+                  right: "-30px",
+                }}
+              ></div>
+              <div
+                className="bg-info opacity-8 rounded-circle position-absolute"
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  bottom: "-20px",
+                  left: "-20px",
+                }}
+              ></div>
             </div>
-            <Modal.Title className="fw-bold d-flex align-items-center gap-3 text-white position-relative">
-              <div className="bg-white bg-opacity-20 p-3 rounded-circle">
-                <FaBuilding size={28} className="text-primary" />
+
+            <Modal.Title className="fw-bold d-flex align-items-center gap-3 text-dark position-relative">
+              <div className="bg-primary bg-opacity-15 p-3 rounded-circle">
+                <FaBuilding size={24} className="text-primary" />
               </div>
               <div>
-                <small>Institution Details</small>
+                <h5 className="mb-1 fw-bold text-dark">Institution Details</h5>
+                <small className="text-muted">
+                  Complete information overview
+                </small>
               </div>
             </Modal.Title>
+
             <button
               type="button"
-              className="btn-close btn-close-white position-absolute"
-              style={{ top: '20px', right: '20px' }}
+              className="btn-close position-absolute"
+              style={{ top: "20px", right: "20px" }}
               onClick={() => setShowViewInstitutionModal(false)}
             ></button>
           </Modal.Header>
@@ -5154,18 +5261,41 @@ export default function SuperAdminDashboard() {
               <div className="p-4">
                 {/* Header Section */}
                 <div className="text-center mb-5 position-relative">
-                  <div className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4 position-relative" style={{ width: '120px', height: '120px' }}>
-                    <div className="bg-gradient-to-br from-primary to-info rounded-circle d-flex align-items-center justify-content-center shadow-lg" style={{ width: '80px', height: '80px' }}>
+                  <div
+                    className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4 position-relative"
+                    style={{ width: "120px", height: "120px" }}
+                  >
+                    <div
+                      className="bg-gradient-to-br from-primary to-info rounded-circle d-flex align-items-center justify-content-center shadow-lg"
+                      style={{ width: "80px", height: "80px" }}
+                    >
                       <Building size={40} className="text-white" />
                     </div>
                   </div>
-                  <h3 className="fw-bold text-primary mb-2">{selectedInstitution.name}</h3>
-                  <p className="text-muted mb-3 fs-6">Comprehensive institution information and statistics</p>
+                  <h3 className="fw-bold text-primary mb-2">
+                    {selectedInstitution.name}
+                  </h3>
+                  <p className="text-muted mb-3 fs-6">
+                    Comprehensive institution information and statistics
+                  </p>
                   <div className="d-flex justify-content-center gap-2 flex-wrap">
-                    <Badge bg={getStatusVariant(selectedInstitution.status)} className="px-3 py-2 fs-6">
+                    <Badge
+                      bg={getStatusVariant(selectedInstitution.status)}
+                      className="px-3 py-2 fs-6"
+                    >
                       {selectedInstitution.status}
                     </Badge>
-                    <Badge bg={selectedInstitution.subscriptionPlan === "PREMIUM" ? "primary" : selectedInstitution.subscriptionPlan === "ENTERPRISE" ? "dark" : "secondary"} className="px-3 py-2 fs-6">
+                    <Badge
+                      bg={
+                        selectedInstitution.subscriptionPlan === "PREMIUM"
+                          ? "primary"
+                          : selectedInstitution.subscriptionPlan ===
+                            "ENTERPRISE"
+                          ? "dark"
+                          : "secondary"
+                      }
+                      className="px-3 py-2 fs-6"
+                    >
                       {selectedInstitution.subscriptionPlan || "FREE"} Plan
                     </Badge>
                   </div>
@@ -5180,27 +5310,46 @@ export default function SuperAdminDashboard() {
                           <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
                             <Building size={20} className="text-primary" />
                           </div>
-                          <h6 className="fw-bold text-dark mb-0">Basic Information</h6>
+                          <h6 className="fw-bold text-dark mb-0">
+                            Basic Information
+                          </h6>
                         </div>
                         <div className="space-y-3">
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Institution Name</small>
-                            <span className="fw-semibold text-dark">{selectedInstitution.name}</span>
+                            <small className="text-muted fw-medium">
+                              Institution Name
+                            </small>
+                            <span className="fw-semibold text-dark">
+                              {selectedInstitution.name}
+                            </span>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Industry</small>
-                            <span className="fw-semibold">{selectedInstitution.industry || "Not specified"}</span>
+                            <small className="text-muted fw-medium">
+                              Industry
+                            </small>
+                            <span className="fw-semibold">
+                              {selectedInstitution.industry || "Not specified"}
+                            </span>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Status</small>
-                            <Badge bg={getStatusVariant(selectedInstitution.status)} className="px-2 py-1">
+                            <small className="text-muted fw-medium">
+                              Status
+                            </small>
+                            <Badge
+                              bg={getStatusVariant(selectedInstitution.status)}
+                              className="px-2 py-1"
+                            >
                               {selectedInstitution.status}
                             </Badge>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2">
-                            <small className="text-muted fw-medium">Created</small>
+                            <small className="text-muted fw-medium">
+                              Created
+                            </small>
                             <small className="fw-semibold">
-                              <DateTimeDisplay date={selectedInstitution.createdAt} />
+                              <DateTimeDisplay
+                                date={selectedInstitution.createdAt}
+                              />
                             </small>
                           </div>
                         </div>
@@ -5216,24 +5365,44 @@ export default function SuperAdminDashboard() {
                           <div className="bg-info bg-opacity-10 p-3 rounded-circle me-3">
                             <Globe size={20} className="text-info" />
                           </div>
-                          <h6 className="fw-bold text-dark mb-0">Contact & Location</h6>
+                          <h6 className="fw-bold text-dark mb-0">
+                            Contact & Location
+                          </h6>
                         </div>
                         <div className="space-y-3">
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Contact Email</small>
-                            <span className="fw-semibold text-truncate" style={{ maxWidth: '200px' }}>
-                              {selectedInstitution.contactEmail || "Not provided"}
+                            <small className="text-muted fw-medium">
+                              Contact Email
+                            </small>
+                            <span
+                              className="fw-semibold text-truncate"
+                              style={{ maxWidth: "200px" }}
+                            >
+                              {selectedInstitution.contactEmail ||
+                                "Not provided"}
                             </span>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Phone Number</small>
-                            <span className="fw-semibold">{selectedInstitution.phoneNumber || "Not provided"}</span>
+                            <small className="text-muted fw-medium">
+                              Phone Number
+                            </small>
+                            <span className="fw-semibold">
+                              {selectedInstitution.phoneNumber ||
+                                "Not provided"}
+                            </span>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Website</small>
+                            <small className="text-muted fw-medium">
+                              Website
+                            </small>
                             <span className="fw-semibold">
                               {selectedInstitution.websiteUrl ? (
-                                <a href={selectedInstitution.websiteUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-decoration-none">
+                                <a
+                                  href={selectedInstitution.websiteUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary text-decoration-none"
+                                >
                                   Visit Website →
                                 </a>
                               ) : (
@@ -5242,16 +5411,27 @@ export default function SuperAdminDashboard() {
                             </span>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Country</small>
-                            <span className="fw-semibold">{selectedInstitution.country || "Not specified"}</span>
+                            <small className="text-muted fw-medium">
+                              Country
+                            </small>
+                            <span className="fw-semibold">
+                              {selectedInstitution.country || "Not specified"}
+                            </span>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
                             <small className="text-muted fw-medium">City</small>
-                            <span className="fw-semibold">{selectedInstitution.city || "Not specified"}</span>
+                            <span className="fw-semibold">
+                              {selectedInstitution.city || "Not specified"}
+                            </span>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2">
-                            <small className="text-muted fw-medium">Address</small>
-                            <span className="fw-semibold text-truncate" style={{ maxWidth: '200px' }}>
+                            <small className="text-muted fw-medium">
+                              Address
+                            </small>
+                            <span
+                              className="fw-semibold text-truncate"
+                              style={{ maxWidth: "200px" }}
+                            >
                               {selectedInstitution.address || "Not provided"}
                             </span>
                           </div>
@@ -5268,18 +5448,24 @@ export default function SuperAdminDashboard() {
                           <div className="bg-success bg-opacity-10 p-3 rounded-circle me-3">
                             <People size={20} className="text-success" />
                           </div>
-                          <h6 className="fw-bold text-dark mb-0">User & Department Stats</h6>
+                          <h6 className="fw-bold text-dark mb-0">
+                            User & Department Stats
+                          </h6>
                         </div>
                         <div className="row g-4">
                           <div className="col-6">
                             <div className="text-center p-3 bg-success bg-opacity-5 rounded">
-                              <div className="h3 fw-bold text-light mb-1">{selectedInstitution._count.users}</div>
+                              <div className="h3 fw-bold text-light mb-1">
+                                {selectedInstitution._count.users}
+                              </div>
                               <small className="text-light">Total Users</small>
                             </div>
                           </div>
                           <div className="col-6">
                             <div className="text-center p-3 bg-info bg-opacity-5 rounded">
-                              <div className="h3 fw-bold text-light mb-1">{selectedInstitution._count.departments}</div>
+                              <div className="h3 fw-bold text-light mb-1">
+                                {selectedInstitution._count.departments}
+                              </div>
                               <small className="text-light">Departments</small>
                             </div>
                           </div>
@@ -5296,42 +5482,75 @@ export default function SuperAdminDashboard() {
                           <div className="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
                             <CreditCard size={20} className="text-warning" />
                           </div>
-                          <h6 className="fw-bold text-dark mb-0">Subscription Details</h6>
+                          <h6 className="fw-bold text-dark mb-0">
+                            Subscription Details
+                          </h6>
                         </div>
                         <div className="space-y-3">
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
                             <small className="text-muted fw-medium">Plan</small>
-                            <Badge bg={selectedInstitution.subscriptionPlan === "PREMIUM" ? "primary" : selectedInstitution.subscriptionPlan === "ENTERPRISE" ? "dark" : "secondary"} className="px-2 py-1">
+                            <Badge
+                              bg={
+                                selectedInstitution.subscriptionPlan ===
+                                "PREMIUM"
+                                  ? "primary"
+                                  : selectedInstitution.subscriptionPlan ===
+                                    "ENTERPRISE"
+                                  ? "dark"
+                                  : "secondary"
+                              }
+                              className="px-2 py-1"
+                            >
                               {selectedInstitution.subscriptionPlan || "FREE"}
                             </Badge>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Billing Email</small>
-                            <span className="fw-semibold text-truncate" style={{ maxWidth: '200px' }}>
-                              {selectedInstitution.billingEmail || "Not provided"}
+                            <small className="text-muted fw-medium">
+                              Billing Email
+                            </small>
+                            <span
+                              className="fw-semibold text-truncate"
+                              style={{ maxWidth: "200px" }}
+                            >
+                              {selectedInstitution.billingEmail ||
+                                "Not provided"}
                             </span>
                           </div>
                           {selectedInstitution.subscriptionStartDate && (
                             <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                              <small className="text-muted fw-medium">Subscription Start</small>
+                              <small className="text-muted fw-medium">
+                                Subscription Start
+                              </small>
                               <small className="fw-semibold">
-                                <DateTimeDisplay date={selectedInstitution.subscriptionStartDate} />
+                                <DateTimeDisplay
+                                  date={
+                                    selectedInstitution.subscriptionStartDate
+                                  }
+                                />
                               </small>
                             </div>
                           )}
                           {selectedInstitution.subscriptionEndDate && (
                             <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                              <small className="text-muted fw-medium">Subscription End</small>
+                              <small className="text-muted fw-medium">
+                                Subscription End
+                              </small>
                               <small className="fw-semibold">
-                                <DateTimeDisplay date={selectedInstitution.subscriptionEndDate} />
+                                <DateTimeDisplay
+                                  date={selectedInstitution.subscriptionEndDate}
+                                />
                               </small>
                             </div>
                           )}
                           {selectedInstitution.trialEndDate && (
                             <div className="d-flex justify-content-between align-items-center py-2">
-                              <small className="text-muted fw-medium">Trial End</small>
+                              <small className="text-muted fw-medium">
+                                Trial End
+                              </small>
                               <small className="fw-semibold">
-                                <DateTimeDisplay date={selectedInstitution.trialEndDate} />
+                                <DateTimeDisplay
+                                  date={selectedInstitution.trialEndDate}
+                                />
                               </small>
                             </div>
                           )}
@@ -5351,7 +5570,9 @@ export default function SuperAdminDashboard() {
                             <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
                               <Building size={20} className="text-primary" />
                             </div>
-                            <h6 className="fw-bold text-dark mb-0">Institution Logo</h6>
+                            <h6 className="fw-bold text-dark mb-0">
+                              Institution Logo
+                            </h6>
                           </div>
                           <div className="d-flex justify-content-center">
                             <div className="position-relative">
@@ -5364,12 +5585,14 @@ export default function SuperAdminDashboard() {
                                   maxHeight: "250px",
                                   objectFit: "contain",
                                   backgroundColor: "#f8f9fa",
-                                  padding: "20px"
+                                  padding: "20px",
                                 }}
                               />
                               <div className="position-absolute top-0 start-0 w-100 h-100 bg-primary bg-opacity-5 rounded d-none d-lg-flex align-items-center justify-content-center opacity-0 hover-opacity-100 transition-all">
                                 <div className="bg-white bg-opacity-90 px-3 py-2 rounded">
-                                  <small className="fw-semibold text-primary">Click to view full size</small>
+                                  <small className="fw-semibold text-primary">
+                                    Click to view full size
+                                  </small>
                                 </div>
                               </div>
                             </div>
