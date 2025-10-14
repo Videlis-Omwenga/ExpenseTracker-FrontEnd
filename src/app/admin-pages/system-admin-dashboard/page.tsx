@@ -59,6 +59,8 @@ import { default as PageLoader } from "@/app/components/PageLoader";
 import RoleCreationModal from "@/app/components/modals/system-admin-role-creation";
 import DateTimeDisplay from "@/app/components/DateTimeDisplay";
 import AdminCreateUserModal from "@/app/components/modals/system-admin-new-user";
+import { FaBuilding } from "react-icons/fa";
+import { FaPersonCircleCheck } from "react-icons/fa6";
 
 interface User {
   id: number;
@@ -144,15 +146,20 @@ export default function SuperAdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [searchTerm, setSearchTerm] = useState("");
   const [roles, setRoles] = useState<Role[]>([]);
-  
+
   // Modal states
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showEditInstitutionModal, setShowEditInstitutionModal] = useState(false);
-  const [showDeleteInstitutionModal, setShowDeleteInstitutionModal] = useState(false);
+  const [showEditInstitutionModal, setShowEditInstitutionModal] =
+    useState(false);
+  const [showDeleteInstitutionModal, setShowDeleteInstitutionModal] =
+    useState(false);
+  const [showViewInstitutionModal, setShowViewInstitutionModal] =
+    useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [selectedInstitution, setSelectedInstitution] = useState<Institution | null>(null);
+  const [selectedInstitution, setSelectedInstitution] =
+    useState<Institution | null>(null);
   const [editFormData, setEditFormData] = useState({
     firstName: "",
     lastName: "",
@@ -239,17 +246,22 @@ export default function SuperAdminDashboard() {
 
   const handleUpdateUser = async () => {
     if (!selectedUser) return;
-    
+
     setIsUpdating(true);
     try {
-      const response = await fetch(`${BASE_API_URL}/system-admin/users/${selectedUser.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
-        },
-        body: JSON.stringify(editFormData),
-      });
+      const response = await fetch(
+        `${BASE_API_URL}/system-admin/users/${selectedUser.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(
+              "expenseTrackerToken"
+            )}`,
+          },
+          body: JSON.stringify(editFormData),
+        }
+      );
 
       const data = await response.json();
 
@@ -269,16 +281,21 @@ export default function SuperAdminDashboard() {
 
   const confirmDeleteUser = async () => {
     if (!selectedUser) return;
-    
+
     setIsDeleting(true);
     try {
-      const response = await fetch(`${BASE_API_URL}/system-admin/users/${selectedUser.id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
-        },
-      });
+      const response = await fetch(
+        `${BASE_API_URL}/system-admin/users/${selectedUser.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(
+              "expenseTrackerToken"
+            )}`,
+          },
+        }
+      );
 
       const data = await response.json();
 
@@ -323,19 +340,29 @@ export default function SuperAdminDashboard() {
     setShowDeleteInstitutionModal(true);
   };
 
+  const handleViewInstitution = (institution: Institution) => {
+    setSelectedInstitution(institution);
+    setShowViewInstitutionModal(true);
+  };
+
   const handleUpdateInstitution = async () => {
     if (!selectedInstitution) return;
-    
+
     setIsUpdatingInstitution(true);
     try {
-      const response = await fetch(`${BASE_API_URL}/system-admin/institutions/${selectedInstitution.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
-        },
-        body: JSON.stringify(editInstitutionFormData),
-      });
+      const response = await fetch(
+        `${BASE_API_URL}/system-admin/institutions/${selectedInstitution.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(
+              "expenseTrackerToken"
+            )}`,
+          },
+          body: JSON.stringify(editInstitutionFormData),
+        }
+      );
 
       const data = await response.json();
 
@@ -355,16 +382,21 @@ export default function SuperAdminDashboard() {
 
   const confirmDeleteInstitution = async () => {
     if (!selectedInstitution) return;
-    
+
     setIsDeletingInstitution(true);
     try {
-      const response = await fetch(`${BASE_API_URL}/system-admin/institutions/${selectedInstitution.id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
-        },
-      });
+      const response = await fetch(
+        `${BASE_API_URL}/system-admin/institutions/${selectedInstitution.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(
+              "expenseTrackerToken"
+            )}`,
+          },
+        }
+      );
 
       const data = await response.json();
 
@@ -2567,10 +2599,7 @@ export default function SuperAdminDashboard() {
                                       onClick={() => handleViewUser(user)}
                                       style={{ cursor: "pointer" }}
                                     >
-                                      <Eye
-                                        className="text-info"
-                                        size={16}
-                                      />
+                                      <Eye className="text-info" size={16} />
                                     </Badge>
                                     <Badge
                                       className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
@@ -2982,9 +3011,21 @@ export default function SuperAdminDashboard() {
                                 <td className="text-center">
                                   <div className="d-flex justify-content-center gap-2">
                                     <Badge
+                                      className="bg-info bg-opacity-10 text-info border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
+                                      title="View Institution Details"
+                                      onClick={() =>
+                                        handleViewInstitution(institution)
+                                      }
+                                      style={{ cursor: "pointer" }}
+                                    >
+                                      <Eye className="text-info" size={16} />
+                                    </Badge>
+                                    <Badge
                                       className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
                                       title="Edit Institution"
-                                      onClick={() => handleEditInstitution(institution)}
+                                      onClick={() =>
+                                        handleEditInstitution(institution)
+                                      }
                                       style={{ cursor: "pointer" }}
                                     >
                                       <Pencil
@@ -2995,7 +3036,9 @@ export default function SuperAdminDashboard() {
                                     <Badge
                                       className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
                                       title="Delete Institution"
-                                      onClick={() => handleDeleteInstitution(institution)}
+                                      onClick={() =>
+                                        handleDeleteInstitution(institution)
+                                      }
                                       style={{ cursor: "pointer" }}
                                     >
                                       <Trash
@@ -4090,21 +4133,37 @@ export default function SuperAdminDashboard() {
           .user-details-modal .modal-header,
           .edit-user-modal .modal-header,
           .delete-user-modal .modal-header {
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%) !important;
+            background: linear-gradient(
+              135deg,
+              rgba(255, 255, 255, 0.1) 0%,
+              rgba(255, 255, 255, 0.05) 100%
+            ) !important;
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
           }
 
           .user-details-modal .modal-header {
-            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
+            background: linear-gradient(
+              135deg,
+              #0d6efd 0%,
+              #0a58ca 100%
+            ) !important;
           }
 
           .edit-user-modal .modal-header {
-            background: linear-gradient(135deg, #198754 0%, #146c43 100%) !important;
+            background: linear-gradient(
+              135deg,
+              #198754 0%,
+              #146c43 100%
+            ) !important;
           }
 
           .delete-user-modal .modal-header {
-            background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%) !important;
+            background: linear-gradient(
+              135deg,
+              #dc3545 0%,
+              #b02a37 100%
+            ) !important;
           }
 
           .info-card {
@@ -4129,717 +4188,1211 @@ export default function SuperAdminDashboard() {
           }
         `}</style>
 
-      {/* View User Details Modal */}
-      <Modal show={showViewModal} onHide={() => setShowViewModal(false)} size="xl" className="user-details-modal">
-        <Modal.Header className="bg-primary bg-gradient text-white border-0 position-relative overflow-hidden">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-2">
-            <PersonCircle size={24} className="text-white" />
-            User Details
-          </Modal.Title>
-          <button type="button" className="btn-close btn-close-white position-absolute" style={{ top: '15px', right: '15px' }} onClick={() => setShowViewModal(false)}></button>
-        </Modal.Header>
-        <Modal.Body className="p-4 bg-light">
-          {selectedUser && (
-            <div>
-              <div className="mb-4">
-                <div className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
-                  <PersonCircle size={32} className="text-primary" />
-                </div>
-                <h5 className="fw-bold text-primary mb-2">User Information</h5>
-                <p className="text-muted small">Complete details for {selectedUser.firstName} {selectedUser.lastName}</p>
-              </div>
-
-              <div className="row g-4">
-                <div className="col-md-6">
-                  <div className="info-card bg-white p-3 rounded shadow-sm">
-                    <div className="d-flex align-items-center mb-2">
-                      <PersonCircle size={16} className="text-primary me-2" />
-                      <label className="fw-semibold text-dark mb-0">Personal Details</label>
-                    </div>
-                    <div className="mb-2">
-                      <small className="text-muted">First Name</small>
-                      <div className="fw-semibold">{selectedUser.firstName}</div>
-                    </div>
-                    <div className="mb-2">
-                      <small className="text-muted">Last Name</small>
-                      <div className="fw-semibold">{selectedUser.lastName}</div>
-                    </div>
-                    <div className="mb-2">
-                      <small className="text-muted">Email</small>
-                      <div className="fw-semibold">{selectedUser.email}</div>
-                    </div>
-                    <div>
-                      <small className="text-muted">Status</small>
-                      <div>
-                        <Badge bg={getStatusVariant(selectedUser.status)}>
-                          {selectedUser.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="col-md-6">
-                  <div className="info-card bg-white p-3 rounded shadow-sm">
-                    <div className="d-flex align-items-center mb-2">
-                      <Globe size={16} className="text-info me-2" />
-                      <label className="fw-semibold text-dark mb-0">Organization</label>
-                    </div>
-                    <div className="mb-2">
-                      <small className="text-muted">Institution</small>
-                      <div className="fw-semibold">
-                        {selectedUser.institution?.name || "No Institution"}
-                      </div>
-                    </div>
-                    <div className="mb-2">
-                      <small className="text-muted">Country</small>
-                      <div className="fw-semibold">
-                        {selectedUser.institution?.country || "N/A"}
-                      </div>
-                    </div>
-                    <div className="mb-2">
-                      <small className="text-muted">Department</small>
-                      <div className="fw-semibold">
-                        {selectedUser.department?.name || "No Department"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="row g-4 mt-3">
-                <div className="col-md-6">
-                  <div className="info-card bg-white p-3 rounded shadow-sm">
-                    <div className="d-flex align-items-center mb-2">
-                      <Activity size={16} className="text-primary me-2" />
-                      <label className="fw-semibold text-dark mb-0">Account Activity</label>
-                    </div>
-                    <div className="mb-2">
-                      <small className="text-muted">Created At</small>
-                      <div className="fw-semibold">
-                        <DateTimeDisplay date={selectedUser.createdAt} />
-                      </div>
-                    </div>
-                    <div>
-                      <small className="text-muted">Last Login</small>
-                      <div className="fw-semibold">
-                        {selectedUser.lastLogin ? (
-                          <DateTimeDisplay date={selectedUser.lastLogin} />
-                        ) : (
-                          <span className="text-primary">Never logged in</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="col-md-6">
-                  <div className="info-card bg-white p-3 rounded shadow-sm">
-                    <div className="d-flex align-items-center mb-2">
-                      <ShieldLock size={16} className="text-success me-2" />
-                      <label className="fw-semibold text-dark mb-0">Account Security</label>
-                    </div>
-                    <div className="mb-2">
-                      <small className="text-muted">User ID</small>
-                      <div className="fw-semibold">#{selectedUser.id}</div>
-                    </div>
-                    <div className="mb-2">
-                      <small className="text-muted">Account Status</small>
-                      <div>
-                        <Badge bg={selectedUser.status === 'ACTIVE' ? 'success' : selectedUser.status === 'SUSPENDED' ? 'danger' : 'secondary'}>
-                          {selectedUser.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        {/* View User Details Modal */}
+        <Modal
+          show={showViewModal}
+          onHide={() => setShowViewModal(false)}
+          size="xl"
+          className="user-details-modal"
+          centered
+        >
+          <Modal.Header className="bg-gradient-primary text-white border-0 position-relative overflow-hidden">
+            <div className="position-absolute top-0 start-0 w-100 h-100 opacity-10">
+              <div className="bg-info bg-opacity-50 rounded-circle position-absolute" style={{ width: '150px', height: '150px', bottom: '-30px', left: '-30px' }}></div>
             </div>
-          )}
-        </Modal.Body>
-        <Modal.Footer className="border-0">
-          <Button variant="secondary" onClick={() => setShowViewModal(false)}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Edit User Modal */}
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="xl" className="edit-user-modal">
-        <Modal.Header className="bg-success bg-gradient text-white border-0 position-relative overflow-hidden">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-2">
-            <Pencil size={24} className="text-white" />
-            Edit User
-          </Modal.Title>
-          <button type="button" className="btn-close btn-close-white position-absolute" style={{ top: '15px', right: '15px' }} onClick={() => setShowEditModal(false)}></button>
-        </Modal.Header>
-        <Modal.Body className="p-4 bg-light">
-          <div className="mb-4">
-            <div className="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
-              <Pencil size={32} className="text-success" />
-            </div>
-            <h5 className="fw-bold text-success mb-2">Update User Information</h5>
-            <p className="text-muted small">Modify user details and account settings</p>
-          </div>
-
-          <div className="bg-white p-4 rounded shadow-sm">
-            <Form className="modern-form">
-              <div className="row g-4">
-                <div className="col-md-6">
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                      <PersonCircle size={16} className="text-success" />
-                      First Name
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={editFormData.firstName}
-                      onChange={(e) =>
-                        setEditFormData({ ...editFormData, firstName: e.target.value })
-                      }
-                      placeholder="Enter first name"
-                      className="form-control-lg"
-                      style={{ padding: '12px 16px', fontSize: '16px' }}
-                    />
-                  </Form.Group>
+            <Modal.Title className="fw-bold d-flex align-items-center gap-3 text-white position-relative">
+              <div className="bg-primary bg-opacity-20 p-3 rounded-circle">
+                <FaPersonCircleCheck size={28} className="text-white" />
+              </div>
+              <div>
+                <small className="opacity-75">User details</small>
+              </div>
+            </Modal.Title>
+            <button
+              type="button"
+              className="btn-close btn-close-white position-absolute"
+              style={{ top: '20px', right: '20px' }}
+              onClick={() => setShowViewModal(false)}
+            ></button>
+          </Modal.Header>
+          <Modal.Body className="p-0 bg-light">
+            {selectedUser && (
+              <div className="p-4">
+                {/* Header Section */}
+                <div className="text-center mb-5 position-relative">
+                  <div className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4 position-relative" style={{ width: '120px', height: '120px' }}>
+                    <div className="bg-gradient-to-br from-primary to-info rounded-circle d-flex align-items-center justify-content-center shadow-lg" style={{ width: '80px', height: '80px' }}>
+                      <PersonCircle size={40} className="text-white" />
+                    </div>
+                  </div>
+                  <h3 className="fw-bold text-primary mb-2">{selectedUser.firstName} {selectedUser.lastName}</h3>
+                  <p className="text-muted mb-3 fs-6">{selectedUser.email}</p>
+                  <div className="d-flex justify-content-center gap-2 flex-wrap">
+                    <Badge bg={getStatusVariant(selectedUser.status)} className="px-3 py-2 fs-6">
+                      {selectedUser.status}
+                    </Badge>
+                    <Badge bg={selectedUser.institution?.name ? "primary" : "secondary"} className="px-3 py-2 fs-6">
+                      {selectedUser.institution?.name || "No Institution"}
+                    </Badge>
+                  </div>
                 </div>
-                <div className="col-md-6">
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                      <PersonCircle size={16} className="text-success" />
-                      Last Name
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={editFormData.lastName}
-                      onChange={(e) =>
-                        setEditFormData({ ...editFormData, lastName: e.target.value })
-                      }
-                      placeholder="Enter last name"
-                      className="form-control-lg"
-                      style={{ padding: '12px 16px', fontSize: '16px' }}
-                    />
-                  </Form.Group>
+
+                <div className="row g-4">
+                  {/* Personal Details */}
+                  <div className="col-lg-6">
+                    <div className="card border-0 shadow-sm h-100 hover-lift">
+                      <div className="card-body p-4">
+                        <div className="d-flex align-items-center mb-4">
+                          <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                            <PersonCircle size={20} className="text-primary" />
+                          </div>
+                          <h6 className="fw-bold text-dark mb-0">Personal Details</h6>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">First Name</small>
+                            <span className="fw-semibold text-dark">{selectedUser.firstName}</span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Last Name</small>
+                            <span className="fw-semibold">{selectedUser.lastName}</span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Email</small>
+                            <span className="fw-semibold text-truncate" style={{ maxWidth: '200px' }}>
+                              {selectedUser.email}
+                            </span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2">
+                            <small className="text-muted fw-medium">Status</small>
+                            <Badge bg={getStatusVariant(selectedUser.status)} className="px-2 py-1">
+                              {selectedUser.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Organization */}
+                  <div className="col-lg-6">
+                    <div className="card border-0 shadow-sm h-100 hover-lift">
+                      <div className="card-body p-4">
+                        <div className="d-flex align-items-center mb-4">
+                          <div className="bg-info bg-opacity-10 p-3 rounded-circle me-3">
+                            <Globe size={20} className="text-info" />
+                          </div>
+                          <h6 className="fw-bold text-dark mb-0">Organization</h6>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Institution</small>
+                            <span className="fw-semibold text-truncate" style={{ maxWidth: '200px' }}>
+                              {selectedUser.institution?.name || "No Institution"}
+                            </span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Country</small>
+                            <span className="fw-semibold">{selectedUser.institution?.country || "N/A"}</span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2">
+                            <small className="text-muted fw-medium">Department</small>
+                            <span className="fw-semibold text-truncate" style={{ maxWidth: '200px' }}>
+                              {selectedUser.department?.name || "No Department"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Account Activity */}
+                  <div className="col-lg-6">
+                    <div className="card border-0 shadow-sm h-100 hover-lift">
+                      <div className="card-body p-4">
+                        <div className="d-flex align-items-center mb-4">
+                          <div className="bg-success bg-opacity-10 p-3 rounded-circle me-3">
+                            <Activity size={20} className="text-success" />
+                          </div>
+                          <h6 className="fw-bold text-dark mb-0">Account Activity</h6>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Created At</small>
+                            <small className="fw-semibold">
+                              <DateTimeDisplay date={selectedUser.createdAt} />
+                            </small>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2">
+                            <small className="text-muted fw-medium">Last Login</small>
+                            <small className="fw-semibold">
+                              {selectedUser.lastLogin ? (
+                                <DateTimeDisplay date={selectedUser.lastLogin} />
+                              ) : (
+                                <span className="text-primary">Never logged in</span>
+                              )}
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Account Security */}
+                  <div className="col-lg-6">
+                    <div className="card border-0 shadow-sm h-100 hover-lift">
+                      <div className="card-body p-4">
+                        <div className="d-flex align-items-center mb-4">
+                          <div className="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
+                            <ShieldLock size={20} className="text-warning" />
+                          </div>
+                          <h6 className="fw-bold text-dark mb-0">Account Security</h6>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">User ID</small>
+                            <Badge bg="secondary" className="px-2 py-1">#{selectedUser.id}</Badge>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2">
+                            <small className="text-muted fw-medium">Account Status</small>
+                            <Badge bg={getStatusVariant(selectedUser.status)} className="px-2 py-1">
+                              {selectedUser.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              <Form.Group className="mt-4">
-                <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                  <Globe size={16} className="text-success" />
-                  Email Address
-                </Form.Label>
-                <Form.Control
-                  type="email"
-                  value={editFormData.email}
-                  onChange={(e) =>
-                    setEditFormData({ ...editFormData, email: e.target.value })
-                  }
-                  placeholder="Enter email address"
-                  className="form-control-lg"
-                  style={{ padding: '12px 16px', fontSize: '16px' }}
-                />
-              </Form.Group>
-
-              <Form.Group className="mt-4">
-                <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                  <Activity size={16} className="text-success" />
-                  Account Status
-                </Form.Label>
-                <Form.Select
-                  value={editFormData.status}
-                  onChange={(e) =>
-                    setEditFormData({ ...editFormData, status: e.target.value })
-                  }
-                  className="form-select-lg"
-                  style={{ padding: '12px 16px', fontSize: '16px' }}
-                >
-                  <option value="ACTIVE">✅ Active</option>
-                  <option value="INACTIVE">⏸️ Inactive</option>
-                  <option value="SUSPENDED">🚫 Suspended</option>
-                  <option value="INVITED">📧 Invited</option>
-                </Form.Select>
-              </Form.Group>
-            </Form>
-          </div>
-        </Modal.Body>
-        <Modal.Footer className="border-0 bg-light">
-          <Button
-            variant="outline-secondary"
-            onClick={() => setShowEditModal(false)}
-            className="px-4 py-2"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="success"
-            onClick={handleUpdateUser}
-            disabled={isUpdating}
-            className="px-4 py-2 fw-semibold"
-          >
-            {isUpdating ? (
-              <>
-                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                Updating...
-              </>
-            ) : (
-              <>
-                <Pencil size={16} className="me-2" />
-                Update User
-              </>
             )}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+          </Modal.Body>
+          <Modal.Footer className="border-0 bg-light p-4">
+            <Button
+              variant="secondary"
+              onClick={() => setShowViewModal(false)}
+              className="px-4 py-2 fw-semibold"
+            >
+              <Eye size={16} className="me-2" />
+              Close Details
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
-      {/* Delete User Confirmation Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} size="xl" className="delete-user-modal">
-        <Modal.Header className="bg-danger bg-gradient text-white border-0 position-relative overflow-hidden">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-2">
-            <Trash size={24} className="text-white" />
-            Delete User
-          </Modal.Title>
-          <button type="button" className="btn-close btn-close-white position-absolute" style={{ top: '15px', right: '15px' }} onClick={() => setShowDeleteModal(false)}></button>
-        </Modal.Header>
-        <Modal.Body className="p-4 bg-light">
-          {selectedUser && (
-            <div className="text-center">
-              <div className="mb-4">
-                <div className="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
-                  <Trash size={32} className="text-danger" />
-                </div>
-                <h5 className="fw-bold text-danger mb-3">Delete User Confirmation</h5>
-                <p className="text-muted mb-4">
-                  Are you sure you want to delete this user? This action cannot be undone and will permanently remove all associated data.
-                </p>
+        {/* Edit User Modal */}
+        <Modal
+          show={showEditModal}
+          onHide={() => setShowEditModal(false)}
+          size="xl"
+          className="edit-user-modal"
+        >
+          <Modal.Header className="bg-success bg-gradient text-white border-0 position-relative overflow-hidden">
+            <Modal.Title className="fw-bold d-flex align-items-center gap-2">
+              <Pencil size={24} className="text-white" />
+              Edit User
+            </Modal.Title>
+            <button
+              type="button"
+              className="btn-close btn-close-white position-absolute"
+              style={{ top: "15px", right: "15px" }}
+              onClick={() => setShowEditModal(false)}
+            ></button>
+          </Modal.Header>
+          <Modal.Body className="p-4 bg-light">
+            <div className="mb-4">
+              <div
+                className="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                style={{ width: "80px", height: "80px" }}
+              >
+                <Pencil size={32} className="text-success" />
               </div>
-              <div className="bg-light border border-danger border-opacity-25 p-3 rounded mb-4">
-                <div className="fw-semibold text-dark mb-2">User to be deleted:</div>
-                <div className="d-flex align-items-center justify-content-center gap-3">
-                  <div className="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px' }}>
-                    <PersonCircle size={24} className="text-primary" />
+              <h5 className="fw-bold text-success mb-2">
+                Update User Information
+              </h5>
+              <p className="text-muted small">
+                Modify user details and account settings
+              </p>
+            </div>
+
+            <div className="bg-white p-4 rounded shadow-sm">
+              <Form className="modern-form">
+                <div className="row g-4">
+                  <div className="col-md-6">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <PersonCircle size={16} className="text-success" />
+                        First Name
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={editFormData.firstName}
+                        onChange={(e) =>
+                          setEditFormData({
+                            ...editFormData,
+                            firstName: e.target.value,
+                          })
+                        }
+                        placeholder="Enter first name"
+                        className="form-control-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      />
+                    </Form.Group>
                   </div>
-                  <div className="text-start">
-                    <div className="fw-semibold mb-1">
-                      {selectedUser.firstName} {selectedUser.lastName}
+                  <div className="col-md-6">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <PersonCircle size={16} className="text-success" />
+                        Last Name
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={editFormData.lastName}
+                        onChange={(e) =>
+                          setEditFormData({
+                            ...editFormData,
+                            lastName: e.target.value,
+                          })
+                        }
+                        placeholder="Enter last name"
+                        className="form-control-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      />
+                    </Form.Group>
+                  </div>
+                </div>
+
+                <Form.Group className="mt-4">
+                  <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                    <Globe size={16} className="text-success" />
+                    Email Address
+                  </Form.Label>
+                  <Form.Control
+                    type="email"
+                    value={editFormData.email}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        email: e.target.value,
+                      })
+                    }
+                    placeholder="Enter email address"
+                    className="form-control-lg"
+                    style={{ padding: "12px 16px", fontSize: "16px" }}
+                  />
+                </Form.Group>
+
+                <Form.Group className="mt-4">
+                  <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                    <Activity size={16} className="text-success" />
+                    Account Status
+                  </Form.Label>
+                  <Form.Select
+                    value={editFormData.status}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        status: e.target.value,
+                      })
+                    }
+                    className="form-select-lg"
+                    style={{ padding: "12px 16px", fontSize: "16px" }}
+                  >
+                    <option value="ACTIVE">✅ Active</option>
+                    <option value="INACTIVE">⏸️ Inactive</option>
+                    <option value="SUSPENDED">🚫 Suspended</option>
+                    <option value="INVITED">📧 Invited</option>
+                  </Form.Select>
+                </Form.Group>
+              </Form>
+            </div>
+          </Modal.Body>
+          <Modal.Footer className="border-0 bg-light">
+            <Button
+              variant="outline-secondary"
+              onClick={() => setShowEditModal(false)}
+              className="px-4 py-2"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="success"
+              onClick={handleUpdateUser}
+              disabled={isUpdating}
+              className="px-4 py-2 fw-semibold"
+            >
+              {isUpdating ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <Pencil size={16} className="me-2" />
+                  Update User
+                </>
+              )}
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Delete User Confirmation Modal */}
+        <Modal
+          show={showDeleteModal}
+          onHide={() => setShowDeleteModal(false)}
+          size="xl"
+          className="delete-user-modal"
+        >
+          <Modal.Header className="bg-danger bg-gradient text-white border-0 position-relative overflow-hidden">
+            <Modal.Title className="fw-bold d-flex align-items-center gap-2">
+              <Trash size={24} className="text-white" />
+              Delete User
+            </Modal.Title>
+            <button
+              type="button"
+              className="btn-close btn-close-white position-absolute"
+              style={{ top: "15px", right: "15px" }}
+              onClick={() => setShowDeleteModal(false)}
+            ></button>
+          </Modal.Header>
+          <Modal.Body className="p-4 bg-light">
+            {selectedUser && (
+              <div className="text-center">
+                <div className="mb-4">
+                  <div
+                    className="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                    style={{ width: "80px", height: "80px" }}
+                  >
+                    <Trash size={32} className="text-danger" />
+                  </div>
+                  <h5 className="fw-bold text-danger mb-3">
+                    Delete User Confirmation
+                  </h5>
+                  <p className="text-muted mb-4">
+                    Are you sure you want to delete this user? This action
+                    cannot be undone and will permanently remove all associated
+                    data.
+                  </p>
+                </div>
+                <div className="bg-light border border-danger border-opacity-25 p-3 rounded mb-4">
+                  <div className="fw-semibold text-dark mb-2">
+                    User to be deleted:
+                  </div>
+                  <div className="d-flex align-items-center justify-content-center gap-3">
+                    <div
+                      className="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                      style={{ width: "48px", height: "48px" }}
+                    >
+                      <PersonCircle size={24} className="text-primary" />
                     </div>
-                    <div className="text-muted small">{selectedUser.email}</div>
+                    <div className="text-start">
+                      <div className="fw-semibold mb-1">
+                        {selectedUser.firstName} {selectedUser.lastName}
+                      </div>
+                      <div className="text-muted small">
+                        {selectedUser.email}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="alert alert-danger d-flex align-items-center gap-2" role="alert">
-                <Trash size={16} />
-                <small className="fw-semibold">Warning: This action is irreversible!</small>
-              </div>
-            </div>
-          )}
-        </Modal.Body>
-        <Modal.Footer className="border-0">
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={confirmDeleteUser}
-            disabled={isDeleting}
-          >
-            {isDeleting ? "Deleting..." : "Delete User"}
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      <Modal show={showEditInstitutionModal} onHide={() => setShowEditInstitutionModal(false)} size="xl" className="edit-institution-modal">
-        <Modal.Header className="bg-primary bg-opacity-10 text-white border-0">
-          <h5 className="fw-bold d-flex align-items-center gap-2 text-dark">
-            Editing {selectedInstitution?.name || 'Institution'}
-          </h5>
-          <button type="button" className="btn-close btn-close-white" onClick={() => setShowEditInstitutionModal(false)}></button>
-        </Modal.Header>
-        <Modal.Body className="p-4 bg-light">
-          <div className="mb-4 text-center">
-            <div className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
-              <Pencil size={32} className="text-primary" />
-            </div>
-            <h5 className="fw-bold text-primary mb-2">Update Institution Information</h5>
-            <p className="text-muted small">Modify institution details and settings</p>
-          </div>
-
-          <div className="bg-white p-4 rounded shadow-sm">
-            <Form className="modern-form">
-              <div className="row g-4">
-                <div className="col-md-6">
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                      <Building size={16} className="text-primary" />
-                      Institution Name
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={editInstitutionFormData.name}
-                      onChange={(e) =>
-                        setEditInstitutionFormData({ ...editInstitutionFormData, name: e.target.value })
-                      }
-                      placeholder="Enter institution name"
-                      className="form-control-lg"
-                      style={{ padding: '12px 16px', fontSize: '16px' }}
-                    />
-                  </Form.Group>
-                </div>
-                <div className="col-md-6">
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                      <Building size={16} className="text-primary" />
-                      Industry
-                    </Form.Label>
-                    <Form.Select
-                      value={editInstitutionFormData.industry}
-                      onChange={(e) =>
-                        setEditInstitutionFormData({ ...editInstitutionFormData, industry: e.target.value })
-                      }
-                      className="form-select-lg"
-                      style={{ padding: '12px 16px', fontSize: '16px' }}
-                    >
-                      <option value="">Select Industry</option>
-                      <option value="Education">Education</option>
-                      <option value="Healthcare">Healthcare</option>
-                      <option value="Finance">Finance</option>
-                      <option value="Technology">Technology</option>
-                      <option value="Manufacturing">Manufacturing</option>
-                    </Form.Select>
-                  </Form.Group>
-                </div>
-              </div>
-
-              <div className="row g-4 mt-3">
-                <div className="col-md-6">
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                      <GeoAlt size={16} className="text-primary" />
-                      Address
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={editInstitutionFormData.address}
-                      onChange={(e) =>
-                        setEditInstitutionFormData({ ...editInstitutionFormData, address: e.target.value })
-                      }
-                      placeholder="Enter address"
-                      className="form-control-lg"
-                      style={{ padding: '12px 16px', fontSize: '16px' }}
-                    />
-                  </Form.Group>
-                </div>
-                <div className="col-md-6">
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                      <GeoAlt size={16} className="text-primary" />
-                      City
-                    </Form.Label>
-                    <Form.Select
-                      value={editInstitutionFormData.city}
-                      onChange={(e) =>
-                        setEditInstitutionFormData({ ...editInstitutionFormData, city: e.target.value })
-                      }
-                      className="form-select-lg"
-                      style={{ padding: '12px 16px', fontSize: '16px' }}
-                    >
-                      <option value="">Select City</option>
-                      <option value="Nairobi">Nairobi</option>
-                      <option value="Mombasa">Mombasa</option>
-                      <option value="Kisumu">Kisumu</option>
-                      <option value="Nakuru">Nakuru</option>
-                      <option value="Eldoret">Eldoret</option>
-                    </Form.Select>
-                  </Form.Group>
-                </div>
-              </div>
-
-              <div className="row g-4 mt-3">
-                <div className="col-md-6">
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                      <Globe size={16} className="text-primary" />
-                      Country
-                    </Form.Label>
-                    <Form.Select
-                      value={editInstitutionFormData.country}
-                      onChange={(e) =>
-                        setEditInstitutionFormData({ ...editInstitutionFormData, country: e.target.value })
-                      }
-                      className="form-select-lg"
-                      style={{ padding: '12px 16px', fontSize: '16px' }}
-                    >
-                      <option value="">Select Country</option>
-                      <option value="Kenya">Kenya</option>
-                      <option value="Uganda">Uganda</option>
-                      <option value="Tanzania">Tanzania</option>
-                      <option value="Rwanda">Rwanda</option>
-                      <option value="Ethiopia">Ethiopia</option>
-                    </Form.Select>
-                  </Form.Group>
-                </div>
-                <div className="col-md-6">
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                      <Globe size={16} className="text-primary" />
-                      Contact Email
-                    </Form.Label>
-                    <Form.Control
-                      type="email"
-                      value={editInstitutionFormData.contactEmail}
-                      onChange={(e) =>
-                        setEditInstitutionFormData({ ...editInstitutionFormData, contactEmail: e.target.value })
-                      }
-                      placeholder="Enter contact email"
-                      className="form-control-lg"
-                      style={{ padding: '12px 16px', fontSize: '16px' }}
-                    />
-                  </Form.Group>
-                </div>
-              </div>
-
-              <div className="row g-4 mt-3">
-                <div className="col-md-6">
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                      <Globe size={16} className="text-primary" />
-                      Phone Number
-                    </Form.Label>
-                    <Form.Control
-                      type="tel"
-                      value={editInstitutionFormData.phoneNumber}
-                      onChange={(e) =>
-                        setEditInstitutionFormData({ ...editInstitutionFormData, phoneNumber: e.target.value })
-                      }
-                      placeholder="Enter phone number"
-                      className="form-control-lg"
-                      style={{ padding: '12px 16px', fontSize: '16px' }}
-                    />
-                  </Form.Group>
-                </div>
-                <div className="col-md-6">
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                      <Globe size={16} className="text-primary" />
-                      Website URL
-                    </Form.Label>
-                    <Form.Control
-                      type="url"
-                      value={editInstitutionFormData.websiteUrl}
-                      onChange={(e) =>
-                        setEditInstitutionFormData({ ...editInstitutionFormData, websiteUrl: e.target.value })
-                      }
-                      placeholder="Enter website URL"
-                      className="form-control-lg"
-                      style={{ padding: '12px 16px', fontSize: '16px' }}
-                    />
-                  </Form.Group>
-                </div>
-              </div>
-
-              <Form.Group className="mt-4">
-                <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                  <Globe size={16} className="text-primary" />
-                  Logo URL
-                </Form.Label>
-                <Form.Control
-                  type="url"
-                  value={editInstitutionFormData.logoUrl}
-                  onChange={(e) =>
-                    setEditInstitutionFormData({ ...editInstitutionFormData, logoUrl: e.target.value })
-                  }
-                  placeholder="Enter logo URL"
-                  className="form-control-lg"
-                  style={{ padding: '12px 16px', fontSize: '16px' }}
-                />
-              </Form.Group>
-
-              <div className="row g-4 mt-3">
-                <div className="col-md-4">
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                      <CreditCard size={16} className="text-primary" />
-                      Subscription Start
-                    </Form.Label>
-                    <Form.Control
-                      type="date"
-                      value={editInstitutionFormData.subscriptionStartDate}
-                      onChange={(e) =>
-                        setEditInstitutionFormData({ ...editInstitutionFormData, subscriptionStartDate: e.target.value })
-                      }
-                      className="form-control-lg"
-                      style={{ padding: '12px 16px', fontSize: '16px' }}
-                    />
-                  </Form.Group>
-                </div>
-                <div className="col-md-4">
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                      <CreditCard size={16} className="text-primary" />
-                      Subscription End
-                    </Form.Label>
-                    <Form.Control
-                      type="date"
-                      value={editInstitutionFormData.subscriptionEndDate}
-                      onChange={(e) =>
-                        setEditInstitutionFormData({ ...editInstitutionFormData, subscriptionEndDate: e.target.value })
-                      }
-                      className="form-control-lg"
-                      style={{ padding: '12px 16px', fontSize: '16px' }}
-                    />
-                  </Form.Group>
-                </div>
-                <div className="col-md-4">
-                  <Form.Group>
-                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                      <CreditCard size={16} className="text-primary" />
-                      Trial End
-                    </Form.Label>
-                    <Form.Control
-                      type="date"
-                      value={editInstitutionFormData.trialEndDate}
-                      onChange={(e) =>
-                        setEditInstitutionFormData({ ...editInstitutionFormData, trialEndDate: e.target.value })
-                      }
-                      className="form-control-lg"
-                      style={{ padding: '12px 16px', fontSize: '16px' }}
-                    />
-                  </Form.Group>
-                </div>
-              </div>
-
-              <Form.Group className="mt-4">
-                <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                  <CreditCard size={16} className="text-primary" />
-                  Billing Email
-                </Form.Label>
-                <Form.Control
-                  type="email"
-                  value={editInstitutionFormData.billingEmail}
-                  onChange={(e) =>
-                    setEditInstitutionFormData({ ...editInstitutionFormData, billingEmail: e.target.value })
-                  }
-                  placeholder="Enter billing email"
-                  className="form-control-lg"
-                  style={{ padding: '12px 16px', fontSize: '16px' }}
-                />
-              </Form.Group>
-
-              <Form.Group className="mt-4">
-                <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                  <Activity size={16} className="text-primary" />
-                  Institution Status
-                </Form.Label>
-                <Form.Select
-                  value={editInstitutionFormData.status}
-                  onChange={(e) =>
-                    setEditInstitutionFormData({ ...editInstitutionFormData, status: e.target.value })
-                  }
-                  className="form-select-lg"
-                  style={{ padding: '12px 16px', fontSize: '16px' }}
+                <div
+                  className="alert alert-danger d-flex align-items-center gap-2"
+                  role="alert"
                 >
-                  <option value="ACTIVE">✅ Active</option>
-                  <option value="INACTIVE">⏸️ Inactive</option>
-                  <option value="SUSPENDED">🚫 Suspended</option>
-                </Form.Select>
-              </Form.Group>
-            </Form>
-          </div>
-        </Modal.Body>
-        <Modal.Footer className="border-0 bg-light">
-          <Button
-            variant="outline-secondary"
-            onClick={() => setShowEditInstitutionModal(false)}
-            className="px-4 py-2"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleUpdateInstitution}
-            disabled={isUpdatingInstitution}
-            className="px-4 py-2 fw-semibold"
-          >
-            {isUpdatingInstitution ? (
-              <>
-                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                Updating...
-              </>
-            ) : (
-              <>
-                <Pencil size={16} className="me-2" />
-                Update Institution
-              </>
-            )}
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Delete Institution Confirmation Modal */}
-      <Modal show={showDeleteInstitutionModal} onHide={() => setShowDeleteInstitutionModal(false)} size="xl" className="delete-institution-modal">
-        <Modal.Header className="bg-danger bg-gradient text-white border-0 position-relative overflow-hidden">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-2">
-            <Trash size={24} className="text-white" />
-            Delete Institution
-          </Modal.Title>
-          <button type="button" className="btn-close btn-close-white position-absolute" style={{ top: '15px', right: '15px' }} onClick={() => setShowDeleteInstitutionModal(false)}></button>
-        </Modal.Header>
-        <Modal.Body className="p-4 bg-light">
-          {selectedInstitution && (
-            <div className="text-center">
-              <div className="mb-4">
-                <div className="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
-                  <Trash size={32} className="text-danger" />
+                  <Trash size={16} />
+                  <small className="fw-semibold">
+                    Warning: This action is irreversible!
+                  </small>
                 </div>
-                <h5 className="fw-bold text-danger mb-3">Delete Institution Confirmation</h5>
-                <p className="text-muted mb-4">
-                  Are you sure you want to delete this institution? This action cannot be undone and will permanently remove all associated data including all users and departments.
-                </p>
               </div>
-              <div className="bg-light border border-danger border-opacity-25 p-3 rounded mb-4">
-                <div className="fw-semibold text-dark mb-2">Institution to be deleted:</div>
-                <div className="d-flex align-items-center justify-content-center gap-3">
-                  {selectedInstitution.logoUrl ? (
-                    <img
-                      src={selectedInstitution.logoUrl}
-                      alt={selectedInstitution.name}
-                      className="rounded-circle border border-light shadow-sm"
-                      style={{ width: '48px', height: '48px', objectFit: 'cover' }}
-                    />
-                  ) : (
-                    <div className="bg-gradient-to-br from-cyan-400 to-blue-500 rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ width: '48px', height: '48px' }}>
-                      <span className="text-white fw-bold" style={{ fontSize: '16px' }}>
-                        {selectedInstitution.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                  <div className="text-start">
-                    <div className="fw-semibold mb-1">
-                      {selectedInstitution.name}
-                    </div>
-                    <div className="text-muted small">{selectedInstitution.contactEmail || 'No contact email'}</div>
+            )}
+          </Modal.Body>
+          <Modal.Footer className="border-0">
+            <Button
+              variant="secondary"
+              onClick={() => setShowDeleteModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmDeleteUser}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete User"}
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={showEditInstitutionModal}
+          onHide={() => setShowEditInstitutionModal(false)}
+          size="xl"
+          className="edit-institution-modal"
+        >
+          <Modal.Header className="bg-primary text-white border-0">
+            <Modal.Title className="fw-bold d-flex align-items-center gap-2 text-primary">
+              <Pencil size={24} className="text-primary" />
+              Editing {selectedInstitution?.name || "Institution"}
+            </Modal.Title>
+            <button
+              type="button"
+              className="btn-close btn-close-white"
+              onClick={() => setShowEditInstitutionModal(false)}
+            ></button>
+          </Modal.Header>
+          <Modal.Body className="p-4 bg-light">
+            <div className="mb-4 text-center">
+              <div
+                className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                style={{ width: "80px", height: "80px" }}
+              >
+                <Pencil size={32} className="text-primary" />
+              </div>
+              <h5 className="fw-bold text-primary mb-2">
+                Update Institution Information
+              </h5>
+              <p className="text-muted small">
+                Modify institution details and settings
+              </p>
+            </div>
+
+            <div className="bg-white p-4 rounded shadow-sm">
+              <Form className="modern-form">
+                <div className="row g-4">
+                  <div className="col-md-6">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <Building size={16} className="text-primary" />
+                        Institution Name
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={editInstitutionFormData.name}
+                        onChange={(e) =>
+                          setEditInstitutionFormData({
+                            ...editInstitutionFormData,
+                            name: e.target.value,
+                          })
+                        }
+                        placeholder="Enter institution name"
+                        className="form-control-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      />
+                    </Form.Group>
+                  </div>
+                  <div className="col-md-6">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <Building size={16} className="text-primary" />
+                        Industry
+                      </Form.Label>
+                      <Form.Select
+                        value={editInstitutionFormData.industry}
+                        onChange={(e) =>
+                          setEditInstitutionFormData({
+                            ...editInstitutionFormData,
+                            industry: e.target.value,
+                          })
+                        }
+                        className="form-select-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      >
+                        <option value="">Select Industry</option>
+                        <option value="Education">Education</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                      </Form.Select>
+                    </Form.Group>
                   </div>
                 </div>
-              </div>
-              <div className="alert alert-danger d-flex align-items-center gap-2" role="alert">
-                <Trash size={16} />
-                <small className="fw-semibold">Warning: This action will permanently delete the institution and all associated data!</small>
-              </div>
+
+                <div className="row g-4 mt-3">
+                  <div className="col-md-6">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <GeoAlt size={16} className="text-primary" />
+                        Address
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={editInstitutionFormData.address}
+                        onChange={(e) =>
+                          setEditInstitutionFormData({
+                            ...editInstitutionFormData,
+                            address: e.target.value,
+                          })
+                        }
+                        placeholder="Enter address"
+                        className="form-control-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      />
+                    </Form.Group>
+                  </div>
+                  <div className="col-md-6">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <GeoAlt size={16} className="text-primary" />
+                        City
+                      </Form.Label>
+                      <Form.Select
+                        value={editInstitutionFormData.city}
+                        onChange={(e) =>
+                          setEditInstitutionFormData({
+                            ...editInstitutionFormData,
+                            city: e.target.value,
+                          })
+                        }
+                        className="form-select-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      >
+                        <option value="">Select City</option>
+                        <option value="Nairobi">Nairobi</option>
+                        <option value="Mombasa">Mombasa</option>
+                        <option value="Kisumu">Kisumu</option>
+                        <option value="Nakuru">Nakuru</option>
+                        <option value="Eldoret">Eldoret</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </div>
+                </div>
+
+                <div className="row g-4 mt-3">
+                  <div className="col-md-6">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <Globe size={16} className="text-primary" />
+                        Country
+                      </Form.Label>
+                      <Form.Select
+                        value={editInstitutionFormData.country}
+                        onChange={(e) =>
+                          setEditInstitutionFormData({
+                            ...editInstitutionFormData,
+                            country: e.target.value,
+                          })
+                        }
+                        className="form-select-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      >
+                        <option value="">Select Country</option>
+                        <option value="Kenya">Kenya</option>
+                        <option value="Uganda">Uganda</option>
+                        <option value="Tanzania">Tanzania</option>
+                        <option value="Rwanda">Rwanda</option>
+                        <option value="Ethiopia">Ethiopia</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </div>
+                  <div className="col-md-6">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <Globe size={16} className="text-primary" />
+                        Contact Email
+                      </Form.Label>
+                      <Form.Control
+                        type="email"
+                        value={editInstitutionFormData.contactEmail}
+                        onChange={(e) =>
+                          setEditInstitutionFormData({
+                            ...editInstitutionFormData,
+                            contactEmail: e.target.value,
+                          })
+                        }
+                        placeholder="Enter contact email"
+                        className="form-control-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      />
+                    </Form.Group>
+                  </div>
+                </div>
+
+                <div className="row g-4 mt-3">
+                  <div className="col-md-6">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <Globe size={16} className="text-primary" />
+                        Phone Number
+                      </Form.Label>
+                      <Form.Control
+                        type="tel"
+                        value={editInstitutionFormData.phoneNumber}
+                        onChange={(e) =>
+                          setEditInstitutionFormData({
+                            ...editInstitutionFormData,
+                            phoneNumber: e.target.value,
+                          })
+                        }
+                        placeholder="Enter phone number"
+                        className="form-control-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      />
+                    </Form.Group>
+                  </div>
+                  <div className="col-md-6">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <Globe size={16} className="text-primary" />
+                        Website URL
+                      </Form.Label>
+                      <Form.Control
+                        type="url"
+                        value={editInstitutionFormData.websiteUrl}
+                        onChange={(e) =>
+                          setEditInstitutionFormData({
+                            ...editInstitutionFormData,
+                            websiteUrl: e.target.value,
+                          })
+                        }
+                        placeholder="Enter website URL"
+                        className="form-control-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      />
+                    </Form.Group>
+                  </div>
+                </div>
+
+                <Form.Group className="mt-4">
+                  <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                    <Globe size={16} className="text-primary" />
+                    Logo URL
+                  </Form.Label>
+                  <Form.Control
+                    type="url"
+                    value={editInstitutionFormData.logoUrl}
+                    onChange={(e) =>
+                      setEditInstitutionFormData({
+                        ...editInstitutionFormData,
+                        logoUrl: e.target.value,
+                      })
+                    }
+                    placeholder="Enter logo URL"
+                    className="form-control-lg"
+                    style={{ padding: "12px 16px", fontSize: "16px" }}
+                  />
+                </Form.Group>
+
+                <div className="row g-4 mt-3">
+                  <div className="col-md-4">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <CreditCard size={16} className="text-primary" />
+                        Subscription Start
+                      </Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={editInstitutionFormData.subscriptionStartDate}
+                        onChange={(e) =>
+                          setEditInstitutionFormData({
+                            ...editInstitutionFormData,
+                            subscriptionStartDate: e.target.value,
+                          })
+                        }
+                        className="form-control-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      />
+                    </Form.Group>
+                  </div>
+                  <div className="col-md-4">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <CreditCard size={16} className="text-primary" />
+                        Subscription End
+                      </Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={editInstitutionFormData.subscriptionEndDate}
+                        onChange={(e) =>
+                          setEditInstitutionFormData({
+                            ...editInstitutionFormData,
+                            subscriptionEndDate: e.target.value,
+                          })
+                        }
+                        className="form-control-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      />
+                    </Form.Group>
+                  </div>
+                  <div className="col-md-4">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <CreditCard size={16} className="text-primary" />
+                        Trial End
+                      </Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={editInstitutionFormData.trialEndDate}
+                        onChange={(e) =>
+                          setEditInstitutionFormData({
+                            ...editInstitutionFormData,
+                            trialEndDate: e.target.value,
+                          })
+                        }
+                        className="form-control-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      />
+                    </Form.Group>
+                  </div>
+                </div>
+
+                <Form.Group className="mt-4">
+                  <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                    <CreditCard size={16} className="text-primary" />
+                    Billing Email
+                  </Form.Label>
+                  <Form.Control
+                    type="email"
+                    value={editInstitutionFormData.billingEmail}
+                    onChange={(e) =>
+                      setEditInstitutionFormData({
+                        ...editInstitutionFormData,
+                        billingEmail: e.target.value,
+                      })
+                    }
+                    placeholder="Enter billing email"
+                    className="form-control-lg"
+                    style={{ padding: "12px 16px", fontSize: "16px" }}
+                  />
+                </Form.Group>
+
+                <Form.Group className="mt-4">
+                  <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                    <Activity size={16} className="text-primary" />
+                    Institution Status
+                  </Form.Label>
+                  <Form.Select
+                    value={editInstitutionFormData.status}
+                    onChange={(e) =>
+                      setEditInstitutionFormData({
+                        ...editInstitutionFormData,
+                        status: e.target.value,
+                      })
+                    }
+                    className="form-select-lg"
+                    style={{ padding: "12px 16px", fontSize: "16px" }}
+                  >
+                    <option value="ACTIVE">✅ Active</option>
+                    <option value="INACTIVE">⏸️ Inactive</option>
+                    <option value="SUSPENDED">🚫 Suspended</option>
+                  </Form.Select>
+                </Form.Group>
+              </Form>
             </div>
-          )}
-        </Modal.Body>
-        <Modal.Footer className="border-0">
-          <Button variant="secondary" onClick={() => setShowDeleteInstitutionModal(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={confirmDeleteInstitution}
-            disabled={isDeletingInstitution}
-          >
-            {isDeletingInstitution ? "Deleting..." : "Delete Institution"}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+          </Modal.Body>
+          <Modal.Footer className="border-0 bg-light">
+            <Button
+              variant="outline-secondary"
+              onClick={() => setShowEditInstitutionModal(false)}
+              className="px-4 py-2"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleUpdateInstitution}
+              disabled={isUpdatingInstitution}
+              className="px-4 py-2 fw-semibold"
+            >
+              {isUpdatingInstitution ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <Pencil size={16} className="me-2" />
+                  Update Institution
+                </>
+              )}
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Delete Institution Confirmation Modal */}
+        <Modal
+          show={showDeleteInstitutionModal}
+          onHide={() => setShowDeleteInstitutionModal(false)}
+          size="xl"
+          className="delete-institution-modal"
+        >
+          <Modal.Header className="bg-danger bg-gradient text-white border-0 position-relative overflow-hidden">
+            <Modal.Title className="fw-bold d-flex align-items-center gap-2">
+              <Trash size={24} className="text-white" />
+              Delete Institution
+            </Modal.Title>
+            <button
+              type="button"
+              className="btn-close btn-close-white position-absolute"
+              style={{ top: "15px", right: "15px" }}
+              onClick={() => setShowDeleteInstitutionModal(false)}
+            ></button>
+          </Modal.Header>
+          <Modal.Body className="p-4 bg-light">
+            {selectedInstitution && (
+              <div className="text-center">
+                <div className="mb-4">
+                  <div
+                    className="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                    style={{ width: "80px", height: "80px" }}
+                  >
+                    <Trash size={32} className="text-danger" />
+                  </div>
+                  <h5 className="fw-bold text-danger mb-3">
+                    Delete Institution Confirmation
+                  </h5>
+                  <p className="text-muted mb-4">
+                    Are you sure you want to delete this institution? This
+                    action cannot be undone and will permanently remove all
+                    associated data including all users and departments.
+                  </p>
+                </div>
+                <div className="bg-light border border-danger border-opacity-25 p-3 rounded mb-4">
+                  <div className="fw-semibold text-dark mb-2">
+                    Institution to be deleted:
+                  </div>
+                  <div className="d-flex align-items-center justify-content-center gap-3">
+                    {selectedInstitution.logoUrl ? (
+                      <img
+                        src={selectedInstitution.logoUrl}
+                        alt={selectedInstitution.name}
+                        className="rounded-circle border border-light shadow-sm"
+                        style={{
+                          width: "48px",
+                          height: "48px",
+                          objectFit: "cover",
+                        }}
+                      />
+                    ) : (
+                      <div
+                        className="bg-gradient-to-br from-cyan-400 to-blue-500 rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                        style={{ width: "48px", height: "48px" }}
+                      >
+                        <span
+                          className="text-white fw-bold"
+                          style={{ fontSize: "16px" }}
+                        >
+                          {selectedInstitution.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <div className="text-start">
+                      <div className="fw-semibold mb-1">
+                        {selectedInstitution.name}
+                      </div>
+                      <div className="text-muted small">
+                        {selectedInstitution.contactEmail || "No contact email"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className="alert alert-danger d-flex align-items-center gap-2"
+                  role="alert"
+                >
+                  <Trash size={16} />
+                  <small className="fw-semibold">
+                    Warning: This action will permanently delete the institution
+                    and all associated data!
+                  </small>
+                </div>
+              </div>
+            )}
+          </Modal.Body>
+          <Modal.Footer className="border-0">
+            <Button
+              variant="secondary"
+              onClick={() => setShowDeleteInstitutionModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmDeleteInstitution}
+              disabled={isDeletingInstitution}
+            >
+              {isDeletingInstitution ? "Deleting..." : "Delete Institution"}
+            </Button>
+          </Modal.Footer>
+        </Modal>
+        <Modal
+          show={showViewInstitutionModal}
+          onHide={() => setShowViewInstitutionModal(false)}
+          size="xl"
+          className="view-institution-modal"
+          centered
+        >
+          <Modal.Header className="bg-gradient-primary text-white border-0 position-relative overflow-hidden">
+            <div className="position-absolute top-0 start-0 w-100 h-100 opacity-10">
+              <div className="bg-info bg-opacity-50 rounded-circle position-absolute" style={{ width: '150px', height: '150px', bottom: '-30px', left: '-30px' }}></div>
+            </div>
+            <Modal.Title className="fw-bold d-flex align-items-center gap-3 text-white position-relative">
+              <div className="bg-white bg-opacity-20 p-3 rounded-circle">
+                <FaBuilding size={28} className="text-primary" />
+              </div>
+              <div>
+                <small>Institution Details</small>
+              </div>
+            </Modal.Title>
+            <button
+              type="button"
+              className="btn-close btn-close-white position-absolute"
+              style={{ top: '20px', right: '20px' }}
+              onClick={() => setShowViewInstitutionModal(false)}
+            ></button>
+          </Modal.Header>
+          <Modal.Body className="p-0 bg-light">
+            {selectedInstitution && (
+              <div className="p-4">
+                {/* Header Section */}
+                <div className="text-center mb-5 position-relative">
+                  <div className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4 position-relative" style={{ width: '120px', height: '120px' }}>
+                    <div className="bg-gradient-to-br from-primary to-info rounded-circle d-flex align-items-center justify-content-center shadow-lg" style={{ width: '80px', height: '80px' }}>
+                      <Building size={40} className="text-white" />
+                    </div>
+                  </div>
+                  <h3 className="fw-bold text-primary mb-2">{selectedInstitution.name}</h3>
+                  <p className="text-muted mb-3 fs-6">Comprehensive institution information and statistics</p>
+                  <div className="d-flex justify-content-center gap-2 flex-wrap">
+                    <Badge bg={getStatusVariant(selectedInstitution.status)} className="px-3 py-2 fs-6">
+                      {selectedInstitution.status}
+                    </Badge>
+                    <Badge bg={selectedInstitution.subscriptionPlan === "PREMIUM" ? "primary" : selectedInstitution.subscriptionPlan === "ENTERPRISE" ? "dark" : "secondary"} className="px-3 py-2 fs-6">
+                      {selectedInstitution.subscriptionPlan || "FREE"} Plan
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="row g-4">
+                  {/* Basic Information */}
+                  <div className="col-lg-6">
+                    <div className="card border-0 shadow-sm h-100 hover-lift">
+                      <div className="card-body p-4">
+                        <div className="d-flex align-items-center mb-4">
+                          <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                            <Building size={20} className="text-primary" />
+                          </div>
+                          <h6 className="fw-bold text-dark mb-0">Basic Information</h6>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Institution Name</small>
+                            <span className="fw-semibold text-dark">{selectedInstitution.name}</span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Industry</small>
+                            <span className="fw-semibold">{selectedInstitution.industry || "Not specified"}</span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Status</small>
+                            <Badge bg={getStatusVariant(selectedInstitution.status)} className="px-2 py-1">
+                              {selectedInstitution.status}
+                            </Badge>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2">
+                            <small className="text-muted fw-medium">Created</small>
+                            <small className="fw-semibold">
+                              <DateTimeDisplay date={selectedInstitution.createdAt} />
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contact & Location */}
+                  <div className="col-lg-6">
+                    <div className="card border-0 shadow-sm h-100 hover-lift">
+                      <div className="card-body p-4">
+                        <div className="d-flex align-items-center mb-4">
+                          <div className="bg-info bg-opacity-10 p-3 rounded-circle me-3">
+                            <Globe size={20} className="text-info" />
+                          </div>
+                          <h6 className="fw-bold text-dark mb-0">Contact & Location</h6>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Contact Email</small>
+                            <span className="fw-semibold text-truncate" style={{ maxWidth: '200px' }}>
+                              {selectedInstitution.contactEmail || "Not provided"}
+                            </span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Phone Number</small>
+                            <span className="fw-semibold">{selectedInstitution.phoneNumber || "Not provided"}</span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Website</small>
+                            <span className="fw-semibold">
+                              {selectedInstitution.websiteUrl ? (
+                                <a href={selectedInstitution.websiteUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-decoration-none">
+                                  Visit Website →
+                                </a>
+                              ) : (
+                                "Not provided"
+                              )}
+                            </span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Country</small>
+                            <span className="fw-semibold">{selectedInstitution.country || "Not specified"}</span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">City</small>
+                            <span className="fw-semibold">{selectedInstitution.city || "Not specified"}</span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2">
+                            <small className="text-muted fw-medium">Address</small>
+                            <span className="fw-semibold text-truncate" style={{ maxWidth: '200px' }}>
+                              {selectedInstitution.address || "Not provided"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Statistics */}
+                  <div className="col-lg-6">
+                    <div className="card border-0 shadow-sm h-100 hover-lift">
+                      <div className="card-body p-4">
+                        <div className="d-flex align-items-center mb-4">
+                          <div className="bg-success bg-opacity-10 p-3 rounded-circle me-3">
+                            <People size={20} className="text-success" />
+                          </div>
+                          <h6 className="fw-bold text-dark mb-0">User & Department Stats</h6>
+                        </div>
+                        <div className="row g-4">
+                          <div className="col-6">
+                            <div className="text-center p-3 bg-success bg-opacity-5 rounded">
+                              <div className="h3 fw-bold text-light mb-1">{selectedInstitution._count.users}</div>
+                              <small className="text-light">Total Users</small>
+                            </div>
+                          </div>
+                          <div className="col-6">
+                            <div className="text-center p-3 bg-info bg-opacity-5 rounded">
+                              <div className="h3 fw-bold text-light mb-1">{selectedInstitution._count.departments}</div>
+                              <small className="text-light">Departments</small>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Subscription Details */}
+                  <div className="col-lg-6">
+                    <div className="card border-0 shadow-sm h-100 hover-lift">
+                      <div className="card-body p-4">
+                        <div className="d-flex align-items-center mb-4">
+                          <div className="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
+                            <CreditCard size={20} className="text-warning" />
+                          </div>
+                          <h6 className="fw-bold text-dark mb-0">Subscription Details</h6>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Plan</small>
+                            <Badge bg={selectedInstitution.subscriptionPlan === "PREMIUM" ? "primary" : selectedInstitution.subscriptionPlan === "ENTERPRISE" ? "dark" : "secondary"} className="px-2 py-1">
+                              {selectedInstitution.subscriptionPlan || "FREE"}
+                            </Badge>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">Billing Email</small>
+                            <span className="fw-semibold text-truncate" style={{ maxWidth: '200px' }}>
+                              {selectedInstitution.billingEmail || "Not provided"}
+                            </span>
+                          </div>
+                          {selectedInstitution.subscriptionStartDate && (
+                            <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                              <small className="text-muted fw-medium">Subscription Start</small>
+                              <small className="fw-semibold">
+                                <DateTimeDisplay date={selectedInstitution.subscriptionStartDate} />
+                              </small>
+                            </div>
+                          )}
+                          {selectedInstitution.subscriptionEndDate && (
+                            <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                              <small className="text-muted fw-medium">Subscription End</small>
+                              <small className="fw-semibold">
+                                <DateTimeDisplay date={selectedInstitution.subscriptionEndDate} />
+                              </small>
+                            </div>
+                          )}
+                          {selectedInstitution.trialEndDate && (
+                            <div className="d-flex justify-content-between align-items-center py-2">
+                              <small className="text-muted fw-medium">Trial End</small>
+                              <small className="fw-semibold">
+                                <DateTimeDisplay date={selectedInstitution.trialEndDate} />
+                              </small>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Institution Logo Section */}
+                {selectedInstitution.logoUrl && (
+                  <div className="row g-4 mt-4">
+                    <div className="col-12">
+                      <div className="card border-0 shadow-sm hover-lift">
+                        <div className="card-body p-4 text-center">
+                          <div className="d-flex align-items-center justify-content-center mb-4">
+                            <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                              <Building size={20} className="text-primary" />
+                            </div>
+                            <h6 className="fw-bold text-dark mb-0">Institution Logo</h6>
+                          </div>
+                          <div className="d-flex justify-content-center">
+                            <div className="position-relative">
+                              <img
+                                src={selectedInstitution.logoUrl}
+                                alt={`${selectedInstitution.name} logo`}
+                                className="rounded shadow-lg border"
+                                style={{
+                                  maxWidth: "250px",
+                                  maxHeight: "250px",
+                                  objectFit: "contain",
+                                  backgroundColor: "#f8f9fa",
+                                  padding: "20px"
+                                }}
+                              />
+                              <div className="position-absolute top-0 start-0 w-100 h-100 bg-primary bg-opacity-5 rounded d-none d-lg-flex align-items-center justify-content-center opacity-0 hover-opacity-100 transition-all">
+                                <div className="bg-white bg-opacity-90 px-3 py-2 rounded">
+                                  <small className="fw-semibold text-primary">Click to view full size</small>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </Modal.Body>
+          <Modal.Footer className="border-0 bg-light p-4">
+            <Button
+              variant="secondary"
+              onClick={() => setShowViewInstitutionModal(false)}
+              className="px-4 py-2 fw-semibold"
+            >
+              <Eye size={16} className="me-2" />
+              Close Details
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </Container>
     </AuthProvider>
   );
