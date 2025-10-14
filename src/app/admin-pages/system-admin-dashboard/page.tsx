@@ -714,17 +714,17 @@ export default function SuperAdminDashboard() {
 
                   <Row className="g-4 mb-4">
                     <Col md={3}>
-                      <Card className="h-100 shadow-sm stat-card bg-primary bg-opacity-75 border-start border-primary border-3">
+                      <Card className="h-100 shadow-sm stat-card bg-primary bg-opacity-10 border-start border-primary border-3">
                         <Card.Body className="p-4 position-relative">
                           <div className="d-flex justify-content-between align-items-start">
                             <div>
                               <div className="d-flex align-items-center mb-2">
-                                <Globe className="me-2 text-white" size={20} />
-                                <span className="small text-white fw-medium">
+                                <Globe className="me-2 text-primary" size={20} />
+                                <span className="small text-primary fw-medium">
                                   Total Institutions
                                 </span>
                               </div>
-                              <h2 className="mb-1 fw-bold text-white">
+                              <h2 className="mb-1 fw-bold text-primary">
                                 {statistics?.totalInstitutions || 0}
                               </h2>
                               <div className="d-flex align-items-center">
@@ -745,17 +745,17 @@ export default function SuperAdminDashboard() {
                       </Card>
                     </Col>
                     <Col md={3}>
-                      <Card className="h-100 shadow-sm stat-card bg-success bg-opacity-75 border-start border-success border-3">
+                      <Card className="h-100 shadow-sm stat-card bg-success bg-opacity-10 border-start border-success border-3">
                         <Card.Body className="p-4 position-relative">
                           <div className="d-flex justify-content-between align-items-start">
                             <div>
                               <div className="d-flex align-items-center mb-2">
-                                <People className="me-2 text-white" size={20} />
-                                <span className="small text-white fw-medium">
+                                <People className="me-2 text-success" size={20} />
+                                <span className="small text-success fw-medium">
                                   Active Users
                                 </span>
                               </div>
-                              <h2 className="mb-1 fw-bold text-white">
+                              <h2 className="mb-1 fw-bold text-success">
                                 {
                                   users.filter((u) => u.status === "ACTIVE")
                                     .length
@@ -779,54 +779,54 @@ export default function SuperAdminDashboard() {
                       </Card>
                     </Col>
                     <Col md={3}>
-                      <Card className="h-100 shadow-sm stat-card bg-warning bg-opacity-75 border-start border-warning border-3">
+                      <Card className="h-100 shadow-sm stat-card bg-warning bg-opacity-10 border-start border-warning border-3">
                         <Card.Body className="p-4 position-relative">
                           <div className="d-flex justify-content-between align-items-start">
                             <div>
                               <div className="d-flex align-items-center mb-2">
                                 <ShieldLock
-                                  className="me-2 text-dark"
+                                  className="me-2 text-warning"
                                   size={20}
                                 />
-                                <span className="small text-dark fw-medium">
+                                <span className="small text-warning fw-medium">
                                   System Roles
                                 </span>
                               </div>
-                              <h2 className="mb-1 fw-bold text-dark">
+                              <h2 className="mb-1 fw-bold text-warning">
                                 {roles.length}
                               </h2>
                               <div className="d-flex align-items-center">
-                                <Badge bg="dark" className="small px-2 py-1">
+                                <Badge bg="white" className="small px-2 py-1 text-warning">
                                   {users.filter((u) => u.role).length} assigned
                                 </Badge>
                               </div>
                             </div>
-                            <div className="bg-dark bg-opacity-20 p-2 rounded">
-                              <ShieldLock size={24} className="text-primary" />
+                            <div className="bg-white bg-opacity-20 p-2 rounded">
+                              <ShieldLock size={24} className="text-warning" />
                             </div>
                           </div>
                         </Card.Body>
                       </Card>
                     </Col>
                     <Col md={3}>
-                      <Card className="h-100 shadow-sm stat-card bg-info bg-opacity-75 border-start border-info border-3">
+                      <Card className="h-100 shadow-sm stat-card bg-info bg-opacity-10 border-start border-info border-3">
                         <Card.Body className="p-4 position-relative">
                           <div className="d-flex justify-content-between align-items-start">
                             <div>
                               <div className="d-flex align-items-center mb-2">
                                 <Activity
-                                  className="me-2 text-white"
+                                  className="me-2 text-info"
                                   size={20}
                                 />
-                                <span className="small text-white fw-medium">
+                                <span className="small text-info fw-medium">
                                   System Health
                                 </span>
                               </div>
-                              <h5 className="mb-1 fw-bold text-white">100%</h5>
+                              <h5 className="mb-3 fw-bold text-info">100%</h5>
                               <div className="d-flex align-items-center">
                                 <Badge
                                   bg="light"
-                                  text="success"
+                                  text="info"
                                   className="small px-2 py-1"
                                 >
                                   All Systems Up
