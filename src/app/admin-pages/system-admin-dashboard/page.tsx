@@ -14,6 +14,9 @@ import {
   InputGroup,
   FormControl,
   Breadcrumb,
+  Modal,
+  Button,
+  Form,
 } from "react-bootstrap";
 import {
   PieChart,
@@ -138,6 +141,20 @@ export default function SuperAdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [searchTerm, setSearchTerm] = useState("");
   const [roles, setRoles] = useState<Role[]>([]);
+  
+  // Modal states
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    status: "",
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -173,6 +190,87 @@ export default function SuperAdminDashboard() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Handler functions for modals
+  const handleViewUser = (user: User) => {
+    setSelectedUser(user);
+    setShowViewModal(true);
+  };
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setEditFormData({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      status: user.status,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleDeleteUser = (user: User) => {
+    setSelectedUser(user);
+    setShowDeleteModal(true);
+  };
+
+  const handleUpdateUser = async () => {
+    if (!selectedUser) return;
+    
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`${BASE_API_URL}/system-admin/users/${selectedUser.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+        },
+        body: JSON.stringify(editFormData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("User updated successfully");
+        setShowEditModal(false);
+        fetchData();
+      } else {
+        toast.error(data.message || "Failed to update user");
+      }
+    } catch (error) {
+      toast.error(`Failed to update user: ${error}`);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!selectedUser) return;
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`${BASE_API_URL}/system-admin/users/${selectedUser.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("User deleted successfully");
+        setShowDeleteModal(false);
+        fetchData();
+      } else {
+        toast.error(data.message || "Failed to delete user");
+      }
+    } catch (error) {
+      toast.error(`Failed to delete user: ${error}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Filter data based on search term
   const filteredUsers = users.filter(
@@ -2354,8 +2452,21 @@ export default function SuperAdminDashboard() {
                                 <td className="text-center">
                                   <div className="d-flex justify-content-center gap-2">
                                     <Badge
-                                      className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium"
+                                      className="bg-info bg-opacity-10 text-info border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
+                                      title="View User Details"
+                                      onClick={() => handleViewUser(user)}
+                                      style={{ cursor: "pointer" }}
+                                    >
+                                      <Eye
+                                        className="text-info"
+                                        size={16}
+                                      />
+                                    </Badge>
+                                    <Badge
+                                      className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
                                       title="Edit User"
+                                      onClick={() => handleEditUser(user)}
+                                      style={{ cursor: "pointer" }}
                                     >
                                       <Pencil
                                         className="text-primary"
@@ -2363,8 +2474,10 @@ export default function SuperAdminDashboard() {
                                       />
                                     </Badge>
                                     <Badge
-                                      className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium"
+                                      className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
                                       title="Delete User"
+                                      onClick={() => handleDeleteUser(user)}
+                                      style={{ cursor: "pointer" }}
                                     >
                                       <Trash
                                         className="text-danger"
@@ -3857,6 +3970,199 @@ export default function SuperAdminDashboard() {
             }
           }
         `}</style>
+
+      {/* View User Details Modal */}
+      <Modal show={showViewModal} onHide={() => setShowViewModal(false)} size="xl">
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="fw-bold">User Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="px-4 py-4 border border-3 border-primary rounded mx-3 my-2">
+          {selectedUser && (
+            <div>
+              <Row className="mb-4">
+                <Col md={6}>
+                  <div className="mb-3">
+                    <label className="text-muted small mb-1">First Name</label>
+                    <div className="fw-semibold">{selectedUser.firstName}</div>
+                  </div>
+                </Col>
+                <Col md={6}>
+                  <div className="mb-3">
+                    <label className="text-muted small mb-1">Last Name</label>
+                    <div className="fw-semibold">{selectedUser.lastName}</div>
+                  </div>
+                </Col>
+              </Row>
+              <Row className="mb-4">
+                <Col md={6}>
+                  <div className="mb-3">
+                    <label className="text-muted small mb-1">Email</label>
+                    <div className="fw-semibold">{selectedUser.email}</div>
+                  </div>
+                </Col>
+                <Col md={6}>
+                  <div className="mb-3">
+                    <label className="text-muted small mb-1">Status</label>
+                    <div>
+                      <Badge bg={getStatusVariant(selectedUser.status)}>
+                        {selectedUser.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+              <Row className="mb-4">
+                <Col md={6}>
+                  <div className="mb-3">
+                    <label className="text-muted small mb-1">Institution</label>
+                    <div className="fw-semibold">
+                      {selectedUser.institution?.name || "No Institution"}
+                    </div>
+                  </div>
+                </Col>
+                <Col md={6}>
+                  <div className="mb-3">
+                    <label className="text-muted small mb-1">Country</label>
+                    <div className="fw-semibold">
+                      {selectedUser.institution?.country || "N/A"}
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+              <Row className="mb-4">
+                <Col md={6}>
+                  <div className="mb-3">
+                    <label className="text-muted small mb-1">Created At</label>
+                    <div className="fw-semibold">
+                      <DateTimeDisplay date={selectedUser.createdAt} />
+                    </div>
+                  </div>
+                </Col>
+                <Col md={6}>
+                  <div className="mb-3">
+                    <label className="text-muted small mb-1">Last Login</label>
+                    <div className="fw-semibold">
+                      {selectedUser.lastLogin ? (
+                        <DateTimeDisplay date={selectedUser.lastLogin} />
+                      ) : (
+                        <span className="text-warning">Never logged in</span>
+                      )}
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="border-0">
+          <Button variant="secondary" onClick={() => setShowViewModal(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit User Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="xl">
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="fw-bold">Edit User</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="px-4 py-4 border border-3 border-success rounded mx-3 my-2">
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>First Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={editFormData.firstName}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, firstName: e.target.value })
+                }
+                placeholder="Enter first name"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Last Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={editFormData.lastName}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, lastName: e.target.value })
+                }
+                placeholder="Enter last name"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                type="email"
+                value={editFormData.email}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, email: e.target.value })
+                }
+                placeholder="Enter email"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Status</Form.Label>
+              <Form.Select
+                value={editFormData.status}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, status: e.target.value })
+                }
+              >
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+                <option value="SUSPENDED">Suspended</option>
+              </Form.Select>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer className="border-0">
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleUpdateUser}
+            disabled={isUpdating}
+          >
+            {isUpdating ? "Updating..." : "Update User"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Delete User Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} size="xl">
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="fw-bold text-danger">Delete User</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="px-4 py-4 border border-3 border-danger rounded mx-3 my-2">
+          {selectedUser && (
+            <div>
+              <p className="mb-3">
+                Are you sure you want to delete this user? This action cannot be undone.
+              </p>
+              <div className="bg-light p-3 rounded">
+                <div className="fw-semibold mb-1">
+                  {selectedUser.firstName} {selectedUser.lastName}
+                </div>
+                <div className="text-muted small">{selectedUser.email}</div>
+              </div>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="border-0">
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={confirmDeleteUser}
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete User"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
       </Container>
     </AuthProvider>
   );
