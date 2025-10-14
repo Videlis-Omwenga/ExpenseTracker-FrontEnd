@@ -8,7 +8,6 @@ import {
   Col,
   Nav,
   Table,
-  Button,
   Badge,
   Navbar,
   Card,
@@ -155,8 +154,6 @@ export default function SuperAdminDashboard() {
 
       const data = await response.json();
 
-      console.log(data.roles);
-
       if (response.ok) {
         setUsers(data.recentUsers || []);
         setInstitutions(data.institutions || []);
@@ -193,24 +190,6 @@ export default function SuperAdminDashboard() {
           .toLowerCase()
           .includes(searchTerm.toLowerCase()))
   );
-
-  // Format date for display - using DateTimeDisplay component instead
-
-  // Get status color for charts
-  const getStatusColor = (status?: string | null) => {
-    switch (status?.toUpperCase()) {
-      case "ACTIVE":
-        return "#28a745"; // Green
-      case "INACTIVE":
-        return "#6c757d"; // Gray
-      case "SUSPENDED":
-        return "#dc3545"; // Red
-      case "TRIAL":
-        return "#ffc107"; // Yellow
-      default:
-        return "#6c757d"; // Gray
-    }
-  };
 
   // Generate user growth data for the last 30 days
   interface UserGrowthData {
@@ -2222,7 +2201,7 @@ export default function SuperAdminDashboard() {
                               <th className="table-header py-4">
                                 <div className="d-flex align-items-center">
                                   <span className="fw-bold text-dark">
-                                    Contact & Role
+                                    Email
                                   </span>
                                 </div>
                               </th>
@@ -2308,13 +2287,6 @@ export default function SuperAdminDashboard() {
                                       </div>
                                       <div className="d-flex align-items-center gap-2">
                                         <Badge
-                                          bg={user.role ? "primary" : "light"}
-                                          text={user.role ? "white" : "dark"}
-                                          className="small px-2 py-1"
-                                        >
-                                          {user.role || "No Role"}
-                                        </Badge>
-                                        <Badge
                                           bg={getStatusVariant(user.status)}
                                           className="small px-2 py-1"
                                         >
@@ -2328,10 +2300,6 @@ export default function SuperAdminDashboard() {
                                   <div>
                                     <div className="fw-medium text-dark mb-1">
                                       {user.email}
-                                    </div>
-                                    <div className="text-muted small">
-                                      <i className="fas fa-building me-1"></i>
-                                      {user.department?.name || "No Department"}
                                     </div>
                                   </div>
                                 </td>
@@ -2794,13 +2762,19 @@ export default function SuperAdminDashboard() {
                                       className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium"
                                       title="Edit Institution"
                                     >
-                                      <Pencil className="text-primary" size={16} />
+                                      <Pencil
+                                        className="text-primary"
+                                        size={16}
+                                      />
                                     </Badge>
                                     <Badge
                                       className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium"
                                       title="Delete Institution"
                                     >
-                                      <Trash className="text-danger" size={16} />
+                                      <Trash
+                                        className="text-danger"
+                                        size={16}
+                                      />
                                     </Badge>
                                   </div>
                                 </td>
@@ -3118,13 +3092,19 @@ export default function SuperAdminDashboard() {
                                       className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium"
                                       title="Edit Role"
                                     >
-                                      <Pencil className="text-primary" size={16} />
+                                      <Pencil
+                                        className="text-primary"
+                                        size={16}
+                                      />
                                     </Badge>
                                     <Badge
                                       className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium"
                                       title="Delete Role"
                                     >
-                                      <Trash className="text-danger" size={16} />
+                                      <Trash
+                                        className="text-danger"
+                                        size={16}
+                                      />
                                     </Badge>
                                   </div>
                                 </td>

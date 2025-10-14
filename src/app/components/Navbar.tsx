@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
 import {
   Navbar,
   Nav,
@@ -42,6 +43,7 @@ import {
 export default function TopNavbar() {
   const [expanded, setExpanded] = useState(false);
   const router = useRouter();
+  const { user } = useUser();
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -201,9 +203,9 @@ export default function TopNavbar() {
                       <span className="user-status position-absolute bg-success rounded-circle"></span>
                     </div>
                     <div className="user-info d-none d-md-block text-start">
-                      <div className="user-name">Admin User</div>
-                      <div className="user-role">Administrator</div>
-                    </div>
+                      <div className="user-name">{user?.firstName} {user?.lastName}</div>
+                      <small className="text-secondary">{user?.email}</small>
+                    </div>  
                     <ChevronDown size={16} className="ms-1 d-none d-md-block" />
                   </div>
                 </Dropdown.Toggle>
@@ -212,8 +214,8 @@ export default function TopNavbar() {
                   <Dropdown.Header className="dropdown-header d-flex align-items-center">
                     <PersonCircle size={24} className="me-2" />
                     <div>
-                      <div className="fw-medium">Admin User</div>
-                      <small className="text-muted">admin@example.com</small>
+                      <div className="fw-medium">{user?.firstName} {user?.lastName}</div>
+                      <small className="text-muted">{user?.email}</small>
                     </div>
                   </Dropdown.Header>
 
@@ -226,36 +228,45 @@ export default function TopNavbar() {
                     Settings
                   </Dropdown.Item>
 
+                  {(user?.roles?.some((r) => r.role.name === "Company admin") ||
+                    user?.roles?.some((r) => r.role.name === "System admin")) && (
+                    <>
+                      <Dropdown.Divider />
+
+                      <Dropdown.Header className="dropdown-header">
+                        Admin Portals
+                      </Dropdown.Header>
+                    </>
+                  )}
+
+                  {user?.roles?.some((r) => r.role.name === "Company admin") && (
+                    <Dropdown.Item
+                      className="dropdown-item"
+                      onClick={() =>
+                        handleNavigation("/admin-pages/company-admin-dashboard")
+                      }
+                    >
+                      <Building className="me-2 text-primary" size={16} />
+                      Company admin
+                    </Dropdown.Item>
+                  )}
+                  {user?.roles?.some((r) => r.role.name === "System admin") && (
+                    <Dropdown.Item
+                      className="dropdown-item"
+                      onClick={() =>
+                        handleNavigation("/admin-pages/system-admin-dashboard")
+                      }
+                    >
+                      <Server className="me-2 text-primary" size={16} />
+                      System admin
+                    </Dropdown.Item>
+                  )}
+
                   <Dropdown.Divider />
 
-                  <Dropdown.Header className="dropdown-header">
-                    Admin Portals
-                  </Dropdown.Header>
-
                   <Dropdown.Item
                     className="dropdown-item"
-                    onClick={() =>
-                      handleNavigation("/admin-pages/company-admin-dashboard")
-                    }
-                  >
-                    <Building className="me-2 text-primary" size={16} />
-                    Company admin
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    className="dropdown-item"
-                    onClick={() =>
-                      handleNavigation("/admin-pages/system-admin-dashboard")
-                    }
-                  >
-                    <Server className="me-2 text-primary" size={16} />
-                    System admin
-                  </Dropdown.Item>
-
-                  <Dropdown.Divider />
-
-                  <Dropdown.Item
-                    className="dropdown-item"
-                    onClick={() => handleNavigation("/login")}
+                    onClick={() => handleNavigation("/")}
                   >
                     <BoxArrowRight className="me-2 text-danger" size={16} />
                     Logout

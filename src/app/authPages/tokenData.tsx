@@ -52,7 +52,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } catch (error) {
         toast.error(`Invalid token. Please log in again. ${error}`);
         localStorage.removeItem("expenseTrackerToken");
-        handleNavigation("/login");
+        handleNavigation("/");
         return false;
       }
 
