@@ -12,7 +12,7 @@ import {
 } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
 
-export default function InstitutionCreationModal() {
+export default function InstitutionCreationModal({ onSuccess }: { onSuccess?: () => void }) {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
@@ -86,6 +86,11 @@ export default function InstitutionCreationModal() {
         setSubscriptionEndDate("");
         setTrialEndDate("");
         setBillingEmail("");
+
+        // Call the success callback to refresh data
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         toast.error(`${data.message}`);
       }

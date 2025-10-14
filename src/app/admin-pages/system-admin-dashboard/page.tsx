@@ -46,6 +46,9 @@ import {
   Eye,
   Wallet,
   StarFill,
+  Building,
+  GeoAlt,
+  CreditCard,
 } from "react-bootstrap-icons";
 import AuthProvider from "../../authPages/tokenData";
 import { toast } from "react-toastify";
@@ -146,15 +149,36 @@ export default function SuperAdminDashboard() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditInstitutionModal, setShowEditInstitutionModal] = useState(false);
+  const [showDeleteInstitutionModal, setShowDeleteInstitutionModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedInstitution, setSelectedInstitution] = useState<Institution | null>(null);
   const [editFormData, setEditFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     status: "",
   });
+  const [editInstitutionFormData, setEditInstitutionFormData] = useState({
+    name: "",
+    industry: "",
+    address: "",
+    city: "",
+    country: "",
+    contactEmail: "",
+    phoneNumber: "",
+    websiteUrl: "",
+    logoUrl: "",
+    subscriptionStartDate: "",
+    subscriptionEndDate: "",
+    trialEndDate: "",
+    billingEmail: "",
+    status: "",
+  });
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeletingInstitution, setIsDeletingInstitution] = useState(false);
+  const [isUpdatingInstitution, setIsUpdatingInstitution] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -272,6 +296,92 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  // Institution modal handlers
+  const handleEditInstitution = (institution: Institution) => {
+    setSelectedInstitution(institution);
+    setEditInstitutionFormData({
+      name: institution.name,
+      industry: institution.industry || "",
+      address: institution.address || "",
+      city: institution.city || "",
+      country: institution.country || "",
+      contactEmail: institution.contactEmail || "",
+      phoneNumber: institution.phoneNumber || "",
+      websiteUrl: institution.websiteUrl || "",
+      logoUrl: institution.logoUrl || "",
+      subscriptionStartDate: institution.subscriptionStartDate || "",
+      subscriptionEndDate: institution.subscriptionEndDate || "",
+      trialEndDate: institution.trialEndDate || "",
+      billingEmail: institution.billingEmail || "",
+      status: institution.status,
+    });
+    setShowEditInstitutionModal(true);
+  };
+
+  const handleDeleteInstitution = (institution: Institution) => {
+    setSelectedInstitution(institution);
+    setShowDeleteInstitutionModal(true);
+  };
+
+  const handleUpdateInstitution = async () => {
+    if (!selectedInstitution) return;
+    
+    setIsUpdatingInstitution(true);
+    try {
+      const response = await fetch(`${BASE_API_URL}/system-admin/institutions/${selectedInstitution.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+        },
+        body: JSON.stringify(editInstitutionFormData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Institution updated successfully");
+        setShowEditInstitutionModal(false);
+        fetchData();
+      } else {
+        toast.error(data.message || "Failed to update institution");
+      }
+    } catch (error) {
+      toast.error(`Failed to update institution: ${error}`);
+    } finally {
+      setIsUpdatingInstitution(false);
+    }
+  };
+
+  const confirmDeleteInstitution = async () => {
+    if (!selectedInstitution) return;
+    
+    setIsDeletingInstitution(true);
+    try {
+      const response = await fetch(`${BASE_API_URL}/system-admin/institutions/${selectedInstitution.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Institution deleted successfully");
+        setShowDeleteInstitutionModal(false);
+        fetchData();
+      } else {
+        toast.error(data.message || "Failed to delete institution");
+      }
+    } catch (error) {
+      toast.error(`Failed to delete institution: ${error}`);
+    } finally {
+      setIsDeletingInstitution(false);
+    }
+  };
+
   // Filter data based on search term
   const filteredUsers = users.filter(
     (user) =>
@@ -357,7 +467,7 @@ export default function SuperAdminDashboard() {
 
             <div className="d-flex align-items-center gap-3">
               <span className="px-3 py-2 d-flex align-items-center gap-2 text-primary">
-                <StarFill size={16} className="text-warning" />
+                <StarFill size={16} className="text-primary" />
                 Super Admin
               </span>
             </div>
@@ -660,7 +770,7 @@ export default function SuperAdminDashboard() {
                               </div>
                             </div>
                             <div className="bg-dark bg-opacity-20 p-2 rounded">
-                              <ShieldLock size={24} className="text-warning" />
+                              <ShieldLock size={24} className="text-primary" />
                             </div>
                           </div>
                         </Card.Body>
@@ -1313,10 +1423,10 @@ export default function SuperAdminDashboard() {
                           <div className="d-flex justify-content-between align-items-center">
                             <div className="d-flex align-items-center">
                               <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
-                                <Globe className="text-warning" size={24} />
+                                <Globe className="text-primary" size={24} />
                               </div>
                               <div>
-                                <h5 className="mb-1 fw-bold text-warning chart-title">
+                                <h5 className="mb-1 fw-bold text-primary chart-title">
                                   Institution Status
                                 </h5>
                                 <p className="mb-0 text-muted small">
@@ -2314,7 +2424,7 @@ export default function SuperAdminDashboard() {
                               <th className="table-header py-4">
                                 <div className="d-flex align-items-center">
                                   <Activity
-                                    className="me-2 text-warning"
+                                    className="me-2 text-primary"
                                     size={16}
                                   />
                                   <span className="fw-bold text-dark">
@@ -2442,7 +2552,7 @@ export default function SuperAdminDashboard() {
                                           date={user.lastLogin}
                                         />
                                       ) : (
-                                        <span className="text-warning">
+                                        <span className="text-primary">
                                           Never logged in
                                         </span>
                                       )}
@@ -2577,7 +2687,7 @@ export default function SuperAdminDashboard() {
                               {filteredInstitutions.length}
                             </Badge>
                           </div>
-                          <InstitutionCreationModal />
+                          <InstitutionCreationModal onSuccess={fetchData} />
                         </Col>
                       </Row>
                     </Card.Body>
@@ -2656,7 +2766,7 @@ export default function SuperAdminDashboard() {
                               <th className="table-header py-4">
                                 <div className="d-flex align-items-center">
                                   <Wallet
-                                    className="me-2 text-warning"
+                                    className="me-2 text-primary"
                                     size={16}
                                   />
                                   <span className="fw-bold text-dark">
@@ -2859,7 +2969,7 @@ export default function SuperAdminDashboard() {
                                       </div>
                                       {institution.updatedAt !==
                                         institution.createdAt && (
-                                        <div className="text-warning">
+                                        <div className="text-primary">
                                           Updated:{" "}
                                           <DateTimeDisplay
                                             date={institution.updatedAt}
@@ -2872,8 +2982,10 @@ export default function SuperAdminDashboard() {
                                 <td className="text-center">
                                   <div className="d-flex justify-content-center gap-2">
                                     <Badge
-                                      className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium"
+                                      className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
                                       title="Edit Institution"
+                                      onClick={() => handleEditInstitution(institution)}
+                                      style={{ cursor: "pointer" }}
                                     >
                                       <Pencil
                                         className="text-primary"
@@ -2881,8 +2993,10 @@ export default function SuperAdminDashboard() {
                                       />
                                     </Badge>
                                     <Badge
-                                      className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium"
+                                      className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
                                       title="Delete Institution"
+                                      onClick={() => handleDeleteInstitution(institution)}
+                                      style={{ cursor: "pointer" }}
                                     >
                                       <Trash
                                         className="text-danger"
@@ -3187,7 +3301,7 @@ export default function SuperAdminDashboard() {
                                     </div>
                                     {role.updatedAt !== role.createdAt && (
                                       <div>
-                                        <div className="small fw-medium text-warning mb-1">
+                                        <div className="small fw-medium text-primary mb-1">
                                           Updated
                                         </div>
                                         <div className="text-muted small">
@@ -3971,86 +4085,175 @@ export default function SuperAdminDashboard() {
           }
         `}</style>
 
+        {/* Custom Modal Styles */}
+        <style jsx global>{`
+          .user-details-modal .modal-header,
+          .edit-user-modal .modal-header,
+          .delete-user-modal .modal-header {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+          }
+
+          .user-details-modal .modal-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
+          }
+
+          .edit-user-modal .modal-header {
+            background: linear-gradient(135deg, #198754 0%, #146c43 100%) !important;
+          }
+
+          .delete-user-modal .modal-header {
+            background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%) !important;
+          }
+
+          .info-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+          }
+
+          .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+          }
+
+          .modern-form .form-control:focus,
+          .modern-form .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+          }
+
+          .focus-ring-success:focus {
+            border-color: #198754 !important;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
+          }
+        `}</style>
+
       {/* View User Details Modal */}
-      <Modal show={showViewModal} onHide={() => setShowViewModal(false)} size="xl">
-        <Modal.Header closeButton className="border-0 pb-0">
-          <Modal.Title className="fw-bold">User Details</Modal.Title>
+      <Modal show={showViewModal} onHide={() => setShowViewModal(false)} size="xl" className="user-details-modal">
+        <Modal.Header className="bg-primary bg-gradient text-white border-0 position-relative overflow-hidden">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-2">
+            <PersonCircle size={24} className="text-white" />
+            User Details
+          </Modal.Title>
+          <button type="button" className="btn-close btn-close-white position-absolute" style={{ top: '15px', right: '15px' }} onClick={() => setShowViewModal(false)}></button>
         </Modal.Header>
-        <Modal.Body className="px-4 py-4 border border-3 border-primary rounded mx-3 my-2">
+        <Modal.Body className="p-4 bg-light">
           {selectedUser && (
             <div>
-              <Row className="mb-4">
-                <Col md={6}>
-                  <div className="mb-3">
-                    <label className="text-muted small mb-1">First Name</label>
-                    <div className="fw-semibold">{selectedUser.firstName}</div>
-                  </div>
-                </Col>
-                <Col md={6}>
-                  <div className="mb-3">
-                    <label className="text-muted small mb-1">Last Name</label>
-                    <div className="fw-semibold">{selectedUser.lastName}</div>
-                  </div>
-                </Col>
-              </Row>
-              <Row className="mb-4">
-                <Col md={6}>
-                  <div className="mb-3">
-                    <label className="text-muted small mb-1">Email</label>
-                    <div className="fw-semibold">{selectedUser.email}</div>
-                  </div>
-                </Col>
-                <Col md={6}>
-                  <div className="mb-3">
-                    <label className="text-muted small mb-1">Status</label>
+              <div className="mb-4">
+                <div className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
+                  <PersonCircle size={32} className="text-primary" />
+                </div>
+                <h5 className="fw-bold text-primary mb-2">User Information</h5>
+                <p className="text-muted small">Complete details for {selectedUser.firstName} {selectedUser.lastName}</p>
+              </div>
+
+              <div className="row g-4">
+                <div className="col-md-6">
+                  <div className="info-card bg-white p-3 rounded shadow-sm">
+                    <div className="d-flex align-items-center mb-2">
+                      <PersonCircle size={16} className="text-primary me-2" />
+                      <label className="fw-semibold text-dark mb-0">Personal Details</label>
+                    </div>
+                    <div className="mb-2">
+                      <small className="text-muted">First Name</small>
+                      <div className="fw-semibold">{selectedUser.firstName}</div>
+                    </div>
+                    <div className="mb-2">
+                      <small className="text-muted">Last Name</small>
+                      <div className="fw-semibold">{selectedUser.lastName}</div>
+                    </div>
+                    <div className="mb-2">
+                      <small className="text-muted">Email</small>
+                      <div className="fw-semibold">{selectedUser.email}</div>
+                    </div>
                     <div>
-                      <Badge bg={getStatusVariant(selectedUser.status)}>
-                        {selectedUser.status}
-                      </Badge>
+                      <small className="text-muted">Status</small>
+                      <div>
+                        <Badge bg={getStatusVariant(selectedUser.status)}>
+                          {selectedUser.status}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                </Col>
-              </Row>
-              <Row className="mb-4">
-                <Col md={6}>
-                  <div className="mb-3">
-                    <label className="text-muted small mb-1">Institution</label>
-                    <div className="fw-semibold">
-                      {selectedUser.institution?.name || "No Institution"}
+                </div>
+
+                <div className="col-md-6">
+                  <div className="info-card bg-white p-3 rounded shadow-sm">
+                    <div className="d-flex align-items-center mb-2">
+                      <Globe size={16} className="text-info me-2" />
+                      <label className="fw-semibold text-dark mb-0">Organization</label>
+                    </div>
+                    <div className="mb-2">
+                      <small className="text-muted">Institution</small>
+                      <div className="fw-semibold">
+                        {selectedUser.institution?.name || "No Institution"}
+                      </div>
+                    </div>
+                    <div className="mb-2">
+                      <small className="text-muted">Country</small>
+                      <div className="fw-semibold">
+                        {selectedUser.institution?.country || "N/A"}
+                      </div>
+                    </div>
+                    <div className="mb-2">
+                      <small className="text-muted">Department</small>
+                      <div className="fw-semibold">
+                        {selectedUser.department?.name || "No Department"}
+                      </div>
                     </div>
                   </div>
-                </Col>
-                <Col md={6}>
-                  <div className="mb-3">
-                    <label className="text-muted small mb-1">Country</label>
-                    <div className="fw-semibold">
-                      {selectedUser.institution?.country || "N/A"}
+                </div>
+              </div>
+
+              <div className="row g-4 mt-3">
+                <div className="col-md-6">
+                  <div className="info-card bg-white p-3 rounded shadow-sm">
+                    <div className="d-flex align-items-center mb-2">
+                      <Activity size={16} className="text-primary me-2" />
+                      <label className="fw-semibold text-dark mb-0">Account Activity</label>
+                    </div>
+                    <div className="mb-2">
+                      <small className="text-muted">Created At</small>
+                      <div className="fw-semibold">
+                        <DateTimeDisplay date={selectedUser.createdAt} />
+                      </div>
+                    </div>
+                    <div>
+                      <small className="text-muted">Last Login</small>
+                      <div className="fw-semibold">
+                        {selectedUser.lastLogin ? (
+                          <DateTimeDisplay date={selectedUser.lastLogin} />
+                        ) : (
+                          <span className="text-primary">Never logged in</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </Col>
-              </Row>
-              <Row className="mb-4">
-                <Col md={6}>
-                  <div className="mb-3">
-                    <label className="text-muted small mb-1">Created At</label>
-                    <div className="fw-semibold">
-                      <DateTimeDisplay date={selectedUser.createdAt} />
+                </div>
+
+                <div className="col-md-6">
+                  <div className="info-card bg-white p-3 rounded shadow-sm">
+                    <div className="d-flex align-items-center mb-2">
+                      <ShieldLock size={16} className="text-success me-2" />
+                      <label className="fw-semibold text-dark mb-0">Account Security</label>
+                    </div>
+                    <div className="mb-2">
+                      <small className="text-muted">User ID</small>
+                      <div className="fw-semibold">#{selectedUser.id}</div>
+                    </div>
+                    <div className="mb-2">
+                      <small className="text-muted">Account Status</small>
+                      <div>
+                        <Badge bg={selectedUser.status === 'ACTIVE' ? 'success' : selectedUser.status === 'SUSPENDED' ? 'danger' : 'secondary'}>
+                          {selectedUser.status}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                </Col>
-                <Col md={6}>
-                  <div className="mb-3">
-                    <label className="text-muted small mb-1">Last Login</label>
-                    <div className="fw-semibold">
-                      {selectedUser.lastLogin ? (
-                        <DateTimeDisplay date={selectedUser.lastLogin} />
-                      ) : (
-                        <span className="text-warning">Never logged in</span>
-                      )}
-                    </div>
-                  </div>
-                </Col>
-              </Row>
+                </div>
+              </div>
             </div>
           )}
         </Modal.Body>
@@ -4062,90 +4265,170 @@ export default function SuperAdminDashboard() {
       </Modal>
 
       {/* Edit User Modal */}
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="xl">
-        <Modal.Header closeButton className="border-0 pb-0">
-          <Modal.Title className="fw-bold">Edit User</Modal.Title>
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="xl" className="edit-user-modal">
+        <Modal.Header className="bg-success bg-gradient text-white border-0 position-relative overflow-hidden">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-2">
+            <Pencil size={24} className="text-white" />
+            Edit User
+          </Modal.Title>
+          <button type="button" className="btn-close btn-close-white position-absolute" style={{ top: '15px', right: '15px' }} onClick={() => setShowEditModal(false)}></button>
         </Modal.Header>
-        <Modal.Body className="px-4 py-4 border border-3 border-success rounded mx-3 my-2">
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>First Name</Form.Label>
-              <Form.Control
-                type="text"
-                value={editFormData.firstName}
-                onChange={(e) =>
-                  setEditFormData({ ...editFormData, firstName: e.target.value })
-                }
-                placeholder="Enter first name"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Last Name</Form.Label>
-              <Form.Control
-                type="text"
-                value={editFormData.lastName}
-                onChange={(e) =>
-                  setEditFormData({ ...editFormData, lastName: e.target.value })
-                }
-                placeholder="Enter last name"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                value={editFormData.email}
-                onChange={(e) =>
-                  setEditFormData({ ...editFormData, email: e.target.value })
-                }
-                placeholder="Enter email"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Status</Form.Label>
-              <Form.Select
-                value={editFormData.status}
-                onChange={(e) =>
-                  setEditFormData({ ...editFormData, status: e.target.value })
-                }
-              >
-                <option value="ACTIVE">Active</option>
-                <option value="INACTIVE">Inactive</option>
-                <option value="SUSPENDED">Suspended</option>
-              </Form.Select>
-            </Form.Group>
-          </Form>
+        <Modal.Body className="p-4 bg-light">
+          <div className="mb-4">
+            <div className="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
+              <Pencil size={32} className="text-success" />
+            </div>
+            <h5 className="fw-bold text-success mb-2">Update User Information</h5>
+            <p className="text-muted small">Modify user details and account settings</p>
+          </div>
+
+          <div className="bg-white p-4 rounded shadow-sm">
+            <Form className="modern-form">
+              <div className="row g-4">
+                <div className="col-md-6">
+                  <Form.Group>
+                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                      <PersonCircle size={16} className="text-success" />
+                      First Name
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editFormData.firstName}
+                      onChange={(e) =>
+                        setEditFormData({ ...editFormData, firstName: e.target.value })
+                      }
+                      placeholder="Enter first name"
+                      className="form-control-lg"
+                      style={{ padding: '12px 16px', fontSize: '16px' }}
+                    />
+                  </Form.Group>
+                </div>
+                <div className="col-md-6">
+                  <Form.Group>
+                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                      <PersonCircle size={16} className="text-success" />
+                      Last Name
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editFormData.lastName}
+                      onChange={(e) =>
+                        setEditFormData({ ...editFormData, lastName: e.target.value })
+                      }
+                      placeholder="Enter last name"
+                      className="form-control-lg"
+                      style={{ padding: '12px 16px', fontSize: '16px' }}
+                    />
+                  </Form.Group>
+                </div>
+              </div>
+
+              <Form.Group className="mt-4">
+                <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                  <Globe size={16} className="text-success" />
+                  Email Address
+                </Form.Label>
+                <Form.Control
+                  type="email"
+                  value={editFormData.email}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, email: e.target.value })
+                  }
+                  placeholder="Enter email address"
+                  className="form-control-lg"
+                  style={{ padding: '12px 16px', fontSize: '16px' }}
+                />
+              </Form.Group>
+
+              <Form.Group className="mt-4">
+                <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                  <Activity size={16} className="text-success" />
+                  Account Status
+                </Form.Label>
+                <Form.Select
+                  value={editFormData.status}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, status: e.target.value })
+                  }
+                  className="form-select-lg"
+                  style={{ padding: '12px 16px', fontSize: '16px' }}
+                >
+                  <option value="ACTIVE">✅ Active</option>
+                  <option value="INACTIVE">⏸️ Inactive</option>
+                  <option value="SUSPENDED">🚫 Suspended</option>
+                  <option value="INVITED">📧 Invited</option>
+                </Form.Select>
+              </Form.Group>
+            </Form>
+          </div>
         </Modal.Body>
-        <Modal.Footer className="border-0">
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+        <Modal.Footer className="border-0 bg-light">
+          <Button
+            variant="outline-secondary"
+            onClick={() => setShowEditModal(false)}
+            className="px-4 py-2"
+          >
             Cancel
           </Button>
           <Button
-            variant="primary"
+            variant="success"
             onClick={handleUpdateUser}
             disabled={isUpdating}
+            className="px-4 py-2 fw-semibold"
           >
-            {isUpdating ? "Updating..." : "Update User"}
+            {isUpdating ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Updating...
+              </>
+            ) : (
+              <>
+                <Pencil size={16} className="me-2" />
+                Update User
+              </>
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
 
       {/* Delete User Confirmation Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} size="xl">
-        <Modal.Header closeButton className="border-0 pb-0">
-          <Modal.Title className="fw-bold text-danger">Delete User</Modal.Title>
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} size="xl" className="delete-user-modal">
+        <Modal.Header className="bg-danger bg-gradient text-white border-0 position-relative overflow-hidden">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-2">
+            <Trash size={24} className="text-white" />
+            Delete User
+          </Modal.Title>
+          <button type="button" className="btn-close btn-close-white position-absolute" style={{ top: '15px', right: '15px' }} onClick={() => setShowDeleteModal(false)}></button>
         </Modal.Header>
-        <Modal.Body className="px-4 py-4 border border-3 border-danger rounded mx-3 my-2">
+        <Modal.Body className="p-4 bg-light">
           {selectedUser && (
-            <div>
-              <p className="mb-3">
-                Are you sure you want to delete this user? This action cannot be undone.
-              </p>
-              <div className="bg-light p-3 rounded">
-                <div className="fw-semibold mb-1">
-                  {selectedUser.firstName} {selectedUser.lastName}
+            <div className="text-center">
+              <div className="mb-4">
+                <div className="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
+                  <Trash size={32} className="text-danger" />
                 </div>
-                <div className="text-muted small">{selectedUser.email}</div>
+                <h5 className="fw-bold text-danger mb-3">Delete User Confirmation</h5>
+                <p className="text-muted mb-4">
+                  Are you sure you want to delete this user? This action cannot be undone and will permanently remove all associated data.
+                </p>
+              </div>
+              <div className="bg-light border border-danger border-opacity-25 p-3 rounded mb-4">
+                <div className="fw-semibold text-dark mb-2">User to be deleted:</div>
+                <div className="d-flex align-items-center justify-content-center gap-3">
+                  <div className="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px' }}>
+                    <PersonCircle size={24} className="text-primary" />
+                  </div>
+                  <div className="text-start">
+                    <div className="fw-semibold mb-1">
+                      {selectedUser.firstName} {selectedUser.lastName}
+                    </div>
+                    <div className="text-muted small">{selectedUser.email}</div>
+                  </div>
+                </div>
+              </div>
+              <div className="alert alert-danger d-flex align-items-center gap-2" role="alert">
+                <Trash size={16} />
+                <small className="fw-semibold">Warning: This action is irreversible!</small>
               </div>
             </div>
           )}
@@ -4160,6 +4443,400 @@ export default function SuperAdminDashboard() {
             disabled={isDeleting}
           >
             {isDeleting ? "Deleting..." : "Delete User"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={showEditInstitutionModal} onHide={() => setShowEditInstitutionModal(false)} size="xl" className="edit-institution-modal">
+        <Modal.Header className="bg-primary bg-opacity-10 text-white border-0">
+          <h5 className="fw-bold d-flex align-items-center gap-2 text-dark">
+            Editing {selectedInstitution?.name || 'Institution'}
+          </h5>
+          <button type="button" className="btn-close btn-close-white" onClick={() => setShowEditInstitutionModal(false)}></button>
+        </Modal.Header>
+        <Modal.Body className="p-4 bg-light">
+          <div className="mb-4 text-center">
+            <div className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
+              <Pencil size={32} className="text-primary" />
+            </div>
+            <h5 className="fw-bold text-primary mb-2">Update Institution Information</h5>
+            <p className="text-muted small">Modify institution details and settings</p>
+          </div>
+
+          <div className="bg-white p-4 rounded shadow-sm">
+            <Form className="modern-form">
+              <div className="row g-4">
+                <div className="col-md-6">
+                  <Form.Group>
+                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                      <Building size={16} className="text-primary" />
+                      Institution Name
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editInstitutionFormData.name}
+                      onChange={(e) =>
+                        setEditInstitutionFormData({ ...editInstitutionFormData, name: e.target.value })
+                      }
+                      placeholder="Enter institution name"
+                      className="form-control-lg"
+                      style={{ padding: '12px 16px', fontSize: '16px' }}
+                    />
+                  </Form.Group>
+                </div>
+                <div className="col-md-6">
+                  <Form.Group>
+                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                      <Building size={16} className="text-primary" />
+                      Industry
+                    </Form.Label>
+                    <Form.Select
+                      value={editInstitutionFormData.industry}
+                      onChange={(e) =>
+                        setEditInstitutionFormData({ ...editInstitutionFormData, industry: e.target.value })
+                      }
+                      className="form-select-lg"
+                      style={{ padding: '12px 16px', fontSize: '16px' }}
+                    >
+                      <option value="">Select Industry</option>
+                      <option value="Education">Education</option>
+                      <option value="Healthcare">Healthcare</option>
+                      <option value="Finance">Finance</option>
+                      <option value="Technology">Technology</option>
+                      <option value="Manufacturing">Manufacturing</option>
+                    </Form.Select>
+                  </Form.Group>
+                </div>
+              </div>
+
+              <div className="row g-4 mt-3">
+                <div className="col-md-6">
+                  <Form.Group>
+                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                      <GeoAlt size={16} className="text-primary" />
+                      Address
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editInstitutionFormData.address}
+                      onChange={(e) =>
+                        setEditInstitutionFormData({ ...editInstitutionFormData, address: e.target.value })
+                      }
+                      placeholder="Enter address"
+                      className="form-control-lg"
+                      style={{ padding: '12px 16px', fontSize: '16px' }}
+                    />
+                  </Form.Group>
+                </div>
+                <div className="col-md-6">
+                  <Form.Group>
+                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                      <GeoAlt size={16} className="text-primary" />
+                      City
+                    </Form.Label>
+                    <Form.Select
+                      value={editInstitutionFormData.city}
+                      onChange={(e) =>
+                        setEditInstitutionFormData({ ...editInstitutionFormData, city: e.target.value })
+                      }
+                      className="form-select-lg"
+                      style={{ padding: '12px 16px', fontSize: '16px' }}
+                    >
+                      <option value="">Select City</option>
+                      <option value="Nairobi">Nairobi</option>
+                      <option value="Mombasa">Mombasa</option>
+                      <option value="Kisumu">Kisumu</option>
+                      <option value="Nakuru">Nakuru</option>
+                      <option value="Eldoret">Eldoret</option>
+                    </Form.Select>
+                  </Form.Group>
+                </div>
+              </div>
+
+              <div className="row g-4 mt-3">
+                <div className="col-md-6">
+                  <Form.Group>
+                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                      <Globe size={16} className="text-primary" />
+                      Country
+                    </Form.Label>
+                    <Form.Select
+                      value={editInstitutionFormData.country}
+                      onChange={(e) =>
+                        setEditInstitutionFormData({ ...editInstitutionFormData, country: e.target.value })
+                      }
+                      className="form-select-lg"
+                      style={{ padding: '12px 16px', fontSize: '16px' }}
+                    >
+                      <option value="">Select Country</option>
+                      <option value="Kenya">Kenya</option>
+                      <option value="Uganda">Uganda</option>
+                      <option value="Tanzania">Tanzania</option>
+                      <option value="Rwanda">Rwanda</option>
+                      <option value="Ethiopia">Ethiopia</option>
+                    </Form.Select>
+                  </Form.Group>
+                </div>
+                <div className="col-md-6">
+                  <Form.Group>
+                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                      <Globe size={16} className="text-primary" />
+                      Contact Email
+                    </Form.Label>
+                    <Form.Control
+                      type="email"
+                      value={editInstitutionFormData.contactEmail}
+                      onChange={(e) =>
+                        setEditInstitutionFormData({ ...editInstitutionFormData, contactEmail: e.target.value })
+                      }
+                      placeholder="Enter contact email"
+                      className="form-control-lg"
+                      style={{ padding: '12px 16px', fontSize: '16px' }}
+                    />
+                  </Form.Group>
+                </div>
+              </div>
+
+              <div className="row g-4 mt-3">
+                <div className="col-md-6">
+                  <Form.Group>
+                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                      <Globe size={16} className="text-primary" />
+                      Phone Number
+                    </Form.Label>
+                    <Form.Control
+                      type="tel"
+                      value={editInstitutionFormData.phoneNumber}
+                      onChange={(e) =>
+                        setEditInstitutionFormData({ ...editInstitutionFormData, phoneNumber: e.target.value })
+                      }
+                      placeholder="Enter phone number"
+                      className="form-control-lg"
+                      style={{ padding: '12px 16px', fontSize: '16px' }}
+                    />
+                  </Form.Group>
+                </div>
+                <div className="col-md-6">
+                  <Form.Group>
+                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                      <Globe size={16} className="text-primary" />
+                      Website URL
+                    </Form.Label>
+                    <Form.Control
+                      type="url"
+                      value={editInstitutionFormData.websiteUrl}
+                      onChange={(e) =>
+                        setEditInstitutionFormData({ ...editInstitutionFormData, websiteUrl: e.target.value })
+                      }
+                      placeholder="Enter website URL"
+                      className="form-control-lg"
+                      style={{ padding: '12px 16px', fontSize: '16px' }}
+                    />
+                  </Form.Group>
+                </div>
+              </div>
+
+              <Form.Group className="mt-4">
+                <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                  <Globe size={16} className="text-primary" />
+                  Logo URL
+                </Form.Label>
+                <Form.Control
+                  type="url"
+                  value={editInstitutionFormData.logoUrl}
+                  onChange={(e) =>
+                    setEditInstitutionFormData({ ...editInstitutionFormData, logoUrl: e.target.value })
+                  }
+                  placeholder="Enter logo URL"
+                  className="form-control-lg"
+                  style={{ padding: '12px 16px', fontSize: '16px' }}
+                />
+              </Form.Group>
+
+              <div className="row g-4 mt-3">
+                <div className="col-md-4">
+                  <Form.Group>
+                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                      <CreditCard size={16} className="text-primary" />
+                      Subscription Start
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={editInstitutionFormData.subscriptionStartDate}
+                      onChange={(e) =>
+                        setEditInstitutionFormData({ ...editInstitutionFormData, subscriptionStartDate: e.target.value })
+                      }
+                      className="form-control-lg"
+                      style={{ padding: '12px 16px', fontSize: '16px' }}
+                    />
+                  </Form.Group>
+                </div>
+                <div className="col-md-4">
+                  <Form.Group>
+                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                      <CreditCard size={16} className="text-primary" />
+                      Subscription End
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={editInstitutionFormData.subscriptionEndDate}
+                      onChange={(e) =>
+                        setEditInstitutionFormData({ ...editInstitutionFormData, subscriptionEndDate: e.target.value })
+                      }
+                      className="form-control-lg"
+                      style={{ padding: '12px 16px', fontSize: '16px' }}
+                    />
+                  </Form.Group>
+                </div>
+                <div className="col-md-4">
+                  <Form.Group>
+                    <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                      <CreditCard size={16} className="text-primary" />
+                      Trial End
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={editInstitutionFormData.trialEndDate}
+                      onChange={(e) =>
+                        setEditInstitutionFormData({ ...editInstitutionFormData, trialEndDate: e.target.value })
+                      }
+                      className="form-control-lg"
+                      style={{ padding: '12px 16px', fontSize: '16px' }}
+                    />
+                  </Form.Group>
+                </div>
+              </div>
+
+              <Form.Group className="mt-4">
+                <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                  <CreditCard size={16} className="text-primary" />
+                  Billing Email
+                </Form.Label>
+                <Form.Control
+                  type="email"
+                  value={editInstitutionFormData.billingEmail}
+                  onChange={(e) =>
+                    setEditInstitutionFormData({ ...editInstitutionFormData, billingEmail: e.target.value })
+                  }
+                  placeholder="Enter billing email"
+                  className="form-control-lg"
+                  style={{ padding: '12px 16px', fontSize: '16px' }}
+                />
+              </Form.Group>
+
+              <Form.Group className="mt-4">
+                <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                  <Activity size={16} className="text-primary" />
+                  Institution Status
+                </Form.Label>
+                <Form.Select
+                  value={editInstitutionFormData.status}
+                  onChange={(e) =>
+                    setEditInstitutionFormData({ ...editInstitutionFormData, status: e.target.value })
+                  }
+                  className="form-select-lg"
+                  style={{ padding: '12px 16px', fontSize: '16px' }}
+                >
+                  <option value="ACTIVE">✅ Active</option>
+                  <option value="INACTIVE">⏸️ Inactive</option>
+                  <option value="SUSPENDED">🚫 Suspended</option>
+                </Form.Select>
+              </Form.Group>
+            </Form>
+          </div>
+        </Modal.Body>
+        <Modal.Footer className="border-0 bg-light">
+          <Button
+            variant="outline-secondary"
+            onClick={() => setShowEditInstitutionModal(false)}
+            className="px-4 py-2"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleUpdateInstitution}
+            disabled={isUpdatingInstitution}
+            className="px-4 py-2 fw-semibold"
+          >
+            {isUpdatingInstitution ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Updating...
+              </>
+            ) : (
+              <>
+                <Pencil size={16} className="me-2" />
+                Update Institution
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Delete Institution Confirmation Modal */}
+      <Modal show={showDeleteInstitutionModal} onHide={() => setShowDeleteInstitutionModal(false)} size="xl" className="delete-institution-modal">
+        <Modal.Header className="bg-danger bg-gradient text-white border-0 position-relative overflow-hidden">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-2">
+            <Trash size={24} className="text-white" />
+            Delete Institution
+          </Modal.Title>
+          <button type="button" className="btn-close btn-close-white position-absolute" style={{ top: '15px', right: '15px' }} onClick={() => setShowDeleteInstitutionModal(false)}></button>
+        </Modal.Header>
+        <Modal.Body className="p-4 bg-light">
+          {selectedInstitution && (
+            <div className="text-center">
+              <div className="mb-4">
+                <div className="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '80px', height: '80px' }}>
+                  <Trash size={32} className="text-danger" />
+                </div>
+                <h5 className="fw-bold text-danger mb-3">Delete Institution Confirmation</h5>
+                <p className="text-muted mb-4">
+                  Are you sure you want to delete this institution? This action cannot be undone and will permanently remove all associated data including all users and departments.
+                </p>
+              </div>
+              <div className="bg-light border border-danger border-opacity-25 p-3 rounded mb-4">
+                <div className="fw-semibold text-dark mb-2">Institution to be deleted:</div>
+                <div className="d-flex align-items-center justify-content-center gap-3">
+                  {selectedInstitution.logoUrl ? (
+                    <img
+                      src={selectedInstitution.logoUrl}
+                      alt={selectedInstitution.name}
+                      className="rounded-circle border border-light shadow-sm"
+                      style={{ width: '48px', height: '48px', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div className="bg-gradient-to-br from-cyan-400 to-blue-500 rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ width: '48px', height: '48px' }}>
+                      <span className="text-white fw-bold" style={{ fontSize: '16px' }}>
+                        {selectedInstitution.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                  <div className="text-start">
+                    <div className="fw-semibold mb-1">
+                      {selectedInstitution.name}
+                    </div>
+                    <div className="text-muted small">{selectedInstitution.contactEmail || 'No contact email'}</div>
+                  </div>
+                </div>
+              </div>
+              <div className="alert alert-danger d-flex align-items-center gap-2" role="alert">
+                <Trash size={16} />
+                <small className="fw-semibold">Warning: This action will permanently delete the institution and all associated data!</small>
+              </div>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="border-0">
+          <Button variant="secondary" onClick={() => setShowDeleteInstitutionModal(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={confirmDeleteInstitution}
+            disabled={isDeletingInstitution}
+          >
+            {isDeletingInstitution ? "Deleting..." : "Delete Institution"}
           </Button>
         </Modal.Footer>
       </Modal>
