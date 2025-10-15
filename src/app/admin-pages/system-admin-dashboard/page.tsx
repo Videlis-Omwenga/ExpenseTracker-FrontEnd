@@ -49,6 +49,7 @@ import {
   Building,
   GeoAlt,
   CreditCard,
+  Telephone,
 } from "react-bootstrap-icons";
 import AuthProvider from "../../authPages/tokenData";
 import { toast } from "react-toastify";
@@ -60,7 +61,6 @@ import RoleCreationModal from "@/app/components/modals/system-admin-role-creatio
 import DateTimeDisplay from "@/app/components/DateTimeDisplay";
 import AdminCreateUserModal from "@/app/components/modals/system-admin-new-user";
 import { FaBuilding } from "react-icons/fa";
-import { FaPersonCircleCheck } from "react-icons/fa6";
 
 interface User {
   id: number;
@@ -72,6 +72,7 @@ interface User {
   createdAt: string;
   updatedAt: string;
   lastLogin: string | null;
+  phone: string | null;
   institution: {
     id: number;
     name: string;
@@ -97,7 +98,7 @@ interface Institution {
   country: string | null;
   postalCode: string | null;
   contactEmail: string | null;
-  phoneNumber: string | null;
+  phone: string | null;
   websiteUrl: string | null;
   logoUrl: string | null;
   subscriptionStartDate: string | null;
@@ -165,6 +166,9 @@ export default function SuperAdminDashboard() {
     lastName: "",
     email: "",
     status: "",
+    phone: "",
+    role: "",
+    institutionId: "",
   });
   const [editInstitutionFormData, setEditInstitutionFormData] = useState({
     name: "",
@@ -173,7 +177,7 @@ export default function SuperAdminDashboard() {
     city: "",
     country: "",
     contactEmail: "",
-    phoneNumber: "",
+    phone: "",
     websiteUrl: "",
     logoUrl: "",
     subscriptionStartDate: "",
@@ -235,7 +239,10 @@ export default function SuperAdminDashboard() {
       lastName: user.lastName,
       email: user.email,
       status: user.status,
-    });
+      phone: user.phone || "",
+      role: user.role || "",
+      institutionId: user.institution?.id?.toString() || "",
+    }); 
     setShowEditModal(true);
   };
 
@@ -249,17 +256,25 @@ export default function SuperAdminDashboard() {
 
     setIsUpdating(true);
     try {
+      // Convert role and institutionId to integers for the backend
+      const dataToSend = {
+        ...editFormData,
+        phone: editFormData.phone,  // Map phone to phone for backend
+        role: editFormData.role ? parseInt(editFormData.role, 10) : null,
+        institution: editFormData.institutionId ? parseInt(editFormData.institutionId, 10) : null,
+      };
+
       const response = await fetch(
-        `${BASE_API_URL}/system-admin/users/${selectedUser.id}`,
+        `${BASE_API_URL}/system-admin/edit-user/${selectedUser.id}`,
         {
-          method: "PUT",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem(
               "expenseTrackerToken"
             )}`,
           },
-          body: JSON.stringify(editFormData),
+          body: JSON.stringify(dataToSend),
         }
       );
 
@@ -270,7 +285,7 @@ export default function SuperAdminDashboard() {
         setShowEditModal(false);
         fetchData();
       } else {
-        toast.error(data.message || "Failed to update user");
+        toast.error(`${data.message}`);
       }
     } catch (error) {
       toast.error(`Failed to update user: ${error}`);
@@ -285,7 +300,7 @@ export default function SuperAdminDashboard() {
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `${BASE_API_URL}/system-admin/users/${selectedUser.id}`,
+        `${BASE_API_URL}/system-admin/delete-user/${selectedUser.id}`,
         {
           method: "DELETE",
           headers: {
@@ -304,7 +319,7 @@ export default function SuperAdminDashboard() {
         setShowDeleteModal(false);
         fetchData();
       } else {
-        toast.error(data.message || "Failed to delete user");
+        toast.error(`${data.message}`);
       }
     } catch (error) {
       toast.error(`Failed to delete user: ${error}`);
@@ -323,7 +338,7 @@ export default function SuperAdminDashboard() {
       city: institution.city || "",
       country: institution.country || "",
       contactEmail: institution.contactEmail || "",
-      phoneNumber: institution.phoneNumber || "",
+      phone: institution.phone || "",
       websiteUrl: institution.websiteUrl || "",
       logoUrl: institution.logoUrl || "",
       subscriptionStartDate: institution.subscriptionStartDate || "",
@@ -371,7 +386,7 @@ export default function SuperAdminDashboard() {
         setShowEditInstitutionModal(false);
         fetchData();
       } else {
-        toast.error(data.message || "Failed to update institution");
+        toast.error(`${data.message}` );
       }
     } catch (error) {
       toast.error(`Failed to update institution: ${error}`);
@@ -680,7 +695,7 @@ export default function SuperAdminDashboard() {
               {/* Dashboard Overview */}
               {activeTab === "dashboard" && (
                 <>
-                  <div className="border border-start border-primary border-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-4 rounded-4 shadow-sm bg-light position-relative">
+                  <div className="border-0 bg-primary bg-opacity-10 border-start border-primary border-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-4 rounded-4 shadow-sm position-relative">
                     <div className="d-flex align-items-center mb-3 mb-md-0 position-relative">
                       <div className="bg-primary bg-opacity-10 p-3 rounded-circle me-3 shadow-sm">
                         <Grid3x3Gap size={28} className="text-primary" />
@@ -718,37 +733,40 @@ export default function SuperAdminDashboard() {
 
                   <Row className="g-4 mb-4">
                     <Col md={3}>
-                      <Card className="h-100 shadow-sm border-start border-primary border-3 bg-light">
+                      <Card className="h-100 shadow-sm border-start border-primary border-3 bg-secondary bg-opacity-10">
                         <Card.Body className="p-4 position-relative">
                           <div className="d-flex justify-content-between align-items-start">
                             <div>
                               <div className="d-flex align-items-center mb-2">
                                 <Globe
-                                  className="me-2 text-primary"
+                                  className="me-2 text-secondary"
                                   size={20}
                                 />
-                                <span className="small text-primary fw-medium">
+                                <span className="small text-secondary fw-medium">
                                   Total Institutions
                                 </span>
                               </div>
-                              <h2 className="mb-1 fw-bold text-primary">
+                              <h2 className="mb-1 fw-bold text-secondary">
                                 {statistics?.totalInstitutions || 0}
                               </h2>
                               <div className="d-flex align-items-center">
-                                <Badge bg="primary" className="small px-2 py-1">
+                                <Badge
+                                  bg="secondary"
+                                  className="small px-2 py-1"
+                                >
                                   +12% this month
                                 </Badge>
                               </div>
                             </div>
-                            <div className="bg-primary bg-opacity-10 p-2 rounded">
-                              <Globe size={24} className="text-primary" />
+                            <div className="bg-secondary bg-opacity-10 p-2 rounded">
+                              <Globe size={24} className="text-secondary" />
                             </div>
                           </div>
                         </Card.Body>
                       </Card>
                     </Col>
                     <Col md={3}>
-                      <Card className="h-100 shadow-sm border-start border-success border-3 bg-light">
+                      <Card className="h-100 shadow-sm border-start border-success border-3 bg-success bg-opacity-10">
                         <Card.Body className="p-4 position-relative">
                           <div className="d-flex justify-content-between align-items-start">
                             <div>
@@ -781,7 +799,7 @@ export default function SuperAdminDashboard() {
                       </Card>
                     </Col>
                     <Col md={3}>
-                      <Card className="h-100 shadow-sm border-start border-warning border-3 bg-light">
+                      <Card className="h-100 shadow-sm border-start border-warning border-3 bg-warning bg-opacity-10">
                         <Card.Body className="p-4 position-relative">
                           <div className="d-flex justify-content-between align-items-start">
                             <div>
@@ -814,7 +832,7 @@ export default function SuperAdminDashboard() {
                       </Card>
                     </Col>
                     <Col md={3}>
-                      <Card className="h-100 shadow-sm border-start border-info border-3 bg-light">
+                      <Card className="h-100 shadow-sm border-start border-info border-3 bg-info bg-opacity-10">
                         <Card.Body className="p-4 position-relative">
                           <div className="d-flex justify-content-between align-items-start">
                             <div>
@@ -4205,14 +4223,10 @@ export default function SuperAdminDashboard() {
           size="xl"
           centered
         >
-          <Modal.Header className="border-0 position-relative overflow-hidden" style={{ backgroundColor: '#f8f9fa' }}>
+          <Modal.Header className="border-0 position-relative overflow-hidden">
             <Modal.Title className="fw-bold d-flex align-items-center gap-3 text-dark position-relative">
-              <div className="bg-primary bg-opacity-15 p-3 rounded-circle">
-                <FaPersonCircleCheck size={20} className="text-primary" />
-              </div>
               <div>
-                <h6 className="mb-1 fw-bold text-primary">User Details</h6>
-                <small className="text-muted">
+                <small className="text-primary">
                   Complete profile information
                 </small>
               </div>
@@ -4470,11 +4484,10 @@ export default function SuperAdminDashboard() {
           size="xl"
           className="edit-user-modal"
         >
-          <Modal.Header className="bg-success bg-gradient text-white border-0 position-relative overflow-hidden">
-            <Modal.Title className="fw-bold d-flex align-items-center gap-2">
-              <Pencil size={24} className="text-white" />
+          <Modal.Header className="bg-success text-white border-0 position-relative overflow-hidden">
+            <h5 className="fw-bold d-flex align-items-center gap-2">
               Edit User
-            </Modal.Title>
+            </h5>
             <button
               type="button"
               className="btn-close btn-close-white position-absolute"
@@ -4516,10 +4529,12 @@ export default function SuperAdminDashboard() {
                             firstName: e.target.value,
                           })
                         }
-                        placeholder="Enter first name"
                         className="form-control-lg"
                         style={{ padding: "12px 16px", fontSize: "16px" }}
                       />
+                      <Form.Text className="text-muted">
+                        User's legal first name
+                      </Form.Text>
                     </Form.Group>
                   </div>
                   <div className="col-md-6">
@@ -4537,10 +4552,12 @@ export default function SuperAdminDashboard() {
                             lastName: e.target.value,
                           })
                         }
-                        placeholder="Enter last name"
                         className="form-control-lg"
                         style={{ padding: "12px 16px", fontSize: "16px" }}
                       />
+                      <Form.Text className="text-muted">
+                        User's legal last name
+                      </Form.Text>
                     </Form.Group>
                   </div>
                 </div>
@@ -4559,10 +4576,92 @@ export default function SuperAdminDashboard() {
                         email: e.target.value,
                       })
                     }
-                    placeholder="Enter email address"
                     className="form-control-lg"
                     style={{ padding: "12px 16px", fontSize: "16px" }}
                   />
+                  <Form.Text className="text-muted">
+                    Primary email address for account login
+                  </Form.Text>
+                </Form.Group>
+
+                <Form.Group className="mt-4">
+                  <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                    <Telephone size={16} className="text-success" />
+                    Phone Number
+                  </Form.Label>
+                  <Form.Control
+                    type="tel"
+                    value={editFormData.phone}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        phone: e.target.value,
+                      })
+                    }
+                    pattern="^2547[0-9]{8}$"
+                    title="Phone number must be in format: 2547xxxxxxxx"
+                    className="form-control-lg"
+                    style={{ padding: "12px 16px", fontSize: "16px" }}
+                  />
+                  <Form.Text className="text-muted">
+                    Format: 2547xxxxxxxx (11 digits starting with 2547)
+                  </Form.Text>
+                </Form.Group>
+
+                <Form.Group className="mt-4">
+                  <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                    <ShieldLock size={16} className="text-success" />
+                    Role
+                  </Form.Label>
+                  <Form.Select
+                    value={editFormData.role}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        role: e.target.value,
+                      })
+                    }
+                    className="form-select-lg"
+                    style={{ padding: "12px 16px", fontSize: "16px" }}
+                  >
+                    <option value="">Select Role</option>
+                    {roles.map((role) => (
+                      <option key={role.id} value={role.id.toString()}>
+                        {role.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  <Form.Text className="text-muted">
+                    User's system role and permissions level
+                  </Form.Text>
+                </Form.Group>
+
+                <Form.Group className="mt-4">
+                  <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                    <Globe size={16} className="text-success" />
+                    Institution
+                  </Form.Label>
+                  <Form.Select
+                    value={editFormData.institutionId}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        institutionId: e.target.value,
+                      })
+                    }
+                    className="form-select-lg"
+                    style={{ padding: "12px 16px", fontSize: "16px" }}
+                  >
+                    <option value="">Select Institution</option>
+                    {institutions.map((institution) => (
+                      <option key={institution.id} value={institution.id.toString()}>
+                        {institution.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  <Form.Text className="text-muted">
+                    Organization or company the user belongs to
+                  </Form.Text>
                 </Form.Group>
 
                 <Form.Group className="mt-4">
@@ -4586,6 +4685,9 @@ export default function SuperAdminDashboard() {
                     <option value="SUSPENDED">🚫 Suspended</option>
                     <option value="INVITED">📧 Invited</option>
                   </Form.Select>
+                  <Form.Text className="text-muted">
+                    Current status of the user account
+                  </Form.Text>
                 </Form.Group>
               </Form>
             </div>
@@ -4630,11 +4732,10 @@ export default function SuperAdminDashboard() {
           size="xl"
           className="delete-user-modal"
         >
-          <Modal.Header className="bg-danger bg-gradient text-white border-0 position-relative overflow-hidden">
-            <Modal.Title className="fw-bold d-flex align-items-center gap-2">
-              <Trash size={24} className="text-white" />
+          <Modal.Header className="bg-danger text-white border-0 position-relative overflow-hidden">
+            <h5 className="fw-bold d-flex align-items-center gap-2">
               Delete User
-            </Modal.Title>
+            </h5>
             <button
               type="button"
               className="btn-close btn-close-white position-absolute"
@@ -4905,11 +5006,11 @@ export default function SuperAdminDashboard() {
                       </Form.Label>
                       <Form.Control
                         type="tel"
-                        value={editInstitutionFormData.phoneNumber}
+                        value={editInstitutionFormData.phone}
                         onChange={(e) =>
                           setEditInstitutionFormData({
                             ...editInstitutionFormData,
-                            phoneNumber: e.target.value,
+                            phone: e.target.value,
                           })
                         }
                         placeholder="Enter phone number"
@@ -5387,7 +5488,7 @@ export default function SuperAdminDashboard() {
                               Phone Number
                             </small>
                             <span className="fw-semibold">
-                              {selectedInstitution.phoneNumber ||
+                              {selectedInstitution.phone ||
                                 "Not provided"}
                             </span>
                           </div>
