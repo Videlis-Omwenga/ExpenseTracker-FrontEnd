@@ -22,7 +22,7 @@ export default function AdminCreateUserModal({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("");
+  const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
   const [institution, setInstitution] = useState("");
   const [phone, setPhone] = useState("");
   const handleClose = () => setShow(false);
@@ -37,7 +37,7 @@ export default function AdminCreateUserModal({
         firstName,
         lastName,
         email,
-        role: Number(role),
+        roles: selectedRoles,
         institution: Number(institution),
         phone,
       };
@@ -60,7 +60,7 @@ export default function AdminCreateUserModal({
         setFirstName("");
         setLastName("");
         setEmail("");
-        setRole("");
+        setSelectedRoles([]);
         setPhone("");
         setInstitution("");
         setShow(false);
@@ -198,23 +198,29 @@ export default function AdminCreateUserModal({
                   <Col md={6}>
                     <Form.Group className="mb-3">
                       <Form.Label className="fw-semibold text-dark">
-                        Role <span className="text-danger">*</span>
+                        Roles <span className="text-danger">*</span>
                       </Form.Label>
-                      <Form.Select
-                        value={role}
-                        onChange={(e) => setRole(e.target.value)}
-                        required
-                        className="rounded-3 py-2 px-3 modern-input"
-                      >
-                        <option value=""></option>
-                        {roles.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.name}
-                          </option>
+                      <div className="border rounded p-3 bg-light">
+                        {roles.map((role) => (
+                          <Form.Check
+                            key={role.id}
+                            type="checkbox"
+                            id={`role-${role.id}`}
+                            label={`${role.name} - ${role.description}`}
+                            checked={selectedRoles.includes(role.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedRoles([...selectedRoles, role.id]);
+                              } else {
+                                setSelectedRoles(selectedRoles.filter(id => id !== role.id));
+                              }
+                            }}
+                            className="mb-2"
+                          />
                         ))}
-                      </Form.Select>
+                      </div>
                       <Form.Text className="text-muted">
-                        Please select the user's role.
+                        Please select one or more roles for the user.
                       </Form.Text>
                     </Form.Group>
                   </Col>

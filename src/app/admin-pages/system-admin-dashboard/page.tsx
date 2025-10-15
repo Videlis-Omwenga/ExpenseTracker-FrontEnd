@@ -50,6 +50,7 @@ import {
   GeoAlt,
   CreditCard,
   Telephone,
+  PersonPlus,
 } from "react-bootstrap-icons";
 import AuthProvider from "../../authPages/tokenData";
 import { toast } from "react-toastify";
@@ -69,6 +70,18 @@ interface User {
   lastName: string;
   status: string;
   role?: string;
+  roles?: Array<{
+    userId: number;
+    roleId: number;
+    assignedAt: string;
+    role: {
+      id: number;
+      name: string;
+      description: string;
+      adminCreatedRole: boolean;
+      createdAt: string;
+    };
+  }>;
   createdAt: string;
   updatedAt: string;
   lastLogin: string | null;
@@ -167,7 +180,7 @@ export default function SuperAdminDashboard() {
     email: "",
     status: "",
     phone: "",
-    role: "",
+    roles: [] as number[],
     institutionId: "",
   });
   const [editInstitutionFormData, setEditInstitutionFormData] = useState({
@@ -240,9 +253,9 @@ export default function SuperAdminDashboard() {
       email: user.email,
       status: user.status,
       phone: user.phone || "",
-      role: user.role || "",
+      roles: user.roles?.map((role) => role.roleId) || [],
       institutionId: user.institution?.id?.toString() || "",
-    }); 
+    });
     setShowEditModal(true);
   };
 
@@ -259,9 +272,11 @@ export default function SuperAdminDashboard() {
       // Convert role and institutionId to integers for the backend
       const dataToSend = {
         ...editFormData,
-        phone: editFormData.phone,  // Map phone to phone for backend
-        role: editFormData.role ? parseInt(editFormData.role, 10) : null,
-        institution: editFormData.institutionId ? parseInt(editFormData.institutionId, 10) : null,
+        phone: editFormData.phone, // Map phone to phone for backend
+        roles: editFormData.roles, // Send roles array
+        institution: editFormData.institutionId
+          ? parseInt(editFormData.institutionId, 10)
+          : null,
       };
 
       const response = await fetch(
@@ -302,7 +317,7 @@ export default function SuperAdminDashboard() {
       const response = await fetch(
         `${BASE_API_URL}/system-admin/delete-user/${selectedUser.id}`,
         {
-          method: "DELETE",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem(
@@ -386,7 +401,7 @@ export default function SuperAdminDashboard() {
         setShowEditInstitutionModal(false);
         fetchData();
       } else {
-        toast.error(`${data.message}` );
+        toast.error(`${data.message}`);
       }
     } catch (error) {
       toast.error(`Failed to update institution: ${error}`);
@@ -480,6 +495,7 @@ export default function SuperAdminDashboard() {
   };
 
   // Get status variant
+  // Get status variant for badges
   const getStatusVariant = (status?: string | null) => {
     switch (status?.toUpperCase()) {
       case "ACTIVE":
@@ -490,10 +506,15 @@ export default function SuperAdminDashboard() {
         return "danger";
       case "TRIAL":
         return "warning";
+      case "DELETED":
+        return "danger";
+      case "INVITED":
+        return "info";
       default:
         return "secondary";
     }
   };
+
 
   if (loading) return <PageLoader />;
 
@@ -820,7 +841,12 @@ export default function SuperAdminDashboard() {
                                   bg="warning"
                                   className="small px-2 py-1 text-dark"
                                 >
-                                  {users.filter((u) => u.role).length} assigned
+                                  {
+                                    users.filter(
+                                      (u) => u.roles && u.roles.length > 0
+                                    ).length
+                                  }{" "}
+                                  assigned
                                 </Badge>
                               </div>
                             </div>
@@ -2418,7 +2444,7 @@ export default function SuperAdminDashboard() {
                             </small>
                           </div>
                         </div>
-                        <div className="d-flex align-items-center gap-2">
+                        <div className="d-flex align-items-center gap-2 flex-wrap">
                           <Badge
                             bg="success"
                             className="px-3 py-2 rounded-pill fw-medium"
@@ -2430,8 +2456,36 @@ export default function SuperAdminDashboard() {
                             bg="secondary"
                             className="px-3 py-2 rounded-pill fw-medium"
                           >
-                            {users.filter((u) => u.status !== "ACTIVE").length}{" "}
+                            {users.filter((u) => u.status === "INACTIVE").length}{" "}
                             Inactive
+                          </Badge>
+                          <Badge
+                            bg="danger"
+                            className="px-3 py-2 rounded-pill fw-medium"
+                          >
+                            {users.filter((u) => u.status === "SUSPENDED").length}{" "}
+                            Suspended
+                          </Badge>
+                          <Badge
+                            bg="danger"
+                            className="px-3 py-2 rounded-pill fw-medium"
+                          >
+                            {users.filter((u) => u.status === "DELETED").length}{" "}
+                            Deleted
+                          </Badge>
+                          <Badge
+                            bg="info"
+                            className="px-3 py-2 rounded-pill fw-medium"
+                          >
+                            {users.filter((u) => u.status === "INVITED").length}{" "}
+                            Invited
+                          </Badge>
+                          <Badge
+                            bg="warning"
+                            className="px-3 py-2 rounded-pill fw-medium"
+                          >
+                            {users.filter((u) => u.status === "TRIAL").length}{" "}
+                            Trial
                           </Badge>
                         </div>
                       </div>
@@ -4223,21 +4277,25 @@ export default function SuperAdminDashboard() {
           size="xl"
           centered
         >
-          <Modal.Header className="border-0 position-relative overflow-hidden">
-            <Modal.Title className="fw-bold d-flex align-items-center gap-3 text-dark position-relative">
-              <div>
-                <small className="text-primary">
-                  Complete profile information
-                </small>
+          <Modal.Header
+            closeButton
+            className="border-0 pb-0 pt-4 px-4"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            <h6 className="fw-bold text-dark d-flex align-items-center">
+              <div
+                className="icon-wrapper bg-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <PersonPlus size={24} className="text-white" />
               </div>
-            </Modal.Title>
-
-            <button
-              type="button"
-              className="btn-close position-absolute"
-              style={{ top: "18px", right: "18px" }}
-              onClick={() => setShowViewModal(false)}
-            ></button>
+              <div>
+                User details
+                <div className="text-muted fw-normal small">
+                  View user details
+                </div>
+              </div>
+            </h6>
           </Modal.Header>
           <Modal.Body className="p-0 bg-light">
             {selectedUser && (
@@ -4318,7 +4376,7 @@ export default function SuperAdminDashboard() {
                               {selectedUser.email}
                             </span>
                           </div>
-                          <div className="d-flex justify-content-between align-items-center py-2">
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
                             <small className="text-muted fw-medium">
                               Status
                             </small>
@@ -4328,6 +4386,30 @@ export default function SuperAdminDashboard() {
                             >
                               {selectedUser.status}
                             </Badge>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-start py-2">
+                            <small className="text-muted fw-medium">
+                              Roles
+                            </small>
+                            <div className="text-end">
+                              {selectedUser.roles &&
+                              selectedUser.roles.length > 0 ? (
+                                selectedUser.roles.map((userRole) => (
+                                  <Badge
+                                    key={userRole.roleId}
+                                    bg="info"
+                                    className="me-1 mb-1"
+                                    style={{ fontSize: "0.75rem" }}
+                                  >
+                                    {userRole.role.name}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-muted small">
+                                  No roles assigned
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -4611,28 +4693,37 @@ export default function SuperAdminDashboard() {
                 <Form.Group className="mt-4">
                   <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
                     <ShieldLock size={16} className="text-success" />
-                    Role
+                    Roles
                   </Form.Label>
-                  <Form.Select
-                    value={editFormData.role}
-                    onChange={(e) =>
-                      setEditFormData({
-                        ...editFormData,
-                        role: e.target.value,
-                      })
-                    }
-                    className="form-select-lg"
-                    style={{ padding: "12px 16px", fontSize: "16px" }}
-                  >
-                    <option value="">Select Role</option>
+                  <div className="border rounded p-3 bg-light">
                     {roles.map((role) => (
-                      <option key={role.id} value={role.id.toString()}>
-                        {role.name}
-                      </option>
+                      <Form.Check
+                        key={role.id}
+                        type="checkbox"
+                        id={`role-${role.id}`}
+                        label={`${role.name} - ${role.description}`}
+                        checked={editFormData.roles.includes(role.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setEditFormData({
+                              ...editFormData,
+                              roles: [...editFormData.roles, role.id],
+                            });
+                          } else {
+                            setEditFormData({
+                              ...editFormData,
+                              roles: editFormData.roles.filter(
+                                (id) => id !== role.id
+                              ),
+                            });
+                          }
+                        }}
+                        className="mb-2"
+                      />
                     ))}
-                  </Form.Select>
+                  </div>
                   <Form.Text className="text-muted">
-                    User's system role and permissions level
+                    Select one or more roles for the user
                   </Form.Text>
                 </Form.Group>
 
@@ -4654,7 +4745,10 @@ export default function SuperAdminDashboard() {
                   >
                     <option value="">Select Institution</option>
                     {institutions.map((institution) => (
-                      <option key={institution.id} value={institution.id.toString()}>
+                      <option
+                        key={institution.id}
+                        value={institution.id.toString()}
+                      >
                         {institution.name}
                       </option>
                     ))}
@@ -4683,7 +4777,9 @@ export default function SuperAdminDashboard() {
                     <option value="ACTIVE">✅ Active</option>
                     <option value="INACTIVE">⏸️ Inactive</option>
                     <option value="SUSPENDED">🚫 Suspended</option>
+                    <option value="DELETED">🗑️ Deleted</option>
                     <option value="INVITED">📧 Invited</option>
+                    <option value="TRIAL">🆓 Trial</option>
                   </Form.Select>
                   <Form.Text className="text-muted">
                     Current status of the user account
@@ -5488,8 +5584,7 @@ export default function SuperAdminDashboard() {
                               Phone Number
                             </small>
                             <span className="fw-semibold">
-                              {selectedInstitution.phone ||
-                                "Not provided"}
+                              {selectedInstitution.phone || "Not provided"}
                             </span>
                           </div>
                           <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
