@@ -6,27 +6,41 @@ import { Modal, Button, Form, Row, Col, Card } from "react-bootstrap";
 import { PlusCircle, Person, Briefcase } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
 
-type RoleCreationModalProps = {
-  onSuccess?: () => void;
+type Region = {
+  id: number;
+  name: string;
 };
 
-export default function RoleCreationModal({ onSuccess }: RoleCreationModalProps) {
+type RoleCreationModalProps = {
+  onSuccess?: () => void;
+  regions?: Region[];
+};
+
+export default function RoleCreationModal({ onSuccess, regions = [] }: RoleCreationModalProps) {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState("");
   const [description, setDescription] = useState("");
+  const [regionId, setRegionId] = useState<number | null>(null);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!regionId) {
+      toast.error("Please select a region");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const payload = {
         role,
         description,
+        regionId,
       };
 
       const response = await fetch(`${BASE_API_URL}/company-admin/create-role`, {
@@ -48,6 +62,7 @@ export default function RoleCreationModal({ onSuccess }: RoleCreationModalProps)
         // Reset form fields
         setRole("");
         setDescription("");
+        setRegionId(null);
         // Notify parent to refresh data
         if (onSuccess) {
           onSuccess();
@@ -124,6 +139,32 @@ export default function RoleCreationModal({ onSuccess }: RoleCreationModalProps)
                         />
                         <Form.Text className="text-muted">
                           Role name is required.
+                        </Form.Text>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Row>
+                    <Col md={12}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-semibold text-dark">
+                          Region <span className="text-danger">*</span>
+                        </Form.Label>
+                        <Form.Select
+                          value={regionId || ""}
+                          onChange={(e) => setRegionId(Number(e.target.value))}
+                          required
+                          className="rounded-3 py-2 px-3 modern-input"
+                        >
+                          <option value="">Select Region</option>
+                          {regions.map((region) => (
+                            <option key={region.id} value={region.id}>
+                              {region.name}
+                            </option>
+                          ))}
+                        </Form.Select>
+                        <Form.Text className="text-muted">
+                          Assign this role to a specific region.
                         </Form.Text>
                       </Form.Group>
                     </Col>

@@ -313,6 +313,7 @@ export default function AdminDashboard() {
   const [editRoleFormData, setEditRoleFormData] = useState({
     role: "",
     description: "",
+    regionId: 0,
   });
   const [isUpdatingUser, setIsUpdatingUser] = useState(false);
   const [isDeletingUser, setIsDeletingUser] = useState(false);
@@ -595,6 +596,7 @@ export default function AdminDashboard() {
     setEditRoleFormData({
       role: role.name || "",
       description: role.description || "",
+      regionId: role.regionId || 0,
     });
     setShowEditRoleModal(true);
   };
@@ -1787,6 +1789,7 @@ export default function AdminDashboard() {
                         </InputGroup>
                       </div>
                       <RoleCreationModal
+                        regions={regions}
                         onSuccess={() => {
                           fetchData();
                         }}
@@ -1894,6 +1897,9 @@ export default function AdminDashboard() {
                               Description
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Region
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
                               Institution
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
@@ -1937,6 +1943,11 @@ export default function AdminDashboard() {
                                     : "No description"
                                   }
                                 </span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <Badge bg="warning" className="px-3 py-1 rounded-pill fw-medium">
+                                  {role.region?.name || regions.find(r => r.id === role.regionId)?.name || "No Region"}
+                                </Badge>
                               </td>
                               <td className="py-3 px-4">
                                 <span className="fw-medium text-dark">
@@ -3206,6 +3217,35 @@ export default function AdminDashboard() {
                       fontSize: "0.95rem",
                     }}
                   />
+                </Form.Group>
+              </Col>
+
+              <Col md={12}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
+                    Region <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Select
+                    value={editRoleFormData.regionId}
+                    onChange={(e) =>
+                      setEditRoleFormData({
+                        ...editRoleFormData,
+                        regionId: Number(e.target.value),
+                      })
+                    }
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    <option value="">Select Region</option>
+                    {regions.map((region) => (
+                      <option key={region.id} value={region.id}>
+                        {region.name}
+                      </option>
+                    ))}
+                  </Form.Select>
                 </Form.Group>
               </Col>
 
