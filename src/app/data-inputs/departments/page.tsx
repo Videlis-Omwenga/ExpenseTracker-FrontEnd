@@ -29,6 +29,8 @@ import {
   SortAlphaDown,
   SortAlphaUp,
   InfoCircle,
+  Filter,
+  Building,
 } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
 import PageLoader from "@/app/components/PageLoader";
@@ -325,45 +327,69 @@ export default function DepartmentsPage() {
   return (
     <AuthProvider>
       <TopNavbar />
-      <Container fluid className="py-4 small">
-        <Alert
-          variant="info"
-          className="d-flex justify-content-between align-items-center py-3"
-        >
-          <div>
-            <h5 className="mb-0 d-flex align-items-center">
-              <InfoCircle className="me-2" size={20} />
-              Department Management
-            </h5>
-            <small className="opacity-75">
-              Manage departments and their associations
-            </small>
+      <Container fluid className="py-4">
+        {/* Modern Header */}
+        <div className="mb-4">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <div className="d-flex align-items-center mb-2">
+                <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
+                  <Building className="text-success" size={24} />
+                </div>
+                <div>
+                  <h2 className="fw-bold text-dark mb-0">
+                    Department Management
+                  </h2>
+                  <p className="text-muted mb-0 small">
+                    Manage departments and their associations
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-          <Button variant="primary" size="sm" onClick={() => handleShow()}>
-            <PlusCircle className="me-1" /> Add Department
-          </Button>
-        </Alert>
+          <hr className="border-2 border-success opacity-25 mb-4" />
+        </div>
 
-        <Card className="shadow-sm rounded-3">
-          <Card.Body>
-            <Row className="mb-3">
-              <Col md={6}>
-                <InputGroup>
-                  <InputGroup.Text>
-                    <Search />
+        {/* Search and Actions Card */}
+        <Card className="shadow-lg border-0 mb-4 modern-search-card">
+          <Card.Body className="p-4">
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+              <div className="search-container">
+                <InputGroup style={{ width: "350px" }} className="modern-search-group">
+                  <InputGroup.Text className="bg-white border-end-0">
+                    <Search className="text-success" />
                   </InputGroup.Text>
                   <Form.Control
-                    type="text"
-                    placeholder="Search departments..."
+                    placeholder="Search departments by name..."
                     value={searchTerm}
                     onChange={handleSearch}
+                    className="border-start-0 ps-0"
                   />
                 </InputGroup>
-              </Col>
-              <Col md={6} className="d-flex justify-content-end">
+              </div>
+              <Button
+                variant="success"
+                onClick={() => handleShow()}
+                className="px-4 py-2 fw-semibold"
+              >
+                <PlusCircle size={16} className="me-2" />
+                Add Department
+              </Button>
+            </div>
+
+            {/* Filters Row */}
+            <div className="bg-light rounded-4 p-3 border-0">
+              <div className="d-flex flex-wrap gap-3 align-items-center">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="bg-success bg-opacity-10 p-2 rounded-circle">
+                    <Filter className="text-success" size={14} />
+                  </div>
+                  <span className="text-dark fw-bold small text-uppercase">Filters</span>
+                </div>
+
                 <Dropdown>
-                  <Dropdown.Toggle variant="outline-secondary" size="sm">
-                    <SortAlphaDown className="me-1" /> Sort
+                  <Dropdown.Toggle variant="outline-success" size="sm">
+                    <SortAlphaDown className="me-1" size={14} /> Sort By
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
                     <Dropdown.Item onClick={() => handleSort("name")}>
@@ -377,72 +403,94 @@ export default function DepartmentsPage() {
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
-              </Col>
-            </Row>
+
+                <div className="d-flex align-items-center gap-2 ms-auto">
+                  <Badge bg="info" className="px-3 py-2 rounded-pill fw-semibold">
+                    📊 {filteredDepartments.length} departments
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </Card.Body>
+        </Card>
+
+        {/* Table Card */}
+        <Card className="shadow-lg border-0 modern-table-card">
+          <Card.Body className="p-0">
 
             <div className="table-responsive">
-              <Table striped bordered hover className="align-middle">
-                <thead className="table-light">
+              <Table hover className="align-middle mb-0">
+                <thead className="bg-light border-0">
                   <tr>
-                    <th>#ID</th>
-                    <th>Name</th>
-                    <th>Created Date</th>
-                    <th>Updated Date</th>
-                    <th>Users</th>
-                    <th>Expenses</th>
-                    <th>Budgets</th>
-                    <th>Actions</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">#</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Department Name</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Created</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Updated</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">Users</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">Expenses</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">Budgets</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentItems.length > 0 ? (
-                    currentItems.map((dept) => (
-                      <tr key={dept.id}>
-                        <td>{dept.id}</td>
-                        <td>{dept.name}</td>
-                        <td>
+                    currentItems.map((dept, idx) => (
+                      <tr key={dept.id} className="border-bottom">
+                        <td className="py-3 px-4">
+                          <span className="fw-semibold text-success">
+                            {indexOfFirstItem + idx + 1}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="fw-semibold text-dark">{dept.name}</span>
+                        </td>
+                        <td className="py-3 px-4">
                           <DateTimeDisplay date={dept.createdAt} />
                         </td>
-                        <td>
+                        <td className="py-3 px-4">
                           <DateTimeDisplay date={dept.updatedAt} />
                         </td>
-                        <td className="text-center">
-                          <Badge bg="primary">{dept._count?.users || 0}</Badge>
+                        <td className="py-3 px-4 text-center">
+                          <Badge bg="primary" className="px-3 py-1 rounded-pill">
+                            {dept._count?.users || 0}
+                          </Badge>
                         </td>
-                        <td className="text-center">
-                          <Badge bg="info">{dept._count?.Expense || 0}</Badge>
+                        <td className="py-3 px-4 text-center">
+                          <Badge bg="info" className="px-3 py-1 rounded-pill">
+                            {dept._count?.Expense || 0}
+                          </Badge>
                         </td>
-                        <td className="text-center">
-                          <Badge bg="warning" text="dark">
+                        <td className="py-3 px-4 text-center">
+                          <Badge bg="warning" text="dark" className="px-3 py-1 rounded-pill">
                             {dept._count?.budgets || 0}
                           </Badge>
                         </td>
-                        <td>
-                          <div className="d-flex gap-2">
+                        <td className="py-3 px-4 text-center">
+                          <div className="d-flex justify-content-center gap-2">
                             <OverlayTrigger
                               placement="top"
-                              overlay={<Tooltip>Edit</Tooltip>}
+                              overlay={<Tooltip>Edit Department</Tooltip>}
                             >
                               <Button
                                 size="sm"
-                                className="rounded-circle shadow-lg border-0"
-                                variant="outline-primary"
+                                variant="outline-warning"
+                                className="rounded-pill px-3 py-1 fw-medium"
                                 onClick={() => handleEdit(dept.id)}
                               >
-                                <PencilSquare size={16} />
+                                <PencilSquare size={14} />
                               </Button>
                             </OverlayTrigger>
                             <OverlayTrigger
                               placement="top"
-                              overlay={<Tooltip>Delete</Tooltip>}
+                              overlay={<Tooltip>Delete Department</Tooltip>}
                             >
                               <Button
                                 size="sm"
-                                className="rounded-circle shadow-lg border-0"
                                 variant="outline-danger"
+                                className="rounded-pill px-3 py-1 fw-medium"
                                 onClick={() => handleDelete(dept.id)}
                               >
-                                <Trash size={16} />
+                                <Trash size={14} />
                               </Button>
                             </OverlayTrigger>
                           </div>
@@ -451,9 +499,12 @@ export default function DepartmentsPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={9} className="text-center py-4">
-                        No departments found.{" "}
-                        {searchTerm && "Try adjusting your search."}
+                      <td colSpan={8} className="text-center py-5">
+                        <div className="text-muted">
+                          <Building size={48} className="mb-3 opacity-50" />
+                          <p className="mb-0 fw-semibold">No departments found</p>
+                          {searchTerm && <small>Try adjusting your search criteria</small>}
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -462,11 +513,11 @@ export default function DepartmentsPage() {
             </div>
 
             {filteredDepartments.length > 0 && (
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  Showing {indexOfFirstItem + 1} to{" "}
-                  {Math.min(indexOfLastItem, filteredDepartments.length)} of{" "}
-                  {filteredDepartments.length} entries
+              <div className="d-flex justify-content-between align-items-center p-4 border-top bg-light">
+                <div className="text-muted small">
+                  Showing <span className="fw-bold text-dark">{indexOfFirstItem + 1}</span> to{" "}
+                  <span className="fw-bold text-dark">{Math.min(indexOfLastItem, filteredDepartments.length)}</span> of{" "}
+                  <span className="fw-bold text-dark">{filteredDepartments.length}</span> entries
                 </div>
                 <Pagination size="sm" className="mb-0">
                   <Pagination.Prev
@@ -493,9 +544,26 @@ export default function DepartmentsPage() {
         </Card>
 
         {/* Create Modal */}
-        <Modal show={showModal} onHide={handleClose} size="lg">
-          <Modal.Header closeButton className="bg-secondary bg-opacity-10">
-            <h5 className="modal-title fw-bold">Create New Department</h5>
+        <Modal show={showModal} onHide={handleClose} size="xl">
+          <Modal.Header
+            closeButton
+            className="border-0 pb-0 pt-4 px-4"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+              <div
+                className="icon-wrapper bg-success me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <PlusCircle size={24} className="text-white" />
+              </div>
+              <div>
+                Create New Department
+                <div className="text-muted fw-normal small">
+                  Add a new department
+                </div>
+              </div>
+            </h5>
           </Modal.Header>
           <Form onSubmit={handleCreate}>
             <Modal.Body>
@@ -544,10 +612,25 @@ export default function DepartmentsPage() {
         </Modal>
 
         {/* Edit Modal */}
-        <Modal show={editModal} onHide={handleEditClose} size="lg">
-          <Modal.Header closeButton className="bg-secondary bg-opacity-10">
-            <h5 className="modal-title fw-bold">
-              Edit {selectedDepartment?.name}
+        <Modal show={editModal} onHide={handleEditClose} size="xl">
+          <Modal.Header
+            closeButton
+            className="border-0 pb-0 pt-4 px-4"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+              <div
+                className="icon-wrapper bg-success me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <PencilSquare size={24} className="text-white" />
+              </div>
+              <div>
+                Edit {selectedDepartment?.name}
+                <div className="text-muted fw-normal small">
+                  Update department information
+                </div>
+              </div>
             </h5>
           </Modal.Header>
           <Form onSubmit={handleEditData}>
@@ -597,10 +680,27 @@ export default function DepartmentsPage() {
         </Modal>
 
         {/* Delete Confirmation Modal */}
-        <Modal show={deleteModal} onHide={handleDeleteClose}>
-          <div className="modal-header text-danger">
-            <h5 className="modal-title fw-bold">Confirm Delete</h5>
-          </div>
+        <Modal show={deleteModal} onHide={handleDeleteClose} size="xl">
+          <Modal.Header
+            closeButton
+            className="border-0 pb-0 pt-4 px-4"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+              <div
+                className="icon-wrapper bg-danger me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <Trash size={24} className="text-white" />
+              </div>
+              <div>
+                Delete Department
+                <div className="text-muted fw-normal small">
+                  This action cannot be undone
+                </div>
+              </div>
+            </h5>
+          </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleDeleteConfirm}>
               <div className="mb-3 rounded-3 p-3 border">
