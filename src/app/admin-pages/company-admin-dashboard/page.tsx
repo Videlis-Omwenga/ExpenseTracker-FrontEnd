@@ -2262,37 +2262,90 @@ export default function AdminDashboard() {
             {/* Regions Tab */}
             {activeTab === "regions" && (
               <>
-                {/* Search and Filter Section */}
-                <Card className="shadow-sm border-0 mb-4 bg-gradient-light">
-                  <Card.Body className="p-4">
-                    <div className="row g-3 align-items-center">
-                      {/* Search Input */}
-                      <div className="col-md-8">
-                        <div className="modern-search-input">
-                          <InputGroup size="lg">
-                            <InputGroup.Text className="bg-white border-warning">
-                              <Search className="text-warning" />
-                            </InputGroup.Text>
-                            <FormControl
-                              placeholder="Search regions by name..."
-                              value={regionSearchTerm}
-                              onChange={(e) => setRegionSearchTerm(e.target.value)}
-                              className="border-warning shadow-none"
-                              style={{
-                                fontSize: "1rem",
-                                padding: "0.75rem",
-                              }}
-                            />
-                          </InputGroup>
+                <div className="mb-4">
+                  <div className="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                      <div className="d-flex align-items-center mb-2">
+                        <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
+                          <ShieldLock className="text-warning" size={24} />
+                        </div>
+                        <div>
+                          <h2 className="fw-bold text-dark mb-0">
+                            Region Management
+                          </h2>
+                          <p className="text-muted mb-0 small">
+                            Manage company regions and locations
+                          </p>
                         </div>
                       </div>
+                    </div>
+                    <div className="d-flex align-items-center gap-3">
+                      <Breadcrumb className="bg-light rounded-pill px-3 py-2 mb-0 small">
+                        <Breadcrumb.Item
+                          href="#"
+                          onClick={() => handleTabChange("dashboard")}
+                          className="text-decoration-none"
+                        >
+                          Dashboard
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Item
+                          active
+                          className="text-warning fw-semibold"
+                        >
+                          Regions
+                        </Breadcrumb.Item>
+                      </Breadcrumb>
+                    </div>
+                  </div>
+                  <hr className="border-2 border-warning opacity-25 mb-4" />
+                </div>
 
-                      {/* Result Counter */}
-                      <div className="col-md-4 text-end">
-                        <Badge bg="warning" className="px-4 py-3 rounded-pill fw-semibold fs-6 shadow-sm">
-                          <ShieldLock size={18} className="me-2" />
-                          {filteredRegions.length} region(s) found
-                        </Badge>
+                <Card className="shadow-lg border-0 mb-4 modern-search-card">
+                  <Card.Body className="p-4">
+                    {/* Search and Add Region Row */}
+                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+                      <div className="search-container">
+                        <InputGroup
+                          style={{ width: "350px" }}
+                          className="modern-search-group"
+                        >
+                          <InputGroup.Text className="bg-white border-end-0">
+                            <Search className="text-primary" />
+                          </InputGroup.Text>
+                          <FormControl
+                            placeholder="Search regions by name..."
+                            value={regionSearchTerm}
+                            onChange={(e) => setRegionSearchTerm(e.target.value)}
+                            className="border-start-0 ps-0"
+                          />
+                        </InputGroup>
+                      </div>
+                      <Button
+                        variant="warning"
+                        className="px-4 py-2 rounded-pill fw-medium shadow-sm"
+                        onClick={() => setShowCreateRegionModal(true)}
+                      >
+                        <ShieldLock size={16} className="me-2" />
+                        Add Region
+                      </Button>
+                    </div>
+
+                    {/* Filters Row */}
+                    <div className="bg-light rounded-4 p-3 border-0">
+                      <div className="d-flex flex-wrap gap-3 align-items-center">
+                        <div className="d-flex align-items-center gap-2">
+                          <div className="bg-warning bg-opacity-10 p-2 rounded-circle">
+                            <Filter className="text-warning" size={14} />
+                          </div>
+                          <span className="text-dark fw-bold small text-uppercase letter-spacing">Filters</span>
+                        </div>
+
+                        {/* No filters for regions, but keep the structure */}
+                        <div className="d-flex align-items-center gap-2 ms-auto">
+                          <Badge bg="info" className="px-3 py-2 rounded-pill fw-semibold">
+                            📊 {filteredRegions.length} regions
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                   </Card.Body>
@@ -2316,19 +2369,11 @@ export default function AdminDashboard() {
                       </div>
                       <div className="d-flex align-items-center gap-2">
                         <Badge
-                          bg="warning"
+                          bg="primary"
                           className="px-3 py-2 rounded-pill fw-medium"
                         >
-                          {filteredRegions.length} Regions
+                          {regions.length} Regions
                         </Badge>
-                        <Button
-                          variant="warning"
-                          className="px-4 py-2 rounded-pill fw-medium shadow-sm"
-                          onClick={() => setShowCreateRegionModal(true)}
-                        >
-                          <ShieldLock size={16} className="me-2" />
-                          Add Region
-                        </Button>
                       </div>
                     </div>
                   </Card.Header>
