@@ -1945,11 +1945,6 @@ export default function AdminDashboard() {
                                 </span>
                               </td>
                               <td className="py-3 px-4">
-                                <Badge bg="warning" className="px-3 py-1 rounded-pill fw-medium">
-                                  {role.region?.name || regions.find(r => r.id === role.regionId)?.name || "No Region"}
-                                </Badge>
-                              </td>
-                              <td className="py-3 px-4">
                                 <span className="fw-medium text-dark">
                                   {role.institution?.name || "N/A"}
                                 </span>
