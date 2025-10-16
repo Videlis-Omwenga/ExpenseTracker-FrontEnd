@@ -6,13 +6,20 @@ import { PersonPlus, Briefcase } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 
+interface Region {
+  id: number;
+  name: string;
+}
+
 interface AdminCreateUserModalProps {
   roles: any[];
+  regions?: Region[];
   onSuccess?: () => void;
 }
 
 export default function AdminCreateUserModal({
   roles,
+  regions = [],
   onSuccess,
 }: AdminCreateUserModalProps) {
   const [show, setShow] = useState(false);
@@ -21,6 +28,7 @@ export default function AdminCreateUserModal({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
+  const [regionId, setRegionId] = useState<number | null>(null);
   const [institution, setInstitution] = useState("");
   const [phone, setPhone] = useState("");
   const handleClose = () => setShow(false);
@@ -34,6 +42,11 @@ export default function AdminCreateUserModal({
       return;
     }
 
+    if (!regionId) {
+      toast.error("Please select a region for the user.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -42,6 +55,7 @@ export default function AdminCreateUserModal({
         lastName,
         email,
         role: selectedRoles,
+        regionId,
         institution: Number(institution),
         phone,
       };
@@ -65,6 +79,7 @@ export default function AdminCreateUserModal({
         setLastName("");
         setEmail("");
         setSelectedRoles([]);
+        setRegionId(null);
         setPhone("");
         setInstitution("");
         setShow(false);
@@ -196,6 +211,29 @@ export default function AdminCreateUserModal({
                       />
                       <Form.Text className="text-muted">
                         Please enter the user's phone number. 25471234567
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                  <Col md={12}>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="fw-semibold text-dark">
+                        Region <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Select
+                        value={regionId || ""}
+                        onChange={(e) => setRegionId(Number(e.target.value))}
+                        required
+                        className="rounded-3 py-2 px-3 modern-input"
+                      >
+                        <option value="">Select Region</option>
+                        {regions.map((region) => (
+                          <option key={region.id} value={region.id}>
+                            {region.name}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <Form.Text className="text-muted">
+                        Please select the user's region.
                       </Form.Text>
                     </Form.Group>
                   </Col>

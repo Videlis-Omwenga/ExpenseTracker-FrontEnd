@@ -213,6 +213,17 @@ interface Role {
     name: string;
   } | null;
   institutionId: number | null;
+  regionId?: number | null;
+  region?: {
+    id: number;
+    name: string;
+  } | null;
+  pageId?: number | null;
+  page?: {
+    id: number;
+    name: string;
+    description?: string;
+  } | null;
   users?: UserRole[] | number; // Can be array of UserRole or count
   permissions?: number; // Permission count for display
   WorkflowStep?: WorkflowStep[];
@@ -304,6 +315,7 @@ export default function AdminDashboard() {
     email: "",
     phone: "",
     status: "",
+    regionId: 0,
     roles: [] as number[],
   });
   const [selectedRole, setSelectedRole] = useState<any>(null);
@@ -314,6 +326,7 @@ export default function AdminDashboard() {
     role: "",
     description: "",
     regionId: 0,
+    pageId: 0,
   });
   const [isUpdatingUser, setIsUpdatingUser] = useState(false);
   const [isDeletingUser, setIsDeletingUser] = useState(false);
@@ -330,6 +343,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
+  const [pages, setPages] = useState<any[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
   const [showCreateRegionModal, setShowCreateRegionModal] = useState(false);
   const [showEditRegionModal, setShowEditRegionModal] = useState(false);
@@ -515,6 +529,7 @@ export default function AdminDashboard() {
       email: user.email || "",
       phone: user.phone || "",
       status: user.status || "",
+      regionId: user.regionId || 0,
       roles: user.roles?.map((r: any) => r.roleId) || [],
     });
     setShowEditUserModal(true);
@@ -597,6 +612,7 @@ export default function AdminDashboard() {
       role: role.name || "",
       description: role.description || "",
       regionId: role.regionId || 0,
+      pageId: role.pageId || 0,
     });
     setShowEditRoleModal(true);
   };
@@ -791,8 +807,33 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchPages = async () => {
+    try {
+      const response = await fetch(`${BASE_API_URL}/company-admin/get-pages`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "expenseTrackerToken"
+          )}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setPages(data);
+      } else {
+        toast.error(data.message || "Failed to fetch pages");
+      }
+    } catch (error) {
+      toast.error(`Failed to fetch pages: ${error}`);
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    fetchPages();
   }, []);
 
   // Filter data based on search term and filters
@@ -1364,6 +1405,7 @@ export default function AdminDashboard() {
                       </div>
                       <AdminCreateUserModal
                         roles={roles}
+                        regions={regions}
                         onSuccess={() => {
                           fetchData();
                           setSearchTerm("");
@@ -1790,6 +1832,7 @@ export default function AdminDashboard() {
                       </div>
                       <RoleCreationModal
                         regions={regions}
+                        pages={pages}
                         onSuccess={() => {
                           fetchData();
                         }}
@@ -1900,6 +1943,9 @@ export default function AdminDashboard() {
                               Region
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Page
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
                               Institution
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
@@ -1943,6 +1989,16 @@ export default function AdminDashboard() {
                                     : "No description"
                                   }
                                 </span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <Badge bg="warning" className="px-3 py-1 rounded-pill fw-medium">
+                                  {role.region?.name || regions.find(r => r.id === role.regionId)?.name || "No Region"}
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-4">
+                                <Badge bg="info" className="px-3 py-1 rounded-pill fw-medium">
+                                  {role.page?.name || pages.find(p => p.id === role.pageId)?.name || "No Page"}
+                                </Badge>
                               </td>
                               <td className="py-3 px-4">
                                 <span className="fw-medium text-dark">
@@ -2830,18 +2886,25 @@ export default function AdminDashboard() {
         onHide={() => setShowEditUserModal(false)}
         size="xl"
       >
-        <Modal.Header closeButton className="bg-light border-0">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
-            <div className="bg-primary bg-opacity-15 p-3 rounded-circle">
-              <Pencil size={24} className="text-primary" />
+        <Modal.Header
+          closeButton
+          className="border-0 pb-0 pt-4 px-4"
+          style={{ backgroundColor: "#f8f9fa" }}
+        >
+          <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+            <div
+              className="icon-wrapper bg-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
+              style={{ width: "48px", height: "48px" }}
+            >
+              <Pencil size={24} className="text-white" />
             </div>
             <div>
-              <h5 className="mb-1 fw-bold">Edit User</h5>
-              <small className="text-muted">
+              Edit User
+              <div className="text-muted fw-normal small">
                 Update user information and permissions
-              </small>
+              </div>
             </div>
-          </Modal.Title>
+          </h5>
         </Modal.Header>
         <Modal.Body className="p-4">
           <Form>
@@ -2973,6 +3036,35 @@ export default function AdminDashboard() {
               <Col md={6}>
                 <Form.Group>
                   <Form.Label className="fw-semibold text-muted small mb-2">
+                    Region <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Select
+                    value={editUserFormData.regionId || ""}
+                    onChange={(e) =>
+                      setEditUserFormData({
+                        ...editUserFormData,
+                        regionId: Number(e.target.value),
+                      })
+                    }
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    <option value="">Select Region</option>
+                    {regions.map((region) => (
+                      <option key={region.id} value={region.id}>
+                        {region.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
                     Roles <span className="text-danger">*</span>
                   </Form.Label>
                   <Form.Select
@@ -3049,18 +3141,25 @@ export default function AdminDashboard() {
         onHide={() => setShowDeleteUserModal(false)}
         size="xl"
       >
-        <Modal.Header closeButton className="bg-danger bg-opacity-10 border-0">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
-            <div className="bg-danger bg-opacity-15 p-3 rounded-circle">
-              <Trash size={24} className="text-danger" />
+        <Modal.Header
+          closeButton
+          className="border-0 pb-0 pt-4 px-4"
+          style={{ backgroundColor: "#f8f9fa" }}
+        >
+          <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+            <div
+              className="icon-wrapper bg-danger me-3 rounded-circle d-flex align-items-center justify-content-center"
+              style={{ width: "48px", height: "48px" }}
+            >
+              <Trash size={24} className="text-white" />
             </div>
             <div>
-              <h5 className="mb-1 fw-bold text-danger">Delete User</h5>
-              <small className="text-muted">
+              Delete User
+              <div className="text-muted fw-normal small">
                 This action cannot be undone
-              </small>
+              </div>
             </div>
-          </Modal.Title>
+          </h5>
         </Modal.Header>
         <Modal.Body className="p-4">
           <div className="alert alert-danger d-flex align-items-start gap-3 border-0 shadow-sm">
@@ -3175,18 +3274,25 @@ export default function AdminDashboard() {
         onHide={() => setShowEditRoleModal(false)}
         size="xl"
       >
-        <Modal.Header closeButton className="bg-light border-0">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
-            <div className="bg-success bg-opacity-15 p-3 rounded-circle">
-              <Gear size={24} className="text-success" />
+        <Modal.Header
+          closeButton
+          className="border-0 pb-0 pt-4 px-4"
+          style={{ backgroundColor: "#f8f9fa" }}
+        >
+          <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+            <div
+              className="icon-wrapper bg-success me-3 rounded-circle d-flex align-items-center justify-content-center"
+              style={{ width: "48px", height: "48px" }}
+            >
+              <Gear size={24} className="text-white" />
             </div>
             <div>
-              <h5 className="mb-1 fw-bold">Edit Role</h5>
-              <small className="text-muted">
+              Edit Role
+              <div className="text-muted fw-normal small">
                 Update role information and permissions
-              </small>
+              </div>
             </div>
-          </Modal.Title>
+          </h5>
         </Modal.Header>
         <Modal.Body className="p-4">
           <Form>
@@ -3238,6 +3344,35 @@ export default function AdminDashboard() {
                     {regions.map((region) => (
                       <option key={region.id} value={region.id}>
                         {region.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+
+              <Col md={12}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
+                    Page <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Select
+                    value={editRoleFormData.pageId}
+                    onChange={(e) =>
+                      setEditRoleFormData({
+                        ...editRoleFormData,
+                        pageId: Number(e.target.value),
+                      })
+                    }
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    <option value="">Select Page</option>
+                    {pages.map((page) => (
+                      <option key={page.id} value={page.id}>
+                        {page.name}
                       </option>
                     ))}
                   </Form.Select>
@@ -3311,18 +3446,25 @@ export default function AdminDashboard() {
         onHide={() => setShowDeleteRoleModal(false)}
         size="xl"
       >
-        <Modal.Header closeButton className="bg-danger bg-opacity-10 border-0">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
-            <div className="bg-danger bg-opacity-15 p-3 rounded-circle">
-              <Trash size={24} className="text-danger" />
+        <Modal.Header
+          closeButton
+          className="border-0 pb-0 pt-4 px-4"
+          style={{ backgroundColor: "#f8f9fa" }}
+        >
+          <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+            <div
+              className="icon-wrapper bg-danger me-3 rounded-circle d-flex align-items-center justify-content-center"
+              style={{ width: "48px", height: "48px" }}
+            >
+              <Trash size={24} className="text-white" />
             </div>
             <div>
-              <h5 className="mb-1 fw-bold text-danger">Delete Role</h5>
-              <small className="text-muted">
+              Delete Role
+              <div className="text-muted fw-normal small">
                 This action cannot be undone
-              </small>
+              </div>
             </div>
-          </Modal.Title>
+          </h5>
         </Modal.Header>
         <Modal.Body className="p-4">
           <div className="alert alert-danger d-flex align-items-start gap-3 border-0 shadow-sm">
@@ -3424,18 +3566,25 @@ export default function AdminDashboard() {
         }}
         size="xl"
       >
-        <Modal.Header closeButton className="bg-light border-0">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
-            <div className="bg-warning bg-opacity-15 p-3 rounded-circle">
-              <ShieldLock size={24} className="text-warning" />
+        <Modal.Header
+          closeButton
+          className="border-0 pb-0 pt-4 px-4"
+          style={{ backgroundColor: "#f8f9fa" }}
+        >
+          <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+            <div
+              className="icon-wrapper bg-warning me-3 rounded-circle d-flex align-items-center justify-content-center"
+              style={{ width: "48px", height: "48px" }}
+            >
+              <ShieldLock size={24} className="text-white" />
             </div>
             <div>
-              <h5 className="mb-1 fw-bold">Create New Region</h5>
-              <small className="text-muted">
+              Create New Region
+              <div className="text-muted fw-normal small">
                 Add a new region to your company
-              </small>
+              </div>
             </div>
-          </Modal.Title>
+          </h5>
         </Modal.Header>
         <Modal.Body className="p-4">
           <Form>
@@ -3512,18 +3661,25 @@ export default function AdminDashboard() {
         onHide={() => setShowEditRegionModal(false)}
         size="xl"
       >
-        <Modal.Header closeButton className="bg-light border-0">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
-            <div className="bg-warning bg-opacity-15 p-3 rounded-circle">
-              <ShieldLock size={24} className="text-warning" />
+        <Modal.Header
+          closeButton
+          className="border-0 pb-0 pt-4 px-4"
+          style={{ backgroundColor: "#f8f9fa" }}
+        >
+          <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+            <div
+              className="icon-wrapper bg-warning me-3 rounded-circle d-flex align-items-center justify-content-center"
+              style={{ width: "48px", height: "48px" }}
+            >
+              <ShieldLock size={24} className="text-white" />
             </div>
             <div>
-              <h5 className="mb-1 fw-bold">Edit Region</h5>
-              <small className="text-muted">
+              Edit Region
+              <div className="text-muted fw-normal small">
                 Update region information
-              </small>
+              </div>
             </div>
-          </Modal.Title>
+          </h5>
         </Modal.Header>
         <Modal.Body className="p-4">
           <Form>
@@ -3594,18 +3750,25 @@ export default function AdminDashboard() {
         onHide={() => setShowDeleteRegionModal(false)}
         size="xl"
       >
-        <Modal.Header closeButton className="bg-danger bg-opacity-10 border-0">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
-            <div className="bg-danger bg-opacity-15 p-3 rounded-circle">
-              <Trash size={24} className="text-danger" />
+        <Modal.Header
+          closeButton
+          className="border-0 pb-0 pt-4 px-4"
+          style={{ backgroundColor: "#f8f9fa" }}
+        >
+          <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+            <div
+              className="icon-wrapper bg-danger me-3 rounded-circle d-flex align-items-center justify-content-center"
+              style={{ width: "48px", height: "48px" }}
+            >
+              <Trash size={24} className="text-white" />
             </div>
             <div>
-              <h5 className="mb-1 fw-bold text-danger">Delete Region</h5>
-              <small className="text-muted">
+              Delete Region
+              <div className="text-muted fw-normal small">
                 This action cannot be undone
-              </small>
+              </div>
             </div>
-          </Modal.Title>
+          </h5>
         </Modal.Header>
         <Modal.Body className="p-4">
           <div className="alert alert-danger d-flex align-items-start gap-3 border-0 shadow-sm">

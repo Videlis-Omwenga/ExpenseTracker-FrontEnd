@@ -11,17 +11,25 @@ type Region = {
   name: string;
 };
 
+type Page = {
+  id: number;
+  name: string;
+  description?: string;
+};
+
 type RoleCreationModalProps = {
   onSuccess?: () => void;
   regions?: Region[];
+  pages?: Page[];
 };
 
-export default function RoleCreationModal({ onSuccess, regions = [] }: RoleCreationModalProps) {
+export default function RoleCreationModal({ onSuccess, regions = [], pages = [] }: RoleCreationModalProps) {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState("");
   const [description, setDescription] = useState("");
   const [regionId, setRegionId] = useState<number | null>(null);
+  const [pageId, setPageId] = useState<number | null>(null);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -34,6 +42,11 @@ export default function RoleCreationModal({ onSuccess, regions = [] }: RoleCreat
       return;
     }
 
+    if (!pageId) {
+      toast.error("Please select a page");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -41,6 +54,7 @@ export default function RoleCreationModal({ onSuccess, regions = [] }: RoleCreat
         role,
         description,
         regionId,
+        pageId,
       };
 
       const response = await fetch(`${BASE_API_URL}/company-admin/create-role`, {
@@ -63,6 +77,7 @@ export default function RoleCreationModal({ onSuccess, regions = [] }: RoleCreat
         setRole("");
         setDescription("");
         setRegionId(null);
+        setPageId(null);
         // Notify parent to refresh data
         if (onSuccess) {
           onSuccess();
@@ -165,6 +180,32 @@ export default function RoleCreationModal({ onSuccess, regions = [] }: RoleCreat
                         </Form.Select>
                         <Form.Text className="text-muted">
                           Assign this role to a specific region.
+                        </Form.Text>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Row>
+                    <Col md={12}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-semibold text-dark">
+                          Page <span className="text-danger">*</span>
+                        </Form.Label>
+                        <Form.Select
+                          value={pageId || ""}
+                          onChange={(e) => setPageId(Number(e.target.value))}
+                          required
+                          className="rounded-3 py-2 px-3 modern-input"
+                        >
+                          <option value="">Select Page</option>
+                          {pages.map((page) => (
+                            <option key={page.id} value={page.id}>
+                              {page.name}
+                            </option>
+                          ))}
+                        </Form.Select>
+                        <Form.Text className="text-muted">
+                          Assign this role to a specific page.
                         </Form.Text>
                       </Form.Group>
                     </Col>

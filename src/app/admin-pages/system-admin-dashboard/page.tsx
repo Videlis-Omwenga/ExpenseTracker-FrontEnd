@@ -4448,7 +4448,7 @@ export default function SuperAdminDashboard() {
             className="border-0 pb-0 pt-4 px-4"
             style={{ backgroundColor: "#f8f9fa" }}
           >
-            <h6 className="fw-bold text-dark d-flex align-items-center">
+            <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
               <div
                 className="icon-wrapper bg-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
                 style={{ width: "48px", height: "48px" }}
@@ -4456,12 +4456,12 @@ export default function SuperAdminDashboard() {
                 <PersonPlus size={24} className="text-white" />
               </div>
               <div>
-                User details
+                User Details
                 <div className="text-muted fw-normal small">
-                  View user details
+                  View user information and details
                 </div>
               </div>
-            </h6>
+            </h5>
           </Modal.Header>
           <Modal.Body className="p-0 bg-light">
             {selectedUser && (
@@ -4732,16 +4732,25 @@ export default function SuperAdminDashboard() {
           size="xl"
           className="edit-user-modal"
         >
-          <Modal.Header className="bg-success text-white border-0 position-relative overflow-hidden">
-            <h5 className="fw-bold d-flex align-items-center gap-2">
-              Edit User
+          <Modal.Header
+            closeButton
+            className="border-0 pb-0 pt-4 px-4"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+              <div
+                className="icon-wrapper bg-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <Pencil size={24} className="text-white" />
+              </div>
+              <div>
+                Edit User
+                <div className="text-muted fw-normal small">
+                  Update user information and permissions
+                </div>
+              </div>
             </h5>
-            <button
-              type="button"
-              className="btn-close btn-close-white position-absolute"
-              style={{ top: "15px", right: "15px" }}
-              onClick={() => setShowEditModal(false)}
-            ></button>
           </Modal.Header>
           <Modal.Body className="p-4 bg-light">
             <div className="mb-4">
@@ -4994,16 +5003,25 @@ export default function SuperAdminDashboard() {
           size="xl"
           className="delete-user-modal"
         >
-          <Modal.Header className="bg-danger text-white border-0 position-relative overflow-hidden">
-            <h5 className="fw-bold d-flex align-items-center gap-2">
-              Delete User
+          <Modal.Header
+            closeButton
+            className="border-0 pb-0 pt-4 px-4"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+              <div
+                className="icon-wrapper bg-danger me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <Trash size={24} className="text-white" />
+              </div>
+              <div>
+                Delete User
+                <div className="text-muted fw-normal small">
+                  This action cannot be undone
+                </div>
+              </div>
             </h5>
-            <button
-              type="button"
-              className="btn-close btn-close-white position-absolute"
-              style={{ top: "15px", right: "15px" }}
-              onClick={() => setShowDeleteModal(false)}
-            ></button>
           </Modal.Header>
           <Modal.Body className="p-4 bg-light">
             {selectedUser && (
@@ -5451,17 +5469,25 @@ export default function SuperAdminDashboard() {
           size="xl"
           className="delete-institution-modal"
         >
-          <Modal.Header className="bg-danger bg-gradient text-white border-0 position-relative overflow-hidden">
-            <Modal.Title className="fw-bold d-flex align-items-center gap-2">
-              <Trash size={24} className="text-white" />
-              Delete Institution
-            </Modal.Title>
-            <button
-              type="button"
-              className="btn-close btn-close-white position-absolute"
-              style={{ top: "15px", right: "15px" }}
-              onClick={() => setShowDeleteInstitutionModal(false)}
-            ></button>
+          <Modal.Header
+            closeButton
+            className="border-0 pb-0 pt-4 px-4"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+              <div
+                className="icon-wrapper bg-danger me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <Trash size={24} className="text-white" />
+              </div>
+              <div>
+                Delete Institution
+                <div className="text-muted fw-normal small">
+                  This action cannot be undone
+                </div>
+              </div>
+            </h5>
           </Modal.Header>
           <Modal.Body className="p-4 bg-light">
             {selectedInstitution && (
@@ -5977,16 +6003,25 @@ export default function SuperAdminDashboard() {
           onHide={() => setShowViewRoleModal(false)}
           size="xl"
         >
-          <Modal.Header closeButton className="bg-light border-0">
-            <Modal.Title className="fw-bold d-flex align-items-center gap-3">
-              <div className="bg-info bg-opacity-15 p-3 rounded-circle">
-                <ShieldLock size={24} className="text-info" />
+          <Modal.Header
+            closeButton
+            className="border-0 pb-0 pt-4 px-4"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+              <div
+                className="icon-wrapper bg-success me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <ShieldLock size={24} className="text-white" />
               </div>
               <div>
-                <h5 className="mb-1 fw-bold">Role Details</h5>
-                <small className="text-muted">Complete role information</small>
+                Role Details
+                <div className="text-muted fw-normal small">
+                  Complete role information
+                </div>
               </div>
-            </Modal.Title>
+            </h5>
           </Modal.Header>
           <Modal.Body className="p-4">
             {selectedRole && (
@@ -6071,16 +6106,25 @@ export default function SuperAdminDashboard() {
           onHide={() => setShowEditRoleModal(false)}
           size="xl"
         >
-          <Modal.Header closeButton className="bg-light border-0">
-            <Modal.Title className="fw-bold d-flex align-items-center gap-3">
-              <div className="bg-primary bg-opacity-15 p-3 rounded-circle">
-                <Pencil size={24} className="text-primary" />
+          <Modal.Header
+            closeButton
+            className="border-0 pb-0 pt-4 px-4"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+              <div
+                className="icon-wrapper bg-success me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <Pencil size={24} className="text-white" />
               </div>
               <div>
-                <h5 className="mb-1 fw-bold">Edit Role</h5>
-                <small className="text-muted">Update role information</small>
+                Edit Role
+                <div className="text-muted fw-normal small">
+                  Update role information
+                </div>
               </div>
-            </Modal.Title>
+            </h5>
           </Modal.Header>
           <Form
             onSubmit={(e) => {
@@ -6171,16 +6215,25 @@ export default function SuperAdminDashboard() {
           onHide={() => setShowDeleteRoleModal(false)}
           size="xl"
         >
-          <Modal.Header closeButton className="bg-light border-0">
-            <Modal.Title className="fw-bold d-flex align-items-center gap-3">
-              <div className="bg-danger bg-opacity-15 p-3 rounded-circle">
-                <Trash size={24} className="text-danger" />
+          <Modal.Header
+            closeButton
+            className="border-0 pb-0 pt-4 px-4"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+              <div
+                className="icon-wrapper bg-danger me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <Trash size={24} className="text-white" />
               </div>
               <div>
-                <h5 className="mb-1 fw-bold">Delete Role</h5>
-                <small className="text-muted">Confirm role deletion</small>
+                Delete Role
+                <div className="text-muted fw-normal small">
+                  This action cannot be undone
+                </div>
               </div>
-            </Modal.Title>
+            </h5>
           </Modal.Header>
           <Modal.Body className="p-4">
             {selectedRole && (

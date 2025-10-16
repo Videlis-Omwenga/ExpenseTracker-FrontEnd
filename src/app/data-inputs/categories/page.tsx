@@ -372,45 +372,69 @@ export default function CategoriesPage() {
   return (
     <AuthProvider>
       <TopNavbar />
-      <Container fluid className="py-4 small">
-        <Alert
-          variant="info"
-          className="d-flex justify-content-between align-items-center py-3"
-        >
-          <div>
-            <h5 className="mb-0 d-flex align-items-center">
-              <InfoCircle className="me-2" size={20} />
-              Category Management
-            </h5>
-            <small className="opacity-75">
-              Manage expense categories and their properties
-            </small>
+      <Container fluid className="py-4">
+        {/* Modern Header */}
+        <div className="mb-4">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <div className="d-flex align-items-center mb-2">
+                <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                  <InfoCircle className="text-primary" size={24} />
+                </div>
+                <div>
+                  <h2 className="fw-bold text-dark mb-0">
+                    Category Management
+                  </h2>
+                  <p className="text-muted mb-0 small">
+                    Manage expense categories and their properties
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-          <Button variant="primary" size="sm" onClick={() => handleShow()}>
-            <PlusCircle className="me-1" /> Add Category
-          </Button>
-        </Alert>
+          <hr className="border-2 border-primary opacity-25 mb-4" />
+        </div>
 
-        <Card className="shadow-sm rounded-3">
-          <Card.Body>
-            <Row className="mb-3">
-              <Col md={6}>
-                <InputGroup>
-                  <InputGroup.Text>
-                    <Search />
+        {/* Search and Actions Card */}
+        <Card className="shadow-lg border-0 mb-4 modern-search-card">
+          <Card.Body className="p-4">
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+              <div className="search-container">
+                <InputGroup style={{ width: "350px" }} className="modern-search-group">
+                  <InputGroup.Text className="bg-white border-end-0">
+                    <Search className="text-primary" />
                   </InputGroup.Text>
                   <Form.Control
-                    type="text"
-                    placeholder="Search categories..."
+                    placeholder="Search categories by name..."
                     value={searchTerm}
                     onChange={handleSearch}
+                    className="border-start-0 ps-0"
                   />
                 </InputGroup>
-              </Col>
-              <Col md={6} className="d-flex justify-content-end">
-                <Dropdown className="me-2">
-                  <Dropdown.Toggle variant="outline-secondary" size="sm">
-                    <Filter className="me-1" />
+              </div>
+              <Button
+                variant="primary"
+                onClick={() => handleShow()}
+                className="px-4 py-2 fw-semibold"
+              >
+                <PlusCircle size={16} className="me-2" />
+                Add Category
+              </Button>
+            </div>
+
+            {/* Filters Row */}
+            <div className="bg-light rounded-4 p-3 border-0">
+              <div className="d-flex flex-wrap gap-3 align-items-center">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="bg-primary bg-opacity-10 p-2 rounded-circle">
+                    <Filter className="text-primary" size={14} />
+                  </div>
+                  <span className="text-dark fw-bold small text-uppercase">Filters</span>
+                </div>
+
+                <Dropdown>
+                  <Dropdown.Toggle variant="outline-primary" size="sm">
+                    <Filter className="me-1" size={14} />
                     {activeFilter === "all"
                       ? "All Status"
                       : activeFilter === "active"
@@ -429,9 +453,10 @@ export default function CategoriesPage() {
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
+
                 <Dropdown>
-                  <Dropdown.Toggle variant="outline-secondary" size="sm">
-                    <SortAlphaDown className="me-1" /> Sort
+                  <Dropdown.Toggle variant="outline-primary" size="sm">
+                    <SortAlphaDown className="me-1" size={14} /> Sort By
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
                     <Dropdown.Item onClick={() => handleSort("name")}>
@@ -445,39 +470,55 @@ export default function CategoriesPage() {
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
-              </Col>
-            </Row>
+
+                <div className="d-flex align-items-center gap-2 ms-auto">
+                  <Badge bg="info" className="px-3 py-2 rounded-pill fw-semibold">
+                    📊 {filteredCategories.length} categories
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </Card.Body>
+        </Card>
+
+        {/* Table Card */}
+        <Card className="shadow-lg border-0 modern-table-card">
+          <Card.Body className="p-0">
 
             <div className="table-responsive">
-              <Table striped bordered hover className="align-middle">
-                <thead className="table-light">
+              <Table hover className="align-middle mb-0">
+                <thead className="bg-light border-0">
                   <tr>
-                    <th>#I</th>
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th>Advances</th>
-                    <th>Accounting</th>
-                    <th>Any User</th>
-                    <th>Budget Exempted</th>
-                    <th>Created Date</th>
-                    <th>Updated Date</th>
-                    <th>Expenditures</th>
-                    <th>Budgets</th>
-                    <th>Advances</th>
-                    <th>Actions</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">#</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Name</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Status</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">Advances</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">Accounting</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">Any User</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">Budget Exempt</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Created</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Updated</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">Expenses</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">Budgets</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">Advances</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentItems.length > 0 ? (
-                    currentItems.map((cat) => (
+                    currentItems.map((cat, idx) => (
                       <tr
                         key={cat.id}
-                        className={!cat.isActive ? "text-muted" : ""}
+                        className={`border-bottom ${!cat.isActive ? "text-muted" : ""}`}
                       >
-                        <td>{cat.id}</td>
-                        <td>
+                        <td className="py-3 px-4">
+                          <span className="fw-semibold text-primary">
+                            {indexOfFirstItem + idx + 1}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
                           <div className="d-flex flex-column">
-                            <span>{cat.name}</span>
+                            <span className="fw-semibold text-dark">{cat.name}</span>
                             <OverlayTrigger
                               placement="top"
                               overlay={<Tooltip>{cat.description}</Tooltip>}
@@ -491,94 +532,94 @@ export default function CategoriesPage() {
                             </OverlayTrigger>
                           </div>
                         </td>
-                        <td>
+                        <td className="py-3 px-4">
                           {cat.isActive ? (
                             <Badge
                               bg="success"
-                              className="d-flex align-items-center justify-content-center"
+                              className="px-3 py-1 rounded-pill fw-medium d-inline-flex align-items-center"
                             >
-                              <CheckCircle className="me-1" /> Active
+                              <CheckCircle className="me-1" size={14} /> Active
                             </Badge>
                           ) : (
                             <Badge
                               bg="danger"
-                              className="d-flex align-items-center justify-content-center"
+                              className="px-3 py-1 rounded-pill fw-medium d-inline-flex align-items-center"
                             >
-                              <XCircle className="me-1" /> Deleted
+                              <XCircle className="me-1" size={14} /> Deleted
                             </Badge>
                           )}
                         </td>
-                        <td className="text-center">
+                        <td className="py-3 px-4 text-center">
                           {cat.canBeUsedForAdvance ? (
-                            <CheckCircle className="text-success" />
+                            <CheckCircle className="text-success" size={20} />
                           ) : (
-                            <XCircle className="text-danger" />
+                            <XCircle className="text-danger" size={20} />
                           )}
                         </td>
-                        <td className="text-center">
+                        <td className="py-3 px-4 text-center">
                           {cat.canBeUsedForAccounting ? (
-                            <CheckCircle className="text-success" />
+                            <CheckCircle className="text-success" size={20} />
                           ) : (
-                            <XCircle className="text-danger" />
+                            <XCircle className="text-danger" size={20} />
                           )}
                         </td>
-                        <td className="text-center">
+                        <td className="py-3 px-4 text-center">
                           {cat.canBeUsedByAnyUser ? (
-                            <CheckCircle className="text-success" />
+                            <CheckCircle className="text-success" size={20} />
                           ) : (
-                            <XCircle className="text-danger" />
+                            <XCircle className="text-danger" size={20} />
                           )}
                         </td>
-                        <td className="text-center">
+                        <td className="py-3 px-4 text-center">
                           {cat.exemptedFromBudgetChecks ? (
-                            <CheckCircle className="text-success" />
+                            <CheckCircle className="text-success" size={20} />
                           ) : (
-                            <XCircle className="text-danger" />
+                            <XCircle className="text-danger" size={20} />
                           )}
                         </td>
-                        <td>
+                        <td className="py-3 px-4">
                           <DateTimeDisplay date={cat.createdAt} />
                         </td>
-                        <td>
+                        <td className="py-3 px-4">
                           <DateTimeDisplay date={cat.updatedAt} />
                         </td>
-                        <td className="text-center">
-                          <Badge bg="info">{cat._count?.Expense || 0}</Badge>
+                        <td className="py-3 px-4 text-center">
+                          <Badge bg="info" className="px-3 py-1 rounded-pill">{cat._count?.Expense || 0}</Badge>
                         </td>
-                        <td className="text-center">
-                          <Badge bg="primary">{cat._count?.budgets || 0}</Badge>
+                        <td className="py-3 px-4 text-center">
+                          <Badge bg="primary" className="px-3 py-1 rounded-pill">{cat._count?.budgets || 0}</Badge>
                         </td>
-                        <td className="text-center">
-                          <Badge bg="warning" text="dark">
+                        <td className="py-3 px-4 text-center">
+                          <Badge bg="warning" text="dark" className="px-3 py-1 rounded-pill">
                             {cat._count?.advances || 0}
                           </Badge>
                         </td>
-                        <td>
-                          <div className="d-flex gap-2">
+                        <td className="py-3 px-4 text-center">
+                          <div className="d-flex justify-content-center gap-2">
                             <OverlayTrigger
                               placement="top"
-                              overlay={<Tooltip>Edit</Tooltip>}
+                              overlay={<Tooltip>Edit Category</Tooltip>}
                             >
                               <Button
                                 size="sm"
-                                className="rounded-circle shadow-lg border-0"
-                                variant="outline-primary"
+                                variant="outline-warning"
+                                className="rounded-pill px-3 py-1 fw-medium"
                                 onClick={() => handleEdit(cat.id)}
                               >
-                                <PencilSquare size={16} />
+                                <PencilSquare size={14} />
                               </Button>
                             </OverlayTrigger>
                             <OverlayTrigger
                               placement="top"
-                              overlay={<Tooltip>Delete</Tooltip>}
+                              overlay={<Tooltip>Delete Category</Tooltip>}
                             >
                               <Button
                                 size="sm"
-                                className="rounded-circle shadow-lg border-0"
                                 variant="outline-danger"
+                                className="rounded-pill px-3 py-1 fw-medium"
                                 onClick={() => handleDelete(cat.id)}
                               >
-                                <Trash size={16} />
+                                <Trash size={14} />
                               </Button>
                             </OverlayTrigger>
                           </div>
@@ -587,9 +628,12 @@ export default function CategoriesPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={10} className="text-center py-4">
-                        No categories found.{" "}
-                        {searchTerm && "Try adjusting your search."}
+                      <td colSpan={13} className="text-center py-5">
+                        <div className="text-muted">
+                          <InfoCircle size={48} className="mb-3 opacity-50" />
+                          <p className="mb-0 fw-semibold">No categories found</p>
+                          {searchTerm && <small>Try adjusting your search criteria</small>}
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -598,11 +642,11 @@ export default function CategoriesPage() {
             </div>
 
             {filteredCategories.length > 0 && (
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  Showing {indexOfFirstItem + 1} to{" "}
-                  {Math.min(indexOfLastItem, filteredCategories.length)} of{" "}
-                  {filteredCategories.length} entries
+              <div className="d-flex justify-content-between align-items-center p-4 border-top bg-light">
+                <div className="text-muted small">
+                  Showing <span className="fw-bold text-dark">{indexOfFirstItem + 1}</span> to{" "}
+                  <span className="fw-bold text-dark">{Math.min(indexOfLastItem, filteredCategories.length)}</span> of{" "}
+                  <span className="fw-bold text-dark">{filteredCategories.length}</span> entries
                 </div>
                 <Pagination size="sm" className="mb-0">
                   <Pagination.Prev
@@ -630,8 +674,25 @@ export default function CategoriesPage() {
 
         {/* Create Modal */}
         <Modal show={showModal} onHide={handleClose} size="xl">
-          <Modal.Header closeButton className="bg-secondary bg-opacity-10">
-            <h5 className="modal-title fw-bold">Create New Category</h5>
+          <Modal.Header
+            closeButton
+            className="border-0 pb-0 pt-4 px-4"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+              <div
+                className="icon-wrapper bg-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <PlusCircle size={24} className="text-white" />
+              </div>
+              <div>
+                Create New Category
+                <div className="text-muted fw-normal small">
+                  Add a new expense category
+                </div>
+              </div>
+            </h5>
           </Modal.Header>
           <Form onSubmit={handleCreate}>
             <Modal.Body>
@@ -754,9 +815,24 @@ export default function CategoriesPage() {
 
         {/* Edit Modal */}
         <Modal show={editModal} onHide={handleEditClose} size="xl">
-          <Modal.Header closeButton className="bg-secondary bg-opacity-10">
-            <h5 className="modal-title fw-bold">
-              Edit {selectedCategory?.name}
+          <Modal.Header
+            closeButton
+            className="border-0 pb-0 pt-4 px-4"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+              <div
+                className="icon-wrapper bg-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <PencilSquare size={24} className="text-white" />
+              </div>
+              <div>
+                Edit {selectedCategory?.name}
+                <div className="text-muted fw-normal small">
+                  Update category information
+                </div>
+              </div>
             </h5>
           </Modal.Header>
           <Form onSubmit={handleEditData}>
@@ -884,10 +960,27 @@ export default function CategoriesPage() {
         </Modal>
 
         {/* Delete Confirmation Modal */}
-        <Modal show={deleteModal} onHide={handleDeleteClose}>
-          <div className="modal-header text-danger">
-            <h5 className="modal-title fw-bold">Confirm Delete</h5>
-          </div>
+        <Modal show={deleteModal} onHide={handleDeleteClose} size="xl">
+          <Modal.Header
+            closeButton
+            className="border-0 pb-0 pt-4 px-4"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+              <div
+                className="icon-wrapper bg-danger me-3 rounded-circle d-flex align-items-center justify-content-center"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <Trash size={24} className="text-white" />
+              </div>
+              <div>
+                Delete Category
+                <div className="text-muted fw-normal small">
+                  This action cannot be undone
+                </div>
+              </div>
+            </h5>
+          </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleDeleteConfirm}>
               <div className="mb-3 rounded-3 p-3 border">
