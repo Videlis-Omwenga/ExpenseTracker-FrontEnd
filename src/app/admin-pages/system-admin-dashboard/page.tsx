@@ -162,7 +162,9 @@ export default function SuperAdminDashboard() {
     UsersByInstitution[]
   >([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "dashboard");
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get("tab") || "dashboard"
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [roles, setRoles] = useState<Role[]>([]);
 
@@ -2511,19 +2513,24 @@ export default function SuperAdminDashboard() {
                         <Col md={6}>
                           <div className="position-relative search-wrapper">
                             <InputGroup className="modern-search-input">
-                              <InputGroup.Text className="bg-white border-2 border-primary border-end-0 ps-4">
+                              <InputGroup.Text className="bg-white border-end-0 ps-4">
                                 <Search className="text-primary" size={18} />
                               </InputGroup.Text>
                               <FormControl
                                 placeholder="Search users by name, email, or department..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="border-2 border-primary border-start-0 ps-2 bg-white fw-medium"
-                                style={{ fontSize: "15px", paddingTop: "12px", paddingBottom: "12px" }}
+                                className="border-start-0 ps-2 bg-white fw-medium"
+                                style={{
+                                  fontSize: "15px",
+                                  paddingTop: "12px",
+                                  paddingBottom: "12px",
+                                }}
                               />
                             </InputGroup>
                             <small className="text-muted d-block mt-2 ms-1">
-                              {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''} found
+                              {filteredUsers.length} user
+                              {filteredUsers.length !== 1 ? "s" : ""} found
                             </small>
                           </div>
                         </Col>
@@ -2891,19 +2898,25 @@ export default function SuperAdminDashboard() {
                         <Col md={6}>
                           <div className="position-relative search-wrapper">
                             <InputGroup className="modern-search-input">
-                              <InputGroup.Text className="bg-white border-2 border-info border-end-0 ps-4">
+                              <InputGroup.Text className="bg-white border-end-0 ps-4">
                                 <Search className="text-info" size={18} />
                               </InputGroup.Text>
                               <FormControl
                                 placeholder="Search institutions by name, email, or country..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="border-2 border-info border-start-0 ps-2 bg-white fw-medium"
-                                style={{ fontSize: "15px", paddingTop: "12px", paddingBottom: "12px" }}
+                                className="border-start-0 ps-2 bg-white fw-medium"
+                                style={{
+                                  fontSize: "15px",
+                                  paddingTop: "12px",
+                                  paddingBottom: "12px",
+                                }}
                               />
                             </InputGroup>
                             <small className="text-muted d-block mt-2 ms-1">
-                              {filteredInstitutions.length} institution{filteredInstitutions.length !== 1 ? 's' : ''} found
+                              {filteredInstitutions.length} institution
+                              {filteredInstitutions.length !== 1 ? "s" : ""}{" "}
+                              found
                             </small>
                           </div>
                         </Col>
@@ -2955,9 +2968,8 @@ export default function SuperAdminDashboard() {
                             className="px-3 py-2 rounded-pill fw-medium"
                           >
                             {
-                              institutions.filter(
-                                (i) => i.isActive === false
-                              ).length
+                              institutions.filter((i) => i.isActive === false)
+                                .length
                             }{" "}
                             Deleted
                           </Badge>
@@ -3284,11 +3296,16 @@ export default function SuperAdminDashboard() {
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="border-2 border-secondary border-start-0 ps-2 bg-white fw-medium"
-                                style={{ fontSize: "15px", paddingTop: "12px", paddingBottom: "12px" }}
+                                style={{
+                                  fontSize: "15px",
+                                  paddingTop: "12px",
+                                  paddingBottom: "12px",
+                                }}
                               />
                             </InputGroup>
                             <small className="text-muted d-block mt-2 ms-1">
-                              {filteredRoles.length} role{filteredRoles.length !== 1 ? 's' : ''} found
+                              {filteredRoles.length} role
+                              {filteredRoles.length !== 1 ? "s" : ""} found
                             </small>
                           </div>
                         </Col>
@@ -3329,14 +3346,20 @@ export default function SuperAdminDashboard() {
                             bg="primary"
                             className="px-3 py-2 rounded-pill fw-medium"
                           >
-                            {filteredRoles.filter((r) => r.adminCreatedRole).length}{" "}
+                            {
+                              filteredRoles.filter((r) => r.adminCreatedRole)
+                                .length
+                            }{" "}
                             Admin Roles
                           </Badge>
                           <Badge
                             bg="success"
                             className="px-3 py-2 rounded-pill fw-medium"
                           >
-                            {filteredRoles.filter((r) => !r.adminCreatedRole).length}{" "}
+                            {
+                              filteredRoles.filter((r) => !r.adminCreatedRole)
+                                .length
+                            }{" "}
                             Custom Roles
                           </Badge>
                         </div>
@@ -3525,10 +3548,7 @@ export default function SuperAdminDashboard() {
                                       onClick={() => handleViewRole(role)}
                                       style={{ cursor: "pointer" }}
                                     >
-                                      <Eye
-                                        className="text-info"
-                                        size={16}
-                                      />
+                                      <Eye className="text-info" size={16} />
                                     </Badge>
                                     <Badge
                                       className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium"
@@ -5819,7 +5839,9 @@ export default function SuperAdminDashboard() {
                             <span className="fw-semibold">
                               {selectedInstitution.subscriptionStartDate ? (
                                 <DateTimeDisplay
-                                  date={selectedInstitution.subscriptionStartDate}
+                                  date={
+                                    selectedInstitution.subscriptionStartDate
+                                  }
                                 />
                               ) : (
                                 "Not set"
@@ -5848,7 +5870,8 @@ export default function SuperAdminDashboard() {
                               className="fw-semibold text-truncate"
                               style={{ maxWidth: "200px" }}
                             >
-                              {selectedInstitution.billingEmail || "Not provided"}
+                              {selectedInstitution.billingEmail ||
+                                "Not provided"}
                             </span>
                           </div>
                         </div>
@@ -6124,11 +6147,7 @@ export default function SuperAdminDashboard() {
               >
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                type="submit"
-                disabled={isUpdatingRole}
-              >
+              <Button variant="primary" type="submit" disabled={isUpdatingRole}>
                 {isUpdatingRole ? (
                   <>
                     <span

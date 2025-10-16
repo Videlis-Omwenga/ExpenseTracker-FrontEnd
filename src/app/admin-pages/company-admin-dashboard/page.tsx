@@ -46,6 +46,10 @@ import {
   Upload,
   Speedometer2,
   Award,
+  Trash,
+  Envelope,
+  Telephone,
+  FileText,
 } from "react-bootstrap-icons";
 import AuthProvider from "../../authPages/tokenData";
 import TopNavbar from "@/app/components/Navbar";
@@ -189,6 +193,17 @@ interface userTracker {
   createdAt: string;
 }
 
+interface Region {
+  id: number;
+  name: string;
+  institutionId: number;
+  institution?: {
+    name: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface Role {
   id: number;
   name: string;
@@ -281,20 +296,55 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
+  const [editUserFormData, setEditUserFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    status: "",
+    roles: [] as number[],
+  });
   const [selectedRole, setSelectedRole] = useState<any>(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
+  const [showEditRoleModal, setShowEditRoleModal] = useState(false);
+  const [showDeleteRoleModal, setShowDeleteRoleModal] = useState(false);
+  const [editRoleFormData, setEditRoleFormData] = useState({
+    role: "",
+    description: "",
+  });
+  const [isUpdatingUser, setIsUpdatingUser] = useState(false);
+  const [isDeletingUser, setIsDeletingUser] = useState(false);
+  const [isUpdatingRole, setIsUpdatingRole] = useState(false);
+  const [isDeletingRole, setIsDeletingRole] = useState(false);
   const [statusFilter, setStatusFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
-  const [institutionFilter, setInstitutionFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(100);
   const [roleSearchTerm, setRoleSearchTerm] = useState("");
   const [roleStatusFilter, setRoleStatusFilter] = useState("");
-  const [roleInstitutionFilter, setRoleInstitutionFilter] = useState("");
   const [currentRolePage, setCurrentRolePage] = useState(1);
   const [rolesPerPage] = useState(100);
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
+  const [showCreateRegionModal, setShowCreateRegionModal] = useState(false);
+  const [showEditRegionModal, setShowEditRegionModal] = useState(false);
+  const [showDeleteRegionModal, setShowDeleteRegionModal] = useState(false);
+  const [createRegionFormData, setCreateRegionFormData] = useState({
+    name: "",
+  });
+  const [editRegionFormData, setEditRegionFormData] = useState({
+    name: "",
+  });
+  const [isCreatingRegion, setIsCreatingRegion] = useState(false);
+  const [isUpdatingRegion, setIsUpdatingRegion] = useState(false);
+  const [isDeletingRegion, setIsDeletingRegion] = useState(false);
+  const [regionSearchTerm, setRegionSearchTerm] = useState("");
+  const [currentRegionPage, setCurrentRegionPage] = useState(1);
+  const [regionsPerPage] = useState(100);
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     totalRoles: 0,
@@ -387,8 +437,10 @@ export default function AdminDashboard() {
       if (response.ok) {
         const fetchedUsers = data.getUsers || [];
         const fetchedRoles = data.getRoles || [];
+        const fetchedRegions = data.getRegions || [];
         setUsers(fetchedUsers);
         setRoles(fetchedRoles);
+        setRegions(fetchedRegions);
         const activeUsersCount = fetchedUsers.filter((u: User) => u.status === UserStatus.ACTIVE).length;
         const pendingCount = fetchedUsers.filter((u: User) => u.status === UserStatus.PENDING).length;
 
@@ -453,6 +505,290 @@ export default function AdminDashboard() {
     }
   };
 
+  // User CRUD Handlers
+  const handleEditUser = (user: any) => {
+    setSelectedUser(user);
+    setEditUserFormData({
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      status: user.status || "",
+      roles: user.roles?.map((r: any) => r.roleId) || [],
+    });
+    setShowEditUserModal(true);
+  };
+
+  const handleDeleteUser = (user: any) => {
+    setSelectedUser(user);
+    setShowDeleteUserModal(true);
+  };
+
+  const handleUpdateUser = async () => {
+    if (!selectedUser) return;
+
+    setIsUpdatingUser(true);
+    try {
+      const response = await fetch(
+        `${BASE_API_URL}/company-admin/edit-user/${selectedUser.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+          },
+          body: JSON.stringify(editUserFormData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("User updated successfully!");
+        setShowEditUserModal(false);
+        fetchData();
+      } else {
+        toast.error(data.message || "Failed to update user");
+      }
+    } catch (error) {
+      toast.error(`Failed to update user: ${error}`);
+    } finally {
+      setIsUpdatingUser(false);
+    }
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!selectedUser) return;
+
+    setIsDeletingUser(true);
+    try {
+      const response = await fetch(
+        `${BASE_API_URL}/company-admin/delete-user/${selectedUser.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("User deleted successfully!");
+        setShowDeleteUserModal(false);
+        fetchData();
+      } else {
+        toast.error(data.message || "Failed to delete user");
+      }
+    } catch (error) {
+      toast.error(`Failed to delete user: ${error}`);
+    } finally {
+      setIsDeletingUser(false);
+    }
+  };
+
+  // Role CRUD Handlers
+  const handleEditRole = (role: any) => {
+    setSelectedRole(role);
+    setEditRoleFormData({
+      role: role.name || "",
+      description: role.description || "",
+    });
+    setShowEditRoleModal(true);
+  };
+
+  const handleDeleteRole = (role: any) => {
+    setSelectedRole(role);
+    setShowDeleteRoleModal(true);
+  };
+
+  const handleUpdateRole = async () => {
+    if (!selectedRole) return;
+
+    setIsUpdatingRole(true);
+    try {
+      const response = await fetch(
+        `${BASE_API_URL}/company-admin/edit-role/${selectedRole.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+          },
+          body: JSON.stringify(editRoleFormData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Role updated successfully!");
+        setShowEditRoleModal(false);
+        fetchData();
+      } else {
+        toast.error(data.message || "Failed to update role");
+      }
+    } catch (error) {
+      toast.error(`Failed to update role: ${error}`);
+    } finally {
+      setIsUpdatingRole(false);
+    }
+  };
+
+  const confirmDeleteRole = async () => {
+    if (!selectedRole) return;
+
+    setIsDeletingRole(true);
+    try {
+      const response = await fetch(
+        `${BASE_API_URL}/company-admin/delete-role/${selectedRole.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Role deleted successfully!");
+        setShowDeleteRoleModal(false);
+        fetchData();
+      } else {
+        toast.error(data.message || "Failed to delete role");
+      }
+    } catch (error) {
+      toast.error(`Failed to delete role: ${error}`);
+    } finally {
+      setIsDeletingRole(false);
+    }
+  };
+
+  // Region CRUD Handlers
+  const handleCreateRegion = async () => {
+    if (!createRegionFormData.name.trim()) {
+      toast.error("Region name is required");
+      return;
+    }
+
+    setIsCreatingRegion(true);
+    try {
+      const response = await fetch(
+        `${BASE_API_URL}/company-admin/create-region`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+          },
+          body: JSON.stringify({
+            name: createRegionFormData.name,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Region created successfully!");
+        setShowCreateRegionModal(false);
+        setCreateRegionFormData({ name: "" }); // Reset form
+        fetchData();
+      } else {
+        toast.error(data.message || "Failed to create region");
+      }
+    } catch (error) {
+      toast.error(`Failed to create region: ${error}`);
+    } finally {
+      setIsCreatingRegion(false);
+    }
+  };
+
+  const handleEditRegion = (region: Region) => {
+    setSelectedRegion(region);
+    setEditRegionFormData({
+      name: region.name,
+    });
+    setShowEditRegionModal(true);
+  };
+
+  const handleDeleteRegion = (region: Region) => {
+    setSelectedRegion(region);
+    setShowDeleteRegionModal(true);
+  };
+
+  const handleUpdateRegion = async () => {
+    if (!selectedRegion) return;
+
+    setIsUpdatingRegion(true);
+    try {
+      const response = await fetch(
+        `${BASE_API_URL}/company-admin/edit-region/${selectedRegion.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+          },
+          body: JSON.stringify({
+            name: editRegionFormData.name,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Region updated successfully!");
+        setShowEditRegionModal(false);
+        fetchData();
+      } else {
+        toast.error(data.message || "Failed to update region");
+      }
+    } catch (error) {
+      toast.error(`Failed to update region: ${error}`);
+    } finally {
+      setIsUpdatingRegion(false);
+    }
+  };
+
+  const confirmDeleteRegion = async () => {
+    if (!selectedRegion) return;
+
+    setIsDeletingRegion(true);
+    try {
+      const response = await fetch(
+        `${BASE_API_URL}/company-admin/delete-region/${selectedRegion.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Region deleted successfully!");
+        setShowDeleteRegionModal(false);
+        fetchData();
+      } else {
+        toast.error(data.message || "Failed to delete region");
+      }
+    } catch (error) {
+      toast.error(`Failed to delete region: ${error}`);
+    } finally {
+      setIsDeletingRegion(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -484,11 +820,7 @@ export default function AdminDashboard() {
         return roleName === roleFilter;
       }));
 
-    // Institution filter
-    const institutionMatch = institutionFilter === "" ||
-      (user.institution?.name === institutionFilter);
-
-    return searchMatch && statusMatch && roleMatch && institutionMatch;
+    return searchMatch && statusMatch && roleMatch;
   });
 
   // Pagination calculations
@@ -510,11 +842,7 @@ export default function AdminDashboard() {
       (roleStatusFilter === "active" && role.isActive) ||
       (roleStatusFilter === "inactive" && !role.isActive);
 
-    // Role institution filter
-    const institutionMatch = roleInstitutionFilter === "" ||
-      (role.institution?.name === roleInstitutionFilter);
-
-    return searchMatch && statusMatch && institutionMatch;
+    return searchMatch && statusMatch;
   });
 
   // Role pagination calculations
@@ -523,14 +851,33 @@ export default function AdminDashboard() {
   const indexOfFirstRole = indexOfLastRole - rolesPerPage;
   const currentRoles = filteredRoles.slice(indexOfFirstRole, indexOfLastRole);
 
+  // Filter regions based on search term
+  const filteredRegions = regions.filter((region) => {
+    const searchMatch = regionSearchTerm === "" ||
+      region.name.toLowerCase().includes(regionSearchTerm.toLowerCase()) ||
+      (region.institution?.name && region.institution.name.toLowerCase().includes(regionSearchTerm.toLowerCase()));
+
+    return searchMatch;
+  });
+
+  // Region pagination calculations
+  const totalRegionPages = Math.ceil(filteredRegions.length / regionsPerPage);
+  const indexOfLastRegion = currentRegionPage * regionsPerPage;
+  const indexOfFirstRegion = indexOfLastRegion - regionsPerPage;
+  const currentRegions = filteredRegions.slice(indexOfFirstRegion, indexOfLastRegion);
+
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, roleFilter, institutionFilter]);
+  }, [searchTerm, statusFilter, roleFilter]);
 
   useEffect(() => {
     setCurrentRolePage(1);
-  }, [roleSearchTerm, roleStatusFilter, roleInstitutionFilter]);
+  }, [roleSearchTerm, roleStatusFilter]);
+
+  useEffect(() => {
+    setCurrentRegionPage(1);
+  }, [regionSearchTerm]);
 
   // Chart data calculations
   const getUserStatusData = () => {
@@ -782,6 +1129,17 @@ export default function AdminDashboard() {
                   }`}
                 >
                   <Gear className="me-2" /> Roles
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link
+                  active={activeTab === "regions"}
+                  onClick={() => handleTabChange("regions")}
+                  className={`rounded py-2 px-3 d-flex align-items-center ${
+                    activeTab === "regions" ? "active-nav-link" : "nav-link"
+                  }`}
+                >
+                  <ShieldLock className="me-2" /> Regions
                 </Nav.Link>
               </Nav.Item>
             </Nav>
@@ -1232,42 +1590,23 @@ export default function AdminDashboard() {
                           </Form.Select>
                         </div>
 
-                        {/* Institution Filter */}
-                        <div className="filter-group">
-                          <label className="filter-label">Institution</label>
-                          <Form.Select
-                            size="sm"
-                            value={institutionFilter}
-                            onChange={(e) => setInstitutionFilter(e.target.value)}
-                            className="modern-filter-select"
-                          >
-                            <option value="">All Institutions</option>
-                            {[...new Set(users.map(user => user.institution?.name).filter(Boolean))].map((institution) => (
-                              <option key={institution} value={institution}>
-                                🏢 {institution}
-                              </option>
-                            ))}
-                          </Form.Select>
-                        </div>
-
                         {/* Clear Filters & Results */}
                         <div className="d-flex align-items-center gap-2 ms-auto">
                           {/* Active Filter Count */}
-                          {(statusFilter || roleFilter || institutionFilter) && (
+                          {(statusFilter || roleFilter) && (
                             <Badge bg="success" className="px-3 py-2 rounded-pill fw-semibold">
                               📊 {filteredUsers.length} results
                             </Badge>
                           )}
 
                           {/* Clear Filters */}
-                          {(statusFilter || roleFilter || institutionFilter) && (
+                          {(statusFilter || roleFilter) && (
                             <Button
                               size="sm"
                               variant="outline-danger"
                               onClick={() => {
                                 setStatusFilter("");
                                 setRoleFilter("");
-                                setInstitutionFilter("");
                               }}
                               className="rounded-pill px-3 py-2 d-flex align-items-center gap-2 fw-semibold"
                             >
@@ -1446,9 +1785,22 @@ export default function AdminDashboard() {
                                   <Badge
                                     className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
                                     title="Edit User"
+                                    onClick={() => handleEditUser(user)}
+                                    style={{ cursor: "pointer" }}
                                   >
                                     <Pencil
                                       className="text-primary"
+                                      size={16}
+                                    />
+                                  </Badge>
+                                  <Badge
+                                    className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
+                                    title="Delete User"
+                                    onClick={() => handleDeleteUser(user)}
+                                    style={{ cursor: "pointer" }}
+                                  >
+                                    <Trash
+                                      className="text-danger"
                                       size={16}
                                     />
                                   </Badge>
@@ -1641,41 +1993,22 @@ export default function AdminDashboard() {
                           </Form.Select>
                         </div>
 
-                        {/* Institution Filter */}
-                        <div className="filter-group">
-                          <label className="filter-label">Institution</label>
-                          <Form.Select
-                            size="sm"
-                            value={roleInstitutionFilter}
-                            onChange={(e) => setRoleInstitutionFilter(e.target.value)}
-                            className="modern-filter-select"
-                          >
-                            <option value="">All Institutions</option>
-                            {[...new Set(roles.map(role => role.institution?.name).filter(Boolean))].map((institution) => (
-                              <option key={institution} value={institution}>
-                                🏢 {institution}
-                              </option>
-                            ))}
-                          </Form.Select>
-                        </div>
-
                         {/* Clear Filters & Results */}
                         <div className="d-flex align-items-center gap-2 ms-auto">
                           {/* Active Filter Count */}
-                          {(roleStatusFilter || roleInstitutionFilter) && (
+                          {roleStatusFilter && (
                             <Badge bg="success" className="px-3 py-2 rounded-pill fw-semibold">
                               📊 {filteredRoles.length} results
                             </Badge>
                           )}
 
                           {/* Clear Filters */}
-                          {(roleStatusFilter || roleInstitutionFilter) && (
+                          {roleStatusFilter && (
                             <Button
                               size="sm"
                               variant="outline-danger"
                               onClick={() => {
                                 setRoleStatusFilter("");
-                                setRoleInstitutionFilter("");
                               }}
                               className="rounded-pill px-3 py-2 d-flex align-items-center gap-2 fw-semibold"
                             >
@@ -1818,8 +2151,18 @@ export default function AdminDashboard() {
                                     size="sm"
                                     className="modern-action-btn border-0 bg-primary bg-opacity-10 text-primary"
                                     title="Edit Role"
+                                    onClick={() => handleEditRole(role)}
                                   >
                                     <Pencil size={14} />
+                                  </Button>
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    className="modern-action-btn border-0 bg-danger bg-opacity-10 text-danger"
+                                    title="Delete Role"
+                                    onClick={() => handleDeleteRole(role)}
+                                  >
+                                    <Trash size={14} />
                                   </Button>
                                 </div>
                               </td>
@@ -1907,6 +2250,246 @@ export default function AdminDashboard() {
                           <Pagination.Last
                             onClick={() => setCurrentRolePage(totalRolePages)}
                             disabled={currentRolePage === totalRolePages}
+                          />
+                        </Pagination>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                )}
+              </>
+            )}
+
+            {/* Regions Tab */}
+            {activeTab === "regions" && (
+              <>
+                {/* Search and Filter Section */}
+                <Card className="shadow-sm border-0 mb-4 bg-gradient-light">
+                  <Card.Body className="p-4">
+                    <div className="row g-3 align-items-center">
+                      {/* Search Input */}
+                      <div className="col-md-8">
+                        <div className="modern-search-input">
+                          <InputGroup size="lg">
+                            <InputGroup.Text className="bg-white border-warning">
+                              <Search className="text-warning" />
+                            </InputGroup.Text>
+                            <FormControl
+                              placeholder="Search regions by name..."
+                              value={regionSearchTerm}
+                              onChange={(e) => setRegionSearchTerm(e.target.value)}
+                              className="border-warning shadow-none"
+                              style={{
+                                fontSize: "1rem",
+                                padding: "0.75rem",
+                              }}
+                            />
+                          </InputGroup>
+                        </div>
+                      </div>
+
+                      {/* Result Counter */}
+                      <div className="col-md-4 text-end">
+                        <Badge bg="warning" className="px-4 py-3 rounded-pill fw-semibold fs-6 shadow-sm">
+                          <ShieldLock size={18} className="me-2" />
+                          {filteredRegions.length} region(s) found
+                        </Badge>
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+
+                <Card className="shadow-lg border-0 modern-table-card">
+                  <Card.Header className="bg-light border-0 py-4">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
+                          <ShieldLock className="text-warning" size={20} />
+                        </div>
+                        <div>
+                          <h5 className="mb-0 fw-bold text-dark">
+                            Region Management
+                          </h5>
+                          <small className="text-muted">
+                            Manage company regions and locations
+                          </small>
+                        </div>
+                      </div>
+                      <div className="d-flex align-items-center gap-2">
+                        <Badge
+                          bg="warning"
+                          className="px-3 py-2 rounded-pill fw-medium"
+                        >
+                          {filteredRegions.length} Regions
+                        </Badge>
+                        <Button
+                          variant="warning"
+                          className="px-4 py-2 rounded-pill fw-medium shadow-sm"
+                          onClick={() => setShowCreateRegionModal(true)}
+                        >
+                          <ShieldLock size={16} className="me-2" />
+                          Add Region
+                        </Button>
+                      </div>
+                    </div>
+                  </Card.Header>
+                  <Card.Body className="p-0">
+                    <div className="table-responsive modern-table-container">
+                      <Table className="mb-0 modern-table">
+                        <thead className="table-light">
+                          <tr>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              #
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Region Name
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Institution
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Created At
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {currentRegions.map((region, index) => (
+                            <tr key={region.id}>
+                              <td className="py-3 px-4 text-muted fw-medium">
+                                {indexOfFirstRegion + index + 1}
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="d-flex align-items-center">
+                                  <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
+                                    <ShieldLock className="text-warning" size={18} />
+                                  </div>
+                                  <div className="fw-semibold text-dark">
+                                    {region.name}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className="fw-medium text-dark">
+                                  {region.institution?.name || "N/A"}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <small className="text-muted fw-medium">
+                                  {new Date(region.createdAt).toLocaleDateString()}
+                                </small>
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                <div className="d-flex justify-content-center gap-2">
+                                  <Button
+                                    variant="outline-primary"
+                                    size="sm"
+                                    className="modern-action-btn border-0 bg-primary bg-opacity-10 text-primary"
+                                    title="Edit Region"
+                                    onClick={() => handleEditRegion(region)}
+                                  >
+                                    <Pencil size={14} />
+                                  </Button>
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    className="modern-action-btn border-0 bg-danger bg-opacity-10 text-danger"
+                                    title="Delete Region"
+                                    onClick={() => handleDeleteRegion(region)}
+                                  >
+                                    <Trash size={14} />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </div>
+                  </Card.Body>
+                </Card>
+
+                {/* Region Pagination */}
+                {totalRegionPages > 1 && (
+                  <Card className="shadow-sm border-0 mt-3">
+                    <Card.Body className="p-4">
+                      <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        {/* Pagination Info */}
+                        <div className="d-flex align-items-center gap-3">
+                          <span className="text-muted small">
+                            Showing {indexOfFirstRegion + 1}-{Math.min(indexOfLastRegion, filteredRegions.length)} of {filteredRegions.length} regions
+                          </span>
+                          <Badge bg="light" text="dark" className="px-3 py-2 rounded-pill">
+                            Page {currentRegionPage} of {totalRegionPages}
+                          </Badge>
+                        </div>
+
+                        {/* Pagination Controls */}
+                        <Pagination className="mb-0">
+                          <Pagination.First
+                            onClick={() => setCurrentRegionPage(1)}
+                            disabled={currentRegionPage === 1}
+                          />
+                          <Pagination.Prev
+                            onClick={() => setCurrentRegionPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentRegionPage === 1}
+                          />
+
+                          {(() => {
+                            const pages = [];
+                            const maxVisible = 5;
+                            let startPage = Math.max(1, currentRegionPage - Math.floor(maxVisible / 2));
+                            let endPage = Math.min(totalRegionPages, startPage + maxVisible - 1);
+
+                            if (endPage - startPage < maxVisible - 1) {
+                              startPage = Math.max(1, endPage - maxVisible + 1);
+                            }
+
+                            if (startPage > 1) {
+                              pages.push(
+                                <Pagination.Item key={1} onClick={() => setCurrentRegionPage(1)}>
+                                  1
+                                </Pagination.Item>
+                              );
+                              if (startPage > 2) {
+                                pages.push(<Pagination.Ellipsis key="start-ellipsis" />);
+                              }
+                            }
+
+                            for (let i = startPage; i <= endPage; i++) {
+                              pages.push(
+                                <Pagination.Item
+                                  key={i}
+                                  active={i === currentRegionPage}
+                                  onClick={() => setCurrentRegionPage(i)}
+                                >
+                                  {i}
+                                </Pagination.Item>
+                              );
+                            }
+
+                            if (endPage < totalRegionPages) {
+                              if (endPage < totalRegionPages - 1) {
+                                pages.push(<Pagination.Ellipsis key="end-ellipsis" />);
+                              }
+                              pages.push(
+                                <Pagination.Item key={totalRegionPages} onClick={() => setCurrentRegionPage(totalRegionPages)}>
+                                  {totalRegionPages}
+                                </Pagination.Item>
+                              );
+                            }
+
+                            return pages;
+                          })()}
+
+                          <Pagination.Next
+                            onClick={() => setCurrentRegionPage(prev => Math.min(totalRegionPages, prev + 1))}
+                            disabled={currentRegionPage === totalRegionPages}
+                          />
+                          <Pagination.Last
+                            onClick={() => setCurrentRegionPage(totalRegionPages)}
+                            disabled={currentRegionPage === totalRegionPages}
                           />
                         </Pagination>
                       </div>
@@ -2364,6 +2947,848 @@ export default function AdminDashboard() {
           setSelectedRole(null);
         }}
       />
+
+      {/* Edit User Modal */}
+      <Modal
+        show={showEditUserModal}
+        onHide={() => setShowEditUserModal(false)}
+        size="xl"
+      >
+        <Modal.Header closeButton className="bg-light border-0">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
+            <div className="bg-primary bg-opacity-15 p-3 rounded-circle">
+              <Pencil size={24} className="text-primary" />
+            </div>
+            <div>
+              <h5 className="mb-1 fw-bold">Edit User</h5>
+              <small className="text-muted">
+                Update user information and permissions
+              </small>
+            </div>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
+          <Form>
+            <Row className="g-4">
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
+                    First Name <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter first name"
+                    value={editUserFormData.firstName}
+                    onChange={(e) =>
+                      setEditUserFormData({
+                        ...editUserFormData,
+                        firstName: e.target.value,
+                      })
+                    }
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                    }}
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
+                    Last Name <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter last name"
+                    value={editUserFormData.lastName}
+                    onChange={(e) =>
+                      setEditUserFormData({
+                        ...editUserFormData,
+                        lastName: e.target.value,
+                      })
+                    }
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                    }}
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
+                    Email Address <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="email"
+                    placeholder="user@company.com"
+                    value={editUserFormData.email}
+                    onChange={(e) =>
+                      setEditUserFormData({
+                        ...editUserFormData,
+                        email: e.target.value,
+                      })
+                    }
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                    }}
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
+                    Phone Number
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="+1 (555) 000-0000"
+                    value={editUserFormData.phone}
+                    onChange={(e) =>
+                      setEditUserFormData({
+                        ...editUserFormData,
+                        phone: e.target.value,
+                      })
+                    }
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                    }}
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
+                    Status <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Select
+                    value={editUserFormData.status}
+                    onChange={(e) =>
+                      setEditUserFormData({
+                        ...editUserFormData,
+                        status: e.target.value,
+                      })
+                    }
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    <option value="">Select status</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="SUSPENDED">Suspended</option>
+                    <option value="INVITED">Invited</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
+                    Roles <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Select
+                    multiple
+                    value={editUserFormData.roles.map(String)}
+                    onChange={(e) => {
+                      const selectedOptions = Array.from(
+                        e.target.selectedOptions,
+                        (option) => parseInt(option.value)
+                      );
+                      setEditUserFormData({
+                        ...editUserFormData,
+                        roles: selectedOptions,
+                      });
+                    }}
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                      minHeight: "120px",
+                    }}
+                  >
+                    {roles.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {role.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  <Form.Text className="text-muted small">
+                    Hold Ctrl/Cmd to select multiple roles
+                  </Form.Text>
+                </Form.Group>
+              </Col>
+            </Row>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer className="border-0 bg-light p-4">
+          <Button
+            variant="outline-secondary"
+            onClick={() => setShowEditUserModal(false)}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isUpdatingUser}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleUpdateUser}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isUpdatingUser}
+          >
+            {isUpdatingUser ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Updating...
+              </>
+            ) : (
+              <>
+                <Pencil size={16} className="me-2" />
+                Update User
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Delete User Modal */}
+      <Modal
+        show={showDeleteUserModal}
+        onHide={() => setShowDeleteUserModal(false)}
+        size="xl"
+      >
+        <Modal.Header closeButton className="bg-danger bg-opacity-10 border-0">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
+            <div className="bg-danger bg-opacity-15 p-3 rounded-circle">
+              <Trash size={24} className="text-danger" />
+            </div>
+            <div>
+              <h5 className="mb-1 fw-bold text-danger">Delete User</h5>
+              <small className="text-muted">
+                This action cannot be undone
+              </small>
+            </div>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
+          <div className="alert alert-danger d-flex align-items-start gap-3 border-0 shadow-sm">
+            <div className="bg-danger bg-opacity-15 p-2 rounded-circle flex-shrink-0">
+              <ExclamationTriangle size={24} className="text-danger" />
+            </div>
+            <div>
+              <h6 className="fw-bold mb-2">Warning: Permanent Action</h6>
+              <p className="mb-0 text-muted">
+                Are you sure you want to delete this user? This will permanently
+                remove the user from the system and cannot be reversed.
+              </p>
+            </div>
+          </div>
+
+          {selectedUser && (
+            <div className="mt-4 p-4 bg-light rounded-3">
+              <h6 className="fw-bold mb-3 text-dark">User Details:</h6>
+              <Row className="g-3">
+                <Col md={6}>
+                  <div className="d-flex align-items-center gap-2">
+                    <People size={18} className="text-primary" />
+                    <div>
+                      <small className="text-muted d-block">Name</small>
+                      <span className="fw-semibold">
+                        {selectedUser.firstName} {selectedUser.lastName}
+                      </span>
+                    </div>
+                  </div>
+                </Col>
+                <Col md={6}>
+                  <div className="d-flex align-items-center gap-2">
+                    <Envelope size={18} className="text-info" />
+                    <div>
+                      <small className="text-muted d-block">Email</small>
+                      <span className="fw-semibold">{selectedUser.email}</span>
+                    </div>
+                  </div>
+                </Col>
+                <Col md={6}>
+                  <div className="d-flex align-items-center gap-2">
+                    <Telephone size={18} className="text-success" />
+                    <div>
+                      <small className="text-muted d-block">Phone</small>
+                      <span className="fw-semibold">
+                        {selectedUser.phone || "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                </Col>
+                <Col md={6}>
+                  <div className="d-flex align-items-center gap-2">
+                    <Gear size={18} className="text-warning" />
+                    <div>
+                      <small className="text-muted d-block">Status</small>
+                      <Badge
+                        bg={
+                          selectedUser.status === "ACTIVE"
+                            ? "success"
+                            : selectedUser.status === "INACTIVE"
+                            ? "warning"
+                            : "secondary"
+                        }
+                        className="px-2 py-1"
+                      >
+                        {selectedUser.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="border-0 bg-light p-4">
+          <Button
+            variant="outline-secondary"
+            onClick={() => setShowDeleteUserModal(false)}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isDeletingUser}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={confirmDeleteUser}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isDeletingUser}
+          >
+            {isDeletingUser ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash size={16} className="me-2" />
+                Yes, Delete User
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Role Modal */}
+      <Modal
+        show={showEditRoleModal}
+        onHide={() => setShowEditRoleModal(false)}
+        size="xl"
+      >
+        <Modal.Header closeButton className="bg-light border-0">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
+            <div className="bg-success bg-opacity-15 p-3 rounded-circle">
+              <Gear size={24} className="text-success" />
+            </div>
+            <div>
+              <h5 className="mb-1 fw-bold">Edit Role</h5>
+              <small className="text-muted">
+                Update role information and permissions
+              </small>
+            </div>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
+          <Form>
+            <Row className="g-4">
+              <Col md={12}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
+                    Role Name <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter role name (e.g., Manager, Finance Officer)"
+                    value={editRoleFormData.role}
+                    onChange={(e) =>
+                      setEditRoleFormData({
+                        ...editRoleFormData,
+                        role: e.target.value,
+                      })
+                    }
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                    }}
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={12}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
+                    Description <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={4}
+                    placeholder="Describe the role's responsibilities and permissions..."
+                    value={editRoleFormData.description}
+                    onChange={(e) =>
+                      setEditRoleFormData({
+                        ...editRoleFormData,
+                        description: e.target.value,
+                      })
+                    }
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                    }}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer className="border-0 bg-light p-4">
+          <Button
+            variant="outline-secondary"
+            onClick={() => setShowEditRoleModal(false)}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isUpdatingRole}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="success"
+            onClick={handleUpdateRole}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isUpdatingRole}
+          >
+            {isUpdatingRole ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Updating...
+              </>
+            ) : (
+              <>
+                <Gear size={16} className="me-2" />
+                Update Role
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Delete Role Modal */}
+      <Modal
+        show={showDeleteRoleModal}
+        onHide={() => setShowDeleteRoleModal(false)}
+        size="xl"
+      >
+        <Modal.Header closeButton className="bg-danger bg-opacity-10 border-0">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
+            <div className="bg-danger bg-opacity-15 p-3 rounded-circle">
+              <Trash size={24} className="text-danger" />
+            </div>
+            <div>
+              <h5 className="mb-1 fw-bold text-danger">Delete Role</h5>
+              <small className="text-muted">
+                This action cannot be undone
+              </small>
+            </div>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
+          <div className="alert alert-danger d-flex align-items-start gap-3 border-0 shadow-sm">
+            <div className="bg-danger bg-opacity-15 p-2 rounded-circle flex-shrink-0">
+              <ExclamationTriangle size={24} className="text-danger" />
+            </div>
+            <div>
+              <h6 className="fw-bold mb-2">Warning: Permanent Action</h6>
+              <p className="mb-0 text-muted">
+                Are you sure you want to delete this role? This will permanently
+                remove the role from the system and may affect users assigned to
+                this role.
+              </p>
+            </div>
+          </div>
+
+          {selectedRole && (
+            <div className="mt-4 p-4 bg-light rounded-3">
+              <h6 className="fw-bold mb-3 text-dark">Role Details:</h6>
+              <Row className="g-3">
+                <Col md={6}>
+                  <div className="d-flex align-items-center gap-2">
+                    <Gear size={18} className="text-success" />
+                    <div>
+                      <small className="text-muted d-block">Role Name</small>
+                      <span className="fw-semibold">{selectedRole.name}</span>
+                    </div>
+                  </div>
+                </Col>
+                <Col md={6}>
+                  <div className="d-flex align-items-center gap-2">
+                    <ShieldLock size={18} className="text-primary" />
+                    <div>
+                      <small className="text-muted d-block">Status</small>
+                      <Badge
+                        bg={selectedRole.isActive ? "success" : "secondary"}
+                        className="px-2 py-1"
+                      >
+                        {selectedRole.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                  </div>
+                </Col>
+                <Col md={12}>
+                  <div className="d-flex align-items-start gap-2">
+                    <FileText size={18} className="text-info mt-1" />
+                    <div>
+                      <small className="text-muted d-block">Description</small>
+                      <span className="fw-semibold">
+                        {selectedRole.description || "No description available"}
+                      </span>
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="border-0 bg-light p-4">
+          <Button
+            variant="outline-secondary"
+            onClick={() => setShowDeleteRoleModal(false)}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isDeletingRole}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={confirmDeleteRole}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isDeletingRole}
+          >
+            {isDeletingRole ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash size={16} className="me-2" />
+                Yes, Delete Role
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Create Region Modal */}
+      <Modal
+        show={showCreateRegionModal}
+        onHide={() => {
+          setShowCreateRegionModal(false);
+          setCreateRegionFormData({ name: "" });
+        }}
+        size="xl"
+      >
+        <Modal.Header closeButton className="bg-light border-0">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
+            <div className="bg-warning bg-opacity-15 p-3 rounded-circle">
+              <ShieldLock size={24} className="text-warning" />
+            </div>
+            <div>
+              <h5 className="mb-1 fw-bold">Create New Region</h5>
+              <small className="text-muted">
+                Add a new region to your company
+              </small>
+            </div>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
+          <Form>
+            <Row className="g-4">
+              <Col md={12}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
+                    Region Name <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter region name (e.g., North America, Europe, Asia-Pacific)"
+                    value={createRegionFormData.name}
+                    onChange={(e) =>
+                      setCreateRegionFormData({
+                        ...createRegionFormData,
+                        name: e.target.value,
+                      })
+                    }
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                    }}
+                  />
+                  <Form.Text className="text-muted small">
+                    Enter a descriptive name for the region (e.g., headquarters location, branch office)
+                  </Form.Text>
+                </Form.Group>
+              </Col>
+            </Row>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer className="border-0 bg-light p-4">
+          <Button
+            variant="outline-secondary"
+            onClick={() => {
+              setShowCreateRegionModal(false);
+              setCreateRegionFormData({ name: "" });
+            }}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isCreatingRegion}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="warning"
+            onClick={handleCreateRegion}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isCreatingRegion}
+          >
+            {isCreatingRegion ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Creating...
+              </>
+            ) : (
+              <>
+                <ShieldLock size={16} className="me-2" />
+                Create Region
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Region Modal */}
+      <Modal
+        show={showEditRegionModal}
+        onHide={() => setShowEditRegionModal(false)}
+        size="xl"
+      >
+        <Modal.Header closeButton className="bg-light border-0">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
+            <div className="bg-warning bg-opacity-15 p-3 rounded-circle">
+              <ShieldLock size={24} className="text-warning" />
+            </div>
+            <div>
+              <h5 className="mb-1 fw-bold">Edit Region</h5>
+              <small className="text-muted">
+                Update region information
+              </small>
+            </div>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
+          <Form>
+            <Row className="g-4">
+              <Col md={12}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
+                    Region Name <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter region name (e.g., North America, Europe, Asia-Pacific)"
+                    value={editRegionFormData.name}
+                    onChange={(e) =>
+                      setEditRegionFormData({
+                        ...editRegionFormData,
+                        name: e.target.value,
+                      })
+                    }
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                    }}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer className="border-0 bg-light p-4">
+          <Button
+            variant="outline-secondary"
+            onClick={() => setShowEditRegionModal(false)}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isUpdatingRegion}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="warning"
+            onClick={handleUpdateRegion}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isUpdatingRegion}
+          >
+            {isUpdatingRegion ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Updating...
+              </>
+            ) : (
+              <>
+                <ShieldLock size={16} className="me-2" />
+                Update Region
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Delete Region Modal */}
+      <Modal
+        show={showDeleteRegionModal}
+        onHide={() => setShowDeleteRegionModal(false)}
+        size="xl"
+      >
+        <Modal.Header closeButton className="bg-danger bg-opacity-10 border-0">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-3">
+            <div className="bg-danger bg-opacity-15 p-3 rounded-circle">
+              <Trash size={24} className="text-danger" />
+            </div>
+            <div>
+              <h5 className="mb-1 fw-bold text-danger">Delete Region</h5>
+              <small className="text-muted">
+                This action cannot be undone
+              </small>
+            </div>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
+          <div className="alert alert-danger d-flex align-items-start gap-3 border-0 shadow-sm">
+            <div className="bg-danger bg-opacity-15 p-2 rounded-circle flex-shrink-0">
+              <ExclamationTriangle size={24} className="text-danger" />
+            </div>
+            <div>
+              <h6 className="fw-bold mb-2">Warning: Permanent Action</h6>
+              <p className="mb-0 text-muted">
+                Are you sure you want to delete this region? This will permanently
+                remove the region from the system. This action cannot be reversed.
+                The region cannot be deleted if it has active users or departments.
+              </p>
+            </div>
+          </div>
+
+          {selectedRegion && (
+            <div className="mt-4 p-4 bg-light rounded-3">
+              <h6 className="fw-bold mb-3 text-dark">Region Details:</h6>
+              <Row className="g-3">
+                <Col md={6}>
+                  <div className="d-flex align-items-center gap-2">
+                    <ShieldLock size={18} className="text-warning" />
+                    <div>
+                      <small className="text-muted d-block">Region Name</small>
+                      <span className="fw-semibold">{selectedRegion.name}</span>
+                    </div>
+                  </div>
+                </Col>
+                <Col md={6}>
+                  <div className="d-flex align-items-center gap-2">
+                    <FileText size={18} className="text-info" />
+                    <div>
+                      <small className="text-muted d-block">Institution</small>
+                      <span className="fw-semibold">
+                        {selectedRegion.institution?.name || "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                </Col>
+                <Col md={6}>
+                  <div className="d-flex align-items-center gap-2">
+                    <Calendar size={18} className="text-success" />
+                    <div>
+                      <small className="text-muted d-block">Created At</small>
+                      <span className="fw-semibold">
+                        {new Date(selectedRegion.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="border-0 bg-light p-4">
+          <Button
+            variant="outline-secondary"
+            onClick={() => setShowDeleteRegionModal(false)}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isDeletingRegion}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={confirmDeleteRegion}
+            className="px-4 py-2 rounded-pill fw-medium"
+            disabled={isDeletingRegion}
+          >
+            {isDeletingRegion ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash size={16} className="me-2" />
+                Yes, Delete Region
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </AuthProvider>
   );
 }
