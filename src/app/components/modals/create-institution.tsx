@@ -26,7 +26,6 @@ export default function InstitutionCreationModal({ onSuccess }: { onSuccess?: ()
   const [logoUrl, setLogoUrl] = useState("");
   const [subscriptionStartDate, setSubscriptionStartDate] = useState("");
   const [subscriptionEndDate, setSubscriptionEndDate] = useState("");
-  const [trialEndDate, setTrialEndDate] = useState("");
   const [billingEmail, setBillingEmail] = useState("");
 
   const handleClose = () => setShow(false);
@@ -49,7 +48,6 @@ export default function InstitutionCreationModal({ onSuccess }: { onSuccess?: ()
         logoUrl,
         subscriptionStartDate,
         subscriptionEndDate,
-        trialEndDate,
         billingEmail,
       };
 
@@ -84,7 +82,6 @@ export default function InstitutionCreationModal({ onSuccess }: { onSuccess?: ()
         setLogoUrl("");
         setSubscriptionStartDate("");
         setSubscriptionEndDate("");
-        setTrialEndDate("");
         setBillingEmail("");
 
         // Call the success callback to refresh data
@@ -355,7 +352,7 @@ export default function InstitutionCreationModal({ onSuccess }: { onSuccess?: ()
                 </Card.Header>
                 <Card.Body className="p-4">
                   <Row>
-                    <Col md={4}>
+                    <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label className="fw-semibold text-dark">
                           Subscription Start
@@ -369,12 +366,12 @@ export default function InstitutionCreationModal({ onSuccess }: { onSuccess?: ()
                           className="rounded-3 py-2 px-3 modern-input"
                         />
                         <Form.Text className="text-muted">
-                          Subscription start date is required.
+                          Subscription start date is optional.
                         </Form.Text>
                       </Form.Group>
                     </Col>
 
-                    <Col md={4}>
+                    <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label className="fw-semibold text-dark">
                           Subscription End
@@ -388,24 +385,7 @@ export default function InstitutionCreationModal({ onSuccess }: { onSuccess?: ()
                           className="rounded-3 py-2 px-3 modern-input"
                         />
                         <Form.Text className="text-muted">
-                          Subscription end date is required.
-                        </Form.Text>
-                      </Form.Group>
-                    </Col>
-
-                    <Col md={4}>
-                      <Form.Group className="mb-3">
-                        <Form.Label className="fw-semibold text-dark">
-                          Trial End
-                        </Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={trialEndDate}
-                          onChange={(e) => setTrialEndDate(e.target.value)}
-                          className="rounded-3 py-2 px-3 modern-input"
-                        />
-                        <Form.Text className="text-muted">
-                          Trial end date is required.
+                          Subscription end date is optional.
                         </Form.Text>
                       </Form.Group>
                     </Col>

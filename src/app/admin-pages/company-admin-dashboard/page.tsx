@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Container,
   Row,
@@ -273,7 +274,10 @@ interface ActivityItem {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "dashboard");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showUserModal, setShowUserModal] = useState(false);
@@ -326,16 +330,6 @@ export default function AdminDashboard() {
       }
     },
     {
-      id: 'view-reports',
-      title: 'Generate Reports',
-      description: 'Export system analytics and reports',
-      icon: <ClipboardData size={24} />,
-      color: 'info',
-      action: () => {
-        setActiveTab('reports');
-      }
-    },
-    {
       id: 'system-settings',
       title: 'System Settings',
       description: 'Configure company-wide settings',
@@ -368,6 +362,12 @@ export default function AdminDashboard() {
     }
   };
   const [loading, setLoading] = useState(false);
+
+  // Handle tab change and update URL
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    router.push(`?tab=${tab}`, { scroll: false });
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -754,7 +754,7 @@ export default function AdminDashboard() {
               <Nav.Item>
                 <Nav.Link
                   active={activeTab === "dashboard"}
-                  onClick={() => setActiveTab("dashboard")}
+                  onClick={() => handleTabChange("dashboard")}
                   className={`rounded py-2 px-3 d-flex align-items-center ${
                     activeTab === "dashboard" ? "active-nav-link" : "nav-link"
                   }`}
@@ -765,7 +765,7 @@ export default function AdminDashboard() {
               <Nav.Item>
                 <Nav.Link
                   active={activeTab === "users"}
-                  onClick={() => setActiveTab("users")}
+                  onClick={() => handleTabChange("users")}
                   className={`rounded py-2 px-3 d-flex align-items-center ${
                     activeTab === "users" ? "active-nav-link" : "nav-link"
                   }`}
@@ -776,34 +776,12 @@ export default function AdminDashboard() {
               <Nav.Item>
                 <Nav.Link
                   active={activeTab === "roles"}
-                  onClick={() => setActiveTab("roles")}
+                  onClick={() => handleTabChange("roles")}
                   className={`rounded py-2 px-3 d-flex align-items-center ${
                     activeTab === "roles" ? "active-nav-link" : "nav-link"
                   }`}
                 >
                   <Gear className="me-2" /> Roles
-                </Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link
-                  active={activeTab === "reports"}
-                  onClick={() => setActiveTab("reports")}
-                  className={`rounded py-2 px-3 d-flex align-items-center ${
-                    activeTab === "reports" ? "active-nav-link" : "nav-link"
-                  }`}
-                >
-                  <ClipboardData className="me-2" /> Reports
-                </Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link
-                  active={activeTab === "activity"}
-                  onClick={() => setActiveTab("activity")}
-                  className={`rounded py-2 px-3 d-flex align-items-center ${
-                    activeTab === "activity" ? "active-nav-link" : "nav-link"
-                  }`}
-                >
-                  <Activity className="me-2" /> Activity
                 </Nav.Link>
               </Nav.Item>
             </Nav>
@@ -1003,15 +981,6 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                         ))}
-                        <div className="p-3 text-center">
-                          <Button
-                            variant="outline-primary"
-                            size="sm"
-                            onClick={() => setActiveTab('activity')}
-                          >
-                            View All Activity
-                          </Button>
-                        </div>
                       </Card.Body>
                     </Card>
                   </Col>
@@ -1171,7 +1140,7 @@ export default function AdminDashboard() {
                       <Breadcrumb className="bg-light rounded-pill px-3 py-2 mb-0 small">
                         <Breadcrumb.Item
                           href="#"
-                          onClick={() => setActiveTab("dashboard")}
+                          onClick={() => handleTabChange("dashboard")}
                           className="text-decoration-none"
                         >
                           Dashboard
@@ -1213,7 +1182,7 @@ export default function AdminDashboard() {
                         onSuccess={() => {
                           fetchData();
                           setSearchTerm("");
-                          setActiveTab("users");
+                          handleTabChange("users");
                         }}
                       />
                     </div>
@@ -1603,7 +1572,7 @@ export default function AdminDashboard() {
                       <Breadcrumb className="bg-light rounded-pill px-3 py-2 mb-0 small">
                         <Breadcrumb.Item
                           href="#"
-                          onClick={() => setActiveTab("dashboard")}
+                          onClick={() => handleTabChange("dashboard")}
                           className="text-decoration-none"
                         >
                           Dashboard
@@ -1948,159 +1917,8 @@ export default function AdminDashboard() {
             )}
 
 
-            {/* Reports Tab */}
-            {activeTab === "reports" && (
-              <Card className="shadow-lg border-0">
-                <Card.Header className="bg-light border-0 py-4">
-                  <h4 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                    <ClipboardData className="me-2 text-info" size={24} />
-                    Reports & Analytics
-                  </h4>
-                </Card.Header>
-                <Card.Body className="p-4">
-                  <Row>
-                    {[
-                      { title: 'User Activity Report', desc: 'Detailed user login and activity analytics', icon: People, color: 'primary' },
-                      { title: 'Expense Summary', desc: 'Monthly and quarterly expense breakdowns', icon: CurrencyDollar, color: 'success' },
-                      { title: 'Role Distribution', desc: 'User role assignments and permissions audit', icon: ShieldLock, color: 'warning' },
-                      { title: 'System Health', desc: 'Performance metrics and system monitoring', icon: Activity, color: 'info' },
-                      { title: 'System Analytics', desc: 'System usage and performance metrics', icon: Activity, color: 'secondary' }
-                    ].map((report, index) => (
-                      <Col md={6} lg={4} key={index} className="mb-4">
-                        <Card className="h-100 border-0 shadow-sm report-card cursor-pointer" style={{ transition: 'all 0.3s ease' }}>
-                          <Card.Body className="p-4 text-center">
-                            <div className={`bg-${report.color} bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center`} style={{ width: '60px', height: '60px' }}>
-                              <report.icon className={`text-${report.color}`} size={28} />
-                            </div>
-                            <h6 className="fw-bold mb-2">{report.title}</h6>
-                            <p className="text-muted small mb-3">{report.desc}</p>
-                            <Button variant={`outline-${report.color}`} size="sm">
-                              <Download className="me-1" size={14} />
-                              Generate
-                            </Button>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                    ))}
-                  </Row>
-                </Card.Body>
-              </Card>
-            )}
-
-            {/* Activity Tab */}
-            {activeTab === "activity" && (
-              <Card className="shadow-lg border-0">
-                <Card.Header className="bg-light border-0 py-4">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <h4 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                      <Activity className="me-2 text-primary" size={24} />
-                      System Activity Log
-                    </h4>
-                    <Button variant="outline-primary" size="sm">
-                      <Download className="me-1" size={14} />
-                      Export Log
-                    </Button>
-                  </div>
-                </Card.Header>
-                <Card.Body className="p-0">
-                  <div className="table-responsive">
-                    <Table className="mb-0">
-                      <thead className="table-light">
-                        <tr>
-                          <th className="border-0 py-3 px-4">Time</th>
-                          <th className="border-0 py-3 px-4">User</th>
-                          <th className="border-0 py-3 px-4">Action</th>
-                          <th className="border-0 py-3 px-4">Details</th>
-                          <th className="border-0 py-3 px-4">Type</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {recentActivity.concat([
-                          { id: 6, type: 'user', action: 'Password reset', user: 'John Smith', timestamp: '5 hours ago', details: 'User password reset successfully' },
-                          { id: 7, type: 'role', action: 'Permission granted', user: 'Admin', timestamp: '6 hours ago', details: 'Expense approval permission added to Manager role' },
-                          { id: 8, type: 'system', action: 'Database update', user: 'System', timestamp: '8 hours ago', details: 'User table schema updated' },
-                          { id: 9, type: 'expense', action: 'Expense submitted', user: 'Sarah Johnson', timestamp: '10 hours ago', details: '$1,200 travel expense submitted' },
-                          { id: 10, type: 'user', action: 'Account deactivated', user: 'Admin', timestamp: '12 hours ago', details: 'Inactive user account deactivated' }
-                        ]).map((activity) => (
-                          <tr key={activity.id} className="border-bottom">
-                            <td className="py-3 px-4">
-                              <small className="text-muted">{activity.timestamp}</small>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="d-flex align-items-center">
-                                <PersonCircle className="text-muted me-2" size={16} />
-                                <span className="fw-medium">{activity.user}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="d-flex align-items-center">
-                                {getActivityIcon(activity.type)}
-                                <span className="ms-2">{activity.action}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <span className="text-muted">{activity.details}</span>
-                            </td>
-                            <td className="py-3 px-4">
-                              <Badge
-                                bg={activity.type === 'user' ? 'primary' :
-                                    activity.type === 'role' ? 'success' :
-                                    activity.type === 'expense' ? 'warning' : 'info'}
-                                className="px-2 py-1 rounded-pill"
-                              >
-                                {activity.type}
-                              </Badge>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  </div>
-                </Card.Body>
-              </Card>
-            )}
           </Col>
         </Row>
-
-        {/* Add User Modal */}
-        <Modal
-          show={showUserModal}
-          onHide={() => setShowUserModal(false)}
-          centered
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Add New User</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group className="mb-3">
-                <Form.Label>Full Name</Form.Label>
-                <Form.Control type="text" placeholder="Enter full name" />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Email address</Form.Label>
-                <Form.Control type="email" placeholder="Enter email" />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Role</Form.Label>
-                <Form.Select>
-                  <option>Select role</option>
-                  <option>Admin</option>
-                  <option>Manager</option>
-                  <option>User</option>
-                </Form.Select>
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowUserModal(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={() => setShowUserModal(false)}>
-              Add User
-            </Button>
-          </Modal.Footer>
-        </Modal>
 
         {/* Custom CSS */}
         <style jsx global>{`

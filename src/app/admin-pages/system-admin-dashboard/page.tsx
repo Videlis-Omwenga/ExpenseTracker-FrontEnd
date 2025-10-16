@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   Container,
@@ -51,6 +52,7 @@ import {
   CreditCard,
   Telephone,
   PersonPlus,
+  Calendar,
 } from "react-bootstrap-icons";
 import AuthProvider from "../../authPages/tokenData";
 import { toast } from "react-toastify";
@@ -150,6 +152,9 @@ interface Role {
 }
 
 export default function SuperAdminDashboard() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [users, setUsers] = useState<User[]>([]);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [statistics, setStatistics] = useState<Statistics | null>(null);
@@ -157,7 +162,7 @@ export default function SuperAdminDashboard() {
     UsersByInstitution[]
   >([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "dashboard");
   const [searchTerm, setSearchTerm] = useState("");
   const [roles, setRoles] = useState<Role[]>([]);
 
@@ -171,9 +176,13 @@ export default function SuperAdminDashboard() {
     useState(false);
   const [showViewInstitutionModal, setShowViewInstitutionModal] =
     useState(false);
+  const [showViewRoleModal, setShowViewRoleModal] = useState(false);
+  const [showEditRoleModal, setShowEditRoleModal] = useState(false);
+  const [showDeleteRoleModal, setShowDeleteRoleModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedInstitution, setSelectedInstitution] =
     useState<Institution | null>(null);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [editFormData, setEditFormData] = useState({
     firstName: "",
     lastName: "",
@@ -195,14 +204,19 @@ export default function SuperAdminDashboard() {
     logoUrl: "",
     subscriptionStartDate: "",
     subscriptionEndDate: "",
-    trialEndDate: "",
     billingEmail: "",
     status: "",
+  });
+  const [editRoleFormData, setEditRoleFormData] = useState({
+    name: "",
+    description: "",
   });
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeletingInstitution, setIsDeletingInstitution] = useState(false);
   const [isUpdatingInstitution, setIsUpdatingInstitution] = useState(false);
+  const [isDeletingRole, setIsDeletingRole] = useState(false);
+  const [isUpdatingRole, setIsUpdatingRole] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -358,7 +372,6 @@ export default function SuperAdminDashboard() {
       logoUrl: institution.logoUrl || "",
       subscriptionStartDate: institution.subscriptionStartDate || "",
       subscriptionEndDate: institution.subscriptionEndDate || "",
-      trialEndDate: institution.trialEndDate || "",
       billingEmail: institution.billingEmail || "",
       status: institution.status,
     });
@@ -381,9 +394,9 @@ export default function SuperAdminDashboard() {
     setIsUpdatingInstitution(true);
     try {
       const response = await fetch(
-        `${BASE_API_URL}/system-admin/institutions/${selectedInstitution.id}`,
+        `${BASE_API_URL}/system-admin/edit-institution/${selectedInstitution.id}`,
         {
-          method: "PUT",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem(
@@ -416,9 +429,9 @@ export default function SuperAdminDashboard() {
     setIsDeletingInstitution(true);
     try {
       const response = await fetch(
-        `${BASE_API_URL}/system-admin/institutions/${selectedInstitution.id}`,
+        `${BASE_API_URL}/system-admin/delete-institution/${selectedInstitution.id}`,
         {
-          method: "DELETE",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem(
@@ -444,6 +457,104 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  // Role modal handlers
+  const handleViewRole = (role: Role) => {
+    setSelectedRole(role);
+    setShowViewRoleModal(true);
+  };
+
+  const handleEditRole = (role: Role) => {
+    setSelectedRole(role);
+    setEditRoleFormData({
+      name: role.name,
+      description: role.description,
+    });
+    setShowEditRoleModal(true);
+  };
+
+  const handleDeleteRole = (role: Role) => {
+    setSelectedRole(role);
+    setShowDeleteRoleModal(true);
+  };
+
+  const handleUpdateRole = async () => {
+    if (!selectedRole) return;
+
+    setIsUpdatingRole(true);
+    try {
+      const response = await fetch(
+        `${BASE_API_URL}/system-admin/edit-role/${selectedRole.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(
+              "expenseTrackerToken"
+            )}`,
+          },
+          body: JSON.stringify({
+            role: editRoleFormData.name,
+            description: editRoleFormData.description,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Role updated successfully");
+        setShowEditRoleModal(false);
+        fetchData();
+      } else {
+        toast.error(`${data.message}`);
+      }
+    } catch (error) {
+      toast.error(`Failed to update role: ${error}`);
+    } finally {
+      setIsUpdatingRole(false);
+    }
+  };
+
+  const confirmDeleteRole = async () => {
+    if (!selectedRole) return;
+
+    setIsDeletingRole(true);
+    try {
+      const response = await fetch(
+        `${BASE_API_URL}/system-admin/delete-role/${selectedRole.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(
+              "expenseTrackerToken"
+            )}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Role deleted successfully");
+        setShowDeleteRoleModal(false);
+        fetchData();
+      } else {
+        toast.error(data.message || "Failed to delete role");
+      }
+    } catch (error) {
+      toast.error(`Failed to delete role: ${error}`);
+    } finally {
+      setIsDeletingRole(false);
+    }
+  };
+
+  // Handle tab change and update URL
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    router.push(`?tab=${tab}`, { scroll: false });
+  };
+
   // Filter data based on search term
   const filteredUsers = users.filter(
     (user) =>
@@ -459,6 +570,12 @@ export default function SuperAdminDashboard() {
         institution.contactEmail
           .toLowerCase()
           .includes(searchTerm.toLowerCase()))
+  );
+
+  const filteredRoles = roles.filter(
+    (role) =>
+      role.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      role.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Generate user growth data for the last 30 days
@@ -515,7 +632,6 @@ export default function SuperAdminDashboard() {
     }
   };
 
-
   if (loading) return <PageLoader />;
 
   return (
@@ -561,7 +677,7 @@ export default function SuperAdminDashboard() {
                 <Nav.Item>
                   <Nav.Link
                     active={activeTab === "dashboard"}
-                    onClick={() => setActiveTab("dashboard")}
+                    onClick={() => handleTabChange("dashboard")}
                     className={`rounded-3 py-2 px-3 d-flex align-items-center position-relative ${
                       activeTab === "dashboard" ? "nav-link active" : "nav-link"
                     }`}
@@ -583,7 +699,7 @@ export default function SuperAdminDashboard() {
                 <Nav.Item>
                   <Nav.Link
                     active={activeTab === "users"}
-                    onClick={() => setActiveTab("users")}
+                    onClick={() => handleTabChange("users")}
                     className={`rounded-3 py-2 px-3 d-flex align-items-center justify-content-between position-relative ${
                       activeTab === "users" ? "nav-link active" : "nav-link"
                     }`}
@@ -610,7 +726,7 @@ export default function SuperAdminDashboard() {
                 <Nav.Item>
                   <Nav.Link
                     active={activeTab === "institutions"}
-                    onClick={() => setActiveTab("institutions")}
+                    onClick={() => handleTabChange("institutions")}
                     className={`rounded-3 py-2 px-3 d-flex align-items-center justify-content-between position-relative ${
                       activeTab === "institutions"
                         ? "nav-link active"
@@ -639,7 +755,7 @@ export default function SuperAdminDashboard() {
                 <Nav.Item>
                   <Nav.Link
                     active={activeTab === "roles"}
-                    onClick={() => setActiveTab("roles")}
+                    onClick={() => handleTabChange("roles")}
                     className={`rounded-3 py-2 px-3 d-flex align-items-center justify-content-between position-relative ${
                       activeTab === "roles" ? "nav-link active" : "nav-link"
                     }`}
@@ -670,7 +786,7 @@ export default function SuperAdminDashboard() {
                 <Nav.Item>
                   <Nav.Link
                     active={activeTab === "billing"}
-                    onClick={() => setActiveTab("billing")}
+                    onClick={() => handleTabChange("billing")}
                     className={`rounded-3 py-2 px-3 d-flex align-items-center position-relative ${
                       activeTab === "billing" ? "nav-link active" : "nav-link"
                     }`}
@@ -2389,23 +2505,26 @@ export default function SuperAdminDashboard() {
                     </Breadcrumb>
                   </div>
 
-                  <Card className="mb-4 shadow-sm">
-                    <Card.Body className="p-4">
+                  <Card className="mb-4 shadow-sm border-0">
+                    <Card.Body className="p-4 bg-gradient-light">
                       <Row className="align-items-center">
                         <Col md={6}>
-                          <div className="position-relative">
-                            <InputGroup className="shadow-sm">
-                              <InputGroup.Text className="bg-light border-0 ps-3">
-                                <Search className="text-muted" />
+                          <div className="position-relative search-wrapper">
+                            <InputGroup className="modern-search-input">
+                              <InputGroup.Text className="bg-white border-2 border-primary border-end-0 ps-4">
+                                <Search className="text-primary" size={18} />
                               </InputGroup.Text>
                               <FormControl
                                 placeholder="Search users by name, email, or department..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="border-0 ps-2 bg-light"
-                                style={{ fontSize: "14px" }}
+                                className="border-2 border-primary border-start-0 ps-2 bg-white fw-medium"
+                                style={{ fontSize: "15px", paddingTop: "12px", paddingBottom: "12px" }}
                               />
                             </InputGroup>
+                            <small className="text-muted d-block mt-2 ms-1">
+                              {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''} found
+                            </small>
                           </div>
                         </Col>
                         <Col
@@ -2456,14 +2575,20 @@ export default function SuperAdminDashboard() {
                             bg="secondary"
                             className="px-3 py-2 rounded-pill fw-medium"
                           >
-                            {users.filter((u) => u.status === "INACTIVE").length}{" "}
+                            {
+                              users.filter((u) => u.status === "INACTIVE")
+                                .length
+                            }{" "}
                             Inactive
                           </Badge>
                           <Badge
                             bg="danger"
                             className="px-3 py-2 rounded-pill fw-medium"
                           >
-                            {users.filter((u) => u.status === "SUSPENDED").length}{" "}
+                            {
+                              users.filter((u) => u.status === "SUSPENDED")
+                                .length
+                            }{" "}
                             Suspended
                           </Badge>
                           <Badge
@@ -2760,23 +2885,26 @@ export default function SuperAdminDashboard() {
                     </Breadcrumb>
                   </div>
 
-                  <Card className="mb-4 shadow-sm">
-                    <Card.Body className="p-4">
+                  <Card className="mb-4 shadow-sm border-0">
+                    <Card.Body className="p-4 bg-gradient-light">
                       <Row className="align-items-center">
                         <Col md={6}>
-                          <div className="position-relative">
-                            <InputGroup className="shadow-sm">
-                              <InputGroup.Text className="bg-light border-0 ps-3">
-                                <Search className="text-muted" />
+                          <div className="position-relative search-wrapper">
+                            <InputGroup className="modern-search-input">
+                              <InputGroup.Text className="bg-white border-2 border-info border-end-0 ps-4">
+                                <Search className="text-info" size={18} />
                               </InputGroup.Text>
                               <FormControl
                                 placeholder="Search institutions by name, email, or country..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="border-0 ps-2 bg-light"
-                                style={{ fontSize: "14px" }}
+                                className="border-2 border-info border-start-0 ps-2 bg-white fw-medium"
+                                style={{ fontSize: "15px", paddingTop: "12px", paddingBottom: "12px" }}
                               />
                             </InputGroup>
+                            <small className="text-muted d-block mt-2 ms-1">
+                              {filteredInstitutions.length} institution{filteredInstitutions.length !== 1 ? 's' : ''} found
+                            </small>
                           </div>
                         </Col>
                         <Col
@@ -2807,7 +2935,7 @@ export default function SuperAdminDashboard() {
                               Institution Directory
                             </h5>
                             <small className="text-muted">
-                              Manage organizations and subscriptions
+                              Manage organizations
                             </small>
                           </div>
                         </div>
@@ -2817,21 +2945,21 @@ export default function SuperAdminDashboard() {
                             className="px-3 py-2 rounded-pill fw-medium"
                           >
                             {
-                              institutions.filter((i) => i.status === "ACTIVE")
+                              institutions.filter((i) => i.isActive === true)
                                 .length
                             }{" "}
                             Active
                           </Badge>
                           <Badge
-                            bg="warning"
+                            bg="danger"
                             className="px-3 py-2 rounded-pill fw-medium"
                           >
                             {
                               institutions.filter(
-                                (i) => i.subscriptionPlan === "PREMIUM"
+                                (i) => i.isActive === false
                               ).length
                             }{" "}
-                            Premium
+                            Deleted
                           </Badge>
                         </div>
                       </div>
@@ -2862,17 +2990,6 @@ export default function SuperAdminDashboard() {
                                   />
                                   <span className="fw-bold text-dark">
                                     Members
-                                  </span>
-                                </div>
-                              </th>
-                              <th className="table-header py-4">
-                                <div className="d-flex align-items-center">
-                                  <Wallet
-                                    className="me-2 text-primary"
-                                    size={16}
-                                  />
-                                  <span className="fw-bold text-dark">
-                                    Subscription
                                   </span>
                                 </div>
                               </th>
@@ -3019,38 +3136,6 @@ export default function SuperAdminDashboard() {
                                 </td>
                                 <td className="py-4">
                                   <div>
-                                    <Badge
-                                      bg={
-                                        institution.subscriptionPlan ===
-                                        "PREMIUM"
-                                          ? "primary"
-                                          : institution.subscriptionPlan ===
-                                            "ENTERPRISE"
-                                          ? "dark"
-                                          : "secondary"
-                                      }
-                                      className="px-3 py-2 rounded-pill fw-medium mb-2"
-                                    >
-                                      {institution.subscriptionPlan || "FREE"}
-                                    </Badge>
-                                    <div className="small text-muted">
-                                      {institution.subscriptionStartDate ? (
-                                        <span>
-                                          Started:{" "}
-                                          <DateTimeDisplay
-                                            date={
-                                              institution.subscriptionStartDate
-                                            }
-                                          />
-                                        </span>
-                                      ) : (
-                                        "No subscription"
-                                      )}
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="py-4">
-                                  <div>
                                     <div className="mb-2">
                                       <Badge
                                         bg={getStatusVariant(
@@ -3185,23 +3270,26 @@ export default function SuperAdminDashboard() {
                     </Breadcrumb>
                   </div>
 
-                  <Card className="mb-4 shadow-sm">
-                    <Card.Body className="p-4">
+                  <Card className="mb-4 shadow-sm border-0">
+                    <Card.Body className="p-4 bg-gradient-light">
                       <Row className="align-items-center">
                         <Col md={6}>
-                          <div className="position-relative">
-                            <InputGroup className="shadow-sm">
-                              <InputGroup.Text className="bg-light border-0 ps-3">
-                                <Search className="text-muted" />
+                          <div className="position-relative search-wrapper">
+                            <InputGroup className="modern-search-input">
+                              <InputGroup.Text className="bg-white border-2 border-secondary border-end-0 ps-4">
+                                <Search className="text-secondary" size={18} />
                               </InputGroup.Text>
                               <FormControl
                                 placeholder="Search roles by name or description..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="border-0 ps-2 bg-light"
-                                style={{ fontSize: "14px" }}
+                                className="border-2 border-secondary border-start-0 ps-2 bg-white fw-medium"
+                                style={{ fontSize: "15px", paddingTop: "12px", paddingBottom: "12px" }}
                               />
                             </InputGroup>
+                            <small className="text-muted d-block mt-2 ms-1">
+                              {filteredRoles.length} role{filteredRoles.length !== 1 ? 's' : ''} found
+                            </small>
                           </div>
                         </Col>
                         <Col
@@ -3241,14 +3329,14 @@ export default function SuperAdminDashboard() {
                             bg="primary"
                             className="px-3 py-2 rounded-pill fw-medium"
                           >
-                            {roles.filter((r) => r.adminCreatedRole).length}{" "}
+                            {filteredRoles.filter((r) => r.adminCreatedRole).length}{" "}
                             Admin Roles
                           </Badge>
                           <Badge
                             bg="success"
                             className="px-3 py-2 rounded-pill fw-medium"
                           >
-                            {roles.filter((r) => !r.adminCreatedRole).length}{" "}
+                            {filteredRoles.filter((r) => !r.adminCreatedRole).length}{" "}
                             Custom Roles
                           </Badge>
                         </div>
@@ -3299,7 +3387,7 @@ export default function SuperAdminDashboard() {
                             </tr>
                           </thead>
                           <tbody>
-                            {roles.map((role) => (
+                            {filteredRoles.map((role) => (
                               <tr key={role.id} className="table-row">
                                 <td className="px-4 py-4">
                                   <div
@@ -3432,8 +3520,21 @@ export default function SuperAdminDashboard() {
                                 <td className="text-center">
                                   <div className="d-flex justify-content-center gap-2">
                                     <Badge
+                                      className="bg-info bg-opacity-10 text-info border-0 px-2 py-1 rounded-pill fw-medium"
+                                      title="View Role"
+                                      onClick={() => handleViewRole(role)}
+                                      style={{ cursor: "pointer" }}
+                                    >
+                                      <Eye
+                                        className="text-info"
+                                        size={16}
+                                      />
+                                    </Badge>
+                                    <Badge
                                       className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium"
                                       title="Edit Role"
+                                      onClick={() => handleEditRole(role)}
+                                      style={{ cursor: "pointer" }}
                                     >
                                       <Pencil
                                         className="text-primary"
@@ -3443,6 +3544,8 @@ export default function SuperAdminDashboard() {
                                     <Badge
                                       className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium"
                                       title="Delete Role"
+                                      onClick={() => handleDeleteRole(role)}
+                                      style={{ cursor: "pointer" }}
                                     >
                                       <Trash
                                         className="text-danger"
@@ -4199,6 +4302,50 @@ export default function SuperAdminDashboard() {
               height: 40px;
             }
           }
+
+          /* Modern Search Input Styles */
+          .bg-gradient-light {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          }
+
+          .modern-search-input {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+          }
+
+          .modern-search-input:focus-within {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+          }
+
+          .modern-search-input .input-group-text {
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+            transition: all 0.3s ease;
+          }
+
+          .modern-search-input .form-control {
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+            transition: all 0.3s ease;
+          }
+
+          .modern-search-input .form-control:focus {
+            box-shadow: none;
+            outline: none;
+          }
+
+          .modern-search-input .form-control::placeholder {
+            color: #adb5bd;
+            font-weight: 400;
+          }
+
+          .search-wrapper small {
+            font-size: 0.825rem;
+            font-weight: 500;
+          }
         `}</style>
 
         {/* Custom Modal Styles */}
@@ -4275,7 +4422,6 @@ export default function SuperAdminDashboard() {
           show={showViewModal}
           onHide={() => setShowViewModal(false)}
           size="xl"
-          centered
         >
           <Modal.Header
             closeButton
@@ -5158,69 +5304,6 @@ export default function SuperAdminDashboard() {
                   />
                 </Form.Group>
 
-                <div className="row g-4 mt-3">
-                  <div className="col-md-4">
-                    <Form.Group>
-                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                        <CreditCard size={16} className="text-primary" />
-                        Subscription Start
-                      </Form.Label>
-                      <Form.Control
-                        type="date"
-                        value={editInstitutionFormData.subscriptionStartDate}
-                        onChange={(e) =>
-                          setEditInstitutionFormData({
-                            ...editInstitutionFormData,
-                            subscriptionStartDate: e.target.value,
-                          })
-                        }
-                        className="form-control-lg"
-                        style={{ padding: "12px 16px", fontSize: "16px" }}
-                      />
-                    </Form.Group>
-                  </div>
-                  <div className="col-md-4">
-                    <Form.Group>
-                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                        <CreditCard size={16} className="text-primary" />
-                        Subscription End
-                      </Form.Label>
-                      <Form.Control
-                        type="date"
-                        value={editInstitutionFormData.subscriptionEndDate}
-                        onChange={(e) =>
-                          setEditInstitutionFormData({
-                            ...editInstitutionFormData,
-                            subscriptionEndDate: e.target.value,
-                          })
-                        }
-                        className="form-control-lg"
-                        style={{ padding: "12px 16px", fontSize: "16px" }}
-                      />
-                    </Form.Group>
-                  </div>
-                  <div className="col-md-4">
-                    <Form.Group>
-                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
-                        <CreditCard size={16} className="text-primary" />
-                        Trial End
-                      </Form.Label>
-                      <Form.Control
-                        type="date"
-                        value={editInstitutionFormData.trialEndDate}
-                        onChange={(e) =>
-                          setEditInstitutionFormData({
-                            ...editInstitutionFormData,
-                            trialEndDate: e.target.value,
-                          })
-                        }
-                        className="form-control-lg"
-                        style={{ padding: "12px 16px", fontSize: "16px" }}
-                      />
-                    </Form.Group>
-                  </div>
-                </div>
-
                 <Form.Group className="mt-4">
                   <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
                     <CreditCard size={16} className="text-primary" />
@@ -5240,6 +5323,49 @@ export default function SuperAdminDashboard() {
                     style={{ padding: "12px 16px", fontSize: "16px" }}
                   />
                 </Form.Group>
+
+                <Row className="mt-4">
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <Calendar size={16} className="text-primary" />
+                        Subscription Start Date
+                      </Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={editInstitutionFormData.subscriptionStartDate}
+                        onChange={(e) =>
+                          setEditInstitutionFormData({
+                            ...editInstitutionFormData,
+                            subscriptionStartDate: e.target.value,
+                          })
+                        }
+                        className="form-control-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
+                        <Calendar size={16} className="text-primary" />
+                        Subscription End Date
+                      </Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={editInstitutionFormData.subscriptionEndDate}
+                        onChange={(e) =>
+                          setEditInstitutionFormData({
+                            ...editInstitutionFormData,
+                            subscriptionEndDate: e.target.value,
+                          })
+                        }
+                        className="form-control-lg"
+                        style={{ padding: "12px 16px", fontSize: "16px" }}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
 
                 <Form.Group className="mt-4">
                   <Form.Label className="fw-semibold text-dark mb-2 d-flex align-items-center gap-2">
@@ -5409,7 +5535,6 @@ export default function SuperAdminDashboard() {
           onHide={() => setShowViewInstitutionModal(false)}
           size="xl"
           className="view-institution-modal"
-          centered
         >
           <Modal.Header className="bg-light border-0 position-relative overflow-hidden shadow-sm">
             {/* Subtle background elements */}
@@ -5459,41 +5584,53 @@ export default function SuperAdminDashboard() {
                 {/* Header Section */}
                 <div className="text-center mb-5 position-relative">
                   <div
-                    className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4 position-relative"
+                    className="position-relative mb-4"
                     style={{ width: "120px", height: "120px" }}
                   >
-                    <div
-                      className="bg-gradient-to-br from-primary to-info rounded-circle d-flex align-items-center justify-content-center shadow-lg"
-                      style={{ width: "80px", height: "80px" }}
-                    >
-                      <Building size={40} className="text-white" />
-                    </div>
+                    {selectedInstitution.logoUrl ? (
+                      <img
+                        src={selectedInstitution.logoUrl}
+                        alt={`${selectedInstitution.name} logo`}
+                        className="rounded-circle w-100 h-100 object-cover border border-3 border-light shadow-sm"
+                      />
+                    ) : (
+                      <div className="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center h-100">
+                        <div
+                          className="bg-gradient-to-br from-primary to-info rounded-circle d-flex align-items-center justify-content-center shadow-lg"
+                          style={{ width: "80px", height: "80px" }}
+                        >
+                          <Building size={40} className="text-white" />
+                        </div>
+                      </div>
+                    )}
+                    {selectedInstitution.isActive !== undefined && (
+                      <span
+                        className={`position-absolute bottom-0 end-0 translate-middle p-1 rounded-circle border border-2 border-white ${
+                          selectedInstitution.isActive
+                            ? "bg-success"
+                            : "bg-secondary"
+                        }`}
+                        style={{ width: "20px", height: "20px" }}
+                        title={
+                          selectedInstitution.isActive ? "Active" : "Inactive"
+                        }
+                      ></span>
+                    )}
                   </div>
-                  <h3 className="fw-bold text-primary mb-2">
+                  <h3 className="fw-bold text-primary mb-3">
                     {selectedInstitution.name}
                   </h3>
-                  <p className="text-muted mb-3 fs-6">
-                    Comprehensive institution information and statistics
+                  <p className="text-muted mb-4 fs-6">
+                    {selectedInstitution.industry || "No industry specified"}
                   </p>
-                  <div className="d-flex justify-content-center gap-2 flex-wrap">
+
+                  <div className="d-flex justify-content-center gap-3 flex-wrap mb-4">
                     <Badge
                       bg={getStatusVariant(selectedInstitution.status)}
-                      className="px-3 py-2 fs-6"
+                      className="px-3 py-2 fs-6 d-flex align-items-center gap-2"
                     >
-                      {selectedInstitution.status}
-                    </Badge>
-                    <Badge
-                      bg={
-                        selectedInstitution.subscriptionPlan === "PREMIUM"
-                          ? "primary"
-                          : selectedInstitution.subscriptionPlan ===
-                            "ENTERPRISE"
-                          ? "dark"
-                          : "secondary"
-                      }
-                      className="px-3 py-2 fs-6"
-                    >
-                      {selectedInstitution.subscriptionPlan || "FREE"} Plan
+                      <i className="bi bi-circle-fill small"></i>
+                      {selectedInstitution.status?.toUpperCase() || "N/A"}
                     </Badge>
                   </div>
                 </div>
@@ -5631,13 +5768,96 @@ export default function SuperAdminDashboard() {
                               {selectedInstitution.address || "Not provided"}
                             </span>
                           </div>
+                          <div className="d-flex justify-content-between align-items-center py-2">
+                            <small className="text-muted fw-medium">
+                              Postal Code
+                            </small>
+                            <span className="fw-semibold">
+                              {selectedInstitution.postalCode ||
+                                "Not specified"}
+                            </span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2">
+                            <small className="text-muted fw-medium">
+                              Active Status
+                            </small>
+                            <Badge
+                              bg={
+                                selectedInstitution.isActive
+                                  ? "success"
+                                  : "danger"
+                              }
+                              className="px-2 py-1"
+                            >
+                              {selectedInstitution.isActive
+                                ? "Active"
+                                : "Deleted"}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Subscription Information */}
+                  <div className="col-lg-12">
+                    <div className="card border-0 shadow-sm h-100 hover-lift">
+                      <div className="card-body p-4">
+                        <div className="d-flex align-items-center mb-4">
+                          <div className="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
+                            <CreditCard size={20} className="text-warning" />
+                          </div>
+                          <h6 className="fw-bold text-dark mb-0">
+                            Subscription Information
+                          </h6>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">
+                              Subscription Start Date
+                            </small>
+                            <span className="fw-semibold">
+                              {selectedInstitution.subscriptionStartDate ? (
+                                <DateTimeDisplay
+                                  date={selectedInstitution.subscriptionStartDate}
+                                />
+                              ) : (
+                                "Not set"
+                              )}
+                            </span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                            <small className="text-muted fw-medium">
+                              Subscription End Date
+                            </small>
+                            <span className="fw-semibold">
+                              {selectedInstitution.subscriptionEndDate ? (
+                                <DateTimeDisplay
+                                  date={selectedInstitution.subscriptionEndDate}
+                                />
+                              ) : (
+                                "Not set"
+                              )}
+                            </span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center py-2">
+                            <small className="text-muted fw-medium">
+                              Billing Email
+                            </small>
+                            <span
+                              className="fw-semibold text-truncate"
+                              style={{ maxWidth: "200px" }}
+                            >
+                              {selectedInstitution.billingEmail || "Not provided"}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Statistics */}
-                  <div className="col-lg-6">
+                  <div className="col-lg-12">
                     <div className="card border-0 shadow-sm h-100 hover-lift">
                       <div className="card-body p-4">
                         <div className="d-flex align-items-center mb-4">
@@ -5665,91 +5885,6 @@ export default function SuperAdminDashboard() {
                               <small className="text-light">Departments</small>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Subscription Details */}
-                  <div className="col-lg-6">
-                    <div className="card border-0 shadow-sm h-100 hover-lift">
-                      <div className="card-body p-4">
-                        <div className="d-flex align-items-center mb-4">
-                          <div className="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
-                            <CreditCard size={20} className="text-warning" />
-                          </div>
-                          <h6 className="fw-bold text-dark mb-0">
-                            Subscription Details
-                          </h6>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">Plan</small>
-                            <Badge
-                              bg={
-                                selectedInstitution.subscriptionPlan ===
-                                "PREMIUM"
-                                  ? "primary"
-                                  : selectedInstitution.subscriptionPlan ===
-                                    "ENTERPRISE"
-                                  ? "dark"
-                                  : "secondary"
-                              }
-                              className="px-2 py-1"
-                            >
-                              {selectedInstitution.subscriptionPlan || "FREE"}
-                            </Badge>
-                          </div>
-                          <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                            <small className="text-muted fw-medium">
-                              Billing Email
-                            </small>
-                            <span
-                              className="fw-semibold text-truncate"
-                              style={{ maxWidth: "200px" }}
-                            >
-                              {selectedInstitution.billingEmail ||
-                                "Not provided"}
-                            </span>
-                          </div>
-                          {selectedInstitution.subscriptionStartDate && (
-                            <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                              <small className="text-muted fw-medium">
-                                Subscription Start
-                              </small>
-                              <small className="fw-semibold">
-                                <DateTimeDisplay
-                                  date={
-                                    selectedInstitution.subscriptionStartDate
-                                  }
-                                />
-                              </small>
-                            </div>
-                          )}
-                          {selectedInstitution.subscriptionEndDate && (
-                            <div className="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                              <small className="text-muted fw-medium">
-                                Subscription End
-                              </small>
-                              <small className="fw-semibold">
-                                <DateTimeDisplay
-                                  date={selectedInstitution.subscriptionEndDate}
-                                />
-                              </small>
-                            </div>
-                          )}
-                          {selectedInstitution.trialEndDate && (
-                            <div className="d-flex justify-content-between align-items-center py-2">
-                              <small className="text-muted fw-medium">
-                                Trial End
-                              </small>
-                              <small className="fw-semibold">
-                                <DateTimeDisplay
-                                  date={selectedInstitution.trialEndDate}
-                                />
-                              </small>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -5809,6 +5944,283 @@ export default function SuperAdminDashboard() {
             >
               <Eye size={16} className="me-2" />
               Close Details
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* View Role Modal */}
+        <Modal
+          show={showViewRoleModal}
+          onHide={() => setShowViewRoleModal(false)}
+          size="xl"
+        >
+          <Modal.Header closeButton className="bg-light border-0">
+            <Modal.Title className="fw-bold d-flex align-items-center gap-3">
+              <div className="bg-info bg-opacity-15 p-3 rounded-circle">
+                <ShieldLock size={24} className="text-info" />
+              </div>
+              <div>
+                <h5 className="mb-1 fw-bold">Role Details</h5>
+                <small className="text-muted">Complete role information</small>
+              </div>
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="p-4">
+            {selectedRole && (
+              <>
+                <div className="mb-4">
+                  <div className="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                      <h4 className="fw-bold text-primary mb-2">
+                        {selectedRole.name.toUpperCase()}
+                      </h4>
+                      <Badge
+                        bg={
+                          selectedRole.adminCreatedRole ? "primary" : "success"
+                        }
+                        className="px-3 py-2"
+                      >
+                        {selectedRole.adminCreatedRole
+                          ? "System Role"
+                          : "Custom Role"}
+                      </Badge>
+                    </div>
+                    <div className="text-end">
+                      <small className="text-muted">Role ID</small>
+                      <div className="fw-bold">{selectedRole.id}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <Card className="border-0 shadow-sm mb-4">
+                  <Card.Body className="p-4">
+                    <h6 className="fw-bold text-dark mb-3 d-flex align-items-center">
+                      <ShieldLock size={18} className="me-2 text-primary" />
+                      Description & Permissions
+                    </h6>
+                    <p className="text-muted mb-0">
+                      {selectedRole.description || "No description provided"}
+                    </p>
+                  </Card.Body>
+                </Card>
+
+                <Card className="border-0 shadow-sm">
+                  <Card.Body className="p-4">
+                    <h6 className="fw-bold text-dark mb-3 d-flex align-items-center">
+                      <Activity size={18} className="me-2 text-primary" />
+                      Timeline
+                    </h6>
+                    <div className="d-flex justify-content-between align-items-center py-2 border-bottom">
+                      <small className="text-muted fw-medium">Created</small>
+                      <span className="fw-semibold">
+                        <DateTimeDisplay date={selectedRole.createdAt} />
+                      </span>
+                    </div>
+                    {selectedRole.updatedAt !== selectedRole.createdAt && (
+                      <div className="d-flex justify-content-between align-items-center py-2 mt-2">
+                        <small className="text-muted fw-medium">
+                          Last Updated
+                        </small>
+                        <span className="fw-semibold">
+                          <DateTimeDisplay date={selectedRole.updatedAt} />
+                        </span>
+                      </div>
+                    )}
+                  </Card.Body>
+                </Card>
+              </>
+            )}
+          </Modal.Body>
+          <Modal.Footer className="border-0 bg-light">
+            <Button
+              variant="secondary"
+              onClick={() => setShowViewRoleModal(false)}
+              className="px-4 py-2"
+            >
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Edit Role Modal */}
+        <Modal
+          show={showEditRoleModal}
+          onHide={() => setShowEditRoleModal(false)}
+          size="xl"
+        >
+          <Modal.Header closeButton className="bg-light border-0">
+            <Modal.Title className="fw-bold d-flex align-items-center gap-3">
+              <div className="bg-primary bg-opacity-15 p-3 rounded-circle">
+                <Pencil size={24} className="text-primary" />
+              </div>
+              <div>
+                <h5 className="mb-1 fw-bold">Edit Role</h5>
+                <small className="text-muted">Update role information</small>
+              </div>
+            </Modal.Title>
+          </Modal.Header>
+          <Form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleUpdateRole();
+            }}
+          >
+            <Modal.Body className="p-4">
+              {selectedRole && (
+                <>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold">
+                      Role Name <span className="text-danger">*</span>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editRoleFormData.name}
+                      onChange={(e) =>
+                        setEditRoleFormData({
+                          ...editRoleFormData,
+                          name: e.target.value,
+                        })
+                      }
+                      required
+                      placeholder="Enter role name"
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold">
+                      Description <span className="text-danger">*</span>
+                    </Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={4}
+                      value={editRoleFormData.description}
+                      onChange={(e) =>
+                        setEditRoleFormData({
+                          ...editRoleFormData,
+                          description: e.target.value,
+                        })
+                      }
+                      required
+                      placeholder="Enter role description and permissions"
+                    />
+                  </Form.Group>
+
+                  <Badge
+                    bg={selectedRole.adminCreatedRole ? "primary" : "success"}
+                    className="px-3 py-2"
+                  >
+                    {selectedRole.adminCreatedRole
+                      ? "System Role"
+                      : "Custom Role"}
+                  </Badge>
+                </>
+              )}
+            </Modal.Body>
+            <Modal.Footer className="border-0 bg-light">
+              <Button
+                variant="outline-secondary"
+                onClick={() => setShowEditRoleModal(false)}
+                disabled={isUpdatingRole}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                disabled={isUpdatingRole}
+              >
+                {isUpdatingRole ? (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    Updating...
+                  </>
+                ) : (
+                  "Update Role"
+                )}
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
+
+        {/* Delete Role Modal */}
+        <Modal
+          show={showDeleteRoleModal}
+          onHide={() => setShowDeleteRoleModal(false)}
+          size="xl"
+        >
+          <Modal.Header closeButton className="bg-light border-0">
+            <Modal.Title className="fw-bold d-flex align-items-center gap-3">
+              <div className="bg-danger bg-opacity-15 p-3 rounded-circle">
+                <Trash size={24} className="text-danger" />
+              </div>
+              <div>
+                <h5 className="mb-1 fw-bold">Delete Role</h5>
+                <small className="text-muted">Confirm role deletion</small>
+              </div>
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="p-4">
+            {selectedRole && (
+              <>
+                <div className="alert alert-danger d-flex align-items-start">
+                  <Activity size={20} className="me-2 mt-1" />
+                  <div>
+                    <strong>Warning!</strong>
+                    <p className="mb-0 mt-1">
+                      Are you sure you want to delete the role{" "}
+                      <strong>{selectedRole.name}</strong>? This action cannot
+                      be undone.
+                    </p>
+                  </div>
+                </div>
+                <Card className="border-0 bg-light">
+                  <Card.Body>
+                    <div className="mb-2">
+                      <small className="text-muted">Role Name</small>
+                      <div className="fw-bold">
+                        {selectedRole.name.toUpperCase()}
+                      </div>
+                    </div>
+                    <div>
+                      <small className="text-muted">Description</small>
+                      <div className="text-muted">
+                        {selectedRole.description || "No description"}
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </>
+            )}
+          </Modal.Body>
+          <Modal.Footer className="border-0 bg-light">
+            <Button
+              variant="outline-secondary"
+              onClick={() => setShowDeleteRoleModal(false)}
+              disabled={isDeletingRole}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmDeleteRole}
+              disabled={isDeletingRole}
+            >
+              {isDeletingRole ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  Deleting...
+                </>
+              ) : (
+                "Delete Role"
+              )}
             </Button>
           </Modal.Footer>
         </Modal>
