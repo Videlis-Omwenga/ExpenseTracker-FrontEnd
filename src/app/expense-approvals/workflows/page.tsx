@@ -145,7 +145,7 @@ export default function WorkflowEditor() {
   // Fetch hierarchies (Simple names from admin dashboard)
   const fetchHierarchies = async () => {
     try {
-      const response = await fetch(`${BASE_API_URL}/hierarchies/all`, {
+      const response = await fetch(`${BASE_API_URL}/approval-hierarchy/all`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

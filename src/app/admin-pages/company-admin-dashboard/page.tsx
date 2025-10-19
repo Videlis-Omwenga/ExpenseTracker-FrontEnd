@@ -547,7 +547,7 @@ function AdminDashboardContent() {
   // Fetch Approval Hierarchies (Simple names only)
   const fetchApprovalHierarchies = async () => {
     try {
-      const response = await fetch(`${BASE_API_URL}/hierarchies/all`, {
+      const response = await fetch(`${BASE_API_URL}/approval-hierarchy/all`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -2723,7 +2723,7 @@ function AdminDashboardContent() {
 
                 setIsCreatingHierarchy(true);
                 try {
-                  const response = await fetch(`${BASE_API_URL}/hierarchies/create`, {
+                  const response = await fetch(`${BASE_API_URL}/approval-hierarchy/create`, {
                     method: "POST",
                     headers: {
                       "Content-Type": "application/json",
@@ -2808,9 +2808,9 @@ function AdminDashboardContent() {
                 setIsUpdatingHierarchy(true);
                 try {
                   const response = await fetch(
-                    `${BASE_API_URL}/hierarchies/update/${selectedHierarchy.id}`,
+                    `${BASE_API_URL}/approval-hierarchy/update/${selectedHierarchy.id}`,
                     {
-                      method: "POST",
+                      method: "PUT",
                       headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
@@ -2886,9 +2886,9 @@ function AdminDashboardContent() {
                 setIsDeletingHierarchy(true);
                 try {
                   const response = await fetch(
-                    `${BASE_API_URL}/hierarchies/delete/${selectedHierarchy.id}`,
+                    `${BASE_API_URL}/approval-hierarchy/${selectedHierarchy.id}`,
                     {
-                      method: "POST",
+                      method: "DELETE",
                       headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
