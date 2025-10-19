@@ -367,7 +367,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
             : [],
           // Transform approval steps using the helper function
           approvalSteps: transformApprovalSteps(
-            data.approvalSteps,
+            (data.approvalSteps as unknown) as Array<Record<string, unknown>>,
             numericExpenseId
           ),
         };
@@ -537,7 +537,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                 <div className="d-flex justify-content-between">
                   <small className="text-muted">
                     {
-                      approvalSteps.filter((s) => s.status === "APPROVED")
+                      approvalSteps.filter((s) => s.approvalStatus === "APPROVED")
                         .length
                     }{" "}
                     of {approvalSteps.length} steps completed

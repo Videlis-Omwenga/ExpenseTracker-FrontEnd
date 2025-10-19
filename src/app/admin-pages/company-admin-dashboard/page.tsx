@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Container,
@@ -309,7 +309,7 @@ interface Page {
   description?: string;
 }
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -4379,5 +4379,13 @@ export default function AdminDashboard() {
         </Modal.Footer>
       </Modal>
     </AuthProvider>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <AdminDashboardContent />
+    </Suspense>
   );
 }

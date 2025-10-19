@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import {
@@ -151,7 +151,7 @@ interface Role {
   adminCreatedRole: boolean;
 }
 
-export default function SuperAdminDashboard() {
+function SuperAdminDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -6304,5 +6304,13 @@ export default function SuperAdminDashboard() {
         </Modal>
       </Container>
     </AuthProvider>
+  );
+}
+
+export default function SuperAdminDashboard() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <SuperAdminDashboardContent />
+    </Suspense>
   );
 }
