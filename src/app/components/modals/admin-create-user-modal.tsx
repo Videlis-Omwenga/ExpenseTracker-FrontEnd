@@ -11,15 +11,27 @@ interface Region {
   name: string;
 }
 
+interface Hierarchy {
+  id: number;
+  name: string;
+}
+
+interface Role {
+  id: number;
+  name: string;
+}
+
 interface AdminCreateUserModalProps {
-  roles: any[];
+  roles: Role[];
   regions?: Region[];
+  hierarchies?: Hierarchy[];
   onSuccess?: () => void;
 }
 
 export default function AdminCreateUserModal({
   roles,
   regions = [],
+  hierarchies = [],
   onSuccess,
 }: AdminCreateUserModalProps) {
   const [show, setShow] = useState(false);
@@ -28,6 +40,7 @@ export default function AdminCreateUserModal({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
+  const [selectedHierarchies, setSelectedHierarchies] = useState<number[]>([]);
   const [regionId, setRegionId] = useState<number | null>(null);
   const [institution, setInstitution] = useState("");
   const [phone, setPhone] = useState("");
@@ -55,6 +68,7 @@ export default function AdminCreateUserModal({
         lastName,
         email,
         role: selectedRoles,
+        hierarchies: selectedHierarchies,
         regionId,
         institution: Number(institution),
         phone,
@@ -79,6 +93,7 @@ export default function AdminCreateUserModal({
         setLastName("");
         setEmail("");
         setSelectedRoles([]);
+        setSelectedHierarchies([]);
         setRegionId(null);
         setPhone("");
         setInstitution("");
@@ -156,7 +171,7 @@ export default function AdminCreateUserModal({
                         className="rounded-3 py-2 px-3 modern-input"
                       />
                       <Form.Text className="text-muted">
-                        Please enter the user's first name.
+                        Please enter the user&apos;s first name.
                       </Form.Text>
                     </Form.Group>
                   </Col>
@@ -173,7 +188,7 @@ export default function AdminCreateUserModal({
                         className="rounded-3 py-2 px-3 modern-input"
                       />
                       <Form.Text className="text-muted">
-                        Please enter the user's last name.
+                        Please enter the user&apos;s last name.
                       </Form.Text>
                     </Form.Group>
                   </Col>
@@ -193,7 +208,7 @@ export default function AdminCreateUserModal({
                         className="rounded-3 py-2 px-3 modern-input"
                       />
                       <Form.Text className="text-muted">
-                        Please enter the user's email address.
+                        Please enter the user&apos;s email address.
                       </Form.Text>
                     </Form.Group>
                   </Col>
@@ -210,7 +225,7 @@ export default function AdminCreateUserModal({
                         className="rounded-3 py-2 px-3 modern-input"
                       />
                       <Form.Text className="text-muted">
-                        Please enter the user's phone number. 25471234567
+                        Please enter the user&apos;s phone number. 25471234567
                       </Form.Text>
                     </Form.Group>
                   </Col>
@@ -233,7 +248,7 @@ export default function AdminCreateUserModal({
                         ))}
                       </Form.Select>
                       <Form.Text className="text-muted">
-                        Please select the user's region.
+                        Please select the user&apos;s region.
                       </Form.Text>
                     </Form.Group>
                   </Col>
@@ -278,6 +293,44 @@ export default function AdminCreateUserModal({
                           At least one role must be selected.
                         </div>
                       )}
+                    </Form.Group>
+                  </Col>
+                  <Col md={12}>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="fw-semibold text-dark">
+                        Hierarchies
+                      </Form.Label>
+                      <div className="border-0 rounded-3 p-3 modern-input" style={{maxHeight: '200px', overflowY: 'auto'}}>
+                        {hierarchies.length === 0 ? (
+                          <div className="text-muted text-center py-3">
+                            No hierarchies available. Create hierarchies in the Approval Hierarchy section.
+                          </div>
+                        ) : (
+                          <div className="row">
+                            {hierarchies.map((h) => (
+                              <div key={h.id} className="col-md-3 col-sm-6 mb-2">
+                                <Form.Check
+                                  type="checkbox"
+                                  id={`hierarchy-${h.id}`}
+                                  checked={selectedHierarchies.includes(h.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedHierarchies([...selectedHierarchies, h.id]);
+                                    } else {
+                                      setSelectedHierarchies(selectedHierarchies.filter(hierarchyId => hierarchyId !== h.id));
+                                    }
+                                  }}
+                                  label={h.name}
+                                  className="modern-checkbox"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <Form.Text className="text-muted">
+                        Select hierarchies to assign to this user. Selected: {selectedHierarchies.length}
+                      </Form.Text>
                     </Form.Group>
                   </Col>
                 </Row>

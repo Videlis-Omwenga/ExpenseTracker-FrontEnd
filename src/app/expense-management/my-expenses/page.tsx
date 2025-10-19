@@ -166,15 +166,15 @@ type ExpenseRow = Omit<Expense, "createdAt" | "updatedAt"> & {
 
 /** ========= Helpers ========= */
 
-const parseDate = (d: any): string => {
+const parseDate = (d: unknown): string => {
   try {
-    return d ? d : "";
+    return d ? String(d) : "";
   } catch {
     return "";
   }
 };
 
-const normalizeStatus = (s: any): string =>
+const normalizeStatus = (s: unknown): string =>
   typeof s === "string" ? s.toUpperCase() : String(s ?? "");
 
 const statusBadge = (status: string) => {
@@ -348,99 +348,110 @@ export default function FinanceDashboard() {
       }
 
       if (Array.isArray(data)) {
-        const mapped = data.map((item: any): ExpenseRow => {
+        const mapped = data.map((item: Record<string, unknown>): ExpenseRow => {
           // Map user
+          const userObj = item.user as Record<string, unknown> | undefined;
           const mappedUser: User = {
-            id: Number(item.user?.id ?? 0),
-            firstName: item.user?.firstName ?? "",
-            lastName: item.user?.lastName ?? "",
-            email: item.user?.email ?? "",
+            id: Number(userObj?.id ?? 0),
+            firstName: String(userObj?.firstName ?? ""),
+            lastName: String(userObj?.lastName ?? ""),
+            email: String(userObj?.email ?? ""),
           };
 
           // Map steps
           const steps: ExpenseStep[] = Array.isArray(item.expenseSteps)
-            ? item.expenseSteps.map((s: any) => ({
-                id: Number(s.id ?? 0),
-                order: Number(s.order ?? 0),
-                isOptional: Boolean(s.isOptional ?? false),
-                status: (s.status as ApprovalStatus) || "PENDING",
-                comments: s.comments ?? null,
-                role: s.role
+            ? (item.expenseSteps as unknown[]).map((s: unknown) => {
+                const stepObj = s as Record<string, unknown>;
+                const roleObj = stepObj.role as Record<string, unknown> | undefined;
+                const approverObj = stepObj.approver as Record<string, unknown> | undefined;
+                return {
+                id: Number(stepObj.id ?? 0),
+                order: Number(stepObj.order ?? 0),
+                isOptional: Boolean(stepObj.isOptional ?? false),
+                status: (stepObj.status as ApprovalStatus) || "PENDING",
+                comments: stepObj.comments ? String(stepObj.comments) : null,
+                role: roleObj
                   ? {
-                      id: Number(s.role.id ?? 0),
-                      name: String(s.role.name ?? ""),
+                      id: Number(roleObj.id ?? 0),
+                      name: String(roleObj.name ?? ""),
                     }
                   : null,
-                approver: s.approver
+                approver: approverObj
                   ? {
-                      id: Number(s.approver.id ?? 0),
-                      firstName: String(s.approver.firstName ?? ""),
-                      lastName: String(s.approver.lastName ?? ""),
-                      email: String(s.approver.email ?? ""),
+                      id: Number(approverObj.id ?? 0),
+                      firstName: String(approverObj.firstName ?? ""),
+                      lastName: String(approverObj.lastName ?? ""),
+                      email: String(approverObj.email ?? ""),
                     }
                   : undefined,
-                level: Number(s.order ?? 0),
-              }))
+                level: Number(stepObj.order ?? 0),
+              };
+            })
             : [];
 
           // Map related entities
-          const currency = item.currency
+          const currencyObj = item.currency as Record<string, unknown> | undefined;
+          const currency = currencyObj
             ? {
-                id: Number(item.currency.id ?? 0),
-                currency: String(item.currency.currency ?? ""),
-                initials: String(item.currency.initials ?? ""),
-                rate: Number(item.currency.rate ?? 1),
+                id: Number(currencyObj.id ?? 0),
+                currency: String(currencyObj.currency ?? ""),
+                initials: String(currencyObj.initials ?? ""),
+                rate: Number(currencyObj.rate ?? 1),
               }
             : null;
 
-          const category = item.category
+          const categoryObj = item.category as Record<string, unknown> | undefined;
+          const category = categoryObj
             ? {
-                id: Number(item.category.id ?? 0),
-                name: String(item.category.name ?? ""),
+                id: Number(categoryObj.id ?? 0),
+                name: String(categoryObj.name ?? ""),
               }
             : null;
 
-          const department = item.department
+          const departmentObj = item.department as Record<string, unknown> | undefined;
+          const department = departmentObj
             ? {
-                id: Number(item.department.id ?? 0),
-                name: String(item.department.name ?? ""),
+                id: Number(departmentObj.id ?? 0),
+                name: String(departmentObj.name ?? ""),
               }
             : null;
 
-          const paymentMethod = item.paymentMethod
+          const paymentMethodObj = item.paymentMethod as Record<string, unknown> | undefined;
+          const paymentMethod = paymentMethodObj
             ? {
-                id: Number(item.paymentMethod.id ?? 0),
-                name: String(item.paymentMethod.name ?? ""),
+                id: Number(paymentMethodObj.id ?? 0),
+                name: String(paymentMethodObj.name ?? ""),
               }
             : null;
 
-          const region = item.region
+          const regionObj = item.region as Record<string, unknown> | undefined;
+          const region = regionObj
             ? {
-                id: Number(item.region.id ?? 0),
-                name: String(item.region.name ?? ""),
+                id: Number(regionObj.id ?? 0),
+                name: String(regionObj.name ?? ""),
               }
             : null;
 
           return {
             id: Number(item.id ?? 0),
-            description: item.description ?? "",
+            description: String(item.description ?? ""),
             amount: Number(item.amount ?? 0),
             currency,
             category,
-            receiptUrl: item.receiptUrl ?? null,
+            receiptUrl: item.receiptUrl ? String(item.receiptUrl) : null,
             status:
               (normalizeStatus(item.status) as ExpenseRow["status"]) ||
               "PENDING",
             isActive: Boolean(item.isActive ?? true),
             primaryAmount: Number(item.primaryAmount ?? 0),
             exchangeRateUsed: Number(item.exchangeRate ?? 0),
-            payee: item.payee ?? "",
-            payeeId: item.payeeId ?? "",
-            payeeNumber: item.payeeNumber ?? null,
+            payee: String(item.payee ?? ""),
+            payeeId: String(item.payeeId ?? ""),
+            payeeNumber: item.payeeNumber ? String(item.payeeNumber) : null,
             department,
             paymentMethod,
             region,
-            referenceNumber: item.referenceNumber ?? null,
+            referenceNumber: item.referenceNumber ? String(item.referenceNumber) : null,
             userId: Number(item.userId ?? 0),
             user: mappedUser,
             workflowId:
@@ -457,9 +468,10 @@ export default function FinanceDashboard() {
       } else {
         setExpenses([]);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error;
       toast.error(
-        "Failed to load expenses: " + (error?.message || String(error))
+        "Failed to load expenses: " + (err?.message || String(error))
       );
     } finally {
       setLoading(false);
@@ -769,55 +781,48 @@ export default function FinanceDashboard() {
     <AuthProvider>
       <TopNavbar />
       <Container fluid className="dashboard-container px-4 py-3">
-        {/* Header */}
+        {/* Modern Header */}
+        <div className="mb-4">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <div className="d-flex align-items-center mb-2">
+                <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                  <Clipboard2Data className="text-primary" size={28} />
+                </div>
+                <div>
+                  <h2 className="fw-bold text-dark mb-0">
+                    My Expenses
+                  </h2>
+                  <p className="text-muted mb-0 small">
+                    Track and manage your expense submissions
+                  </p>
+                </div>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="primary"
+              className="d-inline-flex align-items-center px-4 py-2 rounded-pill fw-semibold shadow-sm"
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              {refreshing ? (
+                <Spinner animation="border" size="sm" className="me-2" />
+              ) : (
+                <ArrowRepeat size={16} className="me-2" />
+              )}
+              Refresh
+            </Button>
+          </div>
+          <hr className="border-2 border-primary opacity-25 mb-4" />
+        </div>
+
+        {/* Stats Cards */}
         <Row className="mb-4">
           <Col>
-            <Card
-              className="border-0 shadow-sm"
-              style={{
-                background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
-                borderRadius: "0.75rem",
-              }}
-            >
+            <Card className="border-0 shadow-sm rounded-3">
               <Card.Body className="p-4">
-                <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                  <div className="d-flex align-items-center mb-3 mb-md-0">
-                    <div className="bg-secondary bg-opacity-10 border-bottom border-secondary border-2 p-3 rounded-circle me-3 shadow-sm">
-                      <Clipboard2Data size={24} className="text-primary" />
-                    </div>
-                    <div>
-                      <h6 className="fw-bold mb-1 text-dark">
-                        Expense Dashboard
-                      </h6>
-                      <p className="text-muted mb-0 small">
-                        Welcome back! Here's an overview of your expenses
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    className="d-inline-flex align-items-center"
-                    onClick={handleRefresh}
-                    disabled={refreshing}
-                    style={{
-                      minWidth: "110px",
-                      borderRadius: "0.5rem",
-                      borderWidth: "1.5px",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {refreshing ? (
-                      <Spinner animation="border" size="sm" className="me-2" />
-                    ) : (
-                      <ArrowRepeat size={16} className="me-2" />
-                    )}
-                    Refresh page
-                  </Button>
-                </div>
-
-                {/* Stats Row */}
-                <Row className="mt-4 g-3">
+                <Row className="g-4">
                   <Col xs={6} md={2}>
                     <div className="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-primary border-2">
                       <div className="d-flex align-items-center">
@@ -910,18 +915,20 @@ export default function FinanceDashboard() {
         {/* Quick Actions Bar */}
         <Row className="mb-4">
           <Col>
-            <Card className="border-0 shadow-sm">
-              <Card.Body className="p-3">
-                <div className="d-flex align-items-center justify-content-between">
+            <Card className="border-0 shadow-sm rounded-3">
+              <Card.Body className="p-4">
+                <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
                   <div className="d-flex align-items-center">
-                    <Lightning size={20} className="text-warning me-2" />
-                    <h6 className="fw-bold mb-0">Quick Actions</h6>
+                    <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
+                      <Lightning size={20} className="text-warning" />
+                    </div>
+                    <h6 className="fw-bold text-dark mb-0">Quick Actions</h6>
                   </div>
                   <div className="d-flex gap-2 flex-wrap">
                     <Button
                       variant="primary"
                       size="sm"
-                      className="d-flex align-items-center gap-1"
+                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
                       onClick={() => handleNavigation("create-expense")}
                     >
                       <PlusCircle size={14} />
@@ -930,7 +937,7 @@ export default function FinanceDashboard() {
                     <Button
                       variant="success"
                       size="sm"
-                      className="d-flex align-items-center gap-1"
+                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
                       onClick={() => {
                         const csvContent = [
                           ["ID", "Date", "Payee", "Category", "Description", "Amount", "Status"],
@@ -960,7 +967,7 @@ export default function FinanceDashboard() {
                     <Button
                       variant="outline-info"
                       size="sm"
-                      className="d-flex align-items-center gap-1"
+                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
                       onClick={() => window.print()}
                     >
                       <Printer size={14} />
@@ -969,7 +976,7 @@ export default function FinanceDashboard() {
                     <Button
                       variant="outline-dark"
                       size="sm"
-                      className="d-flex align-items-center gap-1"
+                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
                       onClick={() => {
                         if (navigator.share) {
                           navigator.share({
@@ -996,14 +1003,14 @@ export default function FinanceDashboard() {
         {/* Analytics Dashboard */}
         <Row className="mb-4">
           <Col>
-            <Card className="border-0 shadow-sm">
+            <Card className="border-0 shadow-sm rounded-3">
               <Card.Body className="p-4">
-                <div className="d-flex align-items-center mb-4">
-                  <div className="bg-info bg-opacity-10 p-3 rounded-circle me-3">
+                <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                  <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
                     <GraphUp size={24} className="text-info" />
                   </div>
                   <div>
-                    <h5 className="fw-bold mb-1">Expense Analytics</h5>
+                    <h5 className="fw-bold text-dark mb-1">Expense Analytics</h5>
                     <p className="text-muted mb-0 small">Insights and trends from your expense data</p>
                   </div>
                 </div>
@@ -1247,8 +1254,8 @@ export default function FinanceDashboard() {
 
         {/* Expenses Table */}
         <Container fluid className="mt-2">
-          <Card className="mb-4">
-            <Card.Header className="bg-white p-3">
+          <Card className="mb-4 border-0 shadow-sm rounded-3">
+            <Card.Header className="bg-light border-0 rounded-top-3 p-4">
               {/* Search and Action Row */}
               <Row className="align-items-center g-3 mb-3">
                 <Col xs={12} md={4}>
@@ -1309,32 +1316,30 @@ export default function FinanceDashboard() {
                 </Col>
                 <Col xs={12} md={3} className="text-end">
                   <Button
-                    className="btn btn-primary btn-sm"
+                    className="btn btn-primary btn-sm rounded-pill px-4 py-2 fw-semibold shadow-sm"
                     onClick={() => handleNavigation("create-expense")}
-                    style={{
-                      minWidth: "110px",
-                      borderRadius: "0.5rem",
-                      borderWidth: "1.5px",
-                      fontWeight: 500,
-                    }}
                   >
                     <PlusCircle size={16} className="me-2" />
-                    Create expense
+                    Create Expense
                   </Button>
                 </Col>
               </Row>
 
               {/* Horizontal Filters Row */}
               <div className="filters-section">
-                <div className="filter-header-bar d-flex align-items-center justify-content-between mb-3 p-3 bg-success bg-opacity-10 rounded border">
-                  <h6 className="mb-0 fw-bold text-success">
-                    <Funnel className="me-2" size={16} />
-                    Filters
-                  </h6>
+                <div className="filter-header-bar d-flex align-items-center justify-content-between mb-3 p-3 bg-primary bg-opacity-10 rounded-3 border-0">
+                  <div className="d-flex align-items-center">
+                    <div className="bg-primary bg-opacity-25 p-2 rounded-circle me-2">
+                      <Funnel className="text-primary" size={14} />
+                    </div>
+                    <h6 className="mb-0 fw-bold text-dark">
+                      Filters
+                    </h6>
+                  </div>
                   <Button
-                    variant="outline-success"
+                    variant="outline-primary"
                     size="sm"
-                    className="btn-modern text-success"
+                    className="rounded-pill px-3 py-1 fw-semibold"
                     onClick={() => {
                       setStatusFilter("All Statuses");
                       setDateRangeFilter("All Time");
@@ -1545,13 +1550,13 @@ export default function FinanceDashboard() {
                   )}
                 </div>
               ) : (
-                <Card className="border-0 shadow-sm">
+                <Card className="border-0">
                   <Card.Body className="p-0">
                     <div className="table-responsive">
-                      <Table hover className="mb-0 transactions-table small">
-                        <thead className="table-light">
+                      <Table hover className="mb-0 transactions-table align-middle">
+                        <thead className="bg-light border-0">
                           <tr>
-                            <th className="ps-4" style={{ width: "50px" }}>
+                            <th className="border-0 py-3 px-4" style={{ width: "50px" }}>
                               <Form.Check
                                 type="checkbox"
                                 checked={selectedExpenses.size === currentItems.length && currentItems.length > 0}
@@ -1559,15 +1564,15 @@ export default function FinanceDashboard() {
                                 id="select-all"
                               />
                             </th>
-                            <th>#ID</th>
-                            <th>Created</th>
-                            <th>Payee</th>
-                            <th>Category</th>
-                            <th>Description</th>
-                            <th>Amount</th>
-                            <th>Owner</th>
-                            <th>Status</th>
-                            <th style={{ minWidth: 120 }}>Approval Progress</th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">#ID</th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Created</th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Payee</th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Category</th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Description</th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Amount</th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Owner</th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Status</th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small" style={{ minWidth: 120 }}>Approval Progress</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1584,9 +1589,9 @@ export default function FinanceDashboard() {
                             return (
                               <tr
                                 key={expense.id}
-                                className={`cursor-pointer ${selectedExpenses.has(expense.id) ? 'table-active' : ''}`}
+                                className={`cursor-pointer border-bottom ${selectedExpenses.has(expense.id) ? 'table-active' : ''}`}
                               >
-                                <td className="ps-4" onClick={(e) => e.stopPropagation()}>
+                                <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                                   <Form.Check
                                     type="checkbox"
                                     checked={selectedExpenses.has(expense.id)}
@@ -1595,18 +1600,18 @@ export default function FinanceDashboard() {
                                   />
                                 </td>
                                 <td
-                                  className="fw-semibold text-muted"
+                                  className="py-3 px-4 fw-semibold text-primary"
                                   onClick={() => handleViewDetails(expense)}
                                 >
                                   <div className="d-flex align-items-center">
                                     <Tag
                                       size={14}
-                                      className="me-1 text-primary"
+                                      className="me-1"
                                     />
                                     <span>{expense.id}</span>
                                   </div>
                                 </td>
-                                <td onClick={() => handleViewDetails(expense)}>
+                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
                                   <div className="d-flex flex-column">
                                     <div className="">
                                       Created:{" "}
@@ -1626,7 +1631,7 @@ export default function FinanceDashboard() {
                                     </div>
                                   </div>
                                 </td>
-                                <td onClick={() => handleViewDetails(expense)}>
+                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
                                   <div className="fw-medium">
                                     {expense.payee}
                                   </div>
@@ -1634,18 +1639,15 @@ export default function FinanceDashboard() {
                                     {expense.payeeNumber}
                                   </div>
                                 </td>
-                                <td onClick={() => handleViewDetails(expense)}>
+                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
                                   <div className="d-flex align-items-center">
-                                    <div className="category-badge bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill">
+                                    <Badge bg="primary" className="px-3 py-2 rounded-pill fw-semibold">
                                       <Tag className="me-1" size={12} />
-                                      <span className="fw-medium">
-                                        {expense.category?.name ||
-                                          "Uncategorized"}
-                                      </span>
-                                    </div>
+                                      {expense.category?.name || "Uncategorized"}
+                                    </Badge>
                                   </div>
                                 </td>
-                                <td onClick={() => handleViewDetails(expense)}>
+                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
                                   <div className="d-flex align-items-center">
                                     <div className="transaction-icon me-2 bg-light border bg-opacity-10 p-1 rounded-3">
                                       <ListUl
@@ -1667,7 +1669,7 @@ export default function FinanceDashboard() {
                                     </div>
                                   </div>
                                 </td>
-                                <td className="text-success" onClick={() => handleViewDetails(expense)}>
+                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
                                   <div className="d-flex flex-column">
                                     <span className="text-success fw-bold">
                                       {expense?.amount?.toLocaleString() ||
@@ -1687,9 +1689,9 @@ export default function FinanceDashboard() {
                                     </span>
                                   </div>
                                 </td>
-                                <td onClick={() => handleViewDetails(expense)}>
+                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
                                   <div className="d-flex align-items-center">
-                                    <div className="avatar-sm bg-primary bg-opacity-10 text-primary fw-medium d-flex align-items-center justify-content-center rounded-circle me-2">
+                                    <div className="avatar-sm bg-primary bg-opacity-10 text-primary fw-medium d-flex align-items-center justify-content-center rounded-circle me-2" style={{width: "32px", height: "32px"}}>
                                       {expense.user.firstName.charAt(0)}
                                       {expense.user.lastName.charAt(0)}
                                     </div>
@@ -1701,24 +1703,16 @@ export default function FinanceDashboard() {
                                     </div>
                                   </div>
                                 </td>
-                                <td onClick={() => handleViewDetails(expense)}>
+                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
                                   <Badge
                                     bg={badge.bg}
-                                    className="d-inline-flex align-items-center py-2 px-3 rounded-pill bg-opacity-10 text-opacity-100"
-                                    text={badge.bg.replace("bg-", "text-")}
+                                    className="d-inline-flex align-items-center py-2 px-3 rounded-pill fw-semibold"
                                   >
                                     {badge.icon}
-                                    <span
-                                      className={`ms-1 text-${badge.bg.replace(
-                                        "bg-",
-                                        ""
-                                      )}`}
-                                    >
-                                      {badge.label}
-                                    </span>
+                                    {badge.label}
                                   </Badge>
                                 </td>
-                                <td>
+                                <td className="py-3 px-4">
                                   <div className="approval-timeline-compact p-2 rounded-3">
                                     {expense.expenseSteps.length > 0 ? (
                                       <div className="timeline-steps d-flex flex-column gap-1">
@@ -1989,32 +1983,30 @@ export default function FinanceDashboard() {
             <>
               <Modal.Header
                 closeButton
-                className="border-bottom-0 pb-0 position-relative"
+                className="border-0 pb-0 pt-4 px-4"
+                style={{ backgroundColor: "#f8f9fa" }}
               >
-                <div
-                  className="position-absolute h-100 bg-light bg-opacity-10 rounded-top"
-                  style={{ borderBottom: "1px solid #dee2e6" }}
-                ></div>
-                <h6 className="position-relative">
-                  <div className="d-flex align-items-center">
-                    <div className="modal-icon-wrapper bg-danger bg-opacity-10 p-3 rounded-3 me-3">
-                      <ArrowDownCircle size={24} className="text-danger" />
-                    </div>
-                    <div>
-                      <h5 className="mb-0 fw-bold">Expense Details</h5>
-                      <small className="text-muted">
-                        ID: #{selectedExpense.id}
-                      </small>
+                <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+                  <div
+                    className="icon-wrapper bg-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
+                    style={{ width: "48px", height: "48px" }}
+                  >
+                    <Eye size={24} className="text-white" />
+                  </div>
+                  <div>
+                    Expense Details
+                    <div className="text-muted fw-normal small">
+                      Reference ID: #{selectedExpense.id}
                     </div>
                   </div>
-                </h6>
+                </h5>
               </Modal.Header>
 
-              <Modal.Body className="pt-4">
+              <Modal.Body className="px-4 py-4">
                 {/* Header with description and amount */}
-                <div className="d-flex justify-content-between align-items-start mb-4 p-3 bg-secondary border-secondary bg-opacity-10 rounded-3">
+                <div className="d-flex justify-content-between align-items-start mb-4 p-4 bg-primary bg-opacity-10 border-0 rounded-3">
                   <div className="flex-grow-1 me-3">
-                    <h6 className="mb-1 fw-semibold">
+                    <h6 className="mb-1 fw-bold text-dark">
                       {selectedExpense.description}
                     </h6>
                     <small className="text-muted">
@@ -2023,7 +2015,7 @@ export default function FinanceDashboard() {
                     </small>
                   </div>
                   <div className="text-end">
-                    <h5 className="mb-0 text-danger fw-bold">
+                    <h5 className="mb-0 text-success fw-bold">
                       {selectedExpense.amount.toLocaleString()} KES
                     </h5>
                     <small className="text-muted">Base currency</small>
@@ -2249,19 +2241,22 @@ export default function FinanceDashboard() {
                 </Row>
               </Modal.Body>
 
-              <Modal.Footer className="border-top-0 pt-0">
+              <Modal.Footer
+                className="border-0 pt-0 px-4 pb-4"
+                style={{ backgroundColor: "#f8f9fa" }}
+              >
                 <Button
                   size="sm"
                   variant="outline-secondary"
                   onClick={() => setShowModal(false)}
-                  className="rounded-pill px-4"
+                  className="rounded-pill px-4 py-2 fw-semibold"
                 >
                   Close
                 </Button>
 
                 <Button
                   href={`/data/approval-details/${selectedExpense.id}`}
-                  className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 shadow-sm rounded-pill px-3"
+                  className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 shadow-sm rounded-pill px-4 py-2 fw-semibold"
                 >
                   <Eye size={16} className="mb-0" />
                   View Approval Details

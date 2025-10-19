@@ -200,7 +200,7 @@ export default function Dashboard() {
           </div>
           <h4>No data available</h4>
           <p className="text-muted mb-3">
-            There's no expense data to display yet
+            There&apos;s no expense data to display yet
           </p>
           <Button size="sm" variant="primary" onClick={fetchData}>
             Refresh page

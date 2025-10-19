@@ -75,6 +75,9 @@ export default function BudgetsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [submiting, setSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState<number | "all">("all");
+  const [monthFilter, setMonthFilter] = useState("");
 
   const fetchBudgets = async () => {
     setIsLoading(true);
@@ -98,8 +101,9 @@ export default function BudgetsPage() {
       } else {
         toast.error(data.message);
       }
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to fetch budgets");
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : "Failed to fetch budgets";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -121,12 +125,6 @@ export default function BudgetsPage() {
       return () => clearInterval(timer);
     }
   }, []);
-
-  // Calculate total remaining balance
-  const totalBalance = budgets.reduce(
-    (sum, budget) => sum + budget.remainingBudget,
-    0
-  );
 
   const [budgetAmount, setBudgetAmount] = useState("");
   const [budgetComments, setBudgetComments] = useState("");
@@ -183,6 +181,21 @@ export default function BudgetsPage() {
     }
   };
 
+  // Filter budgets based on search and filters
+  const filteredBudgets = budgets.filter((budget) => {
+    const matchesSearch = searchQuery === "" ||
+      budget.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      budget.department?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      budget.expenseCategory?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      budget.id.toString().includes(searchQuery);
+
+    const matchesDepartment = departmentFilter === "all" || budget.departmentId === departmentFilter;
+
+    return matchesSearch && matchesDepartment;
+  });
+
+  const totalBalance = filteredBudgets.reduce((sum, b) => sum + (b.remainingBudget || 0), 0);
+
   if (isLoading) return <PageLoader />;
 
   return (
@@ -193,161 +206,105 @@ export default function BudgetsPage() {
         className="p-4 min-vh-100"
         style={{ backgroundColor: "#f8f9fa" }}
       >
-        {/* Page Header */}
-        <Row className="align-items-center mb-4">
-          <Col>
-            <div className="d-flex align-items-center p-2">
-              <div className="bg-primary bg-opacity-10 p-3 rounded-4 me-3">
-                <BarChart size={28} className="text-primary" />
-              </div>
-              <div>
-                <h5 className="fw-bold mb-1 text-dark">Budgets Dashboard</h5>
-                <div className="d-flex align-items-center">
-                  <div className="d-flex align-items-center me-3">
-                    <Tag size={16} className="me-2 text-muted" />
-                    <span className="text-muted small">
-                      {budgets.length} active budgets
-                    </span>
-                  </div>
-                  <div className="vr mx-2"></div>
-                  <div className="d-flex align-items-center">
-                    <Calendar size={14} className="me-2 text-muted" />
-                    <span className="text-muted small">
-                      Last updated: {currentTime || "--:--:--"}
-                    </span>
-                  </div>
+        {/* Modern Page Header */}
+        <div className="mb-4">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <div className="d-flex align-items-center mb-2">
+                <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                  <Wallet className="text-primary" size={28} />
+                </div>
+                <div>
+                  <h2 className="fw-bold text-dark mb-0">
+                    Budget Management
+                  </h2>
+                  <p className="text-muted mb-0 small">
+                    Monitor and manage department budgets
+                  </p>
                 </div>
               </div>
             </div>
-          </Col>
-          <Col className="text-end">
             <BudgetModalPage
               categories={categories}
               departments={departments}
               onBudgetCreated={fetchBudgets}
             />
-          </Col>
-        </Row>
+          </div>
+          <hr className="border-2 border-primary opacity-25 mb-4" />
+        </div>
         {/* Summary Cards */}
-        <Row className="mb-4 g-3">
-          {/* Total Budgets Card */}
-          <Col md={3}>
-            <Card className="border-0 border-start border-3 bg-primary bg-opacity-10 border-primary rounded-4 overflow-hidden">
+        <Row className="mb-4">
+          <Col>
+            <Card className="border-0 shadow-sm rounded-3">
               <Card.Body className="p-4">
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6
-                      className="text-muted mb-2"
-                      style={{ fontSize: "0.9rem" }}
-                    >
-                      Total Budgets
-                    </h6>
-                    <h6 className="fw-bold mb-0" style={{ color: "#1a237e" }}>
-                      {budgets.length}
-                    </h6>
-                  </div>
-                  <div
-                    className="bg-primary bg-opacity-10 p-1 rounded-4 text-center border-primary border-bottom"
-                    style={{ width: "38px", height: "38px" }}
-                  >
-                    <Layers size={15} className="text-primary" />
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
+                <Row className="g-4">
+                  {/* Total Budgets Card */}
+                  <Col md={3}>
+                    <div className="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-primary border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
+                          <Layers size={20} className="text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-muted small mb-1">Total Budgets</p>
+                          <h6 className="mb-0 fw-bold">{filteredBudgets.length}</h6>
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
 
-          {/* Total Balance Card */}
-          <Col md={3}>
-            <Card className="border-0 border-start border-3 bg-success bg-opacity-10 border-success rounded-4 overflow-hidden">
-              <Card.Body className="p-4">
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6
-                      className="text-muted mb-2"
-                      style={{ fontSize: "0.9rem" }}
-                    >
-                      Total Balance
-                    </h6>
-                    <h6 className="fw-bold mb-0" style={{ color: "#0d5c42" }}>
-                      {totalBalance.toLocaleString()}
-                    </h6>
-                  </div>
-                  <div
-                    className="bg-success bg-opacity-10 p-1 rounded-4 text-center border-success border-bottom"
-                    style={{ width: "38px", height: "38px" }}
-                  >
-                    <Wallet size={15} className="text-success" />
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-          {/* Departments Card */}
-          <Col md={3}>
-            <Card className="border-0 rounded-4 overflow-hidden bg-info bg-opacity-10 border-3 border-info border-start">
-              <Card.Body className="p-4">
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6
-                      className="text-muted mb-2"
-                      style={{ fontSize: "0.9rem" }}
-                    >
-                      Departments
-                    </h6>
-                    <h6 className="fw-bold mb-0" style={{ color: "#3730a3" }}>
-                      {new Set(budgets.map((b) => b.departmentId)).size}
-                    </h6>
-                  </div>
-                  <div
-                    className="bg-info bg-opacity-10 p-1 rounded-4 text-center border-info border-bottom"
-                    style={{ width: "38px", height: "38px" }}
-                  >
-                    <Building size={15} className="text-info" />
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
+                  {/* Total Balance Card */}
+                  <Col md={3}>
+                    <div className="bg-success bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-success border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-success bg-opacity-10 p-2 rounded me-3">
+                          <Wallet size={20} className="text-success" />
+                        </div>
+                        <div>
+                          <p className="text-muted small mb-1">Total Balance</p>
+                          <h6 className="mb-0 fw-bold">{totalBalance.toLocaleString()}</h6>
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
 
-          {/* Active Budgets Card */}
-          <Col md={3}>
-            <Card
-              className="border-0 rounded-4 overflow-hidden bg-warning bg-opacity-10 border-3 border-warning border-start"
-              style={{
-                background: "linear-gradient(135deg, #fef6e6 0%, #fff1db 100%)",
-                borderLeft: "4px solid #f59e0b",
-                transition: "transform 0.3s",
-                cursor: "pointer",
-              }}
-            >
-              <Card.Body className="p-4">
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6
-                      className="text-muted mb-2"
-                      style={{ fontSize: "0.9rem" }}
-                    >
-                      Active Budgets
-                    </h6>
-                    <h6 className="fw-bold mb-0" style={{ color: "#92400e" }}>
-                      {budgets.filter((b) => b.status === "Active").length}
-                    </h6>
-                  </div>
-                  <div
-                    className="bg-warning bg-opacity-10 p-1 rounded-4 text-center border-warning border-bottom"
-                    style={{ width: "38px", height: "38px" }}
-                  >
-                    <CheckCircle size={15} className="text-warning" />
-                  </div>
-                </div>
+                  {/* Departments Card */}
+                  <Col md={3}>
+                    <div className="bg-info bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-info border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-info bg-opacity-10 p-2 rounded me-3">
+                          <Building size={20} className="text-info" />
+                        </div>
+                        <div>
+                          <p className="text-muted small mb-1">Departments</p>
+                          <h6 className="mb-0 fw-bold">{new Set(filteredBudgets.map((b) => b.departmentId)).size}</h6>
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
+
+                  {/* Active Budgets Card */}
+                  <Col md={3}>
+                    <div className="bg-warning bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-warning border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-warning bg-opacity-10 p-2 rounded me-3">
+                          <CheckCircle size={20} className="text-warning" />
+                        </div>
+                        <div>
+                          <p className="text-muted small mb-1">Active Budgets</p>
+                          <h6 className="mb-0 fw-bold">{filteredBudgets.filter((b) => b.status === "Active").length}</h6>
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
+                </Row>
               </Card.Body>
             </Card>
           </Col>
         </Row>
 
         {/* Search + Filter */}
-        <Card className="border-0 shadow-sm rounded-4 mb-4">
+        <Card className="border-0 shadow-sm rounded-3 mb-4">
           <Card.Body className="p-3">
             <Row className="g-2">
               <Col md={5}>
@@ -358,6 +315,8 @@ export default function BudgetsPage() {
                   <Form.Control
                     placeholder="Search budgets..."
                     className="border-0 bg-light"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </InputGroup>
               </Col>
@@ -366,11 +325,15 @@ export default function BudgetsPage() {
                   <InputGroup.Text className="bg-light border-0">
                     <Filter className="text-muted" />
                   </InputGroup.Text>
-                  <Form.Select className="border-0 bg-light">
-                    <option>All Departments</option>
-                    <option>Finance</option>
-                    <option>IT</option>
-                    <option>HR</option>
+                  <Form.Select
+                    className="border-0 bg-light"
+                    value={departmentFilter}
+                    onChange={(e) => setDepartmentFilter(e.target.value === "all" ? "all" : Number(e.target.value))}
+                  >
+                    <option value="all">All Departments</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.id}>{dept.name}</option>
+                    ))}
                   </Form.Select>
                 </InputGroup>
               </Col>
@@ -379,7 +342,12 @@ export default function BudgetsPage() {
                   <InputGroup.Text className="bg-light border-0">
                     <Calendar className="text-muted" />
                   </InputGroup.Text>
-                  <Form.Control type="month" className="border-0 bg-light" />
+                  <Form.Control
+                    type="month"
+                    className="border-0 bg-light"
+                    value={monthFilter}
+                    onChange={(e) => setMonthFilter(e.target.value)}
+                  />
                 </InputGroup>
               </Col>
               <Col md={1} className="text-end">
@@ -396,37 +364,36 @@ export default function BudgetsPage() {
         </Card>
 
         {/* Budget Table */}
-        <Card className="border-0 shadow-sm rounded-4 small">
+        <Card className="border-0 shadow-sm rounded-3">
           <Card.Body className="p-0">
             <div className="table-responsive">
               <Table hover className="align-middle mb-0">
-                <thead className="bg-light">
+                <thead className="bg-light border-0">
                   <tr>
-                    <th className="border-0">ID</th>
-                    <th className="border-0 ps-4">Period</th>
-                    <th className="border-0">Initial Amount</th>
-                    <th className="border-0">Balance</th>
-                    <th className="border-0">Usage</th>
-                    <th className="border-0">Category</th>
-                    <th className="border-0">Department</th>
-                    <th className="border-0">Description</th>
-                    <th className="border-0">Added Via</th>
-                    <th className="border-0">Amount adjusted</th>
-                    <th
-                      className="border-0 text-end pe-4"
-                      style={{ width: "100px" }}
-                    >
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">ID</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Period</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Initial Amount</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Balance</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Usage</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Category</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Department</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Description</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Added Via</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Amount adjusted</th>
+                    <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-end">
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {budgets.length === 0 ? (
+                  {filteredBudgets.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="text-center text-muted py-5">
+                      <td colSpan={11} className="text-center text-muted py-5">
                         <div className="py-4">
-                          <BarChart size={48} className="text-muted mb-2" />
-                          <h5>No budgets available</h5>
+                          <div className="bg-primary bg-opacity-10 d-inline-flex p-4 rounded-circle mb-3">
+                            <Wallet size={48} className="text-primary" />
+                          </div>
+                          <h5 className="fw-bold text-dark">No budgets available</h5>
                           <p className="text-muted">
                             Create a new budget to get started
                           </p>
@@ -434,14 +401,14 @@ export default function BudgetsPage() {
                       </td>
                     </tr>
                   ) : (
-                    budgets.map((budget) => {
+                    filteredBudgets.map((budget) => {
                       const usagePercentage = Math.round(
                         (1 - budget.remainingBudget / budget.originalBudget) *
                           100
                       );
                       return (
-                        <tr key={budget.id} className="border-top">
-                          <td className="ps-4">
+                        <tr key={budget.id} className="border-bottom">
+                          <td className="py-3 px-4">
                             <div className="fw-semibold text-dark">
                               <Tag className="text-primary me-1" />
                               {budget.id}

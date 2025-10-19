@@ -336,7 +336,7 @@ export default function InstitutionCreationModal({ onSuccess }: { onSuccess?: ()
                       className="rounded-3 py-2 px-3 modern-input"
                     />
                     <Form.Text className="text-muted">
-                      Provide a direct link to your institution's logo image
+                      Provide a direct link to your institution&apos;s logo image
                     </Form.Text>
                   </Form.Group>
                 </Card.Body>

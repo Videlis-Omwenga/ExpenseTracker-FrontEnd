@@ -385,7 +385,7 @@ export default function LoginPage() {
 
               <div className="text-center mt-4">
                 <p className="text-muted mb-0">
-                  Don't have an account? Contact your admin
+                  Don&apos;t have an account? Contact your admin
                 </p>
               </div>
             </div>

@@ -249,8 +249,9 @@ export default function ExpenseApprovalPage() {
       data.sort((a, b) => b.id - a.id);
 
       setExpenses(data);
-    } catch (e: any) {
-      setError(e?.message || "Failed to fetch expenses");
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : "Failed to fetch expenses";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -306,8 +307,9 @@ export default function ExpenseApprovalPage() {
           responseData?.message || `HTTP error! status: ${res.status}`;
         toast.error(errorMessage);
       }
-    } catch (e: any) {
-      toast.error(`Approve failed: ${e?.message || "Unknown error occurred"}`);
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : "Unknown error occurred";
+      toast.error(`Approve failed: ${errorMessage}`);
     }
   };
 
@@ -344,8 +346,9 @@ export default function ExpenseApprovalPage() {
       setRejectionReason("");
       setShowDetailsModal(false);
       await fetchExpensesToApprove();
-    } catch (e: any) {
-      toast.error(`Reject failed: ${e?.message || e}`);
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      toast.error(`Reject failed: ${errorMessage}`);
     }
   };
 
@@ -475,173 +478,154 @@ export default function ExpenseApprovalPage() {
     <AuthProvider>
       <TopNavbar />
       <Container fluid className="py-4">
-        {/* Header */}
-        <Row className="align-items-center mb-4">
-          <Col>
-            {/* Title and Subtitle */}
-            <div className="d-flex align-items-center mb-3 bg-info bg-opacity-10 p-3 rounded-4 border-start border-info border-3">
-              <div className="p-3 rounded-3 bg-success-primary bg-opacity-10 me-3 shadow-sm">
-                <ListChecks className="text-info" size={24} />
-              </div>
-              <div>
-                <h6 className="fw-bold mb-1 text-dark">
-                  Queued Expenses for checks
-                </h6>
-                <p className="text-muted mb-0 small">
-                  Review, validate, and approve expenses prior to payment.
-                </p>
+        {/* Modern Header */}
+        <div className="mb-4">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <div className="d-flex align-items-center mb-2">
+                <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                  <ListChecks className="text-primary" size={28} />
+                </div>
+                <div>
+                  <h2 className="fw-bold text-dark mb-0">
+                    Queued Expenses
+                  </h2>
+                  <p className="text-muted mb-0 small">
+                    Review and validate expenses ready for payment
+                  </p>
+                </div>
               </div>
             </div>
+          </div>
+          <hr className="border-2 border-primary opacity-25 mb-4" />
+        </div>
 
-            <Row>
-              <Col md={6} className="mb-4">
-                <div className="p-4 rounded-4 shadow-sm border bg-primary bg-opacity-10 border-0 border-start border-primary border-3">
-                  <p className="small text-secondary mb-2">
-                    Every submitted expense goes through this check to ensure
-                    compliance and readiness for payment:
-                  </p>
-                  <br />
-                  <div className="d-flex flex-column gap-3 small text-secondary">
-                    {/* Step 1 */}
-                    <div className="d-flex align-items-center">
-                      <div className="rounded-circle bg-success bg-opacity-10 p-2 me-3 shadow-sm">
-                        <Check2Circle className="text-success" size={18} />
-                      </div>
-                      <div>
-                        <span className="fw-semibold text-dark">Accuracy</span>
-                        <div className="text-muted">
-                          Verified by approvers and proper documentation
-                          attached
-                        </div>
+        {/* Stats and Info */}
+        <Row className="mb-4">
+          <Col md={6} className="mb-4 mb-md-0">
+            <Card className="border-0 shadow-sm rounded-3 bg-primary bg-opacity-10 border-start border-primary border-2 h-100">
+              <Card.Body className="p-4">
+                <p className="small text-secondary mb-2">
+                  Every submitted expense goes through this check to ensure
+                  compliance and readiness for payment:
+                </p>
+                <br />
+                <div className="d-flex flex-column gap-3 small text-secondary">
+                  {/* Step 1 */}
+                  <div className="d-flex align-items-center">
+                    <div className="rounded-circle bg-success bg-opacity-10 p-2 me-3 shadow-sm">
+                      <Check2Circle className="text-success" size={18} />
+                    </div>
+                    <div>
+                      <span className="fw-semibold text-dark">Accuracy</span>
+                      <div className="text-muted">
+                        Verified by approvers and proper documentation attached
                       </div>
                     </div>
+                  </div>
 
-                    {/* Step 2 */}
-                    <div className="d-flex align-items-center">
-                      <div className="rounded-circle bg-primary bg-opacity-10 p-2 me-3 shadow-sm">
-                        <ShieldCheck className="text-primary" size={18} />
-                      </div>
-                      <div>
-                        <span className="fw-semibold text-dark">
-                          Compliance
-                        </span>
-                        <div className="text-muted">
-                          Aligned with company policies and procedures
-                        </div>
+                  {/* Step 2 */}
+                  <div className="d-flex align-items-center">
+                    <div className="rounded-circle bg-primary bg-opacity-10 p-2 me-3 shadow-sm">
+                      <ShieldCheck className="text-primary" size={18} />
+                    </div>
+                    <div>
+                      <span className="fw-semibold text-dark">Compliance</span>
+                      <div className="text-muted">
+                        Aligned with company policies and procedures
                       </div>
                     </div>
                   </div>
                 </div>
-              </Col>
-              <Col md={6}>
-                <Row>
-                  <Col md={6}>
-                    <Card className="stat-card border-0 bg-success bg-opacity-10 border-start border-success border-3">
-                      <Card.Body>
-                        <div className="d-flex align-items-center">
-                          <div className="icon-container bg-success bg-opacity-10 me-3">
-                            <DollarSign size={20} className="text-success" />
-                          </div>
-                          <div>
-                            <div className="text-muted small">
-                              Total Expenses
-                            </div>
-                            <h6 className="mb-0 mt-2">
-                              {expenses.length > 0
-                                ? expenses
-                                    .reduce(
-                                      (sum, expense) => sum + expense.amount,
-                                      0
-                                    )
-                                    .toLocaleString(undefined, {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })
-                                : "0.00"}
-                            </h6>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={6}>
+            <Card className="border-0 shadow-sm rounded-3 h-100">
+              <Card.Body className="p-4">
+                <Row className="g-3">
+                  {/* Total Expenses */}
+                  <Col xs={6}>
+                    <div className="bg-success bg-opacity-10 p-3 rounded-3 border-start border-success border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-success bg-opacity-10 p-2 rounded me-2">
+                          <DollarSign size={18} className="text-success" />
+                        </div>
+                        <div>
+                          <p className="text-muted small mb-1">Total Expenses</p>
+                          <h6 className="mb-0 fw-bold">
+                            {expenses.length > 0
+                              ? expenses
+                                  .reduce((sum, expense) => sum + expense.amount, 0)
+                                  .toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })
+                              : "0.00"}
+                          </h6>
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
 
-                            <div className="text-muted small mt-1">
-                              Total amount
-                            </div>
-                          </div>
+                  {/* Total in List */}
+                  <Col xs={6}>
+                    <div className="bg-danger bg-opacity-10 p-3 rounded-3 border-start border-danger border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-danger bg-opacity-10 p-2 rounded me-2">
+                          <FileText size={18} className="text-danger" />
                         </div>
-                      </Card.Body>
-                    </Card>
+                        <div>
+                          <p className="text-muted small mb-1">Total in List</p>
+                          <h6 className="mb-0 fw-bold">{expenses.length}</h6>
+                        </div>
+                      </div>
+                    </div>
                   </Col>
-                  <Col md={6}>
-                    <Card className="stat-card border-0 bg-danger bg-opacity-10 border-start border-danger border-3">
-                      <Card.Body>
-                        <div className="d-flex align-items-center">
-                          <div className="icon-container bg-danger bg-opacity-10 me-3">
-                            <FileText size={20} className="text-danger" />
-                          </div>
-                          <div>
-                            <div className="text-muted small">
-                              Total in list
-                            </div>
-                            <h6 className="mb-0 mt-2">{expenses.length}</h6>
 
-                            <div className="text-muted small mt-1">
-                              Expenses to review
-                            </div>
-                          </div>
+                  {/* Budgets */}
+                  <Col xs={6}>
+                    <div className="bg-info bg-opacity-10 p-3 rounded-3 border-start border-info border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-info bg-opacity-10 p-2 rounded me-2">
+                          <FileText size={18} className="text-info" />
                         </div>
-                      </Card.Body>
-                    </Card>
+                        <div>
+                          <p className="text-muted small mb-1">Budgets</p>
+                          <h6 className="mb-0 fw-bold">
+                            {expenses.length > 0
+                              ? expenses.reduce(
+                                  (sum, exp) => sum + (exp.countBudget || 0),
+                                  0
+                                )
+                              : 0}
+                          </h6>
+                        </div>
+                      </div>
+                    </div>
                   </Col>
-                  <Col md={6}>
-                    <Card className="stat-card border-0 bg-info bg-opacity-10 border-start border-info border-3">
-                      <Card.Body>
-                        <div className="d-flex align-items-center">
-                          <div className="icon-container bg-info bg-opacity-10 me-3">
-                            <FileText size={20} className="text-info" />
-                          </div>
-                          <div>
-                            <div className="text-muted small">Budgets</div>
-                            <h6 className="mb-0">Navigate to budgets</h6>
-                            <div className="text-muted small mt-1">
-                              {expenses.length > 0
-                                ? `${expenses.reduce(
-                                    (sum, exp) => sum + (exp.countBudget || 0),
-                                    0
-                                  )} budgets found`
-                                : "0 budgets found"}
-                            </div>
-                          </div>
+
+                  {/* Last User */}
+                  <Col xs={6}>
+                    <div className="bg-secondary bg-opacity-10 p-3 rounded-3 border-start border-secondary border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-secondary bg-opacity-10 p-2 rounded me-2">
+                          <User size={18} className="text-secondary" />
                         </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                  <Col md={6}>
-                    <Card className="stat-card border-0 bg-secondary bg-opacity-10 border-start border-secondary border-3">
-                      <Card.Body>
-                        <div className="d-flex align-items-center">
-                          <div className="icon-container bg-secondary bg-opacity-10 me-3">
-                            <User size={20} className="text-secondary" />
-                          </div>
-                          <div>
-                            <div className="text-muted small">
-                              Last approved expense for
-                            </div>
-                            <h6 className="mb-0">
-                              {expenses.length > 0
-                                ? `${expenses[0].user.firstName} ${expenses[0].user.lastName}`
-                                : "N/A"}
-                            </h6>
-                            <div className="text-muted small mt-1">
-                              {expenses.length > 0 &&
-                                new Date(
-                                  expenses[0].createdAt
-                                ).toLocaleDateString()}
-                            </div>
-                          </div>
+                        <div>
+                          <p className="text-muted small mb-1">Last User</p>
+                          <h6 className="mb-0 fw-bold text-truncate" style={{ maxWidth: "120px" }}>
+                            {expenses.length > 0
+                              ? `${expenses[0].user.firstName} ${expenses[0].user.lastName}`
+                              : "N/A"}
+                          </h6>
                         </div>
-                      </Card.Body>
-                    </Card>
+                      </div>
+                    </div>
                   </Col>
                 </Row>
-              </Col>
-            </Row>
+              </Card.Body>
+            </Card>
           </Col>
         </Row>
 
@@ -680,72 +664,79 @@ export default function ExpenseApprovalPage() {
         )}
 
         {/* Table */}
-        <Card className="mb-4">
-          <Card.Header className="bg-white border-bottom-0 d-flex justify-content-between align-items-center flex-wrap">
-            <h5 className="mb-0 me-3">Expense Requests</h5>
-            <div className="d-flex flex-wrap gap-2 mt-2 mt-md-0">
-              <div className="search-box d-flex">
-                <Form.Control
-                  type="search"
-                  placeholder="Search expenses..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setCurrentPage(1);
-                    setSearchQuery(e.target.value);
-                  }}
-                  className="ps-4"
-                />
+        <Card className="mb-4 border-0 shadow-sm rounded-3">
+          <Card.Header className="bg-white border-0 py-3 px-4">
+            <div className="d-flex justify-content-between align-items-center flex-wrap">
+              <h5 className="mb-0 me-3 fw-bold">Queued Expense Requests</h5>
+              <div className="d-flex flex-wrap gap-2 mt-2 mt-md-0">
+                <div className="search-box d-flex">
+                  <Form.Control
+                    type="search"
+                    placeholder="Search expenses..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setCurrentPage(1);
+                      setSearchQuery(e.target.value);
+                    }}
+                    className="border-0 bg-light"
+                  />
+                </div>
+                <Dropdown>
+                  <Dropdown.Toggle
+                    variant="outline-secondary"
+                    size="sm"
+                    className="border-0 bg-light rounded-pill"
+                  >
+                    <Filter size={16} className="me-1" />
+                    Status:{" "}
+                    {statusFilter === "all" ? "All" : humanStatus(statusFilter)}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    <Dropdown.Item
+                      onClick={() => {
+                        setStatusFilter("all");
+                        setCurrentPage(1);
+                      }}
+                    >
+                      All
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() => {
+                        setStatusFilter("PENDING");
+                        setCurrentPage(1);
+                      }}
+                    >
+                      Pending
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() => {
+                        setStatusFilter("APPROVED");
+                        setCurrentPage(1);
+                      }}
+                    >
+                      Approved
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() => {
+                        setStatusFilter("REJECTED");
+                        setCurrentPage(1);
+                      }}
+                    >
+                      Rejected
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  onClick={() => window.print()}
+                  title="Quick export via browser print"
+                  className="rounded-pill"
+                >
+                  <Download size={16} className="me-1" />
+                  Export
+                </Button>
               </div>
-              <Dropdown>
-                <Dropdown.Toggle variant="outline-secondary" size="sm">
-                  <Filter size={16} className="me-1" />
-                  Status:{" "}
-                  {statusFilter === "all" ? "All" : humanStatus(statusFilter)}
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setStatusFilter("all");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    All
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setStatusFilter("PENDING");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    Pending
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setStatusFilter("APPROVED");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    Approved
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setStatusFilter("REJECTED");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    Rejected
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-              <Button
-                variant="outline-primary"
-                size="sm"
-                onClick={() => window.print()}
-                title="Quick export via browser print"
-              >
-                <Download size={16} className="me-1" />
-                Export
-              </Button>
             </div>
           </Card.Header>
 
@@ -779,11 +770,11 @@ export default function ExpenseApprovalPage() {
                 </p>
               </div>
             ) : (
-              <div className="table-responsive rounded-3 overflow-hidden border">
-                <Table hover className="align-middle mb-0 small">
-                  <thead className="bg-light text-muted small">
+              <div className="table-responsive">
+                <Table hover className="align-middle mb-0">
+                  <thead className="border-0">
                     <tr>
-                      <th className="ps-4 py-3" style={{ width: "40px" }}>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small" style={{ width: "40px" }}>
                         <Form.Check
                           type="checkbox"
                           checked={allSelected}
@@ -794,20 +785,20 @@ export default function ExpenseApprovalPage() {
                           className="mb-0"
                         />
                       </th>
-                      <th className="py-3">#ID</th>
-                      <th className="py-3">Created</th>
-                      <th className="py-3">Payee</th>
-                      <th className="py-3">Payee Number</th>
-                      <th className="py-3">Description</th>
-                      <th className="py-3">Amount</th>
-                      <th className="py-3">Employee</th>
-                      <th className="py-3">Department</th>
-                      <th className="py-3">Category</th>
-                      <th className="py-3">Budget</th>
-                      <th className="py-3" style={{ minWidth: 200 }}>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">#ID</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Created</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Payee</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Payee Number</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Description</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Amount</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Employee</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Department</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Category</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Budget</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small" style={{ minWidth: 200 }}>
                         Progress
                       </th>
-                      <th className="text-end pe-4 py-3">Actions</th>
+                      <th className="border-0 text-end py-3 px-4 fw-semibold text-muted text-uppercase small">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -827,9 +818,9 @@ export default function ExpenseApprovalPage() {
                       return (
                         <tr
                           key={exp.id}
-                          className="cursor-pointer border-bottom"
+                          className="cursor-pointer"
                         >
-                          <td className="ps-4">
+                          <td className="py-3 px-4">
                             <Form.Check className="mb-0">
                               <Form.Check.Input
                                 type="checkbox"
@@ -838,13 +829,13 @@ export default function ExpenseApprovalPage() {
                               />
                             </Form.Check>
                           </td>
-                          <td>
+                          <td className="py-3 px-4">
                             <div className="d-flex align-items-center">
                               <Tag size={14} className="me-1 text-primary" />
                               <span>{exp.id}</span>
                             </div>
                           </td>
-                          <td>
+                          <td className="py-3 px-4">
                             <div className="d-flex flex-column">
                               <div className="">
                                 Created:{" "}
@@ -856,10 +847,10 @@ export default function ExpenseApprovalPage() {
                               </div>
                             </div>
                           </td>
-                          <td>{exp.payee}</td>
-                          <td>{exp.payeeNumber}</td>
-                          <td>
-                            <div className="d-flex align-items-center ">
+                          <td className="py-3 px-4">{exp.payee}</td>
+                          <td className="py-3 px-4">{exp.payeeNumber}</td>
+                          <td className="py-3 px-4">
+                            <div className="d-flex align-items-center">
                               <div className="transaction-icon me-1 bg-light border bg-opacity-10 p-1 rounded-3">
                                 <FaListAlt className="text-success" size={14} />
                               </div>
@@ -874,7 +865,7 @@ export default function ExpenseApprovalPage() {
                               </div>
                             </div>
                           </td>
-                          <td className="">
+                          <td className="py-3 px-4">
                             <div className="d-flex flex-column">
                               <span className="text-success fw-bold">
                                 {exp?.amount?.toLocaleString() || "0.00"} KES
@@ -917,7 +908,7 @@ export default function ExpenseApprovalPage() {
                               </span>
                             </div>
                           </td>
-                          <td>
+                          <td className="py-3 px-4">
                             <div className="d-flex align-items-center">
                               <div className="avatar-sm bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center rounded-circle me-2 small">
                                 {exp.user.firstName.charAt(0)}
@@ -930,7 +921,7 @@ export default function ExpenseApprovalPage() {
                               </div>
                             </div>
                           </td>
-                          <td>
+                          <td className="py-3 px-4">
                             <Badge
                               bg="success bg-opacity-10 text-success"
                               className="px-2 py-1 rounded border"
@@ -938,7 +929,7 @@ export default function ExpenseApprovalPage() {
                               {exp.department?.name || "-"}
                             </Badge>
                           </td>
-                          <td>
+                          <td className="py-3 px-4">
                             <Badge
                               bg="light"
                               text="dark"
@@ -947,7 +938,7 @@ export default function ExpenseApprovalPage() {
                               {exp.category?.name || "-"}
                             </Badge>
                           </td>
-                          <td>
+                          <td className="py-3 px-4">
                             <Badge
                               className={`px-2 py-1 rounded ${
                                 exp.budget?.remainingBudget < exp.amount
@@ -963,7 +954,7 @@ export default function ExpenseApprovalPage() {
                                 "N/A"}
                             </Badge>
                           </td>
-                          <td style={{ minWidth: 200 }}>
+                          <td className="py-3 px-4" style={{ minWidth: 200 }}>
                             <div className="mb-1 small text-muted">
                               {approvedSteps}/{totalSteps} approved{" "}
                               {currentStep
@@ -984,7 +975,7 @@ export default function ExpenseApprovalPage() {
                               animated={exp.status === "PENDING"}
                             />
                           </td>
-                          <td className="text-end pe-4">
+                          <td className="text-end py-3 px-4">
                             <div className="d-flex gap-2 justify-content-end">
                               <Button
                                 variant="outline-primary"

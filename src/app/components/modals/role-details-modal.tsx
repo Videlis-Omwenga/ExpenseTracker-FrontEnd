@@ -13,8 +13,29 @@ import {
   PersonFill
 } from "react-bootstrap-icons";
 
+interface Role {
+  id: number;
+  name: string;
+  description: string | null;
+  isActive: boolean | null;
+  institution?: {
+    id: number;
+    name: string;
+  } | null;
+  region?: {
+    id: number;
+    name: string;
+  } | null;
+  restrictToDepartment: boolean | null;
+  createdBy?: number | null;
+  adminCreatedRole: boolean;
+  institutionId?: number | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
 interface RoleDetailsModalProps {
-  role: any;
+  role: Role | null;
   show: boolean;
   onHide: () => void;
 }
@@ -22,7 +43,7 @@ interface RoleDetailsModalProps {
 export default function RoleDetailsModal({ role, show, onHide }: RoleDetailsModalProps) {
   if (!role) return null;
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",

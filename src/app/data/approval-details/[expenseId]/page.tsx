@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import dynamic from "next/dynamic";
 
 // Import the component with SSR disabled since it uses browser APIs like localStorage
@@ -8,15 +9,17 @@ const ExpenseApprovalDetails = dynamic(() => import("./expenseId"), {
 });
 
 interface PageProps {
-  params: {
+  params: Promise<{
     expenseId: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
+  }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default function ExpenseApprovalPage({
   params,
   searchParams,
 }: PageProps) {
-  return <ExpenseApprovalDetails params={params} searchParams={searchParams} />;
+  const resolvedParams = use(params);
+  const resolvedSearchParams = use(searchParams);
+  return <ExpenseApprovalDetails params={resolvedParams} searchParams={resolvedSearchParams} />;
 }

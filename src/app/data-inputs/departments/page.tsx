@@ -704,8 +704,8 @@ export default function DepartmentsPage() {
           <Modal.Body>
             <Form onSubmit={handleDeleteConfirm}>
               <div className="mb-3 rounded-3 p-3 border">
-                Are you sure you want to delete "{selectedDepartment?.name}
-                "? This action cannot be undone. Proceed with caution.
+                Are you sure you want to delete &quot;{selectedDepartment?.name}
+                &quot;? This action cannot be undone. Proceed with caution.
                 <Form.Label className="form-label fw-bold mt-5">
                   Reason for deletion *
                 </Form.Label>

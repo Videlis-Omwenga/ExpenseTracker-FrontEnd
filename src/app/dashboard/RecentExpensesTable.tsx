@@ -30,7 +30,6 @@ import {
   Card,
 } from "react-bootstrap";
 import DateTimeDisplay from "@/app/components/DateTimeDisplay";
-import { Cash } from "react-bootstrap-icons";
 
 interface ExpenseStep {
   id: number;
@@ -147,7 +146,7 @@ export default function RecentExpensesTable({
   };
 
   const filteredAndSortedExpenses = useMemo(() => {
-    let filtered = expenses.filter((expense) => {
+    const filtered = expenses.filter((expense) => {
       // Search filter - search in ID and description
       const matchesSearch =
         !filters.search.trim() ||
@@ -183,8 +182,8 @@ export default function RecentExpensesTable({
 
     // Sort the filtered results
     filtered.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number;
+      let bValue: string | number;
 
       switch (sortField) {
         case "id":
@@ -656,11 +655,11 @@ export default function RecentExpensesTable({
                                           {step.comments ? (
                                             <div className="small">
                                               <span className="text-muted">
-                                                "
+                                                &quot;
                                               </span>
                                               {step.comments}
                                               <span className="text-muted">
-                                                "
+                                                &quot;
                                               </span>
                                             </div>
                                           ) : (

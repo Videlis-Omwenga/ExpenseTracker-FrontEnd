@@ -6,9 +6,20 @@ import { PersonPlus, Briefcase } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 
+interface Institution {
+  id: number;
+  name: string;
+}
+
+interface Role {
+  id: number;
+  name: string;
+  description?: string;
+}
+
 interface AdminCreateUserModalProps {
-  institutions: any[];
-  roles: any[];
+  institutions: Institution[];
+  roles: Role[];
   onSuccess?: () => void;
 }
 
@@ -137,7 +148,7 @@ export default function AdminCreateUserModal({
                         className="rounded-3 py-2 px-3 modern-input"
                       />
                       <Form.Text className="text-muted">
-                        Please enter the user's first name.
+                        Please enter the user&apos;s first name.
                       </Form.Text>
                     </Form.Group>
                   </Col>
@@ -154,7 +165,7 @@ export default function AdminCreateUserModal({
                         className="rounded-3 py-2 px-3 modern-input"
                       />
                       <Form.Text className="text-muted">
-                        Please enter the user's last name.
+                        Please enter the user&apos;s last name.
                       </Form.Text>
                     </Form.Group>
                   </Col>
@@ -174,7 +185,7 @@ export default function AdminCreateUserModal({
                         className="rounded-3 py-2 px-3 modern-input"
                       />
                       <Form.Text className="text-muted">
-                        Please enter the user's email address.
+                        Please enter the user&apos;s email address.
                       </Form.Text>
                     </Form.Group>
                   </Col>
@@ -191,7 +202,7 @@ export default function AdminCreateUserModal({
                         className="rounded-3 py-2 px-3 modern-input"
                       />
                       <Form.Text className="text-muted">
-                        Please enter the user's phone number. 25471234567
+                        Please enter the user&apos;s phone number. 25471234567
                       </Form.Text>
                     </Form.Group>
                   </Col>
@@ -243,7 +254,7 @@ export default function AdminCreateUserModal({
                         ))}
                       </Form.Select>
                       <Form.Text className="text-muted">
-                        Please select the user's role.
+                        Please select the user&apos;s role.
                       </Form.Text>
                     </Form.Group>
                   </Col>

@@ -12,8 +12,36 @@ import {
   ClockHistory
 } from "react-bootstrap-icons";
 
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  status: string;
+  institution?: {
+    id: number;
+    name: string;
+    country?: string | null;
+  } | null;
+  region?: {
+    id: number;
+    name: string;
+  } | null;
+  roles?: Array<{
+    role?: {
+      name: string;
+    };
+    name?: string;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+  lastLogin?: string | null;
+  adminCreatedUser: boolean;
+}
+
 interface UserDetailsModalProps {
-  user: any;
+  user: User | null;
   show: boolean;
   onHide: () => void;
 }
@@ -34,12 +62,12 @@ export default function UserDetailsModal({ user, show, onHide }: UserDetailsModa
 
   const getRoles = (): string[] => {
     if (!user.roles || !Array.isArray(user.roles)) return [];
-    return user.roles.map((roleObj: any) => {
+    return user.roles.map((roleObj) => {
       if (roleObj.role && roleObj.role.name) {
         return roleObj.role.name;
       }
-      return roleObj.name || roleObj;
-    });
+      return roleObj.name || '';
+    }).filter(Boolean);
   };
 
   return (

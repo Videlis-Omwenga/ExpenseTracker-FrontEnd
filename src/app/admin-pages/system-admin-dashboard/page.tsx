@@ -1145,6 +1145,7 @@ export default function SuperAdminDashboard() {
                                   }}
                                   formatter={(value) => [
                                     <span
+                                      key="value"
                                       style={{
                                         color: "#4f46e5",
                                         fontWeight: "bold",
@@ -1152,7 +1153,7 @@ export default function SuperAdminDashboard() {
                                     >
                                       {value} users
                                     </span>,
-                                    <span style={{ color: "#6b7280" }}>
+                                    <span key="label" style={{ color: "#6b7280" }}>
                                       Total Active Users
                                     </span>,
                                   ]}
@@ -1330,6 +1331,7 @@ export default function SuperAdminDashboard() {
                                   }}
                                   formatter={(value, name) => [
                                     <span
+                                      key="value"
                                       style={{
                                         color: "#06b6d4",
                                         fontWeight: "bold",
@@ -1337,7 +1339,7 @@ export default function SuperAdminDashboard() {
                                     >
                                       {value} institutions
                                     </span>,
-                                    <span style={{ color: "#6b7280" }}>
+                                    <span key="label" style={{ color: "#6b7280" }}>
                                       {name}
                                     </span>,
                                   ]}
@@ -1583,6 +1585,7 @@ export default function SuperAdminDashboard() {
                                   }}
                                   formatter={(value, name) => [
                                     <span
+                                      key="value"
                                       style={{
                                         color: "#059669",
                                         fontWeight: "bold",
@@ -1590,7 +1593,7 @@ export default function SuperAdminDashboard() {
                                     >
                                       {value} users
                                     </span>,
-                                    <span style={{ color: "#6b7280" }}>
+                                    <span key="label" style={{ color: "#6b7280" }}>
                                       {name}
                                     </span>,
                                   ]}
@@ -1816,6 +1819,7 @@ export default function SuperAdminDashboard() {
                                   }}
                                   formatter={(value, name) => [
                                     <span
+                                      key="value"
                                       style={{
                                         color: "#f59e0b",
                                         fontWeight: "bold",
@@ -1823,7 +1827,7 @@ export default function SuperAdminDashboard() {
                                     >
                                       {value} institutions
                                     </span>,
-                                    <span style={{ color: "#6b7280" }}>
+                                    <span key="label" style={{ color: "#6b7280" }}>
                                       Total Count
                                     </span>,
                                   ]}
@@ -2121,6 +2125,7 @@ export default function SuperAdminDashboard() {
                                   }}
                                   formatter={(value, name) => [
                                     <span
+                                      key="value"
                                       style={{
                                         color: "#8b5cf6",
                                         fontWeight: "bold",
@@ -2128,7 +2133,7 @@ export default function SuperAdminDashboard() {
                                     >
                                       {value} users
                                     </span>,
-                                    <span style={{ color: "#6b7280" }}>
+                                    <span key="label" style={{ color: "#6b7280" }}>
                                       Active Members
                                     </span>,
                                   ]}
@@ -2425,6 +2430,7 @@ export default function SuperAdminDashboard() {
                                   }}
                                   formatter={(value, name) => [
                                     <span
+                                      key="value"
                                       style={{
                                         color: "#ec4899",
                                         fontWeight: "bold",
@@ -2432,7 +2438,7 @@ export default function SuperAdminDashboard() {
                                     >
                                       {value} institutions
                                     </span>,
-                                    <span style={{ color: "#6b7280" }}>
+                                    <span key="label" style={{ color: "#6b7280" }}>
                                       {name} Plan
                                     </span>,
                                   ]}
@@ -4790,7 +4796,7 @@ export default function SuperAdminDashboard() {
                         style={{ padding: "12px 16px", fontSize: "16px" }}
                       />
                       <Form.Text className="text-muted">
-                        User's legal first name
+                        User&apos;s legal first name
                       </Form.Text>
                     </Form.Group>
                   </div>
@@ -4813,7 +4819,7 @@ export default function SuperAdminDashboard() {
                         style={{ padding: "12px 16px", fontSize: "16px" }}
                       />
                       <Form.Text className="text-muted">
-                        User's legal last name
+                        User&apos;s legal last name
                       </Form.Text>
                     </Form.Group>
                   </div>

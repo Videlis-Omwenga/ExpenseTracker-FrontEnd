@@ -75,11 +75,27 @@ type UserLite = {
 
 type RoleLite = { id: number; name: string | null };
 
+type HierarchyLevel = {
+  id: number;
+  order: number;
+  role: RoleLite;
+  approverCount: number;
+};
+
+type ApprovalHierarchy = {
+  id: number;
+  name: string;
+  description?: string | null;
+  levels: HierarchyLevel[];
+};
+
 type ExpenseStep = {
   id: number;
   order: number;
   status: ApprovalStatus;
   role?: RoleLite | null;
+  hierarchyLevel?: HierarchyLevel | null;
+  approvalHierarchy?: ApprovalHierarchy | null;
   approver?: UserLite | null;
   comments?: string | null;
   createdAt?: string;
@@ -339,8 +355,9 @@ export default function ExpenseApprovalPage() {
       data.sort((a, b) => b.id - a.id);
 
       setExpenses(data);
-    } catch (e: any) {
-      toast.error(`${e?.message}`);
+    } catch (e: unknown) {
+      const error = e as Error;
+      toast.error(`${error?.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -412,8 +429,9 @@ export default function ExpenseApprovalPage() {
       } else {
         toast.error(data.message);
       }
-    } catch (e: any) {
-      toast.error(`Rejection failed: ${e?.message || e}`);
+    } catch (e: unknown) {
+      const error = e as Error;
+      toast.error(`Rejection failed: ${error?.message || e}`);
     }
   };
 
@@ -723,131 +741,126 @@ export default function ExpenseApprovalPage() {
     <AuthProvider>
       <TopNavbar />
       <Container fluid className="py-4">
-        {/* Header */}
-        <Container fluid className="mb-4 px-0">
-          <Row className="g-3 bg">
-            <Col>
-              <div className="alert alert-info border-0 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center p-4 rounded-3 shadow-sm border-start border-info border-3">
-                <div className="mb-3 mb-md-0">
-                  <div className="d-flex align-items-center">
-                    <h5 className="fw-bold text-dark mb-0 me-3">
-                      Expense Approval Dashboard
-                    </h5>
-                  </div>
+        {/* Modern Header */}
+        <div className="mb-4">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <div className="d-flex align-items-center mb-2">
+                <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                  <ListCheck className="text-primary" size={28} />
+                </div>
+                <div>
+                  <h2 className="fw-bold text-dark mb-0">
+                    Expense Approvals
+                  </h2>
                   <p className="text-muted mb-0 small">
-                    Manage and process expense requests efficiently
+                    Review and approve pending expense requests
                   </p>
                 </div>
-                <div className="d-flex align-items-center small">
-                  <div className="text-end">
-                    <div className="text-muted mb-1">Last updated</div>
-                    <div
-                      className="fw-medium text-dark"
-                      suppressHydrationWarning
-                    >
-                      {new Date().toLocaleString(undefined, {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </div>
-                  </div>
-                  <div className="ms-3 p-2 bg-primary bg-opacity-10 rounded-circle">
-                    <ClockHistory size={18} className="text-primary" />
-                  </div>
-                </div>
               </div>
-            </Col>
-          </Row>
-        </Container>
+            </div>
+            <Button
+              size="sm"
+              variant="primary"
+              className="d-inline-flex align-items-center px-4 py-2 rounded-pill fw-semibold shadow-sm"
+              onClick={fetchExpensesToApprove}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>Loading...</>
+              ) : (
+                <>
+                  <ArrowRepeat size={16} className="me-2" />
+                  Refresh
+                </>
+              )}
+            </Button>
+          </div>
+          <hr className="border-2 border-primary opacity-25 mb-4" />
+        </div>
 
-        {/* Stats */}
-        <Row className="g-4">
-          <Col md={3}>
-            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-secondary bg-opacity-10 border-start border-secondary border-3">
+        {/* Stats Cards */}
+        <Row className="mb-4">
+          <Col>
+            <Card className="border-0 shadow-sm rounded-3">
               <Card.Body className="p-4">
-                <div className="d-flex align-items-center">
-                  <div className="icon-container bg-secondary bg-opacity-10 p-3 rounded-3 me-3">
-                    <ClockHistory size={24} className="text-secondary" />
-                  </div>
-                  <div>
-                    <div className="text-muted small fw-medium">
-                      Pending Approval
+                <Row className="g-4">
+                  <Col md={3}>
+                    <div className="bg-warning bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-warning border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-warning bg-opacity-10 p-2 rounded me-3">
+                          <ClockHistory size={20} className="text-warning" />
+                        </div>
+                        <div>
+                          <p className="text-muted small mb-1">Pending Approval</p>
+                          <h6 className="mb-0 fw-bold">{pendingCount}</h6>
+                        </div>
+                      </div>
                     </div>
-                    <h6 className="mb-0 fw-bold">{pendingCount}</h6>
-                  </div>
-                </div>
+                  </Col>
+
+                  <Col md={3}>
+                    <div className="bg-success bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-success border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-success bg-opacity-10 p-2 rounded me-3">
+                          <CashStack size={20} className="text-success" />
+                        </div>
+                        <div>
+                          <p className="text-muted small mb-1">Total Amount</p>
+                          <h6 className="mb-0 fw-bold">
+                            KES{" "}
+                            {expenses
+                              .reduce(
+                                (sum, expense) => sum + (expense.amount || 0),
+                                0
+                              )
+                              .toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                          </h6>
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
+
+                  <Col md={3}>
+                    <div className="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-primary border-2">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
+                          <FileText size={20} className="text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-muted small mb-1">Total in list</p>
+                          <h6 className="mb-0 fw-bold">{expenses.length}</h6>
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
+                  <BudgetOverviewHOD />
+                </Row>
               </Card.Body>
             </Card>
           </Col>
-
-          <Col md={3}>
-            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-success bg-opacity-10 border-start border-success border-3">
-              <Card.Body className="p-4">
-                <div className="d-flex align-items-center">
-                  <div className="icon-container bg-success bg-opacity-10 p-3 rounded-3 me-3">
-                    <CheckCircle size={24} className="text-success" />
-                  </div>
-                  <div>
-                    <div className="text-muted small fw-medium">
-                      Total Amount
-                    </div>
-                    <h6 className="mb-0 fw-bold">
-                      KES{" "}
-                      {expenses
-                        .reduce(
-                          (sum, expense) => sum + (expense.amount || 0),
-                          0
-                        )
-                        .toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                    </h6>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-
-          <Col md={3}>
-            <Card className="stat-card shadow-sm border-0 overflow-hidden bg-info bg-opacity-10 border-start border-info border-3">
-              <Card.Body className="p-4">
-                <div className="d-flex align-items-center">
-                  <div className="icon-container bg-info bg-opacity-10 p-3 rounded-3 me-3">
-                    <FileText size={24} className="text-info" />
-                  </div>
-                  <div>
-                    <div className="text-muted small fw-medium">
-                      Total in list
-                    </div>
-                    <h6 className="mb-0 fw-bold">{expenses.length}</h6>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <BudgetOverviewHOD />
         </Row>
-        <br />
 
         {/* Quick Actions Bar */}
         <Row className="mb-4">
           <Col>
-            <Card className="border-0 shadow-sm">
-              <Card.Body className="p-3">
-                <div className="d-flex align-items-center justify-content-between">
+            <Card className="border-0 shadow-sm rounded-3">
+              <Card.Body className="p-4">
+                <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
                   <div className="d-flex align-items-center">
-                    <Lightning size={20} className="text-warning me-2" />
-                    <h6 className="fw-bold mb-0">Quick Actions</h6>
+                    <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
+                      <Lightning size={20} className="text-warning" />
+                    </div>
+                    <h6 className="fw-bold text-dark mb-0">Quick Actions</h6>
                   </div>
                   <div className="d-flex gap-2 flex-wrap">
                     <Button
-                      variant="outline-success"
+                      variant="success"
                       size="sm"
-                      className="d-flex align-items-center gap-1"
+                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
                       onClick={() => {
                         const csvContent = [
                           ["ID", "Date", "Payee", "Department", "Category", "Description", "Amount", "Status", "Progress"],
@@ -879,7 +892,7 @@ export default function ExpenseApprovalPage() {
                     <Button
                       variant="outline-info"
                       size="sm"
-                      className="d-flex align-items-center gap-1"
+                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
                       onClick={() => window.print()}
                     >
                       <Printer size={14} />
@@ -888,7 +901,7 @@ export default function ExpenseApprovalPage() {
                     <Button
                       variant="outline-warning"
                       size="sm"
-                      className="d-flex align-items-center gap-1"
+                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
                       onClick={() => {
                         setStatusFilter("PENDING");
                         toast.info("Filtered to show pending approvals");
@@ -900,7 +913,7 @@ export default function ExpenseApprovalPage() {
                     <Button
                       variant="outline-dark"
                       size="sm"
-                      className="d-flex align-items-center gap-1"
+                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
                       onClick={() => {
                         if (navigator.share) {
                           navigator.share({
@@ -927,14 +940,14 @@ export default function ExpenseApprovalPage() {
         {/* Analytics Dashboard */}
         <Row className="mb-4">
           <Col>
-            <Card className="border-0 shadow-sm">
+            <Card className="border-0 shadow-sm rounded-3">
               <Card.Body className="p-4">
-                <div className="d-flex align-items-center mb-4">
-                  <div className="bg-info bg-opacity-10 p-3 rounded-circle me-3">
+                <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                  <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
                     <GraphUp size={24} className="text-info" />
                   </div>
                   <div>
-                    <h5 className="fw-bold mb-1">Approval Analytics</h5>
+                    <h5 className="fw-bold text-dark mb-1">Approval Analytics</h5>
                     <p className="text-muted mb-0 small">Performance insights and approval trends</p>
                   </div>
                 </div>
@@ -1313,12 +1326,12 @@ export default function ExpenseApprovalPage() {
         </Modal>
 
         {/* Enhanced Search and Filters */}
-        <Card className="mb-4">
-          <Card.Header className="bg-white p-3">
+        <Card className="mb-4 border-0 shadow-sm rounded-3">
+          <Card.Header className="bg-light border-0 rounded-top-3 p-4">
             {/* Search and Action Row */}
             <Row className="align-items-center g-3 mb-3">
               <Col xs={12} md={4}>
-                <h5 className="mb-0">Expense Requests</h5>
+                <h5 className="mb-0 fw-bold text-dark">Expense Requests</h5>
                 <small className="text-muted">
                   Showing{" "}
                   {Math.min(
@@ -1374,11 +1387,11 @@ export default function ExpenseApprovalPage() {
               </Col>
               <Col xs={12} md={3} className="text-end">
                 <Button
-                  variant="outline-primary"
+                  variant="primary"
                   size="sm"
                   onClick={() => window.print()}
                   title="Quick export via browser print"
-                  className="me-2"
+                  className="rounded-pill px-4 py-2 fw-semibold shadow-sm"
                 >
                   <Download size={16} className="me-1" />
                   Export
@@ -1388,15 +1401,19 @@ export default function ExpenseApprovalPage() {
 
             {/* Horizontal Filters Row */}
             <div className="filters-section">
-              <div className="filter-header-bar d-flex align-items-center justify-content-between mb-3 p-3 bg-success bg-opacity-10 rounded border">
-                <h6 className="mb-0 fw-bold text-success">
-                  <Funnel className="me-2" size={16} />
-                  Filters
-                </h6>
+              <div className="filter-header-bar d-flex align-items-center justify-content-between mb-3 p-3 bg-primary bg-opacity-10 rounded-3 border-0">
+                <div className="d-flex align-items-center">
+                  <div className="bg-primary bg-opacity-25 p-2 rounded-circle me-2">
+                    <Funnel className="text-primary" size={14} />
+                  </div>
+                  <h6 className="mb-0 fw-bold text-dark">
+                    Filters
+                  </h6>
+                </div>
                 <Button
-                  variant="outline-success"
+                  variant="outline-primary"
                   size="sm"
-                  className="btn-modern text-success"
+                  className="rounded-pill px-3 py-1 fw-semibold"
                   onClick={() => {
                     // setStatusFilter("All Statuses");
                     // setDateRangeFilter("All Time");
@@ -1425,7 +1442,7 @@ export default function ExpenseApprovalPage() {
                       className="form-select-modern"
                       value={statusFilter}
                       onChange={(e) => {
-                        setStatusFilter(e.target.value as any);
+                        setStatusFilter(e.target.value as "all" | ExpenseStatus);
                         setCurrentPage(1);
                       }}
                     >
@@ -1586,19 +1603,20 @@ export default function ExpenseApprovalPage() {
           <Card.Body className="p-0">
             {filteredExpenses.length === 0 ? (
               <div className="text-center py-5">
-                <FileText size={48} className="text-muted mb-3" />
-                <h5>No expenses to approve</h5>
+                <div className="bg-primary bg-opacity-10 d-inline-flex p-4 rounded-circle mb-3">
+                  <FileText size={48} className="text-primary" />
+                </div>
+                <h5 className="fw-bold text-dark">No expenses to approve</h5>
                 <p className="text-muted">
-                  When expenses are submitted for your approval, they will
-                  appear here.
+                  When expenses are submitted for your approval, they will appear here.
                 </p>
               </div>
             ) : (
-              <div className="table-responsive rounded-3 overflow-hidden border">
-                <Table hover className="align-middle mb-0 small">
-                  <thead className="bg-light text-muted small">
+              <div className="table-responsive">
+                <Table hover className="align-middle mb-0">
+                  <thead className="bg-light border-0">
                     <tr>
-                      <th className="ps-4 py-3" style={{ width: "40px" }}>
+                      <th className="border-0 py-3 px-4" style={{ width: "40px" }}>
                         <Form.Check
                           type="checkbox"
                           checked={allSelected}
@@ -1609,20 +1627,20 @@ export default function ExpenseApprovalPage() {
                           className="mb-0"
                         />
                       </th>
-                      <th className="py-3">#ID</th>
-                      <th className="py-3">Created</th>
-                      <th className="py-3">Payee</th>
-                      <th className="py-3">Payee Number</th>
-                      <th className="py-3">Description</th>
-                      <th className="py-3">Amount</th>
-                      <th className="py-3">Employee</th>
-                      <th className="py-3">Department</th>
-                      <th className="py-3">Category</th>
-                      <th className="py-3">Budget</th>
-                      <th className="py-3" style={{ minWidth: 200 }}>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">#ID</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Created</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Payee</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Payee Number</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Description</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Amount</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Employee</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Department</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Category</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Budget</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small" style={{ minWidth: 200 }}>
                         Progress
                       </th>
-                      <th className="text-end pe-4 py-3">Actions</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-end">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1644,7 +1662,7 @@ export default function ExpenseApprovalPage() {
                           key={exp.id}
                           className="cursor-pointer border-bottom"
                         >
-                          <td className="ps-4">
+                          <td className="py-3 px-4">
                             <Form.Check className="mb-0">
                               <Form.Check.Input
                                 type="checkbox"
@@ -1653,15 +1671,15 @@ export default function ExpenseApprovalPage() {
                               />
                             </Form.Check>
                           </td>
-                          <td>
+                          <td className="py-3 px-4">
                             <div className="d-flex align-items-center">
                               <Tag size={14} className="me-1 text-primary" />
-                              <span>{exp.id}</span>
+                              <span className="fw-semibold text-primary">{exp.id}</span>
                             </div>
                           </td>
-                          <td>
+                          <td className="py-3 px-4">
                             <div className="d-flex flex-column">
-                              <div className="">
+                              <div className="fw-medium">
                                 Created: {formatDate(exp.createdAt)}
                               </div>
                               <div className="text-muted small">
@@ -1669,9 +1687,9 @@ export default function ExpenseApprovalPage() {
                               </div>
                             </div>
                           </td>
-                          <td>{exp.payee}</td>
-                          <td>{exp.payeeNumber}</td>
-                          <td>
+                          <td className="py-3 px-4 fw-medium">{exp.payee}</td>
+                          <td className="py-3 px-4">{exp.payeeNumber}</td>
+                          <td className="py-3 px-4">
                             <div className="d-flex align-items-center ">
                               <div className="transaction-icon me-1 bg-danger border bg-opacity-50 p-1 rounded-3"></div>
                               <div>
@@ -1737,17 +1755,17 @@ export default function ExpenseApprovalPage() {
                               </div>
                             </div>
                           </td>
-                          <td>
-                            <span className="px-2 py-1 rounded bg-primary bg-opacity-10 text-primary small border">
+                          <td className="py-3 px-4">
+                            <Badge bg="primary" className="px-3 py-2 rounded-pill fw-semibold">
                               {exp.department?.name || "-"}
-                            </span>
+                            </Badge>
                           </td>
-                          <td>
-                            <span className="px-2 py-1 rounded bg-secondary bg-opacity-10 text-dark border small">
+                          <td className="py-3 px-4">
+                            <Badge bg="secondary" className="px-3 py-2 rounded-pill fw-semibold">
                               {exp.category?.name || "-"}
-                            </span>
+                            </Badge>
                           </td>
-                          <td>
+                          <td className="py-3 px-4">
                             <span
                               className={`px-2 py-1 rounded fw-bold ${
                                 exp.budget?.remainingBudget < exp.amount
@@ -1763,7 +1781,7 @@ export default function ExpenseApprovalPage() {
                                 "0.00"}
                             </span>
                           </td>
-                          <td style={{ minWidth: 200 }}>
+                          <td className="py-3 px-4" style={{ minWidth: 200 }}>
                             <div className="approval-timeline-compact p-2 rounded-3">
                               {exp.expenseSteps.length > 0 ? (
                                 <div className="timeline-steps d-flex flex-column gap-1">
@@ -1803,7 +1821,7 @@ export default function ExpenseApprovalPage() {
                                               cursor: "pointer",
                                               transition: "all 0.2s ease"
                                             }}
-                                            title={`Step ${step.order}: ${step.role?.name || "Unknown"} - ${status}`}
+                                            title={`Step ${step.order}: ${step.hierarchyLevel?.role?.name || step.role?.name || "Unknown"} - ${status}`}
                                           >
                                             {status === "APPROVED" && <CheckCircle size={12} />}
                                             {status === "REJECTED" && <XCircle size={12} />}
@@ -1861,7 +1879,7 @@ export default function ExpenseApprovalPage() {
                                         <div className="current-step-info text-center mt-1 bg-danger bg-opacity-10 border-danger">
                                           <small className="text-danger fw-medium">
                                             <XCircle size={10} className="me-1" />
-                                            Rejected at: {rejectedStep?.role?.name || "Unknown step"}
+                                            Rejected at: {rejectedStep?.hierarchyLevel?.role?.name || rejectedStep?.role?.name || "Unknown step"}
                                           </small>
                                         </div>
                                       );
@@ -1872,7 +1890,7 @@ export default function ExpenseApprovalPage() {
                                         <div className="current-step-info text-center mt-1">
                                           <small className="text-muted">
                                             <ClockHistory size={10} className="me-1" />
-                                            Waiting for: {currentStep.role?.name || "Unknown"}
+                                            Waiting for: {currentStep.hierarchyLevel?.role?.name || currentStep.role?.name || "Unknown"}
                                           </small>
                                         </div>
                                       );
@@ -1903,14 +1921,15 @@ export default function ExpenseApprovalPage() {
                               )}
                             </div>
                           </td>
-                          <td className="text-end pe-4">
+                          <td className="py-3 px-4 text-end">
                             <div className="d-flex gap-2 justify-content-end">
                               <Button
                                 variant="outline-primary"
                                 size="sm"
                                 onClick={() => handleViewDetails(exp)}
-                                className="d-flex align-items-center justify-content-center"
+                                className="d-flex align-items-center justify-content-center rounded-pill"
                                 style={{ width: "32px", height: "32px" }}
+                                title="View Details"
                               >
                                 <Eye size={14} />
                               </Button>
@@ -1921,8 +1940,9 @@ export default function ExpenseApprovalPage() {
                                     variant="outline-success"
                                     size="sm"
                                     onClick={() => handleApprove(exp.id)}
-                                    className="d-flex align-items-center justify-content-center"
+                                    className="d-flex align-items-center justify-content-center rounded-pill"
                                     style={{ width: "32px", height: "32px" }}
+                                    title="Approve"
                                   >
                                     <CheckLg size={14} />
                                   </Button>
@@ -1934,8 +1954,9 @@ export default function ExpenseApprovalPage() {
                                       setSelectedExpense(exp);
                                       setShowDetailsModal(true);
                                     }}
-                                    className="d-flex align-items-center justify-content-center"
+                                    className="d-flex align-items-center justify-content-center rounded-pill"
                                     style={{ width: "32px", height: "32px" }}
+                                    title="Reject"
                                   >
                                     <XLg size={14} />
                                   </Button>
@@ -2200,7 +2221,7 @@ export default function ExpenseApprovalPage() {
                                     <div className="fw-semibold text-dark">
                                       Step {step.order}{" "}
                                       <span className="text-muted small">
-                                        • {step.role?.name ?? "Unassigned role"}
+                                        • {(step.hierarchyLevel?.role?.name || step.role?.name) ?? "Unassigned role"}
                                       </span>
                                     </div>
                                     <Badge

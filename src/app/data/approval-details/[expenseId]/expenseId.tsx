@@ -213,57 +213,63 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
   // Helper function to transform approval steps data
   const transformApprovalSteps = (
-    steps: any[] = [],
+    steps: Array<Record<string, unknown>> = [],
     expenseId: number
   ): ExpenseSteps[] => {
-    return steps.map((step) => ({
-      id: step.id,
-      createdAt: step.createdAt || new Date().toISOString(),
-      updatedAt: step.updatedAt || step.createdAt || new Date().toISOString(),
-      expenseId: step.expenseId || expenseId,
-      approvalStatus: step.approvalStatus || step.status || "PENDING",
-      comments: step.comments || null,
-      actionedBy: step.actionedBy || 0, // Default to 0 if not provided
-      roleId: step.roleId || 0, // Default to 0 if not provided
-      role: step.role
-        ? {
-            id: step.role.id,
-            name: step.role.name,
-          }
-        : undefined,
-      // Use user if available, otherwise use approver
-      user: step.user
-        ? {
-            id: step.user.id,
-            firstName: step.user.firstName,
-            lastName: step.user.lastName,
-            email: step.user.email || "",
-          }
-        : step.approver
-        ? {
-            id: step.approver.id,
-            firstName: step.approver.firstName,
-            lastName: step.approver.lastName,
-            email: step.approver.email || "",
-          }
-        : undefined,
-      // Also keep the approver for backward compatibility
-      approver: step.approver
-        ? {
-            id: step.approver.id,
-            firstName: step.approver.firstName,
-            lastName: step.approver.lastName,
-            email: step.approver.email || "",
-          }
-        : step.user
-        ? {
-            id: step.user.id,
-            firstName: step.user.firstName,
-            lastName: step.user.lastName,
-            email: step.user.email || "",
-          }
-        : undefined,
-    }));
+    return steps.map((step): ExpenseSteps => {
+      const roleData = step.role as Record<string, unknown> | undefined;
+      const userData = step.user as Record<string, unknown> | undefined;
+      const approverData = step.approver as Record<string, unknown> | undefined;
+
+      return {
+        id: typeof step.id === 'number' ? step.id : 0,
+        createdAt: typeof step.createdAt === 'string' ? step.createdAt : new Date().toISOString(),
+        updatedAt: typeof step.updatedAt === 'string' ? step.updatedAt : (typeof step.createdAt === 'string' ? step.createdAt : new Date().toISOString()),
+        expenseId: typeof step.expenseId === 'number' ? step.expenseId : expenseId,
+        approvalStatus: (step.approvalStatus === 'PENDING' || step.approvalStatus === 'APPROVED' || step.approvalStatus === 'REJECTED' ? step.approvalStatus : 'PENDING') as "PENDING" | "APPROVED" | "REJECTED",
+        comments: typeof step.comments === 'string' ? step.comments : null,
+        actionedBy: typeof step.actionedBy === 'number' ? step.actionedBy : 0,
+        roleId: typeof step.roleId === 'number' ? step.roleId : 0,
+        role: roleData
+          ? {
+              id: typeof roleData.id === 'number' ? roleData.id : 0,
+              name: typeof roleData.name === 'string' ? roleData.name : '',
+            }
+          : undefined,
+        // Use user if available, otherwise use approver
+        user: userData
+          ? {
+              id: typeof userData.id === 'number' ? userData.id : 0,
+              firstName: typeof userData.firstName === 'string' ? userData.firstName : '',
+              lastName: typeof userData.lastName === 'string' ? userData.lastName : '',
+              email: typeof userData.email === 'string' ? userData.email : '',
+            }
+          : approverData
+          ? {
+              id: typeof approverData.id === 'number' ? approverData.id : 0,
+              firstName: typeof approverData.firstName === 'string' ? approverData.firstName : '',
+              lastName: typeof approverData.lastName === 'string' ? approverData.lastName : '',
+              email: typeof approverData.email === 'string' ? approverData.email : '',
+            }
+          : undefined,
+        // Also keep the approver for backward compatibility
+        approver: approverData
+          ? {
+              id: typeof approverData.id === 'number' ? approverData.id : 0,
+              firstName: typeof approverData.firstName === 'string' ? approverData.firstName : '',
+              lastName: typeof approverData.lastName === 'string' ? approverData.lastName : '',
+              email: typeof approverData.email === 'string' ? approverData.email : '',
+            }
+          : userData
+          ? {
+              id: typeof userData.id === 'number' ? userData.id : 0,
+              firstName: typeof userData.firstName === 'string' ? userData.firstName : '',
+              lastName: typeof userData.lastName === 'string' ? userData.lastName : '',
+              email: typeof userData.email === 'string' ? userData.email : '',
+            }
+          : undefined,
+      };
+    });
   };
 
   // Handle params initialization
@@ -330,30 +336,34 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
           ...data,
           // Transform expense steps
           expenseSteps: Array.isArray(data.expenseSteps)
-            ? data.expenseSteps.map((step: any) => ({
-                id: step.id,
-                order: step.order || 0,
-                isOptional: Boolean(step.isOptional),
-                status: step.status || "PENDING",
-                comments: step.comments || null,
-                roleId: step.roleId,
-                workflowStepId: step.workflowStepId || 0,
-                approverId: step.approverId || null,
-                role: step.role
-                  ? {
-                      id: step.role.id,
-                      name: step.role.name,
-                    }
-                  : undefined,
-                approver: step.approver
-                  ? {
-                      id: step.approver.id,
-                      firstName: step.approver.firstName,
-                      lastName: step.approver.lastName,
-                      email: step.approver.email || "",
-                    }
-                  : null,
-              }))
+            ? data.expenseSteps.map((step: Record<string, unknown>) => {
+                const roleData = step.role as Record<string, unknown> | undefined;
+                const approverData = step.approver as Record<string, unknown> | undefined;
+                return {
+                  id: typeof step.id === 'number' ? step.id : 0,
+                  order: typeof step.order === 'number' ? step.order : 0,
+                  isOptional: Boolean(step.isOptional),
+                  status: typeof step.status === 'string' ? step.status : "PENDING",
+                  comments: typeof step.comments === 'string' ? step.comments : null,
+                  roleId: typeof step.roleId === 'number' ? step.roleId : 0,
+                  workflowStepId: typeof step.workflowStepId === 'number' ? step.workflowStepId : 0,
+                  approverId: typeof step.approverId === 'number' ? step.approverId : null,
+                  role: roleData
+                    ? {
+                        id: typeof roleData.id === 'number' ? roleData.id : 0,
+                        name: typeof roleData.name === 'string' ? roleData.name : '',
+                      }
+                    : undefined,
+                  approver: approverData
+                    ? {
+                        id: typeof approverData.id === 'number' ? approverData.id : 0,
+                        firstName: typeof approverData.firstName === 'string' ? approverData.firstName : '',
+                        lastName: typeof approverData.lastName === 'string' ? approverData.lastName : '',
+                        email: typeof approverData.email === 'string' ? approverData.email : '',
+                      }
+                    : null,
+                };
+              })
             : [],
           // Transform approval steps using the helper function
           approvalSteps: transformApprovalSteps(
@@ -527,7 +537,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                 <div className="d-flex justify-content-between">
                   <small className="text-muted">
                     {
-                      approvalSteps.filter((s: any) => s.status === "APPROVED")
+                      approvalSteps.filter((s) => s.status === "APPROVED")
                         .length
                     }{" "}
                     of {approvalSteps.length} steps completed
@@ -869,7 +879,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {expense.advances.map((advance: any) => (
+                      {expense.advances.map((advance) => (
                         <tr key={advance.id}>
                           <td>{advance.id}</td>
                           <td className="fw-semibold">
@@ -927,7 +937,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                   </Alert>
                 ) : (
                   <ListGroup variant="flush">
-                    {expense.expenseSteps.map((step: any, index: number) => (
+                    {expense.expenseSteps.map((step, index: number) => (
                       <ListGroup.Item
                         key={`expense-${step.id || index}`}
                         className="px-0"
@@ -985,7 +995,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                             {step.comments && (
                               <div className="mt-2 p-2 bg-light rounded">
                                 <small className="text-muted">
-                                  <i>"{step.comments}"</i>
+                                  <i>&quot;{step.comments}&quot;</i>
                                 </small>
                               </div>
                             )}
@@ -1042,7 +1052,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {expense.approvalSteps?.map((step: any, index: number) => {
+                    {expense.approvalSteps?.map((step, index: number) => {
                       return (
                         <tr
                           key={`approval-${step.id || index}`}
@@ -1160,7 +1170,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                             {step.comments ? (
                               <div className="bg-danger bg-opacity-10 p-3 rounded-2">
                                 <p className="mb-0 text-dark fst-italic">
-                                  "{step.comments}" -{" "}
+                                  &quot;{step.comments}&quot; -{" "}
                                   {formatDate(step.createdAt)}
                                 </p>
                               </div>

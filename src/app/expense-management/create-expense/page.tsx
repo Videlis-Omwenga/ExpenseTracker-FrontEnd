@@ -383,7 +383,7 @@ export default function CreateExpensePage() {
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Mock extracted data based on file name patterns
-      const extracted: any = {};
+      const extracted: Record<string, string> = {};
       if (file.name.toLowerCase().includes('invoice') || file.name.toLowerCase().includes('receipt')) {
         extracted.amount = (Math.random() * 1000 + 50).toFixed(2);
         extracted.vendor = 'Extracted Vendor Name';
@@ -568,61 +568,71 @@ export default function CreateExpensePage() {
         <Form onSubmit={handleSubmit}>
           <Row className="justify-content-center">
             <Container fluid className="py-4">
+              {/* Modern Header */}
+              <div className="mb-4">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <div className="d-flex align-items-center mb-2">
+                      <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                        <FileEarmarkPlus className="text-primary" size={28} />
+                      </div>
+                      <div>
+                        <h2 className="fw-bold text-dark mb-0">
+                          Create New Expense
+                        </h2>
+                        <p className="text-muted mb-0 small">
+                          Submit a new expense for approval and payment
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <Breadcrumb className="mb-0 d-none d-md-flex">
+                    <Breadcrumb.Item
+                      href="/"
+                      className="d-flex align-items-center small"
+                    >
+                      <HouseDoor size={14} className="me-1" />
+                      Home
+                    </Breadcrumb.Item>
+                    <Breadcrumb.Item
+                      href="/expense-management/my-expenses"
+                      className="d-flex align-items-center small"
+                    >
+                      <ListCheck size={14} className="me-1" />
+                      My Expenses
+                    </Breadcrumb.Item>
+                    <Breadcrumb.Item
+                      active
+                      className="d-flex align-items-center small"
+                    >
+                      <PlusCircle size={14} className="me-1" />
+                      Create New
+                    </Breadcrumb.Item>
+                  </Breadcrumb>
+                </div>
+                <hr className="border-2 border-primary opacity-25 mb-4" />
+              </div>
+
               <Row>
                 {/* Left Column - Expense Details */}
-                <Col lg={8} className="mt-4">
-                  <div className="alert alert-primary border-0 rounded-3 shadow-sm d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
-                    <div>
-                      <h5 className="fw-bold text-dark mb-1 d-flex align-items-center">
-                        <Receipt size={22} className="me-2" />
-                        Create New Expense
-                      </h5>
-                      <p className="text-muted small mb-0">
-                        Submit a new expense for payment
-                      </p>
-                    </div>
-
-                    <Breadcrumb className="mb-0 d-none d-md-flex">
-                      <Breadcrumb.Item
-                        href="/"
-                        className="d-flex align-items-center small"
-                      >
-                        <HouseDoor size={14} className="me-1" />
-                        Home
-                      </Breadcrumb.Item>
-                      <Breadcrumb.Item
-                        href="/expense-management/my-expenses"
-                        className="d-flex align-items-center small"
-                      >
-                        <ListCheck size={14} className="me-1" />
-                        My Expenses
-                      </Breadcrumb.Item>
-                      <Breadcrumb.Item
-                        active
-                        className="d-flex align-items-center small"
-                      >
-                        <PlusCircle size={14} className="me-1" />
-                        Create New
-                      </Breadcrumb.Item>
-                    </Breadcrumb>
-                  </div>
+                <Col lg={8} className="mt-2">
 
                   {/* Duplicate Warning */}
                   {duplicateWarning && (
-                    <Alert variant="warning" className="border-0 shadow-sm mb-4">
+                    <Alert variant="warning" className="border-0 border-start border-3 border-warning shadow-sm mb-4 bg-warning bg-opacity-10">
                       <div className="d-flex align-items-center">
-                        <ExclamationTriangle size={18} className="me-2" />
+                        <ExclamationTriangle size={20} className="me-3 flex-shrink-0" />
                         <div>
                           <strong>Potential Duplicate Detected</strong>
-                          <div className="small">{duplicateWarning}</div>
+                          <div className="small mt-1">{duplicateWarning}</div>
                         </div>
                       </div>
                     </Alert>
                   )}
 
                   {/* Progress Indicator */}
-                  <Card className="border-0 shadow-sm mb-4 sticky-top">
-                    <Card.Body className="p-3">
+                  <Card className="border-0 shadow-sm mb-4 sticky-top rounded-3">
+                    <Card.Body className="p-4">
                       <div className="d-flex justify-content-between align-items-center mb-2">
                         <span className="text-muted small">
                           Form Completion
@@ -674,26 +684,24 @@ export default function CreateExpensePage() {
                     </Card.Body>
                   </Card>
                   {/* Payee Information Card */}
-                  <Card className="border rounded-3 p-4 mb-4">
-                    <Card.Header className="bg-white py-3 border-bottom-0 mb-4">
-                      <div className="d-flex align-items-center">
+                  <Card className="border-0 shadow-sm rounded-3 mb-4">
+                    <Card.Body className="p-4">
+                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                          <Person className="text-primary" size={20} />
+                          <Person className="text-primary" size={22} />
                         </div>
                         <div>
-                          <h6 className="fw-bold mb-0">Payee Information</h6>
+                          <h6 className="fw-bold text-dark mb-0">Payee Information</h6>
                           <span className="text-muted small">
                             Who is receiving payment
                           </span>
                         </div>
                       </div>
-                    </Card.Header>
-                    <Card.Body className="p-4 pt-0">
                       <Row>
                         <Col md={6}>
                           <Form.Group className="mb-3">
-                            <Form.Label className="fw-semibold">
-                              <Person className="me-1" /> Payee Name
+                            <Form.Label className="fw-semibold text-dark">
+                              <Person className="me-1" size={16} /> Payee Name <span className="text-danger">*</span>
                             </Form.Label>
                             <Form.Control
                               type="text"
@@ -703,7 +711,7 @@ export default function CreateExpensePage() {
                                 validateField('payee', e.target.value);
                               }}
                               required
-                              className={`py-2 border-0 border-bottom rounded-0 ${
+                              className={`py-2 border-2 rounded-3 ${
                                 fieldErrors.payee ? 'is-invalid' : payee && !fieldErrors.payee ? 'is-valid' : ''
                               }`}
                             />
@@ -727,67 +735,63 @@ export default function CreateExpensePage() {
                         </Col>
                         <Col md={6}>
                           <Form.Group className="mb-3">
-                            <Form.Label className="fw-semibold">
-                              <PersonBadge className="me-1" /> ID Number
+                            <Form.Label className="fw-semibold text-dark">
+                              <PersonBadge className="me-1" size={16} /> ID Number <span className="text-danger">*</span>
                             </Form.Label>
                             <Form.Control
                               type="text"
                               value={payeeId}
                               onChange={(e) => setPayeeId(e.target.value)}
                               required
-                              className="py-2 border-0 border-bottom rounded-0"
+                              className="py-2 border-2 rounded-3"
                             />
                             <Form.Text className="text-muted">
-                              Government-issued ID number or business
-                              registration number
+                              Government-issued ID number or business registration number
                             </Form.Text>
                           </Form.Group>
                         </Col>
                       </Row>
 
                       <Form.Group className="mb-3">
-                        <Form.Label className="fw-semibold">
-                          <PersonBadge className="me-1" /> Payment Reference
+                        <Form.Label className="fw-semibold text-dark">
+                          <PersonBadge className="me-1" size={16} /> Payment Reference <span className="text-danger">*</span>
                         </Form.Label>
                         <Form.Control
                           type="text"
                           value={payeeNumber}
                           onChange={(e) => setPayeeNumber(e.target.value)}
                           required
-                          className="py-2 border-0 border-bottom rounded-0"
+                          className="py-2 border-2 rounded-3"
                         />
                         <Form.Text className="text-muted">
-                          Bank account number, mobile money number, or other
-                          payment identifier
+                          Bank account number, mobile money number, or other payment identifier
                         </Form.Text>
                       </Form.Group>
                     </Card.Body>
                   </Card>
 
                   {/* Expense Details Card */}
-                  <Card className="border rounded-3 p-4 mb-4">
-                    <Card.Header className="bg-white py-3 border-bottom-0 mb-4">
-                      <div className="d-flex align-items-center">
+                  <Card className="border-0 shadow-sm rounded-3 mb-4">
+                    <Card.Body className="p-4">
+                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                          <Cash className="text-primary" size={20} />
+                          <Cash className="text-primary" size={22} />
                         </div>
                         <div>
-                          <h6 className="fw-bold mb-0">Expense Details</h6>
+                          <h6 className="fw-bold text-dark mb-0">Expense Details</h6>
                           <span className="text-muted small">
-                            What you're claiming for
+                            What you&apos;re claiming for
                           </span>
                         </div>
                       </div>
-                    </Card.Header>
-                    <Card.Body className="p-4 pt-0">
                       <Row className="mb-3">
                         <Col md={6}>
                           <Form.Group className="mb-3">
-                            <Form.Label className="fw-semibold">
-                              <CurrencyDollar className="me-1" /> Amount
+                            <Form.Label className="fw-semibold text-dark">
+                              <CurrencyDollar className="me-1" size={16} /> Amount <span className="text-danger">*</span>
                             </Form.Label>
                             <InputGroup>
-                              <InputGroup.Text className="bg-light border-0 border-bottom rounded-0">
+                              <InputGroup.Text className="bg-light border-2 rounded-start-3">
                                 {currencies.find(
                                   (c) => c.id === Number(currency)
                                 )?.initials || "---"}
@@ -802,7 +806,8 @@ export default function CreateExpensePage() {
                                 step="0.01"
                                 min="0"
                                 required
-                                className={`py-2 border-0 border-bottom rounded-0 ${
+                                placeholder="0.00"
+                                className={`py-2 border-2 rounded-end-3 ${
                                   fieldErrors.primaryAmount ? 'is-invalid' : primaryAmount && !fieldErrors.primaryAmount ? 'is-valid' : ''
                                 }`}
                               />
@@ -829,14 +834,14 @@ export default function CreateExpensePage() {
                         </Col>
                         <Col md={6}>
                           <Form.Group className="mb-3">
-                            <Form.Label className="fw-semibold">
-                              Currency
+                            <Form.Label className="fw-semibold text-dark">
+                              <CurrencyDollar className="me-1" size={16} /> Currency <span className="text-danger">*</span>
                             </Form.Label>
                             <Form.Select
                               value={currency}
                               onChange={(e) => setCurrency(e.target.value)}
                               required
-                              className="py-2 border-0 border-bottom rounded-0"
+                              className="py-2 border-2 rounded-3"
                             >
                               <option value=""></option>
                               {currencies.map((c) => (
@@ -853,51 +858,48 @@ export default function CreateExpensePage() {
                       </Row>
 
                       <Form.Group className="mb-3">
-                        <Form.Label className="fw-semibold">
-                          Description
+                        <Form.Label className="fw-semibold text-dark">
+                          <FileEarmarkText className="me-1" size={16} /> Description <span className="text-danger">*</span>
                         </Form.Label>
                         <Form.Control
                           as="textarea"
                           rows={3}
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
-                          className="py-2 border-0 border-bottom rounded-0"
+                          className="py-2 border-2 rounded-3"
                         />
                         <Form.Text className="text-muted">
-                          Provide a detailed description of what this expense
-                          was for
+                          Provide a detailed description of what this expense was for
                         </Form.Text>
                       </Form.Group>
                     </Card.Body>
                   </Card>
 
                   {/* Categorization Card */}
-                  <Card className="border rounded-3 p-4 mb-4">
-                    <Card.Header className="bg-white py-3 border-bottom-0 mb-4">
-                      <div className="d-flex align-items-center">
+                  <Card className="border-0 shadow-sm rounded-3 mb-4">
+                    <Card.Body className="p-4">
+                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                          <Tag className="text-primary" size={20} />
+                          <Tag className="text-primary" size={22} />
                         </div>
                         <div>
-                          <h6 className="fw-bold mb-0">Categorization</h6>
+                          <h6 className="fw-bold text-dark mb-0">Categorization</h6>
                           <span className="text-muted small">
                             How to classify this expense
                           </span>
                         </div>
                       </div>
-                    </Card.Header>
-                    <Card.Body className="p-4 pt-0">
                       <Row>
                         <Col md={6}>
                           <Form.Group className="mb-3">
-                            <Form.Label className="fw-semibold">
-                              <Building className="me-1" /> Department
+                            <Form.Label className="fw-semibold text-dark">
+                              <Building className="me-1" size={16} /> Department <span className="text-danger">*</span>
                             </Form.Label>
                             <Form.Select
                               value={department}
                               onChange={(e) => setDepartment(e.target.value)}
                               required
-                              className="py-2 border-0 border-bottom rounded-0"
+                              className="py-2 border-2 rounded-3"
                             >
                               <option value=""></option>
                               {departments.map((dept) => (
@@ -913,14 +915,14 @@ export default function CreateExpensePage() {
                         </Col>
                         <Col md={6}>
                           <Form.Group className="mb-3">
-                            <Form.Label className="fw-semibold">
-                              Category
+                            <Form.Label className="fw-semibold text-dark">
+                              <Tag className="me-1" size={16} /> Category <span className="text-danger">*</span>
                             </Form.Label>
                             <Form.Select
                               value={category}
                               onChange={(e) => setCategory(e.target.value)}
                               required
-                              className="py-2 border-0 border-bottom rounded-0"
+                              className="py-2 border-2 rounded-3"
                             >
                               <option value=""></option>
                               {categories.map((cat) => (
@@ -939,14 +941,14 @@ export default function CreateExpensePage() {
                       <Row>
                         <Col md={6}>
                           <Form.Group className="mb-3">
-                            <Form.Label className="fw-semibold">
-                              <GeoAlt className="me-1" /> Region
+                            <Form.Label className="fw-semibold text-dark">
+                              <GeoAlt className="me-1" size={16} /> Region <span className="text-danger">*</span>
                             </Form.Label>
                             <Form.Select
                               value={region}
                               onChange={(e) => setRegion(e.target.value)}
                               required
-                              className="py-2 border-0 border-bottom rounded-0"
+                              className="py-2 border-2 rounded-3"
                             >
                               <option value=""></option>
                               {regions.map((r) => (
@@ -965,32 +967,30 @@ export default function CreateExpensePage() {
                   </Card>
 
                   {/* Payment Information Card */}
-                  <Card className="border rounded-3 p-4 mb-4">
-                    <Card.Header className="bg-white py-3 border-bottom-0 mb-4">
-                      <div className="d-flex align-items-center">
+                  <Card className="border-0 shadow-sm rounded-3 mb-4">
+                    <Card.Body className="p-4">
+                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                          <CreditCard className="text-primary" size={20} />
+                          <CreditCard className="text-primary" size={22} />
                         </div>
                         <div>
-                          <h6 className="fw-bold mb-0">Payment Information</h6>
+                          <h6 className="fw-bold text-dark mb-0">Payment Information</h6>
                           <span className="text-muted small">
                             How to process payment
                           </span>
                         </div>
                       </div>
-                    </Card.Header>
-                    <Card.Body className="p-4 pt-0">
                       <Row>
                         <Col md={6}>
                           <Form.Group className="mb-3">
-                            <Form.Label className="fw-semibold">
-                              Payment Method
+                            <Form.Label className="fw-semibold text-dark">
+                              <CreditCard className="me-1" size={16} /> Payment Method <span className="text-danger">*</span>
                             </Form.Label>
                             <Form.Select
                               value={paymentMethod}
                               onChange={(e) => setPaymentMethod(e.target.value)}
                               required
-                              className="py-2 border-0 border-bottom rounded-0"
+                              className="py-2 border-2 rounded-3"
                             >
                               <option value=""></option>
                               {paymentMethods.map((m) => (
@@ -1006,8 +1006,8 @@ export default function CreateExpensePage() {
                         </Col>
                         <Col md={6}>
                           <Form.Group className="mb-3">
-                            <Form.Label className="fw-semibold">
-                              Reference Number
+                            <Form.Label className="fw-semibold text-dark">
+                              <Journal className="me-1" size={16} /> Reference Number
                             </Form.Label>
                             <Form.Control
                               type="text"
@@ -1015,7 +1015,7 @@ export default function CreateExpensePage() {
                               onChange={(e) =>
                                 setReferenceNumber(e.target.value)
                               }
-                              className="py-2 border-0 border-bottom rounded-0"
+                              className="py-2 border-2 rounded-3"
                             />
                             <Form.Text className="text-muted">
                               Optional reference number for tracking purposes
@@ -1027,21 +1027,19 @@ export default function CreateExpensePage() {
                   </Card>
 
                   {/* Advance Request Card */}
-                  <Card className="border rounded-3 p-4 mb-4">
-                    <Card.Header className="bg-white py-3 border-bottom-0 mb-4">
-                      <div className="d-flex align-items-center">
+                  <Card className="border-0 shadow-sm rounded-3 mb-4">
+                    <Card.Body className="p-4">
+                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                          <Calculator className="text-primary" size={20} />
+                          <Calculator className="text-primary" size={22} />
                         </div>
                         <div>
-                          <h6 className="fw-bold mb-0">Advance Request</h6>
+                          <h6 className="fw-bold text-dark mb-0">Advance Request</h6>
                           <span className="text-muted small">
                             Allocate funds to categories
                           </span>
                         </div>
                       </div>
-                    </Card.Header>
-                    <Card.Body className="p-4 pt-0">
                       <Row>
                         <Col md={6}>
                           <Form.Group className="mb-3">
@@ -1060,7 +1058,7 @@ export default function CreateExpensePage() {
                               />
                             </div>
                             <Form.Text className="text-muted">
-                              Check this if you're requesting funds before
+                              Check this if you&apos;re requesting funds before
                               incurring expenses
                             </Form.Text>
                           </Form.Group>
@@ -1122,7 +1120,7 @@ export default function CreateExpensePage() {
                                   bg={
                                     Object.values(allocations).reduce(
                                       (sum, amount) =>
-                                        sum + (parseFloat(amount as any) || 0),
+                                        sum + (parseFloat(String(amount)) || 0),
                                       0
                                     ) === Number(primaryAmount)
                                       ? "success"
@@ -1138,7 +1136,7 @@ export default function CreateExpensePage() {
                                         .reduce(
                                           (sum, amount) =>
                                             sum +
-                                            (parseFloat(amount as any) || 0),
+                                            (parseFloat(String(amount)) || 0),
                                           0
                                         )
                                         .toFixed(2)
@@ -1153,24 +1151,22 @@ export default function CreateExpensePage() {
                   </Card>
 
                   {/* Attachments Card */}
-                  <Card className="border rounded-3 p-4 mb-4">
-                    <Card.Header className="bg-white py-3 border-bottom-0 mb-4">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
-                          <FileEarmarkText className="text-info" size={20} />
+                  <Card className="border-0 shadow-sm rounded-3 mb-4">
+                    <Card.Body className="p-4">
+                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                        <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                          <Receipt className="text-primary" size={22} />
                         </div>
                         <div>
-                          <h6 className="fw-bold mb-0">Attachments</h6>
+                          <h6 className="fw-bold text-dark mb-0">Attachments</h6>
                           <span className="text-muted small">
-                            Supporting documents
+                            Upload supporting documents
                           </span>
                         </div>
                       </div>
-                    </Card.Header>
-                    <Card.Body className="p-4 pt-0">
                       <Row>
                         <Col md={6}>
-                          <div className="file-upload-area border-dashed border-info border-2 rounded-3 p-4 text-center bg-info bg-opacity-10">
+                          <div className="file-upload-area border border-2 border-primary border-dashed rounded-3 p-4 text-center bg-primary bg-opacity-10">
                             <input
                               type="file"
                               id="file-upload"
@@ -1182,13 +1178,13 @@ export default function CreateExpensePage() {
                             <div className="mb-3">
                               <FileEarmarkPlus
                                 size={40}
-                                className="text-muted opacity-50"
+                                className="text-primary opacity-75"
                               />
                             </div>
 
                             <label
                               htmlFor="file-upload"
-                              className="btn btn-outline-info rounded-pill mb-2 px-4 text-primary"
+                              className="btn btn-primary rounded-pill mb-2 px-4 fw-semibold shadow-sm"
                             >
                               <Upload size={16} className="me-2" /> Choose File
                             </label>
@@ -1276,18 +1272,22 @@ export default function CreateExpensePage() {
                 </Col>
 
                 {/* Right Column - Summary and Actions */}
-                <Col lg={4} className="mt-4">
+                <Col lg={4} className="mt-2">
                   {/* Summary Card */}
                   <Card
-                    className="border-0 shadow-sm sticky-top"
+                    className="border-0 shadow-sm rounded-3 sticky-top"
                     style={{ top: "100px" }}
                   >
-                    <Card.Header className="bg-white py-3">
-                      <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                        <Journal className="me-2" /> Expense Summary
-                      </h6>
-                    </Card.Header>
-                    <Card.Body className="p-0">
+                    <Card.Body className="p-4">
+                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                        <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                          <ClipboardCheck className="text-primary" size={22} />
+                        </div>
+                        <div>
+                          <h6 className="fw-bold text-dark mb-0">Expense Summary</h6>
+                          <span className="text-muted small">Review before submitting</span>
+                        </div>
+                      </div>
                       <div className="p-3 border-bottom">
                         <div className="d-flex justify-content-between align-items-center mb-2">
                           <span className="text-muted small">Payee:</span>
@@ -1378,13 +1378,13 @@ export default function CreateExpensePage() {
                         </div>
                       </div>
 
-                      <div className="p-3 bg-light">
+                      <div className="p-4 bg-light border-top">
                         <div className="d-grid gap-2">
                           <Button
                             size="lg"
                             type="submit"
                             variant="primary"
-                            className="py-2 rounded-2 fw-semibold d-flex align-items-center justify-content-center"
+                            className="py-3 rounded-pill fw-semibold d-flex align-items-center justify-content-center shadow-sm"
                             disabled={isSubmitting}
                           >
                             {isSubmitting ? (
@@ -1393,7 +1393,7 @@ export default function CreateExpensePage() {
                                   animation="border"
                                   size="sm"
                                   className="me-2"
-                                />{" "}
+                                />
                                 Creating Expense...
                               </>
                             ) : (
@@ -1406,7 +1406,7 @@ export default function CreateExpensePage() {
                           <Button
                             size="sm"
                             variant="outline-secondary"
-                            className="py-2 rounded-2"
+                            className="py-2 rounded-pill fw-semibold"
                             disabled={isSubmitting}
                             onClick={() => window.history.back()}
                           >
@@ -1415,12 +1415,17 @@ export default function CreateExpensePage() {
                         </div>
                       </div>
                     </Card.Body>
-                    <Card.Header className="bg-white py-3">
-                      <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                        <InfoCircle className="me-2" /> Keyboard Shortcuts
-                      </h6>
-                    </Card.Header>
-                    <Card.Body>
+                  </Card>
+
+                  {/* Keyboard Shortcuts Card */}
+                  <Card className="border-0 shadow-sm rounded-3 mt-4">
+                    <Card.Body className="p-4">
+                      <div className="d-flex align-items-center mb-3 pb-3 border-bottom">
+                        <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                          <InfoCircle className="text-primary" size={20} />
+                        </div>
+                        <h6 className="fw-bold text-dark mb-0">Keyboard Shortcuts</h6>
+                      </div>
                       <div className="small text-muted">
                         <div className="d-flex justify-content-between mb-1">
                           <span>Save Draft:</span>

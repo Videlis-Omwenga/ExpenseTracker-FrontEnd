@@ -14,7 +14,8 @@ interface Role {
   role: {
     name: string;
     id?: number;
-    [key: string]: any;
+    description?: string;
+    isActive?: boolean;
   };
 }
 
@@ -25,7 +26,9 @@ interface DecodedToken extends JwtPayload {
   lastName: string;
   email: string;
   roles: Role[];
-  [key: string]: any;
+  institution?: string | number;
+  region?: string | number;
+  phone?: string;
 }
 
 interface UserContextType {

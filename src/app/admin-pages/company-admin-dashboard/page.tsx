@@ -28,28 +28,21 @@ import {
   Search,
   Grid3x3Gap,
   StarFill,
-  Bell,
   Eye,
   Filter,
   X,
   ShieldLock,
   CurrencyDollar,
-  ClipboardData,
   Lightning,
   Activity,
   Calendar,
-  GraphUp,
-  CheckCircle,
-  Clock,
   ExclamationTriangle,
-  Download,
   Upload,
-  Speedometer2,
-  Award,
   Trash,
   Envelope,
   Telephone,
   FileText,
+  InfoCircle as Info,
 } from "react-bootstrap-icons";
 import AuthProvider from "../../authPages/tokenData";
 import TopNavbar from "@/app/components/Navbar";
@@ -95,6 +88,14 @@ enum UserStatus {
   PENDING = "PENDING",
 }
 
+interface ApprovalHierarchy {
+  id: number;
+  name: string;
+  hierarchyId?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 interface User {
   id: number;
   firstName: string;
@@ -116,6 +117,7 @@ interface User {
   } | null;
   departmentId: number | null;
   roles?: UserRole[];
+  hierarchies?: ApprovalHierarchy[];
   expenses?: Expense[];
   paidBy?: Expense[];
   ExpenseSteps?: ExpenseStep[];
@@ -246,6 +248,8 @@ interface UserRole {
   id: number;
   userId: number;
   roleId: number;
+  role?: Role;
+  name?: string;
 }
 
 interface WorkflowStep {
@@ -299,13 +303,19 @@ interface ActivityItem {
   details?: string;
 }
 
+interface Page {
+  id: number;
+  name: string;
+  description?: string;
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "dashboard");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
@@ -317,8 +327,9 @@ export default function AdminDashboard() {
     status: "",
     regionId: 0,
     roles: [] as number[],
+    hierarchies: [] as number[],
   });
-  const [selectedRole, setSelectedRole] = useState<any>(null);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [showEditRoleModal, setShowEditRoleModal] = useState(false);
   const [showDeleteRoleModal, setShowDeleteRoleModal] = useState(false);
@@ -343,10 +354,23 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
-  const [pages, setPages] = useState<any[]>([]);
+  const [pages, setPages] = useState<Page[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
   const [showCreateRegionModal, setShowCreateRegionModal] = useState(false);
   const [showEditRegionModal, setShowEditRegionModal] = useState(false);
+
+  // Approval Hierarchy States (Simplified - just names)
+  const [approvalHierarchies, setApprovalHierarchies] = useState<ApprovalHierarchy[]>([]);
+  const [showCreateHierarchyModal, setShowCreateHierarchyModal] = useState(false);
+  const [showEditHierarchyModal, setShowEditHierarchyModal] = useState(false);
+  const [showDeleteHierarchyModal, setShowDeleteHierarchyModal] = useState(false);
+  const [selectedHierarchy, setSelectedHierarchy] = useState<ApprovalHierarchy | null>(null);
+  const [hierarchyFormData, setHierarchyFormData] = useState({
+    name: "",
+  });
+  const [isCreatingHierarchy, setIsCreatingHierarchy] = useState(false);
+  const [isUpdatingHierarchy, setIsUpdatingHierarchy] = useState(false);
+  const [isDeletingHierarchy, setIsDeletingHierarchy] = useState(false);
   const [showDeleteRegionModal, setShowDeleteRegionModal] = useState(false);
   const [createRegionFormData, setCreateRegionFormData] = useState({
     name: "",
@@ -401,7 +425,7 @@ export default function AdminDashboard() {
       icon: <Gear size={24} />,
       color: 'secondary',
       action: () => {
-        toast.info('System settings coming soon!');
+        toast.info('System settings coming soon');
       }
     },
     {
@@ -520,8 +544,31 @@ export default function AdminDashboard() {
     }
   };
 
+  // Fetch Approval Hierarchies (Simple names only)
+  const fetchApprovalHierarchies = async () => {
+    try {
+      const response = await fetch(`${BASE_API_URL}/hierarchies/all`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setApprovalHierarchies(data.hierarchies || []);
+      } else {
+        toast.error(data.message || "Failed to fetch approval hierarchies");
+      }
+    } catch (error) {
+      console.error("Failed to fetch hierarchies:", error);
+    }
+  };
+
   // User CRUD Handlers
-  const handleEditUser = (user: any) => {
+  const handleEditUser = (user: User) => {
     setSelectedUser(user);
     setEditUserFormData({
       firstName: user.firstName || "",
@@ -530,12 +577,13 @@ export default function AdminDashboard() {
       phone: user.phone || "",
       status: user.status || "",
       regionId: user.regionId || 0,
-      roles: user.roles?.map((r: any) => r.roleId) || [],
+      roles: user.roles?.map((r: UserRole) => r.roleId) || [],
+      hierarchies: user.hierarchies?.map((h: ApprovalHierarchy) => h.hierarchyId || h.id) || [],
     });
     setShowEditUserModal(true);
   };
 
-  const handleDeleteUser = (user: any) => {
+  const handleDeleteUser = (user: User) => {
     setSelectedUser(user);
     setShowDeleteUserModal(true);
   };
@@ -606,7 +654,7 @@ export default function AdminDashboard() {
   };
 
   // Role CRUD Handlers
-  const handleEditRole = (role: any) => {
+  const handleEditRole = (role: Role) => {
     setSelectedRole(role);
     setEditRoleFormData({
       role: role.name || "",
@@ -617,7 +665,7 @@ export default function AdminDashboard() {
     setShowEditRoleModal(true);
   };
 
-  const handleDeleteRole = (role: any) => {
+  const handleDeleteRole = (role: Role) => {
     setSelectedRole(role);
     setShowDeleteRoleModal(true);
   };
@@ -834,6 +882,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchData();
     fetchPages();
+    fetchApprovalHierarchies();
   }, []);
 
   // Filter data based on search term and filters
@@ -848,8 +897,8 @@ export default function AdminDashboard() {
       user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.phone && user.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.institution?.name && user.institution.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (user.roles && user.roles.some((roleObj: any) => {
-        const roleName = roleObj.role?.name || roleObj.name || roleObj;
+      (user.roles && user.roles.some((roleObj: UserRole) => {
+        const roleName = roleObj.role?.name || roleObj.name || '';
         return roleName.toLowerCase().includes(searchTerm.toLowerCase());
       }));
 
@@ -858,8 +907,8 @@ export default function AdminDashboard() {
 
     // Role filter
     const roleMatch = roleFilter === "" ||
-      (user.roles && user.roles.some((roleObj: any) => {
-        const roleName = roleObj.role?.name || roleObj.name || roleObj;
+      (user.roles && user.roles.some((roleObj: UserRole) => {
+        const roleName = roleObj.role?.name || roleObj.name || '';
         return roleName === roleFilter;
       }));
 
@@ -949,9 +998,11 @@ export default function AdminDashboard() {
     const roleCounts = {} as Record<string, number>;
     users.forEach(user => {
       if (user.roles && user.roles.length > 0) {
-        user.roles.forEach((roleObj: any) => {
-          const roleName = roleObj.role?.name || roleObj.name || roleObj;
-          roleCounts[roleName] = (roleCounts[roleName] || 0) + 1;
+        user.roles.forEach((roleObj: UserRole) => {
+          const roleName = roleObj.role?.name || roleObj.name || '';
+          if (roleName) {
+            roleCounts[roleName] = (roleCounts[roleName] || 0) + 1;
+          }
         });
       }
     });
@@ -1032,6 +1083,7 @@ export default function AdminDashboard() {
           weight: 'bold' as const,
           size: 12,
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         formatter: (value: number, context: any) => {
           if (context.chart.config.type === 'pie') {
             const total = context.dataset.data.reduce((acc: number, val: number) => acc + val, 0);
@@ -1185,6 +1237,17 @@ export default function AdminDashboard() {
                   <ShieldLock className="me-2" /> Regions
                 </Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link
+                  active={activeTab === "approval-hierarchy"}
+                  onClick={() => handleTabChange("approval-hierarchy")}
+                  className={`rounded py-2 px-3 d-flex align-items-center ${
+                    activeTab === "approval-hierarchy" ? "active-nav-link" : "nav-link"
+                  }`}
+                >
+                  <Activity className="me-2" /> Approval Hierarchy
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
           </Col>
 
@@ -1205,7 +1268,7 @@ export default function AdminDashboard() {
                             Dashboard Overview
                           </h2>
                           <p className="text-muted mb-0 small">
-                            Monitor your company's key metrics and performance
+                            Monitor your company&apos;s key metrics and performance
                           </p>
                         </div>
                       </div>
@@ -1406,6 +1469,7 @@ export default function AdminDashboard() {
                       <AdminCreateUserModal
                         roles={roles}
                         regions={regions}
+                        hierarchies={approvalHierarchies}
                         onSuccess={() => {
                           fetchData();
                           setSearchTerm("");
@@ -1593,11 +1657,11 @@ export default function AdminDashboard() {
                                 <div className="d-flex flex-wrap gap-1">
                                   {user.roles && user.roles.length > 0 ? (
                                     user.roles.map(
-                                      (roleObj: any, index: number) => {
+                                      (roleObj: UserRole, index: number) => {
                                         const roleName =
                                           roleObj.role?.name ||
                                           roleObj.name ||
-                                          roleObj;
+                                          '';
                                         const initials = roleName
                                           .split(" ")
                                           .map((word: string) =>
@@ -2372,7 +2436,7 @@ export default function AdminDashboard() {
                             const pages = [];
                             const maxVisible = 5;
                             let startPage = Math.max(1, currentRegionPage - Math.floor(maxVisible / 2));
-                            let endPage = Math.min(totalRegionPages, startPage + maxVisible - 1);
+                            const endPage = Math.min(totalRegionPages, startPage + maxVisible - 1);
 
                             if (endPage - startPage < maxVisible - 1) {
                               startPage = Math.max(1, endPage - maxVisible + 1);
@@ -2431,9 +2495,429 @@ export default function AdminDashboard() {
               </>
             )}
 
+            {/* Approval Hierarchy Section */}
+            {activeTab === "approval-hierarchy" && (
+              <>
+                <div className="mb-4">
+                  <div className="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                      <div className="d-flex align-items-center mb-2">
+                        <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
+                          <Activity className="text-success" size={24} />
+                        </div>
+                        <div>
+                          <h2 className="fw-bold text-dark mb-0">
+                            Approval Hierarchy Management
+                          </h2>
+                          <p className="text-muted mb-0 small">
+                            Configure expense approval workflows and hierarchies
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="d-flex align-items-center gap-3">
+                      <Breadcrumb className="bg-light rounded-pill px-3 py-2 mb-0 small">
+                        <Breadcrumb.Item
+                          href="#"
+                          onClick={() => handleTabChange("dashboard")}
+                          className="text-decoration-none"
+                        >
+                          Dashboard
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Item
+                          active
+                          className="text-success fw-semibold"
+                        >
+                          Approval Hierarchy
+                        </Breadcrumb.Item>
+                      </Breadcrumb>
+                    </div>
+                  </div>
+                  <hr className="border-2 border-success opacity-25 mb-4" />
+                </div>
+
+                <Card className="shadow-lg border-0 mb-4">
+                  <Card.Body className="p-4">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <div>
+                        <h5 className="mb-1 fw-bold">Approval Workflows</h5>
+                        <p className="text-muted small mb-0">
+                          Create and manage approval hierarchies for expense submissions
+                        </p>
+                      </div>
+                      <Button
+                        variant="success"
+                        className="px-4 py-2 rounded-pill fw-medium shadow-sm"
+                        onClick={() => setShowCreateHierarchyModal(true)}
+                      >
+                        <Activity size={16} className="me-2" />
+                        Create Hierarchy
+                      </Button>
+                    </div>
+                  </Card.Body>
+                </Card>
+
+                <Card className="shadow-lg border-0">
+                  <Card.Header className="bg-light border-0 py-4">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
+                          <Activity className="text-success" size={20} />
+                        </div>
+                        <div>
+                          <h5 className="mb-0 fw-bold text-dark">
+                            Configured Hierarchies
+                          </h5>
+                          <p className="text-muted mb-0 small">
+                            {approvalHierarchies.length} approval workflow{approvalHierarchies.length !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </Card.Header>
+                  <Card.Body className="p-0">
+                    {approvalHierarchies.length === 0 ? (
+                      <div className="text-center py-5">
+                        <Activity size={48} className="text-muted mb-3" />
+                        <h5 className="text-dark">No approval hierarchies created</h5>
+                        <p className="text-muted mb-4">
+                          Create your first approval hierarchy to start managing expense approvals
+                        </p>
+                        <Button
+                          variant="success"
+                          onClick={() => setShowCreateHierarchyModal(true)}
+                        >
+                          <Activity size={16} className="me-2" />
+                          Create First Hierarchy
+                        </Button>
+                      </div>
+                    ) : (
+                      <Table hover responsive className="mb-0 modern-table">
+                        <thead className="bg-light">
+                          <tr>
+                            <th className="border-0 py-3 px-4 fw-semibold text-uppercase small">
+                              Hierarchy Name
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-uppercase small">
+                              Created Date
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-uppercase small">
+                              Type
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-uppercase small">
+                              Status
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-uppercase small text-end">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {approvalHierarchies.map((hierarchy) => (
+                            <tr key={hierarchy.id}>
+                              <td className="py-3 px-4 fw-semibold">{hierarchy.name}</td>
+                              <td className="py-3 px-4 text-muted">
+                                {hierarchy.createdAt ? new Date(hierarchy.createdAt).toLocaleDateString() : 'N/A'}
+                              </td>
+                              <td className="py-3 px-4">
+                                <Badge bg="info" className="px-3 py-2 rounded-pill">
+                                  Hierarchy Level
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-4">
+                                <Badge bg="success" className="px-3 py-2 rounded-pill">
+                                  Active
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-4 text-end">
+                                <Button
+                                  variant="outline-warning"
+                                  size="sm"
+                                  className="me-2"
+                                  onClick={() => {
+                                    setSelectedHierarchy(hierarchy);
+                                    setHierarchyFormData({ name: hierarchy.name });
+                                    setShowEditHierarchyModal(true);
+                                  }}
+                                >
+                                  <Pencil size={14} />
+                                </Button>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedHierarchy(hierarchy);
+                                    setShowDeleteHierarchyModal(true);
+                                  }}
+                                >
+                                  <Trash size={14} />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    )}
+                  </Card.Body>
+                </Card>
+              </>
+            )}
 
           </Col>
         </Row>
+
+        {/* Create Hierarchy Modal (Simplified - Name Only) */}
+        <Modal
+          show={showCreateHierarchyModal}
+          onHide={() => {
+            setShowCreateHierarchyModal(false);
+            setHierarchyFormData({ name: "" });
+          }}
+        >
+          <Modal.Header closeButton className="bg-success bg-opacity-10">
+            <Modal.Title>
+              <Activity className="me-2" />
+              Create Hierarchy Name
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Alert variant="info" className="mb-3">
+              <Info size={16} className="me-2" />
+              Create a hierarchy name here. You will assign approval levels in the Workflows section.
+            </Alert>
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-semibold">Hierarchy Name *</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="e.g., Department Head Approval, Manager Review, Regional Director"
+                  value={hierarchyFormData.name}
+                  onChange={(e) =>
+                    setHierarchyFormData({ ...hierarchyFormData, name: e.target.value })
+                  }
+                  required
+                />
+                <Form.Text className="text-muted">
+                  Enter a descriptive name for this hierarchy level
+                </Form.Text>
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowCreateHierarchyModal(false);
+                setHierarchyFormData({ name: "" });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="success"
+              onClick={async () => {
+                if (!hierarchyFormData.name.trim()) {
+                  toast.error("Please provide a hierarchy name");
+                  return;
+                }
+
+                setIsCreatingHierarchy(true);
+                try {
+                  const response = await fetch(`${BASE_API_URL}/hierarchies/create`, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+                    },
+                    body: JSON.stringify({ name: hierarchyFormData.name }),
+                  });
+
+                  const data = await response.json();
+
+                  if (response.ok) {
+                    toast.success("Hierarchy created successfully!");
+                    setShowCreateHierarchyModal(false);
+                    setHierarchyFormData({ name: "" });
+                    fetchApprovalHierarchies();
+                  } else {
+                    toast.error(data.message || "Failed to create hierarchy");
+                  }
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Failed to create hierarchy");
+                } finally {
+                  setIsCreatingHierarchy(false);
+                }
+              }}
+              disabled={isCreatingHierarchy}
+            >
+              {isCreatingHierarchy ? "Creating..." : "Create Hierarchy"}
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Edit Hierarchy Modal */}
+        <Modal
+          show={showEditHierarchyModal}
+          onHide={() => {
+            setShowEditHierarchyModal(false);
+            setSelectedHierarchy(null);
+            setHierarchyFormData({ name: "" });
+          }}
+        >
+          <Modal.Header closeButton className="bg-primary bg-opacity-10">
+            <Modal.Title>
+              <Pencil className="me-2" />
+              Edit Hierarchy Name
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-semibold">Hierarchy Name *</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="e.g., Department Head Approval"
+                  value={hierarchyFormData.name}
+                  onChange={(e) =>
+                    setHierarchyFormData({ ...hierarchyFormData, name: e.target.value })
+                  }
+                  required
+                />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowEditHierarchyModal(false);
+                setSelectedHierarchy(null);
+                setHierarchyFormData({ name: "" });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={async () => {
+                if (!hierarchyFormData.name.trim() || !selectedHierarchy) {
+                  toast.error("Please provide a hierarchy name");
+                  return;
+                }
+
+                setIsUpdatingHierarchy(true);
+                try {
+                  const response = await fetch(
+                    `${BASE_API_URL}/hierarchies/update/${selectedHierarchy.id}`,
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+                      },
+                      body: JSON.stringify({ name: hierarchyFormData.name }),
+                    }
+                  );
+
+                  const data = await response.json();
+
+                  if (response.ok) {
+                    toast.success("Hierarchy updated successfully!");
+                    setShowEditHierarchyModal(false);
+                    setSelectedHierarchy(null);
+                    setHierarchyFormData({ name: "" });
+                    fetchApprovalHierarchies();
+                  } else {
+                    toast.error(data.message || "Failed to update hierarchy");
+                  }
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Failed to update hierarchy");
+                } finally {
+                  setIsUpdatingHierarchy(false);
+                }
+              }}
+              disabled={isUpdatingHierarchy}
+            >
+              {isUpdatingHierarchy ? "Updating..." : "Update Hierarchy"}
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Delete Hierarchy Modal */}
+        <Modal
+          show={showDeleteHierarchyModal}
+          onHide={() => {
+            setShowDeleteHierarchyModal(false);
+            setSelectedHierarchy(null);
+          }}
+        >
+          <Modal.Header closeButton className="bg-danger bg-opacity-10">
+            <Modal.Title>
+              <Trash className="me-2" />
+              Delete Hierarchy
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Alert variant="danger" className="mb-3">
+              <ExclamationTriangle className="me-2" />
+              Are you sure you want to delete this hierarchy? This action cannot be undone.
+            </Alert>
+            {selectedHierarchy && (
+              <p className="mb-0">
+                <strong>Hierarchy:</strong> {selectedHierarchy.name}
+              </p>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowDeleteHierarchyModal(false);
+                setSelectedHierarchy(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={async () => {
+                if (!selectedHierarchy) return;
+
+                setIsDeletingHierarchy(true);
+                try {
+                  const response = await fetch(
+                    `${BASE_API_URL}/hierarchies/delete/${selectedHierarchy.id}`,
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+                      },
+                    }
+                  );
+
+                  const data = await response.json();
+
+                  if (response.ok) {
+                    toast.success("Hierarchy deleted successfully!");
+                    setShowDeleteHierarchyModal(false);
+                    setSelectedHierarchy(null);
+                    fetchApprovalHierarchies();
+                  } else {
+                    toast.error(data.message || "Failed to delete hierarchy");
+                  }
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Failed to delete hierarchy");
+                } finally {
+                  setIsDeletingHierarchy(false);
+                }
+              }}
+              disabled={isDeletingHierarchy}
+            >
+              {isDeletingHierarchy ? "Deleting..." : "Delete Hierarchy"}
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
         {/* Custom CSS */}
         <style jsx global>{`
@@ -3095,6 +3579,43 @@ export default function AdminDashboard() {
                   </Form.Select>
                   <Form.Text className="text-muted small">
                     Hold Ctrl/Cmd to select multiple roles
+                  </Form.Text>
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-semibold text-muted small mb-2">
+                    Hierarchies
+                  </Form.Label>
+                  <Form.Select
+                    multiple
+                    value={editUserFormData.hierarchies.map(String)}
+                    onChange={(e) => {
+                      const selectedOptions = Array.from(
+                        e.target.selectedOptions,
+                        (option) => parseInt(option.value)
+                      );
+                      setEditUserFormData({
+                        ...editUserFormData,
+                        hierarchies: selectedOptions,
+                      });
+                    }}
+                    className="rounded-3 border-2"
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.95rem",
+                      minHeight: "120px",
+                    }}
+                  >
+                    {approvalHierarchies.map((hierarchy) => (
+                      <option key={hierarchy.id} value={hierarchy.id}>
+                        {hierarchy.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  <Form.Text className="text-muted small">
+                    Hold Ctrl/Cmd to select multiple hierarchies
                   </Form.Text>
                 </Form.Group>
               </Col>
