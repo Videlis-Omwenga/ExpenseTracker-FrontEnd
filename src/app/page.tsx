@@ -33,6 +33,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -44,6 +45,7 @@ export default function LoginPage() {
     const payload = {
       email,
       password,
+      keepLoggedIn,
     };
 
     if (!email || !password) {
@@ -69,8 +71,14 @@ export default function LoginPage() {
       const { statusCode, message } = data;
 
       if (response.ok) {
-        const { access_token } = data.token;
+        const { access_token, refresh_token } = data.token;
+
+        // Store both tokens in localStorage
         localStorage.setItem("expenseTrackerToken", access_token);
+        localStorage.setItem("expenseTrackerRefreshToken", refresh_token);
+        localStorage.setItem("tokenExpiry", new Date(Date.now() + (keepLoggedIn ? 8 * 60 * 60 * 1000 : 60 * 60 * 1000)).toISOString());
+
+        toast.success(keepLoggedIn ? "Logged in for 8 hours" : "Logged in for 1 hour");
         window.location.href = "/dashboard";
       } else {
         toast.error(`${statusCode} - ${message}`);
@@ -306,13 +314,22 @@ export default function LoginPage() {
                       </InputGroup>
                     </Form.Group>
 
-                    {/* Remember me checkbox */}
+                    {/* Keep me logged in checkbox */}
                     <Form.Group className="mb-4">
                       <Form.Check
                         type="checkbox"
-                        id="remember-me"
-                        label="Remember me"
-                        className="text-muted"
+                        id="keep-logged-in"
+                        checked={keepLoggedIn}
+                        onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                        label={
+                          <span className="text-dark">
+                            Keep me logged in{" "}
+                            <small className="text-muted">
+                              ({keepLoggedIn ? "8 hours" : "1 hour"})
+                            </small>
+                          </span>
+                        }
+                        className="user-select-none"
                       />
                     </Form.Group>
 
