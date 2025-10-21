@@ -10,7 +10,7 @@ export function useApi() {
     return response.json();
   }, []);
 
-  const post = useCallback(async (endpoint: string, data: any) => {
+  const post = useCallback(async (endpoint: string, data: unknown) => {
     const response = await apiClient(`${BASE_API_URL}${endpoint}`, {
       method: "POST",
       body: JSON.stringify(data),
@@ -18,7 +18,7 @@ export function useApi() {
     return response.json();
   }, []);
 
-  const put = useCallback(async (endpoint: string, data: any) => {
+  const put = useCallback(async (endpoint: string, data: unknown) => {
     const response = await apiClient(`${BASE_API_URL}${endpoint}`, {
       method: "PUT",
       body: JSON.stringify(data),

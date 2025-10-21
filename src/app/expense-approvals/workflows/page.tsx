@@ -87,7 +87,7 @@ export default function WorkflowEditor() {
         // Map roleId to hierarchyId for frontend compatibility
         const workflowData = data.workflows;
         if (workflowData && workflowData.steps) {
-          workflowData.steps = workflowData.steps.map((step: any) => ({
+          workflowData.steps = workflowData.steps.map((step: { roleId: number; roleName?: string }) => ({
             ...step,
             hierarchyId: step.roleId,
             hierarchyName: step.roleName || "",

@@ -38,6 +38,7 @@ import {
   BarChart,
   Clock,
   CheckCircle,
+  CurrencyExchange,
 } from "react-bootstrap-icons";
 
 export default function TopNavbar() {
@@ -402,6 +403,20 @@ export default function TopNavbar() {
                   >
                     <Receipt className="me-2" size={16} />
                     Budgets
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => handleNavigation("/finance/currencies")}
+                    className="dropdown-item"
+                  >
+                    <CurrencyExchange className="me-2" size={16} />
+                    Currencies
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => handleNavigation("/finance/payment-methods")}
+                    className="dropdown-item"
+                  >
+                    <CreditCard className="me-2" size={16} />
+                    Payment Methods
                   </Dropdown.Item>
                   <Dropdown.Item
                     onClick={() => handleNavigation("/finance/accounts")}
