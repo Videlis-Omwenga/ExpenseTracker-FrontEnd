@@ -13,7 +13,6 @@ import {
   Badge,
   Spinner,
   InputGroup,
-  FormControl,
 } from "react-bootstrap";
 import {
   FaPlus,
@@ -22,6 +21,10 @@ import {
   FaEye,
   FaCreditCard,
   FaSearch,
+  FaWallet,
+  FaUniversity,
+  FaMoneyCheck,
+  FaMobileAlt,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { BASE_API_URL } from "@/app/static/apiConfig";
@@ -40,20 +43,14 @@ export default function PaymentMethodsPage() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPaymentMethod, setSelectedPaymentMethod] =
-    useState<PaymentMethod | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
 
-  // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  // Form states
-  const [formData, setFormData] = useState({
-    name: "",
-  });
-
+  const [formData, setFormData] = useState({ name: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -66,9 +63,7 @@ export default function PaymentMethodsPage() {
       const response = await fetch(`${BASE_API_URL}/finance/payment-methods`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem(
-            "expenseTrackerToken"
-          )}`,
+          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
         },
       });
 
@@ -99,9 +94,7 @@ export default function PaymentMethodsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem(
-            "expenseTrackerToken"
-          )}`,
+          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
         },
         body: JSON.stringify(formData),
       });
@@ -137,9 +130,7 @@ export default function PaymentMethodsPage() {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem(
-              "expenseTrackerToken"
-            )}`,
+            Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
           },
           body: JSON.stringify(formData),
         }
@@ -173,10 +164,7 @@ export default function PaymentMethodsPage() {
         {
           method: "DELETE",
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem(
-              "expenseTrackerToken"
-            )}`,
+            Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
           },
         }
       );
@@ -205,9 +193,7 @@ export default function PaymentMethodsPage() {
 
   const openEditModal = (paymentMethod: PaymentMethod) => {
     setSelectedPaymentMethod(paymentMethod);
-    setFormData({
-      name: paymentMethod.name,
-    });
+    setFormData({ name: paymentMethod.name });
     setShowEditModal(true);
   };
 
@@ -225,6 +211,16 @@ export default function PaymentMethodsPage() {
     method.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const getPaymentIcon = (name: string) => {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes("card") || lowerName.includes("credit")) return FaCreditCard;
+    if (lowerName.includes("bank") || lowerName.includes("transfer")) return FaUniversity;
+    if (lowerName.includes("cash") || lowerName.includes("wallet")) return FaWallet;
+    if (lowerName.includes("mobile") || lowerName.includes("mpesa")) return FaMobileAlt;
+    if (lowerName.includes("check") || lowerName.includes("cheque")) return FaMoneyCheck;
+    return FaCreditCard;
+  };
+
   if (loading) {
     return <PageLoader />;
   }
@@ -232,114 +228,129 @@ export default function PaymentMethodsPage() {
   return (
     <AuthProvider>
       <TopNavbar />
-      <Container fluid className="py-4">
-        {/* Header */}
+      <Container fluid className="payment-methods-container px-4 py-4">
         <Row className="mb-4">
           <Col>
-            <div className="d-flex justify-content-between align-items-center">
+            <div className="page-header-wrapper">
               <div>
-                <h2 className="fw-bold mb-1">
+                <h4 className="page-title mb-1">
                   <FaCreditCard className="me-2 text-primary" />
                   Payment Methods
-                </h2>
-                <p className="text-muted mb-0">
+                </h4>
+                <p className="page-subtitle text-muted mb-0">
                   Manage payment methods for expense tracking
                 </p>
               </div>
-              <Button variant="primary" onClick={openCreateModal}>
-                <FaPlus className="me-2" />
-                Add Payment Method
+              <Button variant="primary" size="sm" onClick={openCreateModal} className="btn-action">
+                <FaPlus className="me-1" /> Add Method
               </Button>
             </div>
           </Col>
         </Row>
 
-        {/* Search Bar */}
-        <Row className="mb-4">
+        <Row className="mb-3">
           <Col md={6}>
-            <div className="position-relative">
-              <FaSearch className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
+            <InputGroup size="sm">
+              <InputGroup.Text className="bg-white">
+                <FaSearch className="text-muted" size={12} />
+              </InputGroup.Text>
               <Form.Control
                 type="text"
-                placeholder="Search by payment method name..."
+                placeholder="Search payment methods..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="ps-5"
+                className="border-start-0"
               />
-            </div>
+            </InputGroup>
           </Col>
           <Col md={6} className="text-end">
-            <Badge bg="primary" className="px-3 py-2">
-              Total Payment Methods: {paymentMethods.length}
+            <Badge bg="light" text="dark" className="px-3 py-2">
+              {filteredPaymentMethods.length} {filteredPaymentMethods.length === 1 ? 'method' : 'methods'}
             </Badge>
           </Col>
         </Row>
 
-        {/* Payment Methods Table */}
         <Row>
           <Col>
-            <Card className="shadow-sm border-0">
+            <Card className="border-0 shadow-sm">
               <Card.Body className="p-0">
                 {filteredPaymentMethods.length === 0 ? (
                   <div className="text-center py-5">
-                    <FaCreditCard size={48} className="text-muted mb-3" />
-                    <p className="text-muted">
-                      {searchTerm
-                        ? "No payment methods found matching your search"
-                        : "No payment methods available. Create one to get started!"}
+                    <FaCreditCard size={40} className="text-muted mb-3" />
+                    <h6 className="text-muted">
+                      {searchTerm ? "No payment methods found" : "No payment methods yet"}
+                    </h6>
+                    <p className="text-muted small mb-3">
+                      {searchTerm ? "Try a different search term" : "Create your first payment method"}
                     </p>
+                    {!searchTerm && (
+                      <Button variant="primary" size="sm" onClick={openCreateModal}>
+                        <FaPlus className="me-1" /> Add Payment Method
+                      </Button>
+                    )}
                   </div>
                 ) : (
-                  <Table responsive hover className="mb-0">
+                  <Table responsive hover className="mb-0 table-modern">
                     <thead className="bg-light">
                       <tr>
-                        <th className="px-4 py-3">#</th>
-                        <th className="px-4 py-3">Payment Method Name</th>
-                        <th className="px-4 py-3">Created At</th>
-                        <th className="px-4 py-3">Last Updated</th>
-                        <th className="px-4 py-3 text-center">Actions</th>
+                        <th className="border-0 text-muted fw-semibold small">#</th>
+                        <th className="border-0 text-muted fw-semibold small">Payment Method</th>
+                        <th className="border-0 text-muted fw-semibold small">Created</th>
+                        <th className="border-0 text-muted fw-semibold small">Updated</th>
+                        <th className="border-0 text-muted fw-semibold small text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredPaymentMethods.map((method, index) => (
-                        <tr key={method.id}>
-                          <td className="px-4 py-3">{index + 1}</td>
-                          <td className="px-4 py-3">
-                            <strong>{method.name}</strong>
-                          </td>
-                          <td className="px-4 py-3">
-                            {new Date(method.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-4 py-3">
-                            {new Date(method.updatedAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <Button
-                              variant="info"
-                              size="sm"
-                              className="me-2"
-                              onClick={() => openViewModal(method)}
-                            >
-                              <FaEye />
-                            </Button>
-                            <Button
-                              variant="warning"
-                              size="sm"
-                              className="me-2"
-                              onClick={() => openEditModal(method)}
-                            >
-                              <FaEdit />
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => openDeleteModal(method)}
-                            >
-                              <FaTrash />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
+                      {filteredPaymentMethods.map((method, index) => {
+                        const Icon = getPaymentIcon(method.name);
+                        return (
+                          <tr key={method.id}>
+                            <td className="align-middle small text-muted">{index + 1}</td>
+                            <td className="align-middle">
+                              <div className="d-flex align-items-center">
+                                <div className="icon-wrapper me-2">
+                                  <Icon />
+                                </div>
+                                <span className="fw-semibold small">{method.name}</span>
+                              </div>
+                            </td>
+                            <td className="align-middle small text-muted">
+                              {new Date(method.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="align-middle small text-muted">
+                              {new Date(method.updatedAt).toLocaleDateString()}
+                            </td>
+                            <td className="align-middle text-center">
+                              <div className="btn-group btn-group-sm">
+                                <Button
+                                  variant="outline-info"
+                                  size="sm"
+                                  onClick={() => openViewModal(method)}
+                                  className="btn-action-table"
+                                >
+                                  <FaEye size={12} />
+                                </Button>
+                                <Button
+                                  variant="outline-warning"
+                                  size="sm"
+                                  onClick={() => openEditModal(method)}
+                                  className="btn-action-table"
+                                >
+                                  <FaEdit size={12} />
+                                </Button>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => openDeleteModal(method)}
+                                  className="btn-action-table"
+                                >
+                                  <FaTrash size={12} />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </Table>
                 )}
@@ -349,187 +360,235 @@ export default function PaymentMethodsPage() {
         </Row>
 
         {/* Create Modal */}
-        <Modal
-          show={showCreateModal}
-          onHide={() => setShowCreateModal(false)}
-          centered
-        >
+        <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} centered>
           <Modal.Header closeButton className="border-0 pb-0">
-            <Modal.Title>
+            <Modal.Title className="h6">
               <FaPlus className="me-2 text-primary" />
               Create Payment Method
             </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className="pt-3">
             <Form>
-              <Form.Group className="mb-3">
-                <Form.Label>Payment Method Name *</Form.Label>
+              <Form.Group>
+                <Form.Label className="small fw-semibold">Payment Method Name</Form.Label>
                 <Form.Control
                   type="text"
+                  size="sm"
                   placeholder="e.g., Cash, Credit Card, Bank Transfer"
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </Form.Group>
             </Form>
           </Modal.Body>
           <Modal.Footer className="border-0">
-            <Button
-              variant="secondary"
-              onClick={() => setShowCreateModal(false)}
-            >
+            <Button variant="secondary" size="sm" onClick={() => setShowCreateModal(false)}>
               Cancel
             </Button>
             <Button
               variant="primary"
+              size="sm"
               onClick={handleCreatePaymentMethod}
               disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <Spinner animation="border" size="sm" />
-              ) : (
-                <>
-                  <FaPlus className="me-2" />
-                  Create
-                </>
-              )}
+              {isSubmitting ? <Spinner animation="border" size="sm" /> : <><FaPlus className="me-1" /> Create</>}
             </Button>
           </Modal.Footer>
         </Modal>
 
         {/* Edit Modal */}
-        <Modal
-          show={showEditModal}
-          onHide={() => setShowEditModal(false)}
-          centered
-        >
+        <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
           <Modal.Header closeButton className="border-0 pb-0">
-            <Modal.Title>
+            <Modal.Title className="h6">
               <FaEdit className="me-2 text-warning" />
               Edit Payment Method
             </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className="pt-3">
             <Form>
-              <Form.Group className="mb-3">
-                <Form.Label>Payment Method Name *</Form.Label>
+              <Form.Group>
+                <Form.Label className="small fw-semibold">Payment Method Name</Form.Label>
                 <Form.Control
                   type="text"
+                  size="sm"
                   placeholder="e.g., Cash, Credit Card, Bank Transfer"
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </Form.Group>
             </Form>
           </Modal.Body>
           <Modal.Footer className="border-0">
-            <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            <Button variant="secondary" size="sm" onClick={() => setShowEditModal(false)}>
               Cancel
             </Button>
             <Button
               variant="warning"
+              size="sm"
               onClick={handleUpdatePaymentMethod}
               disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <Spinner animation="border" size="sm" />
-              ) : (
-                <>
-                  <FaEdit className="me-2" />
-                  Update
-                </>
-              )}
+              {isSubmitting ? <Spinner animation="border" size="sm" /> : <><FaEdit className="me-1" /> Update</>}
             </Button>
           </Modal.Footer>
         </Modal>
 
         {/* View Modal */}
-        <Modal
-          show={showViewModal}
-          onHide={() => setShowViewModal(false)}
-          centered
-        >
+        <Modal show={showViewModal} onHide={() => setShowViewModal(false)} centered>
           <Modal.Header closeButton className="border-0 pb-0">
-            <Modal.Title>
+            <Modal.Title className="h6">
               <FaEye className="me-2 text-info" />
               Payment Method Details
             </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className="pt-3">
             {selectedPaymentMethod && (
               <div>
                 <div className="mb-3">
-                  <strong>Payment Method Name:</strong>
+                  <label className="small text-muted fw-semibold">Name</label>
                   <p className="mb-0">{selectedPaymentMethod.name}</p>
                 </div>
                 <div className="mb-3">
-                  <strong>Created At:</strong>
-                  <p className="mb-0">
-                    {new Date(selectedPaymentMethod.createdAt).toLocaleString()}
-                  </p>
+                  <label className="small text-muted fw-semibold">Created At</label>
+                  <p className="mb-0 small">{new Date(selectedPaymentMethod.createdAt).toLocaleString()}</p>
                 </div>
-                <div className="mb-3">
-                  <strong>Last Updated:</strong>
-                  <p className="mb-0">
-                    {new Date(selectedPaymentMethod.updatedAt).toLocaleString()}
-                  </p>
+                <div className="mb-0">
+                  <label className="small text-muted fw-semibold">Last Updated</label>
+                  <p className="mb-0 small">{new Date(selectedPaymentMethod.updatedAt).toLocaleString()}</p>
                 </div>
               </div>
             )}
           </Modal.Body>
           <Modal.Footer className="border-0">
-            <Button variant="secondary" onClick={() => setShowViewModal(false)}>
+            <Button variant="secondary" size="sm" onClick={() => setShowViewModal(false)}>
               Close
             </Button>
           </Modal.Footer>
         </Modal>
 
         {/* Delete Modal */}
-        <Modal
-          show={showDeleteModal}
-          onHide={() => setShowDeleteModal(false)}
-          centered
-        >
+        <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
           <Modal.Header closeButton className="border-0 pb-0">
-            <Modal.Title>
+            <Modal.Title className="h6">
               <FaTrash className="me-2 text-danger" />
               Delete Payment Method
             </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
-            <p>
-              Are you sure you want to delete{" "}
-              <strong>{selectedPaymentMethod?.name}</strong>?
-            </p>
-            <p className="text-danger mb-0">This action cannot be undone.</p>
+          <Modal.Body className="pt-3">
+            <div className="text-center">
+              <div className="mb-3">
+                <FaTrash size={40} className="text-danger opacity-50" />
+              </div>
+              <h6>Are you sure?</h6>
+              <p className="small text-muted mb-2">
+                You are about to delete <strong>{selectedPaymentMethod?.name}</strong>.
+              </p>
+              <p className="small text-danger mb-0">This action cannot be undone.</p>
+            </div>
           </Modal.Body>
           <Modal.Footer className="border-0">
-            <Button
-              variant="secondary"
-              onClick={() => setShowDeleteModal(false)}
-            >
+            <Button variant="secondary" size="sm" onClick={() => setShowDeleteModal(false)}>
               Cancel
             </Button>
             <Button
               variant="danger"
+              size="sm"
               onClick={handleDeletePaymentMethod}
               disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <Spinner animation="border" size="sm" />
-              ) : (
-                <>
-                  <FaTrash className="me-2" />
-                  Delete
-                </>
-              )}
+              {isSubmitting ? <Spinner animation="border" size="sm" /> : <><FaTrash className="me-1" /> Delete</>}
             </Button>
           </Modal.Footer>
         </Modal>
+
+        <style jsx global>{`
+          .payment-methods-container {
+            background-color: #f8f9fa;
+            min-height: calc(100vh - 120px);
+          }
+
+          .page-header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          }
+
+          .page-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #212529;
+            display: flex;
+            align-items: center;
+          }
+
+          .page-subtitle {
+            font-size: 0.813rem;
+          }
+
+          .btn-action {
+            font-size: 0.813rem;
+            padding: 0.375rem 0.75rem;
+            font-weight: 500;
+          }
+
+          .icon-wrapper {
+            width: 32px;
+            height: 32px;
+            background-color: #e7f3ff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0d6efd;
+            font-size: 0.875rem;
+          }
+
+          .table-modern thead th {
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          .table-modern tbody td {
+            padding: 0.875rem 1rem;
+            font-size: 0.875rem;
+          }
+
+          .table-modern tbody tr {
+            transition: background-color 0.2s ease;
+          }
+
+          .table-modern tbody tr:hover {
+            background-color: #f8f9fa;
+          }
+
+          .btn-action-table {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-width: 1px;
+          }
+
+          .modal-title {
+            font-size: 1rem;
+          }
+
+          @media (max-width: 768px) {
+            .page-header-wrapper {
+              flex-direction: column;
+              gap: 1rem;
+              align-items: flex-start;
+            }
+
+            .btn-action {
+              width: 100%;
+            }
+          }
+        `}</style>
       </Container>
     </AuthProvider>
   );

@@ -13,7 +13,6 @@ import {
   Badge,
   Spinner,
   InputGroup,
-  FormControl,
 } from "react-bootstrap";
 import {
   FaPlus,
@@ -34,7 +33,6 @@ interface ExchangeRate {
   currency: string;
   initials: string;
   rate: number;
-  institutionId: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -43,17 +41,13 @@ export default function CurrenciesPage() {
   const [currencies, setCurrencies] = useState<ExchangeRate[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCurrency, setSelectedCurrency] = useState<ExchangeRate | null>(
-    null
-  );
+  const [selectedCurrency, setSelectedCurrency] = useState<ExchangeRate | null>(null);
 
-  // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  // Form states
   const [formData, setFormData] = useState({
     currency: "",
     initials: "",
@@ -71,9 +65,7 @@ export default function CurrenciesPage() {
     try {
       const response = await fetch(`${BASE_API_URL}/finance/exchange-rates`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem(
-            "expenseTrackerToken"
-          )}`,
+          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
         },
       });
 
@@ -103,9 +95,7 @@ export default function CurrenciesPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem(
-            "expenseTrackerToken"
-          )}`,
+          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
         },
         body: JSON.stringify({
           currency: formData.currency,
@@ -132,35 +122,25 @@ export default function CurrenciesPage() {
   };
 
   const handleEditCurrency = async () => {
-    if (
-      !selectedCurrency ||
-      !formData.currency ||
-      !formData.initials ||
-      !formData.rate
-    ) {
+    if (!selectedCurrency || !formData.currency || !formData.initials || !formData.rate) {
       toast.error("Please fill in all fields");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(
-        `${BASE_API_URL}/finance/exchange-rates/${selectedCurrency.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem(
-              "expenseTrackerToken"
-            )}`,
-          },
-          body: JSON.stringify({
-            currency: formData.currency,
-            initials: formData.initials.toUpperCase(),
-            rate: parseFloat(formData.rate),
-          }),
-        }
-      );
+      const response = await fetch(`${BASE_API_URL}/finance/exchange-rates/${selectedCurrency.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+        },
+        body: JSON.stringify({
+          currency: formData.currency,
+          initials: formData.initials.toUpperCase(),
+          rate: parseFloat(formData.rate),
+        }),
+      });
 
       const data = await response.json();
 
@@ -184,17 +164,12 @@ export default function CurrenciesPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(
-        `${BASE_API_URL}/finance/exchange-rates/${selectedCurrency.id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem(
-              "expenseTrackerToken"
-            )}`,
-          },
-        }
-      );
+      const response = await fetch(`${BASE_API_URL}/finance/exchange-rates/${selectedCurrency.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+        },
+      });
 
       const data = await response.json();
 
@@ -256,135 +231,131 @@ export default function CurrenciesPage() {
   return (
     <AuthProvider>
       <TopNavbar />
-      <Container fluid className="py-4">
-        {/* Header */}
+      <Container fluid className="currencies-container px-4 py-4">
         <Row className="mb-4">
           <Col>
-            <div className="d-flex justify-content-between align-items-center">
+            <div className="page-header-wrapper">
               <div>
-                <h2 className="fw-bold mb-1">
+                <h4 className="page-title mb-1">
                   <FaMoneyBillWave className="me-2 text-success" />
                   Currency Management
-                </h2>
-                <p className="text-muted mb-0">
+                </h4>
+                <p className="page-subtitle text-muted mb-0">
                   Manage exchange rates for multi-currency support
                 </p>
               </div>
-              <Button
-                variant="success"
-                onClick={openCreateModal}
-                className="d-flex align-items-center"
-              >
-                <FaPlus className="me-2" /> Add Currency
+              <Button variant="success" size="sm" onClick={openCreateModal} className="btn-action">
+                <FaPlus className="me-1" /> Add Currency
               </Button>
             </div>
           </Col>
         </Row>
 
-        {/* Search Bar */}
-        <Row className="mb-4">
+        <Row className="mb-3">
           <Col md={6}>
-            <div className="position-relative">
-              <FaSearch className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
+            <InputGroup size="sm">
+              <InputGroup.Text className="bg-white">
+                <FaSearch className="text-muted" size={12} />
+              </InputGroup.Text>
               <Form.Control
                 type="text"
-                placeholder="Search by currency name or initials..."
+                placeholder="Search by currency name or code..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="ps-5"
+                className="border-start-0"
               />
-            </div>
+            </InputGroup>
           </Col>
           <Col md={6} className="text-end">
-            <Badge bg="primary" className="px-3 py-2">
-              Total Currencies: {currencies.length}
+            <Badge bg="light" text="dark" className="px-3 py-2">
+              {filteredCurrencies.length} {filteredCurrencies.length === 1 ? 'currency' : 'currencies'}
             </Badge>
           </Col>
         </Row>
 
-        {/* Currencies Table */}
         <Row>
           <Col>
-            <Card className="shadow-sm border-0">
+            <Card className="border-0 shadow-sm">
               <Card.Body className="p-0">
-                {loading ? (
+                {filteredCurrencies.length === 0 ? (
                   <div className="text-center py-5">
-                    <Spinner animation="border" variant="primary" />
-                    <p className="mt-3 text-muted">Loading currencies...</p>
-                  </div>
-                ) : filteredCurrencies.length === 0 ? (
-                  <div className="text-center py-5">
-                    <FaMoneyBillWave size={50} className="text-muted mb-3" />
-                    <p className="text-muted">
-                      {searchTerm
-                        ? "No currencies found matching your search"
-                        : "No currencies created yet"}
+                    <FaMoneyBillWave size={40} className="text-muted mb-3" />
+                    <h6 className="text-muted">
+                      {searchTerm ? "No currencies found" : "No currencies yet"}
+                    </h6>
+                    <p className="text-muted small mb-3">
+                      {searchTerm ? "Try a different search term" : "Create your first currency"}
                     </p>
                     {!searchTerm && (
-                      <Button
-                        variant="success"
-                        onClick={openCreateModal}
-                        className="mt-3"
-                      >
-                        <FaPlus className="me-2" /> Add Your First Currency
+                      <Button variant="success" size="sm" onClick={openCreateModal}>
+                        <FaPlus className="me-1" /> Add Currency
                       </Button>
                     )}
                   </div>
                 ) : (
-                  <Table hover responsive className="mb-0">
+                  <Table responsive hover className="mb-0 table-modern">
                     <thead className="bg-light">
                       <tr>
-                        <th className="py-3 px-4">ID</th>
-                        <th className="py-3 px-4">Currency Name</th>
-                        <th className="py-3 px-4">Code</th>
-                        <th className="py-3 px-4">Exchange Rate</th>
-                        <th className="py-3 px-4">Last Updated</th>
-                        <th className="py-3 px-4 text-center">Actions</th>
+                        <th className="border-0 text-muted fw-semibold small">#</th>
+                        <th className="border-0 text-muted fw-semibold small">Currency</th>
+                        <th className="border-0 text-muted fw-semibold small">Code</th>
+                        <th className="border-0 text-muted fw-semibold small">Exchange Rate</th>
+                        <th className="border-0 text-muted fw-semibold small">Created</th>
+                        <th className="border-0 text-muted fw-semibold small">Updated</th>
+                        <th className="border-0 text-muted fw-semibold small text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredCurrencies.map((currency) => (
+                      {filteredCurrencies.map((currency, index) => (
                         <tr key={currency.id}>
-                          <td className="py-3 px-4 fw-semibold">
-                            #{currency.id}
+                          <td className="align-middle small text-muted">{index + 1}</td>
+                          <td className="align-middle">
+                            <div className="d-flex align-items-center">
+                              <div className="currency-icon me-2">
+                                <FaMoneyBillWave />
+                              </div>
+                              <span className="fw-semibold small">{currency.currency}</span>
+                            </div>
                           </td>
-                          <td className="py-3 px-4">{currency.currency}</td>
-                          <td className="py-3 px-4">
-                            <Badge bg="info" className="px-3 py-2">
+                          <td className="align-middle">
+                            <Badge bg="success" className="px-2 py-1">
                               {currency.initials}
                             </Badge>
                           </td>
-                          <td className="py-3 px-4 fw-bold text-success">
+                          <td className="align-middle small fw-semibold text-success">
                             {currency.rate.toFixed(4)}
                           </td>
-                          <td className="py-3 px-4 text-muted">
+                          <td className="align-middle small text-muted">
+                            {new Date(currency.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="align-middle small text-muted">
                             {new Date(currency.updatedAt).toLocaleDateString()}
                           </td>
-                          <td className="py-3 px-4">
-                            <div className="d-flex gap-2 justify-content-center">
+                          <td className="align-middle text-center">
+                            <div className="btn-group btn-group-sm">
                               <Button
-                                variant="outline-primary"
+                                variant="outline-info"
                                 size="sm"
                                 onClick={() => openViewModal(currency)}
-                                title="View Details"
+                                className="btn-action-table"
                               >
-                                <FaEye />
+                                <FaEye size={12} />
                               </Button>
                               <Button
                                 variant="outline-warning"
                                 size="sm"
                                 onClick={() => openEditModal(currency)}
-                                title="Edit"
+                                className="btn-action-table"
                               >
-                                <FaEdit />
+                                <FaEdit size={12} />
                               </Button>
                               <Button
                                 variant="outline-danger"
                                 size="sm"
                                 onClick={() => openDeleteModal(currency)}
-                                title="Delete"
+                                className="btn-action-table"
                               >
-                                <FaTrash />
+                                <FaTrash size={12} />
                               </Button>
                             </div>
                           </td>
@@ -399,279 +370,289 @@ export default function CurrenciesPage() {
         </Row>
 
         {/* Create Modal */}
-        <Modal
-          show={showCreateModal}
-          onHide={() => setShowCreateModal(false)}
-          centered
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>
+        <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} centered>
+          <Modal.Header closeButton className="border-0 pb-0">
+            <Modal.Title className="h6">
               <FaPlus className="me-2 text-success" />
-              Add New Currency
+              Create Currency
             </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className="pt-3">
             <Form>
               <Form.Group className="mb-3">
-                <Form.Label>
-                  Currency Name <span className="text-danger">*</span>
-                </Form.Label>
+                <Form.Label className="small fw-semibold">Currency Name</Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="e.g., US Dollar, Euro, British Pound"
+                  size="sm"
+                  placeholder="e.g., US Dollar"
                   value={formData.currency}
-                  onChange={(e) =>
-                    setFormData({ ...formData, currency: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                 />
               </Form.Group>
-
               <Form.Group className="mb-3">
-                <Form.Label>
-                  Currency Code <span className="text-danger">*</span>
-                </Form.Label>
+                <Form.Label className="small fw-semibold">Currency Code</Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="e.g., USD, EUR, GBP"
+                  size="sm"
+                  placeholder="e.g., USD"
                   value={formData.initials}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      initials: e.target.value.toUpperCase(),
-                    })
-                  }
+                  onChange={(e) => setFormData({ ...formData, initials: e.target.value.toUpperCase() })}
                   maxLength={3}
                 />
-                <Form.Text className="text-muted">
-                  3-letter currency code
-                </Form.Text>
               </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>
-                  Exchange Rate <span className="text-danger">*</span>
-                </Form.Label>
+              <Form.Group>
+                <Form.Label className="small fw-semibold">Exchange Rate</Form.Label>
                 <Form.Control
                   type="number"
+                  size="sm"
                   step="0.0001"
-                  placeholder="e.g., 1.2500"
+                  placeholder="e.g., 1.0000"
                   value={formData.rate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, rate: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, rate: e.target.value })}
                 />
-                <Form.Text className="text-muted">
-                  Rate against base currency
-                </Form.Text>
               </Form.Group>
             </Form>
           </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={() => setShowCreateModal(false)}
-            >
+          <Modal.Footer className="border-0">
+            <Button variant="secondary" size="sm" onClick={() => setShowCreateModal(false)}>
               Cancel
             </Button>
             <Button
               variant="success"
+              size="sm"
               onClick={handleCreateCurrency}
               disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <Spinner animation="border" size="sm" />
-              ) : (
-                <FaPlus className="me-2" />
-              )}
-              Create Currency
+              {isSubmitting ? <Spinner animation="border" size="sm" /> : <><FaPlus className="me-1" /> Create</>}
             </Button>
           </Modal.Footer>
         </Modal>
 
         {/* Edit Modal */}
-        <Modal
-          show={showEditModal}
-          onHide={() => setShowEditModal(false)}
-          centered
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>
+        <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+          <Modal.Header closeButton className="border-0 pb-0">
+            <Modal.Title className="h6">
               <FaEdit className="me-2 text-warning" />
               Edit Currency
             </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className="pt-3">
             <Form>
               <Form.Group className="mb-3">
-                <Form.Label>
-                  Currency Name <span className="text-danger">*</span>
-                </Form.Label>
+                <Form.Label className="small fw-semibold">Currency Name</Form.Label>
                 <Form.Control
                   type="text"
+                  size="sm"
+                  placeholder="e.g., US Dollar"
                   value={formData.currency}
-                  onChange={(e) =>
-                    setFormData({ ...formData, currency: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                 />
               </Form.Group>
-
               <Form.Group className="mb-3">
-                <Form.Label>
-                  Currency Code <span className="text-danger">*</span>
-                </Form.Label>
+                <Form.Label className="small fw-semibold">Currency Code</Form.Label>
                 <Form.Control
                   type="text"
+                  size="sm"
+                  placeholder="e.g., USD"
                   value={formData.initials}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      initials: e.target.value.toUpperCase(),
-                    })
-                  }
+                  onChange={(e) => setFormData({ ...formData, initials: e.target.value.toUpperCase() })}
                   maxLength={3}
                 />
               </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>
-                  Exchange Rate <span className="text-danger">*</span>
-                </Form.Label>
+              <Form.Group>
+                <Form.Label className="small fw-semibold">Exchange Rate</Form.Label>
                 <Form.Control
                   type="number"
+                  size="sm"
                   step="0.0001"
+                  placeholder="e.g., 1.0000"
                   value={formData.rate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, rate: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, rate: e.target.value })}
                 />
               </Form.Group>
             </Form>
           </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+          <Modal.Footer className="border-0">
+            <Button variant="secondary" size="sm" onClick={() => setShowEditModal(false)}>
               Cancel
             </Button>
             <Button
               variant="warning"
+              size="sm"
               onClick={handleEditCurrency}
               disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <Spinner animation="border" size="sm" />
-              ) : (
-                <FaEdit className="me-2" />
-              )}
-              Update Currency
+              {isSubmitting ? <Spinner animation="border" size="sm" /> : <><FaEdit className="me-1" /> Update</>}
             </Button>
           </Modal.Footer>
         </Modal>
 
-        {/* View Details Modal */}
-        <Modal
-          show={showViewModal}
-          onHide={() => setShowViewModal(false)}
-          centered
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>
-              <FaEye className="me-2 text-primary" />
+        {/* View Modal */}
+        <Modal show={showViewModal} onHide={() => setShowViewModal(false)} centered>
+          <Modal.Header closeButton className="border-0 pb-0">
+            <Modal.Title className="h6">
+              <FaEye className="me-2 text-info" />
               Currency Details
             </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className="pt-3">
             {selectedCurrency && (
               <div>
-                <Table borderless>
-                  <tbody>
-                    <tr>
-                      <td className="text-muted fw-semibold">ID:</td>
-                      <td>#{selectedCurrency.id}</td>
-                    </tr>
-                    <tr>
-                      <td className="text-muted fw-semibold">Currency Name:</td>
-                      <td className="fw-bold">{selectedCurrency.currency}</td>
-                    </tr>
-                    <tr>
-                      <td className="text-muted fw-semibold">Currency Code:</td>
-                      <td>
-                        <Badge bg="info" className="px-3 py-2">
-                          {selectedCurrency.initials}
-                        </Badge>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="text-muted fw-semibold">Exchange Rate:</td>
-                      <td className="fw-bold text-success fs-5">
-                        {selectedCurrency.rate.toFixed(4)}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="text-muted fw-semibold">Created At:</td>
-                      <td>
-                        {new Date(selectedCurrency.createdAt).toLocaleString()}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="text-muted fw-semibold">Last Updated:</td>
-                      <td>
-                        {new Date(selectedCurrency.updatedAt).toLocaleString()}
-                      </td>
-                    </tr>
-                  </tbody>
-                </Table>
+                <div className="mb-3">
+                  <label className="small text-muted fw-semibold">Currency Name</label>
+                  <p className="mb-0">{selectedCurrency.currency}</p>
+                </div>
+                <div className="mb-3">
+                  <label className="small text-muted fw-semibold">Currency Code</label>
+                  <p className="mb-0">
+                    <Badge bg="success">{selectedCurrency.initials}</Badge>
+                  </p>
+                </div>
+                <div className="mb-3">
+                  <label className="small text-muted fw-semibold">Exchange Rate</label>
+                  <p className="mb-0 fw-semibold text-success">{selectedCurrency.rate.toFixed(4)}</p>
+                </div>
+                <div className="mb-3">
+                  <label className="small text-muted fw-semibold">Created At</label>
+                  <p className="mb-0 small">{new Date(selectedCurrency.createdAt).toLocaleString()}</p>
+                </div>
+                <div className="mb-0">
+                  <label className="small text-muted fw-semibold">Last Updated</label>
+                  <p className="mb-0 small">{new Date(selectedCurrency.updatedAt).toLocaleString()}</p>
+                </div>
               </div>
             )}
           </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowViewModal(false)}>
+          <Modal.Footer className="border-0">
+            <Button variant="secondary" size="sm" onClick={() => setShowViewModal(false)}>
               Close
             </Button>
           </Modal.Footer>
         </Modal>
 
-        {/* Delete Confirmation Modal */}
-        <Modal
-          show={showDeleteModal}
-          onHide={() => setShowDeleteModal(false)}
-          centered
-        >
-          <Modal.Header closeButton className="border-0">
-            <Modal.Title>
+        {/* Delete Modal */}
+        <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+          <Modal.Header closeButton className="border-0 pb-0">
+            <Modal.Title className="h6">
               <FaTrash className="me-2 text-danger" />
               Delete Currency
             </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
-            <p className="mb-0">
-              Are you sure you want to delete{" "}
-              <strong>{selectedCurrency?.currency}</strong> (
-              {selectedCurrency?.initials})?
-            </p>
-            <p className="text-danger mt-2 mb-0">
-              <small>This action cannot be undone.</small>
-            </p>
+          <Modal.Body className="pt-3">
+            <div className="text-center">
+              <div className="mb-3">
+                <FaTrash size={40} className="text-danger opacity-50" />
+              </div>
+              <h6>Are you sure?</h6>
+              <p className="small text-muted mb-2">
+                You are about to delete <strong>{selectedCurrency?.currency} ({selectedCurrency?.initials})</strong>.
+              </p>
+              <p className="small text-danger mb-0">This action cannot be undone.</p>
+            </div>
           </Modal.Body>
           <Modal.Footer className="border-0">
-            <Button
-              variant="secondary"
-              onClick={() => setShowDeleteModal(false)}
-            >
+            <Button variant="secondary" size="sm" onClick={() => setShowDeleteModal(false)}>
               Cancel
             </Button>
             <Button
               variant="danger"
+              size="sm"
               onClick={handleDeleteCurrency}
               disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <Spinner animation="border" size="sm" />
-              ) : (
-                <FaTrash className="me-2" />
-              )}
-              Delete
+              {isSubmitting ? <Spinner animation="border" size="sm" /> : <><FaTrash className="me-1" /> Delete</>}
             </Button>
           </Modal.Footer>
         </Modal>
+
+        <style jsx global>{`
+          .currencies-container {
+            background-color: #f8f9fa;
+            min-height: calc(100vh - 120px);
+          }
+
+          .page-header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          }
+
+          .page-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #212529;
+            display: flex;
+            align-items: center;
+          }
+
+          .page-subtitle {
+            font-size: 0.813rem;
+          }
+
+          .btn-action {
+            font-size: 0.813rem;
+            padding: 0.375rem 0.75rem;
+            font-weight: 500;
+          }
+
+          .currency-icon {
+            width: 32px;
+            height: 32px;
+            background-color: #d1f4e0;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #198754;
+            font-size: 0.875rem;
+          }
+
+          .table-modern thead th {
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          .table-modern tbody td {
+            padding: 0.875rem 1rem;
+            font-size: 0.875rem;
+          }
+
+          .table-modern tbody tr {
+            transition: background-color 0.2s ease;
+          }
+
+          .table-modern tbody tr:hover {
+            background-color: #f8f9fa;
+          }
+
+          .btn-action-table {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-width: 1px;
+          }
+
+          .modal-title {
+            font-size: 1rem;
+          }
+
+          @media (max-width: 768px) {
+            .page-header-wrapper {
+              flex-direction: column;
+              gap: 1rem;
+              align-items: flex-start;
+            }
+
+            .btn-action {
+              width: 100%;
+            }
+          }
+        `}</style>
       </Container>
     </AuthProvider>
   );
