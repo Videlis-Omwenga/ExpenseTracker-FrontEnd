@@ -9,7 +9,8 @@ import {
   BuildingFill,
   ShieldCheck,
   Calendar,
-  ClockHistory
+  ClockHistory,
+  Diagram3
 } from "react-bootstrap-icons";
 
 interface User {
@@ -33,6 +34,22 @@ interface User {
       name: string;
     };
     name?: string;
+  }>;
+  hierarchies?: Array<{
+    id: number;
+    name: string;
+    hierarchyId?: number;
+  }>;
+  hierarchyAssignments?: Array<{
+    hierarchy: {
+      id: number;
+      name: string;
+    };
+    hierarchyLevel: {
+      id: number;
+      order: number;
+    };
+    order: number;
   }>;
   createdAt: string;
   updatedAt: string;
@@ -68,6 +85,27 @@ export default function UserDetailsModal({ user, show, onHide }: UserDetailsModa
       }
       return roleObj.name || '';
     }).filter(Boolean);
+  };
+
+  const getHierarchies = (): string[] => {
+    // Debug logging
+    console.log('User data in modal:', {
+      hierarchyAssignments: user.hierarchyAssignments,
+      hierarchies: user.hierarchies
+    });
+
+    // First try to get from hierarchyAssignments (new structure)
+    if (user.hierarchyAssignments && Array.isArray(user.hierarchyAssignments)) {
+      console.log('Using hierarchyAssignments:', user.hierarchyAssignments);
+      return user.hierarchyAssignments.map((ha) => ha.hierarchy.name).filter(Boolean);
+    }
+    // Fallback to hierarchies (old structure)
+    if (user.hierarchies && Array.isArray(user.hierarchies)) {
+      console.log('Using hierarchies:', user.hierarchies);
+      return user.hierarchies.map((hierarchy) => hierarchy.name).filter(Boolean);
+    }
+    console.log('No hierarchies found');
+    return [];
   };
 
   return (
@@ -174,6 +212,44 @@ export default function UserDetailsModal({ user, show, onHide }: UserDetailsModa
                       ))
                     ) : (
                       <span className="text-muted">No roles assigned</span>
+                    )}
+                  </div>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+
+        <Row>
+          {/* Approval Hierarchies */}
+          <Col md={12} className="mb-4">
+            <Card className="border">
+              <Card.Header className="bg-light border-0 py-3">
+                <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
+                  <Diagram3 className="me-2 text-warning" size={18} />
+                  Approval Hierarchies
+                </h6>
+              </Card.Header>
+              <Card.Body className="p-3">
+                <div className="mb-0">
+                  <label className="small text-muted fw-semibold text-uppercase d-flex align-items-center mb-2">
+                    <Diagram3 className="me-1" size={12} />
+                    Assigned Hierarchies
+                  </label>
+                  <div className="d-flex flex-wrap gap-2">
+                    {getHierarchies().length > 0 ? (
+                      getHierarchies().map((hierarchy: string, index: number) => (
+                        <Badge
+                          key={index}
+                          bg="warning"
+                          text="dark"
+                          className="px-3 py-2 rounded-pill fw-medium"
+                        >
+                          {hierarchy}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-muted">No approval hierarchies assigned</span>
                     )}
                   </div>
                 </div>

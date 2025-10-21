@@ -118,6 +118,17 @@ interface User {
   departmentId: number | null;
   roles?: UserRole[];
   hierarchies?: ApprovalHierarchy[];
+  hierarchyAssignments?: {
+    hierarchy: {
+      id: number;
+      name: string;
+    };
+    hierarchyLevel: {
+      id: number;
+      order: number;
+    };
+    order: number;
+  }[];
   expenses?: Expense[];
   paidBy?: Expense[];
   ExpenseSteps?: ExpenseStep[];
@@ -477,6 +488,14 @@ function AdminDashboardContent() {
         const fetchedUsers = data.getUsers || [];
         const fetchedRoles = data.getRoles || [];
         const fetchedRegions = data.getRegions || [];
+
+        // Debug: Check what data we're receiving
+        console.log('Fetched users with hierarchies:', fetchedUsers.map((u: any) => ({
+          id: u.id,
+          name: `${u.firstName} ${u.lastName}`,
+          hierarchyAssignments: u.hierarchyAssignments
+        })));
+
         setUsers(fetchedUsers);
         setRoles(fetchedRoles);
         setRegions(fetchedRegions);
@@ -578,7 +597,7 @@ function AdminDashboardContent() {
       status: user.status || "",
       regionId: user.regionId || 0,
       roles: user.roles?.map((r: UserRole) => r.roleId) || [],
-      hierarchies: user.hierarchies?.map((h: ApprovalHierarchy) => h.hierarchyId || h.id) || [],
+      hierarchies: user.hierarchyAssignments?.map((ha) => ha.hierarchy.id) || [],
     });
     setShowEditUserModal(true);
   };
@@ -593,6 +612,19 @@ function AdminDashboardContent() {
 
     setIsUpdatingUser(true);
     try {
+      // Ensure roles and hierarchies are arrays of numbers
+      const payload = {
+        ...editUserFormData,
+        roles: editUserFormData.roles.length > 0
+          ? editUserFormData.roles.filter((r): r is number => typeof r === 'number')
+          : undefined,
+        hierarchies: editUserFormData.hierarchies.length > 0
+          ? editUserFormData.hierarchies.filter((h): h is number => typeof h === 'number')
+          : undefined,
+      };
+
+      console.log('Updating user with payload:', payload);
+
       const response = await fetch(
         `${BASE_API_URL}/company-admin/edit-user/${selectedUser.id}`,
         {
@@ -601,20 +633,25 @@ function AdminDashboardContent() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
           },
-          body: JSON.stringify(editUserFormData),
+          body: JSON.stringify(payload),
         }
       );
 
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("User updated successfully!");
+        console.log('User updated successfully:', data);
+        const hierarchiesCount = data.hierarchyAssignments?.length || 0;
+        const rolesCount = data.roles?.length || 0;
+        toast.success(`User updated successfully! ${rolesCount} role(s) and ${hierarchiesCount} hierarchy/hierarchies assigned.`);
         setShowEditUserModal(false);
         fetchData();
       } else {
+        console.error('Update user error:', data);
         toast.error(data.message || "Failed to update user");
       }
     } catch (error) {
+      console.error('Update user exception:', error);
       toast.error(`Failed to update user: ${error}`);
     } finally {
       setIsUpdatingUser(false);
@@ -3548,74 +3585,86 @@ function AdminDashboardContent() {
 
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label className="fw-semibold text-muted small mb-2">
-                    Roles <span className="text-danger">*</span>
+                  <Form.Label className="fw-semibold text-muted small mb-3">
+                    Roles
                   </Form.Label>
-                  <Form.Select
-                    multiple
-                    value={editUserFormData.roles.map(String)}
-                    onChange={(e) => {
-                      const selectedOptions = Array.from(
-                        e.target.selectedOptions,
-                        (option) => parseInt(option.value)
-                      );
-                      setEditUserFormData({
-                        ...editUserFormData,
-                        roles: selectedOptions,
-                      });
-                    }}
-                    className="rounded-3 border-2"
+                  <div
+                    className="border rounded-3 p-3"
                     style={{
-                      padding: "0.75rem",
-                      fontSize: "0.95rem",
-                      minHeight: "120px",
+                      maxHeight: "200px",
+                      overflowY: "auto",
+                      backgroundColor: "#f8f9fa"
                     }}
                   >
-                    {roles.map((role) => (
-                      <option key={role.id} value={role.id}>
-                        {role.name}
-                      </option>
-                    ))}
-                  </Form.Select>
+                    {roles.length > 0 ? (
+                      roles.map((role) => (
+                        <Form.Check
+                          key={role.id}
+                          type="checkbox"
+                          id={`edit-role-${role.id}`}
+                          label={role.name}
+                          checked={editUserFormData.roles.includes(role.id)}
+                          onChange={(e) => {
+                            const updatedRoles = e.target.checked
+                              ? [...editUserFormData.roles, role.id]
+                              : editUserFormData.roles.filter((r) => r !== role.id);
+                            setEditUserFormData({
+                              ...editUserFormData,
+                              roles: updatedRoles,
+                            });
+                          }}
+                          className="mb-2"
+                        />
+                      ))
+                    ) : (
+                      <p className="text-muted small mb-0">No roles available</p>
+                    )}
+                  </div>
                   <Form.Text className="text-muted small">
-                    Hold Ctrl/Cmd to select multiple roles
+                    Select one or more roles for this user
                   </Form.Text>
                 </Form.Group>
               </Col>
 
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label className="fw-semibold text-muted small mb-2">
+                  <Form.Label className="fw-semibold text-muted small mb-3">
                     Hierarchies
                   </Form.Label>
-                  <Form.Select
-                    multiple
-                    value={editUserFormData.hierarchies.map(String)}
-                    onChange={(e) => {
-                      const selectedOptions = Array.from(
-                        e.target.selectedOptions,
-                        (option) => parseInt(option.value)
-                      );
-                      setEditUserFormData({
-                        ...editUserFormData,
-                        hierarchies: selectedOptions,
-                      });
-                    }}
-                    className="rounded-3 border-2"
+                  <div
+                    className="border rounded-3 p-3"
                     style={{
-                      padding: "0.75rem",
-                      fontSize: "0.95rem",
-                      minHeight: "120px",
+                      maxHeight: "200px",
+                      overflowY: "auto",
+                      backgroundColor: "#f8f9fa"
                     }}
                   >
-                    {approvalHierarchies.map((hierarchy) => (
-                      <option key={hierarchy.id} value={hierarchy.id}>
-                        {hierarchy.name}
-                      </option>
-                    ))}
-                  </Form.Select>
+                    {approvalHierarchies.length > 0 ? (
+                      approvalHierarchies.map((hierarchy) => (
+                        <Form.Check
+                          key={hierarchy.id}
+                          type="checkbox"
+                          id={`edit-hierarchy-${hierarchy.id}`}
+                          label={hierarchy.name}
+                          checked={editUserFormData.hierarchies.includes(hierarchy.id)}
+                          onChange={(e) => {
+                            const updatedHierarchies = e.target.checked
+                              ? [...editUserFormData.hierarchies, hierarchy.id]
+                              : editUserFormData.hierarchies.filter((h) => h !== hierarchy.id);
+                            setEditUserFormData({
+                              ...editUserFormData,
+                              hierarchies: updatedHierarchies,
+                            });
+                          }}
+                          className="mb-2"
+                        />
+                      ))
+                    ) : (
+                      <p className="text-muted small mb-0">No hierarchies available</p>
+                    )}
+                  </div>
                   <Form.Text className="text-muted small">
-                    Hold Ctrl/Cmd to select multiple hierarchies
+                    Select one or more hierarchies for this user
                   </Form.Text>
                 </Form.Group>
               </Col>
