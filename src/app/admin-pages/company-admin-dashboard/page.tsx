@@ -558,9 +558,9 @@ function AdminDashboardContent() {
       const data = await response.json();
 
       if (response.ok) {
-        setApprovalHierarchies(data.hierarchies || []);
+        setApprovalHierarchies(data);
       } else {
-        toast.error(data.message || "Failed to fetch approval hierarchies");
+        toast.error(`Failed to fetch hierarchies: ${data.message}`);
       }
     } catch (error) {
       console.error("Failed to fetch hierarchies:", error);
