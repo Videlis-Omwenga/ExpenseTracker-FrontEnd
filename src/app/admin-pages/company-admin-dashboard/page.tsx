@@ -256,10 +256,13 @@ interface Role {
 }
 
 interface UserRole {
-  id: number;
-  userId: number;
-  roleId: number;
-  role?: Role;
+  id?: number;
+  userId?: number;
+  roleId?: number;
+  role?: {
+    id: number;
+    name: string;
+  };
   name?: string;
 }
 
@@ -489,13 +492,6 @@ function AdminDashboardContent() {
         const fetchedRoles = data.getRoles || [];
         const fetchedRegions = data.getRegions || [];
 
-        // Debug: Check what data we're receiving
-        console.log('Fetched users with hierarchies:', fetchedUsers.map((u: any) => ({
-          id: u.id,
-          name: `${u.firstName} ${u.lastName}`,
-          hierarchyAssignments: u.hierarchyAssignments
-        })));
-
         setUsers(fetchedUsers);
         setRoles(fetchedRoles);
         setRegions(fetchedRegions);
@@ -588,6 +584,11 @@ function AdminDashboardContent() {
 
   // User CRUD Handlers
   const handleEditUser = (user: User) => {
+    // Extract role IDs - try roleId first (from backend), then fall back to role.id
+    const roleIds = user.roles?.map((r: UserRole) =>
+      r.roleId || r.role?.id
+    ).filter((id): id is number => id !== undefined) || [];
+
     setSelectedUser(user);
     setEditUserFormData({
       firstName: user.firstName || "",
@@ -596,7 +597,7 @@ function AdminDashboardContent() {
       phone: user.phone || "",
       status: user.status || "",
       regionId: user.regionId || 0,
-      roles: user.roles?.map((r: UserRole) => r.roleId) || [],
+      roles: roleIds,
       hierarchies: user.hierarchyAssignments?.map((ha) => ha.hierarchy.id) || [],
     });
     setShowEditUserModal(true);
@@ -623,8 +624,6 @@ function AdminDashboardContent() {
           : undefined,
       };
 
-      console.log('Updating user with payload:', payload);
-
       const response = await fetch(
         `${BASE_API_URL}/company-admin/edit-user/${selectedUser.id}`,
         {
@@ -640,18 +639,15 @@ function AdminDashboardContent() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log('User updated successfully:', data);
         const hierarchiesCount = data.hierarchyAssignments?.length || 0;
         const rolesCount = data.roles?.length || 0;
         toast.success(`User updated successfully! ${rolesCount} role(s) and ${hierarchiesCount} hierarchy/hierarchies assigned.`);
         setShowEditUserModal(false);
         fetchData();
       } else {
-        console.error('Update user error:', data);
         toast.error(data.message || "Failed to update user");
       }
     } catch (error) {
-      console.error('Update user exception:', error);
       toast.error(`Failed to update user: ${error}`);
     } finally {
       setIsUpdatingUser(false);

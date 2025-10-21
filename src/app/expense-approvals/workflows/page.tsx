@@ -294,13 +294,15 @@ export default function WorkflowEditor() {
     setShowStepDeleteModal(true);
   };
 
-  const toggleStepOptional = (stepId: number) => {
+  const toggleStepOptional = (stepId: number | undefined, stepOrder: number) => {
     if (!workflow) return;
 
     setWorkflow({
       ...workflow,
       steps: workflow.steps.map((step) =>
-        step.id === stepId ? { ...step, isOptional: !step.isOptional } : step
+        (stepId ? step.id === stepId : step.order === stepOrder)
+          ? { ...step, isOptional: !step.isOptional }
+          : step
       ),
     });
   };
@@ -495,7 +497,7 @@ export default function WorkflowEditor() {
                                     }
                                     checked={step.isOptional}
                                     onChange={() =>
-                                      toggleStepOptional(step.id!)
+                                      toggleStepOptional(step.id, step.order)
                                     }
                                   />
                                 </td>

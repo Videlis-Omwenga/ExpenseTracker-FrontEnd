@@ -88,23 +88,14 @@ export default function UserDetailsModal({ user, show, onHide }: UserDetailsModa
   };
 
   const getHierarchies = (): string[] => {
-    // Debug logging
-    console.log('User data in modal:', {
-      hierarchyAssignments: user.hierarchyAssignments,
-      hierarchies: user.hierarchies
-    });
-
     // First try to get from hierarchyAssignments (new structure)
     if (user.hierarchyAssignments && Array.isArray(user.hierarchyAssignments)) {
-      console.log('Using hierarchyAssignments:', user.hierarchyAssignments);
       return user.hierarchyAssignments.map((ha) => ha.hierarchy.name).filter(Boolean);
     }
     // Fallback to hierarchies (old structure)
     if (user.hierarchies && Array.isArray(user.hierarchies)) {
-      console.log('Using hierarchies:', user.hierarchies);
       return user.hierarchies.map((hierarchy) => hierarchy.name).filter(Boolean);
     }
-    console.log('No hierarchies found');
     return [];
   };
 
