@@ -204,9 +204,11 @@ export default function TopNavbar() {
                       <span className="user-status position-absolute bg-success rounded-circle"></span>
                     </div>
                     <div className="user-info d-none d-md-block text-start">
-                      <div className="user-name">{user?.firstName} {user?.lastName}</div>
+                      <div className="user-name">
+                        {user?.firstName} {user?.lastName}
+                      </div>
                       <small className="text-secondary">{user?.email}</small>
-                    </div>  
+                    </div>
                     <ChevronDown size={16} className="ms-1 d-none d-md-block" />
                   </div>
                 </Dropdown.Toggle>
@@ -215,7 +217,9 @@ export default function TopNavbar() {
                   <Dropdown.Header className="dropdown-header d-flex align-items-center">
                     <PersonCircle size={24} className="me-2" />
                     <div>
-                      <div className="fw-medium">{user?.firstName} {user?.lastName}</div>
+                      <div className="fw-medium">
+                        {user?.firstName} {user?.lastName}
+                      </div>
                       <small className="text-muted">{user?.email}</small>
                     </div>
                   </Dropdown.Header>
@@ -230,7 +234,9 @@ export default function TopNavbar() {
                   </Dropdown.Item>
 
                   {(user?.roles?.some((r) => r.role.name === "Company admin") ||
-                    user?.roles?.some((r) => r.role.name === "System admin")) && (
+                    user?.roles?.some(
+                      (r) => r.role.name === "System admin"
+                    )) && (
                     <>
                       <Dropdown.Divider />
 
@@ -240,7 +246,9 @@ export default function TopNavbar() {
                     </>
                   )}
 
-                  {user?.roles?.some((r) => r.role.name === "Company admin") && (
+                  {user?.roles?.some(
+                    (r) => r.role.name === "Company admin"
+                  ) && (
                     <Dropdown.Item
                       className="dropdown-item"
                       onClick={() =>
@@ -368,7 +376,16 @@ export default function TopNavbar() {
                     className="dropdown-item"
                   >
                     <Clock className="me-2" size={16} />
-                    Approval history
+                    Departmental expenses
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() =>
+                      handleNavigation("/expense-approvals/history")
+                    }
+                    className="dropdown-item"
+                  >
+                    <Clock className="me-2" size={16} />
+                    Departmental budgets
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
@@ -419,31 +436,6 @@ export default function TopNavbar() {
                     Payment Methods
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={() => handleNavigation("/finance/accounts")}
-                    className="dropdown-item"
-                  >
-                    <Folder className="me-2" size={16} />
-                    All expenses
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-
-              <Dropdown as={Nav.Item} className="nav-dropdown">
-                <Dropdown.Toggle as={Nav.Link} className="nav-link-item">
-                  <Building className="me-1 text-primary " size={16} />
-                  Administration
-                </Dropdown.Toggle>
-                <Dropdown.Menu className="dropdown-menu">
-                  <Dropdown.Item
-                    onClick={() =>
-                      handleNavigation("/expense-approvals/workflows")
-                    }
-                    className="dropdown-item"
-                  >
-                    <FileText className="me-2" size={16} />
-                    Workflows
-                  </Dropdown.Item>
-                  <Dropdown.Item
                     onClick={() => handleNavigation("/data-inputs/categories")}
                     className="dropdown-item"
                   >
@@ -458,6 +450,14 @@ export default function TopNavbar() {
                     Departments
                   </Dropdown.Item>
                   <Dropdown.Item
+                    onClick={() => handleNavigation("/finance/accounts")}
+                    className="dropdown-item"
+                  >
+                    <Folder className="me-2" size={16} />
+                    All expenses
+                  </Dropdown.Item>
+
+                  <Dropdown.Item
                     onClick={() => handleNavigation("/data-inputs/policies")}
                     className="dropdown-item"
                   >
@@ -466,6 +466,25 @@ export default function TopNavbar() {
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
+              {user?.roles?.some((r) => r.role.name === "Company admin") && (
+                <Dropdown as={Nav.Item} className="nav-dropdown">
+                  <Dropdown.Toggle as={Nav.Link} className="nav-link-item">
+                    <Building className="me-1 text-primary " size={16} />
+                    Workflow management
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="dropdown-menu">
+                    <Dropdown.Item
+                      onClick={() =>
+                        handleNavigation("/expense-approvals/workflows")
+                      }
+                      className="dropdown-item"
+                    >
+                      <FileText className="me-2" size={16} />
+                      Expense approval workflows
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              )}
             </Nav>
 
             {/* Right side items */}

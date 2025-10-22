@@ -17,7 +17,6 @@ import {
 } from "react-bootstrap";
 import { toast } from "react-toastify";
 import {
-  FaExclamationTriangle,
   FaPencilAlt,
   FaTrash,
   FaInfoCircle,
@@ -61,7 +60,6 @@ export default function WorkflowEditor() {
   const [hierarchies, setHierarchies] = useState<Hierarchy[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [stepToDelete, setStepToDelete] = useState<number | null>(null);
   const [showStepDeleteModal, setShowStepDeleteModal] = useState(false);
   const [newStepHierarchyId, setNewStepHierarchyId] = useState("");
@@ -87,11 +85,13 @@ export default function WorkflowEditor() {
         // Map roleId to hierarchyId for frontend compatibility
         const workflowData = data.workflows;
         if (workflowData && workflowData.steps) {
-          workflowData.steps = workflowData.steps.map((step: { roleId: number; roleName?: string }) => ({
-            ...step,
-            hierarchyId: step.roleId,
-            hierarchyName: step.roleName || "",
-          }));
+          workflowData.steps = workflowData.steps.map(
+            (step: { roleId: number; roleName?: string }) => ({
+              ...step,
+              hierarchyId: step.roleId,
+              hierarchyName: step.roleName || "",
+            })
+          );
         }
         setWorkflow(workflowData); // single workflow
       } else {
@@ -108,7 +108,9 @@ export default function WorkflowEditor() {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+          Authorization: `Bearer ${localStorage.getItem(
+            "expenseTrackerToken"
+          )}`,
         },
       });
 
@@ -255,46 +257,15 @@ export default function WorkflowEditor() {
     setStepToDelete(null);
   };
 
-  const handleDeleteWorkflow = async () => {
-    if (!workflow) return;
-    setIsSubmitting(true);
-
-    try {
-      const workflowRes = await fetch(
-        `${BASE_API_URL}/workflows/void/${workflow.id}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem(
-              "expenseTrackerToken"
-            )}`,
-          },
-        }
-      );
-
-      const workflowData = await workflowRes.json();
-
-      if (workflowRes.ok) {
-        toast.success("Workflow deleted successfully!");
-        setWorkflow(null);
-      } else {
-        toast.error(`${workflowData.message}`);
-      }
-    } catch (error) {
-      toast.error("An unexpected error occurred" + error);
-    } finally {
-      setIsSubmitting(false);
-      setShowDeleteModal(false);
-    }
-  };
-
   const confirmDeleteStep = (stepId: number) => {
     setStepToDelete(stepId);
     setShowStepDeleteModal(true);
   };
 
-  const toggleStepOptional = (stepId: number | undefined, stepOrder: number) => {
+  const toggleStepOptional = (
+    stepId: number | undefined,
+    stepOrder: number
+  ) => {
     if (!workflow) return;
 
     setWorkflow({
@@ -381,14 +352,6 @@ export default function WorkflowEditor() {
                     </div>
                     <h5 className="mb-0 fw-bold">Expense Approval Workflow</h5>
                   </div>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    className="rounded-pill px-3 py-2 fw-medium"
-                    onClick={() => setShowDeleteModal(true)}
-                  >
-                    <FaTrash className="me-1" /> Delete Workflow
-                  </Button>
                 </Card.Header>
                 <Card.Body className="p-4">
                   <Alert
@@ -398,13 +361,15 @@ export default function WorkflowEditor() {
                     <div className="d-flex">
                       <FaInfoCircle className="text-info me-3 fs-5 flex-shrink-0" />
                       <div>
-                        <h6 className="alert-heading mb-2 fw-bold">Update Workflow</h6>
+                        <h6 className="alert-heading mb-2 fw-bold">
+                          Update Workflow
+                        </h6>
                         <p className="mb-0 small">
                           Modify the workflow name or add the steps required for
-                          the workflow. Workflow steps represent the hierarchies that
-                          will be assigned to it. These are the stages an expense
-                          must go through before being paid by the finance
-                          department.
+                          the workflow. Workflow steps represent the hierarchies
+                          that will be assigned to it. These are the stages an
+                          expense must go through before being paid by the
+                          finance department.
                         </p>
                       </div>
                     </div>
@@ -443,24 +408,38 @@ export default function WorkflowEditor() {
                     </Badge>
                   </h6>
                   <div className="mb-4">
-
                     {workflow.steps.length > 0 ? (
                       <div className="table-responsive">
                         <Table hover className="align-middle mb-0">
                           <thead className="bg-light border-0">
                             <tr>
-                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">ID</th>
-                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Order</th>
-                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Hierarchy</th>
-                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Status</th>
-                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">Actions</th>
+                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                                ID
+                              </th>
+                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                                Order
+                              </th>
+                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                                Hierarchy
+                              </th>
+                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                                Status
+                              </th>
+                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">
+                                Actions
+                              </th>
                             </tr>
                           </thead>
                           <tbody>
                             {workflow.steps.map((step) => (
-                              <tr key={step.id ?? `step-${step.order}`} className="border-bottom">
+                              <tr
+                                key={step.id ?? `step-${step.order}`}
+                                className="border-bottom"
+                              >
                                 <td className="py-3 px-4">
-                                  <span className="fw-semibold text-primary">{step.id}</span>
+                                  <span className="fw-semibold text-primary">
+                                    {step.id}
+                                  </span>
                                 </td>
                                 <td className="py-3 px-4">
                                   <Badge
@@ -475,7 +454,8 @@ export default function WorkflowEditor() {
                                     <div className="fw-semibold text-dark">
                                       {
                                         hierarchies.find(
-                                          (hierarchy) => hierarchy.id === step.hierarchyId
+                                          (hierarchy) =>
+                                            hierarchy.id === step.hierarchyId
                                         )?.name
                                       }
                                     </div>
@@ -490,9 +470,19 @@ export default function WorkflowEditor() {
                                     id={`optional-switch-${step.id}`}
                                     label={
                                       step.isOptional ? (
-                                        <Badge bg="warning" className="px-2 py-1">Optional</Badge>
+                                        <Badge
+                                          bg="warning"
+                                          className="px-2 py-1"
+                                        >
+                                          Optional
+                                        </Badge>
                                       ) : (
-                                        <Badge bg="success" className="px-2 py-1">Required</Badge>
+                                        <Badge
+                                          bg="success"
+                                          className="px-2 py-1"
+                                        >
+                                          Required
+                                        </Badge>
                                       )
                                     }
                                     checked={step.isOptional}
@@ -552,7 +542,8 @@ export default function WorkflowEditor() {
                           No steps in this workflow
                         </p>
                         <p className="text-muted mb-0 small">
-                          Add steps using the form below to define your approval process
+                          Add steps using the form below to define your approval
+                          process
                         </p>
                       </div>
                     )}
@@ -571,16 +562,24 @@ export default function WorkflowEditor() {
                           <Col md={9}>
                             <Form.Group>
                               <Form.Label className="fw-semibold text-dark small">
-                                Select Hierarchy <span className="text-danger">*</span>
+                                Select Hierarchy{" "}
+                                <span className="text-danger">*</span>
                               </Form.Label>
                               <Form.Select
                                 value={newStepHierarchyId}
-                                onChange={(e) => setNewStepHierarchyId(e.target.value)}
+                                onChange={(e) =>
+                                  setNewStepHierarchyId(e.target.value)
+                                }
                                 className="py-2 border-2 rounded-3"
                               >
-                                <option value="">Choose a hierarchy for this step</option>
+                                <option value="">
+                                  Choose a hierarchy for this step
+                                </option>
                                 {hierarchies.map((hierarchy) => (
-                                  <option key={hierarchy.id} value={hierarchy.id}>
+                                  <option
+                                    key={hierarchy.id}
+                                    value={hierarchy.id}
+                                  >
                                     {hierarchy.name}
                                   </option>
                                 ))}
@@ -638,7 +637,9 @@ export default function WorkflowEditor() {
                       <Col md={6}>
                         <Card className="border-0 bg-light h-100">
                           <Card.Body className="p-3">
-                            <small className="text-muted fw-semibold d-block mb-1">Created At</small>
+                            <small className="text-muted fw-semibold d-block mb-1">
+                              Created At
+                            </small>
                             <span className="fw-bold text-dark">
                               {formatDate(workflow.createdAt)}
                             </span>
@@ -648,7 +649,9 @@ export default function WorkflowEditor() {
                       <Col md={6}>
                         <Card className="border-0 bg-light h-100">
                           <Card.Body className="p-3">
-                            <small className="text-muted fw-semibold d-block mb-1">Last Updated</small>
+                            <small className="text-muted fw-semibold d-block mb-1">
+                              Last Updated
+                            </small>
                             <span className="fw-bold text-dark">
                               {formatDate(workflow.updatedAt)}
                             </span>
@@ -684,81 +687,6 @@ export default function WorkflowEditor() {
         </Row>
       </Container>
 
-      {/* Delete Workflow Confirmation Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} size="xl">
-        <Modal.Header
-          closeButton
-          className="border-0 pb-0 pt-4 px-4"
-          style={{ backgroundColor: "#f8f9fa" }}
-        >
-          <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
-            <div
-              className="icon-wrapper bg-danger me-3 rounded-circle d-flex align-items-center justify-content-center"
-              style={{ width: "48px", height: "48px" }}
-            >
-              <FaTrash className="text-white" size={24} />
-            </div>
-            <div>
-              Confirm Deletion
-              <div className="text-muted fw-normal small">
-                This action cannot be undone
-              </div>
-            </div>
-          </h5>
-        </Modal.Header>
-        <Modal.Body className="px-4 py-4">
-          <p className="text-dark mb-3">
-            Are you sure you want to delete this workflow? This action cannot be
-            undone.
-          </p>
-          <Alert variant="warning" className="mb-0 border-0 border-start border-3 border-warning">
-            <FaExclamationTriangle className="me-2" />
-            All steps associated with this workflow will also be permanently
-            deleted.
-          </Alert>
-        </Modal.Body>
-        <Modal.Footer
-          className="border-0 pt-0 px-4 pb-4"
-          style={{ backgroundColor: "#f8f9fa" }}
-        >
-          <Button
-            size="sm"
-            variant="outline-secondary"
-            onClick={() => setShowDeleteModal(false)}
-            disabled={isSubmitting}
-            className="px-4 py-2 rounded-3 fw-semibold"
-          >
-            Cancel
-          </Button>
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={handleDeleteWorkflow}
-            disabled={isSubmitting}
-            className="px-4 py-2 rounded-3 fw-semibold"
-          >
-            {isSubmitting ? (
-              <>
-                <Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                  className="me-2"
-                />
-                Deleting...
-              </>
-            ) : (
-              <>
-                <FaTrash className="me-2" />
-                Delete Workflow
-              </>
-            )}
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
       {/* Delete Step Confirmation Modal */}
       <Modal
         show={showStepDeleteModal}
@@ -787,7 +715,8 @@ export default function WorkflowEditor() {
         </Modal.Header>
         <Modal.Body className="px-4 py-4">
           <p className="text-dark mb-0">
-            Are you sure you want to remove this step from the workflow? The remaining steps will be automatically reordered.
+            Are you sure you want to remove this step from the workflow? The
+            remaining steps will be automatically reordered.
           </p>
         </Modal.Body>
         <Modal.Footer
