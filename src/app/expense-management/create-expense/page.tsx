@@ -475,31 +475,31 @@ export default function CreateExpensePage() {
         toast.success(`Expense created successfully!`);
         localStorage.removeItem('expenseFormDraft'); // Clear saved draft
 
-        // Clear all form fields
-        setPayee('');
-        setPayeeId('');
-        setPayeeNumber('');
-        setDescription('');
-        setPrimaryAmount('');
-        setCategory('');
-        setDepartment('');
-        setCurrency('');
-        setPaymentMethod('');
-        setRegion('');
-        setReferenceNumber('');
-        setIsAdvance(false);
-        setAllocations({});
-        setSelectedFile(null);
-        setFileName('');
-        setPreviewUrl('');
-        setExtractedData({});
-        setFieldErrors({});
-        setDuplicateWarning('');
+        // // Clear all form fields
+        // setPayee('');
+        // setPayeeId('');
+        // setPayeeNumber('');
+        // setDescription('');
+        // setPrimaryAmount('');
+        // setCategory('');
+        // setDepartment('');
+        // setCurrency('');
+        // setPaymentMethod('');
+        // setRegion('');
+        // setReferenceNumber('');
+        // setIsAdvance(false);
+        // setAllocations({});
+        // setSelectedFile(null);
+        // setFileName('');
+        // setPreviewUrl('');
+        // setExtractedData({});
+        // setFieldErrors({});
+        // setDuplicateWarning('');
 
-        // Navigate to my-expenses page
-        setTimeout(() => {
-          window.location.href = '/expense-management/my-expenses';
-        }, 1500); // Small delay to show success message
+        // // Navigate to my-expenses page
+        // setTimeout(() => {
+        //   window.location.href = '/expense-management/my-expenses';
+        // }, 1500); // Small delay to show success message
       } else {
         toast.error(`${data.message}`);
       }
