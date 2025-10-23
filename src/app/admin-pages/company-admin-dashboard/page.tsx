@@ -595,6 +595,9 @@ function AdminDashboardContent() {
       r.roleId || r.role?.id
     ).filter((id): id is number => id !== undefined) || [];
 
+    // Extract hierarchy IDs from HierarchyRoles
+    const hierarchyIds = user.HierarchyRoles?.map((hr) => hr.hierarchy.id) || [];
+
     setSelectedUser(user);
     setEditUserFormData({
       firstName: user.firstName || "",
@@ -604,7 +607,7 @@ function AdminDashboardContent() {
       status: user.status || "",
       regionId: user.regionId || 0,
       roles: roleIds,
-      hierarchies: user.hierarchyRoles?.map((hr) => hr.hierarchy.id) || [],
+      hierarchies: hierarchyIds,
     });
     setShowEditUserModal(true);
   };

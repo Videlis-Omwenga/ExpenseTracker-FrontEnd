@@ -40,6 +40,12 @@ interface User {
     name: string;
     hierarchyId?: number;
   }>;
+  HierarchyRoles?: Array<{
+    hierarchy: {
+      id: number;
+      name: string;
+    };
+  }>;
   hierarchyAssignments?: Array<{
     hierarchy: {
       id: number;
@@ -88,7 +94,11 @@ export default function UserDetailsModal({ user, show, onHide }: UserDetailsModa
   };
 
   const getHierarchies = (): string[] => {
-    // First try to get from hierarchyAssignments (new structure)
+    // First try to get from HierarchyRoles (primary source from database)
+    if (user.HierarchyRoles && Array.isArray(user.HierarchyRoles)) {
+      return user.HierarchyRoles.map((hr) => hr.hierarchy.name).filter(Boolean);
+    }
+    // Then try hierarchyAssignments
     if (user.hierarchyAssignments && Array.isArray(user.hierarchyAssignments)) {
       return user.hierarchyAssignments.map((ha) => ha.hierarchy.name).filter(Boolean);
     }
