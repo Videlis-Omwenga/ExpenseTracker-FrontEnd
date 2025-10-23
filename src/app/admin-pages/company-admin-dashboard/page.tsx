@@ -628,9 +628,8 @@ function AdminDashboardContent() {
         roles: editUserFormData.roles.length > 0
           ? editUserFormData.roles.filter((r): r is number => typeof r === 'number')
           : undefined,
-        hierarchies: editUserFormData.hierarchies.length > 0
-          ? editUserFormData.hierarchies.filter((h): h is number => typeof h === 'number')
-          : undefined,
+        // Always send hierarchies array, even if empty, to ensure proper deletion
+        hierarchies: editUserFormData.hierarchies.filter((h): h is number => typeof h === 'number'),
       };
 
       const response = await fetch(
@@ -648,7 +647,7 @@ function AdminDashboardContent() {
       const data = await response.json();
 
       if (response.ok) {
-        const hierarchiesCount = data.hierarchyRoles?.length || 0;
+        const hierarchiesCount = data.HierarchyRoles?.length || 0;
         const rolesCount = data.roles?.length || 0;
         toast.success(`User updated successfully! ${rolesCount} role(s) and ${hierarchiesCount} hierarchy/hierarchies assigned.`);
         setShowEditUserModal(false);
