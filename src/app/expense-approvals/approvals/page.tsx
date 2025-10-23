@@ -135,6 +135,15 @@ type Budget = {
   remainingBudget: number;
 };
 
+type ApprovalHistoryStep = {
+  id: number;
+  status: ApprovalStatus;
+  comments?: string | null;
+  actionedBy: UserLite;
+  role?: RoleLite | null;
+  createdAt: string;
+};
+
 type Expense = {
   id: number;
   workflowId: number;
@@ -156,6 +165,7 @@ type Expense = {
   status: ExpenseStatus;
   user: UserLite;
   expenseSteps: ExpenseStep[];
+  approvalHistory?: ApprovalHistoryStep[];
   budget: Budget;
   createdAt: string;
   updatedAt: string;

@@ -118,6 +118,12 @@ interface User {
   departmentId: number | null;
   roles?: UserRole[];
   hierarchies?: ApprovalHierarchy[];
+  hierarchyRoles?: {
+    hierarchy: {
+      id: number;
+      name: string;
+    };
+  }[];
   hierarchyAssignments?: {
     hierarchy: {
       id: number;
@@ -598,7 +604,7 @@ function AdminDashboardContent() {
       status: user.status || "",
       regionId: user.regionId || 0,
       roles: roleIds,
-      hierarchies: user.hierarchyAssignments?.map((ha) => ha.hierarchy.id) || [],
+      hierarchies: user.hierarchyRoles?.map((hr) => hr.hierarchy.id) || [],
     });
     setShowEditUserModal(true);
   };
@@ -639,7 +645,7 @@ function AdminDashboardContent() {
       const data = await response.json();
 
       if (response.ok) {
-        const hierarchiesCount = data.hierarchyAssignments?.length || 0;
+        const hierarchiesCount = data.hierarchyRoles?.length || 0;
         const rolesCount = data.roles?.length || 0;
         toast.success(`User updated successfully! ${rolesCount} role(s) and ${hierarchiesCount} hierarchy/hierarchies assigned.`);
         setShowEditUserModal(false);

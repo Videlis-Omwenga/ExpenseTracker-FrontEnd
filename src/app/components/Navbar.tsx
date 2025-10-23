@@ -475,6 +475,15 @@ export default function TopNavbar() {
                   <Dropdown.Menu className="dropdown-menu">
                     <Dropdown.Item
                       onClick={() =>
+                        handleNavigation("/expense-approvals/hierarchies")
+                      }
+                      className="dropdown-item"
+                    >
+                      <FileText className="me-2" size={16} />
+                      Approval Hierarchies
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() =>
                         handleNavigation("/expense-approvals/workflows")
                       }
                       className="dropdown-item"

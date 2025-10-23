@@ -31,40 +31,94 @@ import { BASE_API_URL } from "../../static/apiConfig";
 import AuthProvider from "../../authPages/tokenData";
 import PageLoader from "@/app/components/PageLoader";
 
-interface WorkflowStep {
-  id?: number;
-  order: number;
-  hierarchyId: number | "";
-  hierarchyName: string;
-  isOptional: boolean;
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
 }
 
-interface Workflow {
+interface Role {
   id: number;
   name: string;
-  institutionId: number;
-  steps: WorkflowStep[];
-  createdAt?: string;
-  updatedAt?: string;
+}
+
+interface WorkflowStepAssignment {
+  stepOrder: number;
+  userId: number;
+  user?: User;
+}
+
+interface HierarchyAssignment {
+  id: number;
+  hierarchyId: number;
+  hierarchyLevelId: number | null;
+  userId: number;
+  order: number;
+  hierarchy?: {
+    id: number;
+    name: string;
+  };
+  user?: User;
+  level?: HierarchyLevel;
+  hierarchyLevel?: {
+    id: number;
+    order: number;
+    role: Role;
+    hierarchy: {
+      id: number;
+      name: string;
+    };
+  };
+}
+
+interface HierarchyLevel {
+  id: number;
+  order: number;
+  approverCount: number;
+  roleId: number;
+  role: Role;
+  assignments?: HierarchyAssignment[];
 }
 
 interface Hierarchy {
   id: number;
   name: string;
   description?: string;
-  level?: number;
+  levels: HierarchyLevel[];
+}
+
+interface WorkflowStep {
+  id?: number;
+  order: number;
+  roleId: number;
+  roleName?: string;
+  isOptional: boolean;
+  assignedUserId?: number;
+}
+
+interface Workflow {
+  id: number;
+  name: string;
+  institutionId: number;
+  approvalHierarchyId?: number;
+  steps: WorkflowStep[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export default function WorkflowEditor() {
   const [workflow, setWorkflow] = useState<Workflow | null>(null);
   const [hierarchies, setHierarchies] = useState<Hierarchy[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [stepToDelete, setStepToDelete] = useState<number | null>(null);
-  const [showStepDeleteModal, setShowStepDeleteModal] = useState(false);
-  const [newStepHierarchyId, setNewStepHierarchyId] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [workflowName, setWorkflowName] = useState("");
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [selectedHierarchyId, setSelectedHierarchyId] = useState<number | null>(null);
+  const [allAssignments, setAllAssignments] = useState<HierarchyAssignment[]>([]);
+  const [queuedHierarchies, setQueuedHierarchies] = useState<Hierarchy[]>([]);
 
   // Fetch data
   const fetchWorkflow = async () => {
@@ -82,18 +136,11 @@ export default function WorkflowEditor() {
       const data = await response.json();
 
       if (response.ok) {
-        // Map roleId to hierarchyId for frontend compatibility
         const workflowData = data.workflows;
-        if (workflowData && workflowData.steps) {
-          workflowData.steps = workflowData.steps.map(
-            (step: { roleId: number; roleName?: string }) => ({
-              ...step,
-              hierarchyId: step.roleId,
-              hierarchyName: step.roleName || "",
-            })
-          );
+        setWorkflow(workflowData);
+        if (workflowData?.approvalHierarchyId) {
+          setSelectedHierarchyId(workflowData.approvalHierarchyId);
         }
-        setWorkflow(workflowData); // single workflow
       } else {
         toast.error(`${data.message}`);
       }
@@ -117,7 +164,36 @@ export default function WorkflowEditor() {
       const data = await response.json();
 
       if (response.ok) {
-        setHierarchies(data);
+        // Fetch detailed hierarchy data including assignments for each hierarchy
+        const hierarchiesWithAssignments = await Promise.all(
+          data.map(async (hierarchy: Hierarchy) => {
+            try {
+              const detailResponse = await fetch(
+                `${BASE_API_URL}/approval-hierarchy/${hierarchy.id}`,
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem(
+                      "expenseTrackerToken"
+                    )}`,
+                  },
+                }
+              );
+
+              if (detailResponse.ok) {
+                const detailData = await detailResponse.json();
+                return detailData;
+              }
+              return hierarchy;
+            } catch (error) {
+              console.error(`Failed to fetch details for hierarchy ${hierarchy.id}:`, error);
+              return hierarchy;
+            }
+          })
+        );
+
+        setHierarchies(hierarchiesWithAssignments);
       } else {
         toast.error(`Failed to fetch hierarchies: ${data.message}`);
       }
@@ -126,10 +202,56 @@ export default function WorkflowEditor() {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch(`${BASE_API_URL}/users`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "expenseTrackerToken"
+          )}`,
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setUsers(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    }
+  };
+
+  const fetchAllAssignments = async () => {
+    try {
+      const response = await fetch(`${BASE_API_URL}/approval-hierarchy/assignments/all`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "expenseTrackerToken"
+          )}`,
+        },
+      });
+
+      const data = await response.json();
+      console.log("Fetched assignments:", data);
+      if (response.ok) {
+        setAllAssignments(data);
+        console.log("Total assignments loaded:", data.length);
+      } else {
+        console.error("Failed to fetch assignments:", data.message);
+      }
+    } catch (error) {
+      console.error("Failed to fetch assignments:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await Promise.all([fetchWorkflow(), fetchHierarchies()]);
+      await Promise.all([fetchWorkflow(), fetchHierarchies(), fetchUsers(), fetchAllAssignments()]);
       setLoading(false);
     };
     fetchData();
@@ -177,19 +299,63 @@ export default function WorkflowEditor() {
     setWorkflow({ ...workflow, [field]: value });
   };
 
+  // Queue hierarchy operations
+  const handleAddHierarchyToQueue = (hierarchyId: number) => {
+    const hierarchy = hierarchies.find(h => h.id === hierarchyId);
+    if (!hierarchy) return;
+
+    // Check if already in queue
+    if (queuedHierarchies.some(h => h.id === hierarchyId)) {
+      toast.warning(`${hierarchy.name} is already in the queue`);
+      return;
+    }
+
+    setQueuedHierarchies([...queuedHierarchies, hierarchy]);
+    toast.success(`${hierarchy.name} added to queue`);
+    setSelectedHierarchyId(null); // Reset selection
+  };
+
+  const handleRemoveFromQueue = (hierarchyId: number) => {
+    setQueuedHierarchies(queuedHierarchies.filter(h => h.id !== hierarchyId));
+    toast.info("Hierarchy removed from queue");
+  };
+
+  const handleMoveUp = (index: number) => {
+    if (index === 0) return;
+    const newQueue = [...queuedHierarchies];
+    [newQueue[index - 1], newQueue[index]] = [newQueue[index], newQueue[index - 1]];
+    setQueuedHierarchies(newQueue);
+  };
+
+  const handleMoveDown = (index: number) => {
+    if (index === queuedHierarchies.length - 1) return;
+    const newQueue = [...queuedHierarchies];
+    [newQueue[index], newQueue[index + 1]] = [newQueue[index + 1], newQueue[index]];
+    setQueuedHierarchies(newQueue);
+  };
+
+  const handleClearQueue = () => {
+    setQueuedHierarchies([]);
+    toast.info("Queue cleared");
+  };
+
   const handleSaveWorkflow = async () => {
     if (!workflow) return;
+
+    if (queuedHierarchies.length === 0) {
+      toast.error("Please add at least one hierarchy to the queue");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      // Send queued hierarchies to backend in order
+      const hierarchyIds = queuedHierarchies.map(h => h.id);
+
       const payload = {
         name: workflow.name,
-        steps: workflow.steps.map((step) => ({
-          id: step.id ?? null,
-          order: step.order,
-          roleId: step.hierarchyId, // Backend expects roleId, but we're using hierarchyId
-          isOptional: step.isOptional,
-        })),
+        hierarchyIds: hierarchyIds, // Send array of hierarchy IDs in order
       };
 
       const response = await fetch(
@@ -209,8 +375,9 @@ export default function WorkflowEditor() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("Workflow updated successfully!");
-        fetchWorkflow();
+        toast.success("Workflow with queued hierarchies saved successfully!");
+        setQueuedHierarchies([]); // Clear queue after successful save
+        await Promise.all([fetchWorkflow(), fetchAllAssignments()]); // Refresh both workflow and assignments
       } else {
         toast.error(`${data.message}`);
       }
@@ -221,85 +388,42 @@ export default function WorkflowEditor() {
     }
   };
 
-  const handleAddStep = () => {
-    if (!workflow || !newStepHierarchyId) return;
-    const selectedHierarchy = hierarchies.find(
-      (hierarchy) => hierarchy.id === Number(newStepHierarchyId)
-    );
-    if (!selectedHierarchy) return;
-
-    const newStep: WorkflowStep = {
-      order: workflow.steps.length + 1,
-      hierarchyId: Number(newStepHierarchyId),
-      hierarchyName: selectedHierarchy.name,
-      isOptional: false,
-    };
-
-    setWorkflow({
-      ...workflow,
-      steps: [...workflow.steps, newStep],
-    });
-
-    setNewStepHierarchyId("");
-  };
-
-  const handleDeleteStep = (stepId: number) => {
-    if (!workflow) return;
-
-    setWorkflow({
-      ...workflow,
-      steps: workflow.steps
-        .filter((step) => step.id !== stepId)
-        .map((step, index) => ({ ...step, order: index + 1 })),
-    });
-
-    setShowStepDeleteModal(false);
-    setStepToDelete(null);
-  };
-
-  const confirmDeleteStep = (stepId: number) => {
-    setStepToDelete(stepId);
-    setShowStepDeleteModal(true);
-  };
-
-  const toggleStepOptional = (
-    stepId: number | undefined,
-    stepOrder: number
-  ) => {
+  const toggleStepOptional = (stepOrder: number) => {
     if (!workflow) return;
 
     setWorkflow({
       ...workflow,
       steps: workflow.steps.map((step) =>
-        (stepId ? step.id === stepId : step.order === stepOrder)
+        step.order === stepOrder
           ? { ...step, isOptional: !step.isOptional }
           : step
       ),
     });
   };
 
-  const moveStep = (stepId: number, direction: "up" | "down") => {
+  const handleDeleteStep = (stepOrder: number) => {
     if (!workflow) return;
 
-    const steps = [...workflow.steps];
-    const index = steps.findIndex((step) => step.id === stepId);
-
-    if (
-      (direction === "up" && index === 0) ||
-      (direction === "down" && index === steps.length - 1)
-    ) {
+    // Confirm deletion
+    if (!confirm(`Are you sure you want to delete Step ${stepOrder}? This will remove this approval level from the workflow.`)) {
       return;
     }
 
-    const newIndex = direction === "up" ? index - 1 : index + 1;
-    [steps[index], steps[newIndex]] = [steps[newIndex], steps[index]];
+    // Remove the step from the workflow
+    const updatedSteps = workflow.steps.filter(step => step.order !== stepOrder);
 
-    const reorderedSteps = steps.map((step, i) => ({ ...step, order: i + 1 }));
+    // Reorder remaining steps to maintain sequential order
+    const reorderedSteps = updatedSteps.map((step, index) => ({
+      ...step,
+      order: index + 1,
+    }));
 
     setWorkflow({
       ...workflow,
       steps: reorderedSteps,
     });
+
+    toast.success(`Step ${stepOrder} deleted successfully. Don't forget to save changes!`);
   };
 
   const formatDate = (dateString?: string) => {
@@ -365,11 +489,9 @@ export default function WorkflowEditor() {
                           Update Workflow
                         </h6>
                         <p className="mb-0 small">
-                          Modify the workflow name or add the steps required for
-                          the workflow. Workflow steps represent the hierarchies
-                          that will be assigned to it. These are the stages an
-                          expense must go through before being paid by the
-                          finance department.
+                          Modify the workflow name and select the approval hierarchy.
+                          The workflow steps represent the stages an expense must
+                          go through before being paid by the finance department.
                         </p>
                       </div>
                     </div>
@@ -402,211 +524,250 @@ export default function WorkflowEditor() {
 
                   <h6 className="mb-3 fw-bold text-dark d-flex align-items-center border-bottom pb-3">
                     <FaListOl className="me-2 text-primary" />
-                    Workflow Steps
-                    <Badge bg="primary" className="ms-2 rounded-pill px-3">
-                      {workflow.steps.length}
-                    </Badge>
+                    Approval Hierarchy Queue
                   </h6>
-                  <div className="mb-4">
-                    {workflow.steps.length > 0 ? (
-                      <div className="table-responsive">
-                        <Table hover className="align-middle mb-0">
-                          <thead className="bg-light border-0">
-                            <tr>
-                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                                ID
-                              </th>
-                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                                Order
-                              </th>
-                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                                Hierarchy
-                              </th>
-                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                                Status
-                              </th>
-                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">
-                                Actions
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {workflow.steps.map((step) => (
-                              <tr
-                                key={step.id ?? `step-${step.order}`}
-                                className="border-bottom"
+                  <Card className="border-0 bg-light mb-4">
+                    <Card.Body className="p-4">
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-semibold text-dark">
+                          Select Approval Hierarchy to Add <span className="text-danger">*</span>
+                        </Form.Label>
+                        <div className="d-flex gap-2">
+                          <Form.Select
+                            value={selectedHierarchyId || ""}
+                            required
+                            onChange={(e) => setSelectedHierarchyId(Number(e.target.value) || null)}
+                            className="py-2 border-2 rounded-3"
+                          >
+                            <option value=""></option>
+                            {hierarchies.map((hierarchy) => (
+                              <option key={hierarchy.id} value={hierarchy.id}>
+                                {hierarchy.name}
+                              </option>
+                            ))}
+                          </Form.Select>
+                          <Button
+                            variant="primary"
+                            onClick={() => selectedHierarchyId && handleAddHierarchyToQueue(selectedHierarchyId)}
+                            disabled={!selectedHierarchyId}
+                            className="px-4 rounded-3"
+                          >
+                            <FaPlusCircle className="me-2" />
+                            Add to Queue
+                          </Button>
+                        </div>
+                        <Form.Text className="text-muted">
+                          Select hierarchies one by one and add them to the queue in order
+                        </Form.Text>
+                      </Form.Group>
+
+                      {/* Queue Preview */}
+                      {queuedHierarchies.length > 0 && (
+                        <>
+                          <div className="d-flex justify-content-between align-items-center mb-3 mt-4">
+                            <h6 className="mb-0 fw-bold text-dark">Queued Hierarchies ({queuedHierarchies.length})</h6>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={handleClearQueue}
+                              className="rounded-3"
+                            >
+                              Clear All
+                            </Button>
+                          </div>
+                          <Alert variant="success" className="border-0 mb-3">
+                            <FaCheckCircle className="me-2" />
+                            Hierarchies will be saved in this order when you click "Save Changes"
+                          </Alert>
+                          <div className="list-group">
+                            {queuedHierarchies.map((hierarchy, index) => (
+                              <div
+                                key={hierarchy.id}
+                                className="list-group-item d-flex justify-content-between align-items-center py-3"
                               >
-                                <td className="py-3 px-4">
-                                  <span className="fw-semibold text-primary">
-                                    {step.id}
-                                  </span>
-                                </td>
-                                <td className="py-3 px-4">
-                                  <Badge
-                                    bg="primary"
-                                    className="px-3 py-2 rounded-pill fw-semibold"
-                                  >
-                                    Step {step.order}
+                                <div className="d-flex align-items-center gap-3">
+                                  <Badge bg="primary" className="px-3 py-2 fs-6">
+                                    {index + 1}
                                   </Badge>
-                                </td>
-                                <td className="py-3 px-4">
                                   <div>
-                                    <div className="fw-semibold text-dark">
-                                      {
-                                        hierarchies.find(
-                                          (hierarchy) =>
-                                            hierarchy.id === step.hierarchyId
-                                        )?.name
-                                      }
-                                    </div>
-                                    <small className="text-muted">
-                                      Hierarchy ID: {step.hierarchyId}
-                                    </small>
+                                    <strong className="text-dark">{hierarchy.name}</strong>
+                                    {hierarchy.description && (
+                                      <p className="text-muted mb-0 small">{hierarchy.description}</p>
+                                    )}
                                   </div>
-                                </td>
-                                <td className="py-3 px-4">
-                                  <Form.Check
-                                    type="switch"
-                                    id={`optional-switch-${step.id}`}
-                                    label={
-                                      step.isOptional ? (
-                                        <Badge
-                                          bg="warning"
-                                          className="px-2 py-1"
-                                        >
-                                          Optional
-                                        </Badge>
-                                      ) : (
-                                        <Badge
-                                          bg="success"
-                                          className="px-2 py-1"
-                                        >
-                                          Required
-                                        </Badge>
-                                      )
-                                    }
-                                    checked={step.isOptional}
-                                    onChange={() =>
-                                      toggleStepOptional(step.id, step.order)
-                                    }
-                                  />
-                                </td>
-                                <td className="py-3 px-4 text-center">
-                                  <div className="d-flex gap-2 justify-content-center">
-                                    <Button
-                                      variant="outline-primary"
-                                      size="sm"
-                                      className="rounded-pill px-3"
-                                      onClick={() => moveStep(step.id!, "up")}
-                                      disabled={step.order === 1}
-                                      title="Move Up"
-                                    >
-                                      <FaArrowUp />
-                                    </Button>
-                                    <Button
-                                      variant="outline-primary"
-                                      size="sm"
-                                      className="rounded-pill px-3"
-                                      onClick={() => moveStep(step.id!, "down")}
-                                      disabled={
-                                        step.order === workflow.steps.length
+                                </div>
+                                <div className="d-flex gap-2">
+                                  <Button
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    onClick={() => handleMoveUp(index)}
+                                    disabled={index === 0}
+                                    title="Move up"
+                                  >
+                                    <FaArrowUp />
+                                  </Button>
+                                  <Button
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    onClick={() => handleMoveDown(index)}
+                                    disabled={index === queuedHierarchies.length - 1}
+                                    title="Move down"
+                                  >
+                                    <FaArrowDown />
+                                  </Button>
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => handleRemoveFromQueue(hierarchy.id)}
+                                    title="Remove from queue"
+                                  >
+                                    <FaTrash />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+
+                      {queuedHierarchies.length === 0 && (
+                        <Alert variant="warning" className="mt-3 mb-0">
+                          <FaInfoCircle className="me-2" />
+                          No hierarchies in queue. Add hierarchies above to preview the order.
+                        </Alert>
+                      )}
+                    </Card.Body>
+                  </Card>
+
+                  {workflow.steps && workflow.steps.length > 0 && (
+                    <>
+                      <h6 className="mb-3 fw-bold text-dark d-flex align-items-center border-bottom pb-3">
+                        <FaCheckCircle className="me-2 text-primary" />
+                        Workflow Steps Configuration
+                      </h6>
+                      <Alert variant="info" className="border-0 mb-3">
+                        <FaInfoCircle className="me-2" />
+                        Configure whether each approval step is required or optional. User assignments are managed in the Approval Hierarchies page.
+                      </Alert>
+                      <Table hover className="align-middle">
+                        <thead className="bg-light">
+                          <tr>
+                            <th className="py-3">Step Order</th>
+                            <th className="py-3">Role</th>
+                            <th className="py-3">Required/Optional</th>
+                            <th className="py-3 text-center">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {workflow.steps
+                            .sort((a, b) => a.order - b.order)
+                            .map((step) => {
+                              const selectedHierarchy = hierarchies.find(h => h.id === selectedHierarchyId);
+                              const level = selectedHierarchy?.levels.find(l => l.order === step.order);
+                              const role = level?.role || { name: `Role ${step.roleId}` };
+                              return (
+                                <tr key={step.order}>
+                                  <td>
+                                    <Badge bg="primary" className="px-3 py-2">
+                                      Step {step.order}
+                                    </Badge>
+                                  </td>
+                                  <td>
+                                    <strong>{role.name}</strong>
+                                  </td>
+                                  <td>
+                                    <Form.Check
+                                      type="switch"
+                                      id={`optional-switch-${step.order}`}
+                                      label={
+                                        step.isOptional ? (
+                                          <Badge bg="warning" className="px-2 py-1">
+                                            Optional
+                                          </Badge>
+                                        ) : (
+                                          <Badge bg="success" className="px-2 py-1">
+                                            Required
+                                          </Badge>
+                                        )
                                       }
-                                      title="Move Down"
-                                    >
-                                      <FaArrowDown />
-                                    </Button>
+                                      checked={step.isOptional}
+                                      onChange={() => toggleStepOptional(step.order)}
+                                    />
+                                  </td>
+                                  <td className="text-center">
                                     <Button
+                                      size="sm"
                                       variant="outline-danger"
-                                      size="sm"
-                                      className="rounded-pill px-3"
-                                      onClick={() =>
-                                        confirmDeleteStep(step.id!)
-                                      }
-                                      title="Delete Step"
+                                      onClick={() => handleDeleteStep(step.order)}
+                                      title="Delete this step"
                                     >
                                       <FaTrash />
                                     </Button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </Table>
-                      </div>
-                    ) : (
-                      <div className="text-center py-5 bg-light rounded-3">
-                        <div className="bg-primary bg-opacity-10 d-inline-flex p-3 rounded-circle mb-3">
-                          <FaListOl className="text-primary" size={32} />
-                        </div>
-                        <p className="mt-2 text-dark fw-semibold mb-1">
-                          No steps in this workflow
-                        </p>
-                        <p className="text-muted mb-0 small">
-                          Add steps using the form below to define your approval
-                          process
-                        </p>
-                      </div>
-                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
+                      </Table>
+                    </>
+                  )}
 
-                    <Card className="bg-primary bg-opacity-10 border-0 mt-4 shadow-sm">
-                      <Card.Body className="p-4">
-                        <div className="d-flex align-items-center mb-3">
-                          <div className="bg-primary bg-opacity-25 p-2 rounded-circle me-2">
-                            <FaPlusCircle className="text-primary" size={16} />
-                          </div>
-                          <Form.Label className="fw-bold text-dark mb-0">
-                            Add New Step
-                          </Form.Label>
-                        </div>
-                        <Row className="align-items-end">
-                          <Col md={9}>
-                            <Form.Group>
-                              <Form.Label className="fw-semibold text-dark small">
-                                Select Hierarchy{" "}
-                                <span className="text-danger">*</span>
-                              </Form.Label>
-                              <Form.Select
-                                value={newStepHierarchyId}
-                                onChange={(e) =>
-                                  setNewStepHierarchyId(e.target.value)
-                                }
-                                className="py-2 border-2 rounded-3"
-                              >
-                                <option value="">
-                                  Choose a hierarchy for this step
-                                </option>
-                                {hierarchies.map((hierarchy) => (
-                                  <option
-                                    key={hierarchy.id}
-                                    value={hierarchy.id}
-                                  >
-                                    {hierarchy.name}
-                                  </option>
-                                ))}
-                              </Form.Select>
-                            </Form.Group>
-                          </Col>
-                          <Col md={3}>
-                            <Button
-                              onClick={handleAddStep}
-                              disabled={!newStepHierarchyId}
-                              className="w-100 d-flex align-items-center justify-content-center py-2 rounded-3 fw-semibold"
-                              variant="primary"
-                            >
-                              <FaPlusCircle className="me-2" /> Add Step
-                            </Button>
-                          </Col>
-                        </Row>
-                      </Card.Body>
-                    </Card>
-                  </div>
+                  {/* Display All Hierarchy Assignments */}
+                  <h6 className="mb-3 mt-4 fw-bold text-dark d-flex align-items-center border-bottom pb-3">
+                    <FaListOl className="me-2 text-primary" />
+                    All Hierarchy Assignments
+                  </h6>
+                  {allAssignments.length > 0 ? (
+                    <>
+                      <Alert variant="info" className="border-0 mb-3">
+                        <FaInfoCircle className="me-2" />
+                        Data from HierarchyAssignment table
+                      </Alert>
+                      <Table hover className="align-middle">
+                        <thead className="bg-light">
+                          <tr>
+                            <th className="py-3">Order</th>
+                            <th className="py-3">Hierarchy Name</th>
+                            <th className="py-3">User ID</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {allAssignments.map((assignment) => (
+                            <tr key={assignment.id}>
+                              <td>
+                                <Badge bg="primary" className="px-3 py-2 fs-6">
+                                  {assignment.order}
+                                </Badge>
+                              </td>
+                              <td>
+                                <strong className="text-dark">
+                                  {assignment.hierarchy?.name || 'Unknown Hierarchy'}
+                                </strong>
+                              </td>
+                              <td>
+                                <Badge bg="info" className="px-2 py-1">
+                                  {assignment.userId}
+                                </Badge>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </>
+                  ) : (
+                    <Alert variant="warning" className="border-0 mb-3">
+                      <FaInfoCircle className="me-2" />
+                      No hierarchy assignments found in the database.
+                    </Alert>
+                  )}
 
                   <div className="d-flex justify-content-end pt-4 mt-4 border-top">
                     <Button
                       onClick={handleSaveWorkflow}
                       variant="primary"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || queuedHierarchies.length === 0}
                       className="px-4 py-2 rounded-pill fw-semibold shadow-sm"
+                      title={queuedHierarchies.length === 0 ? "Please add at least one hierarchy to the queue" : ""}
                     >
                       {isSubmitting ? (
                         <>
@@ -686,62 +847,6 @@ export default function WorkflowEditor() {
           </Col>
         </Row>
       </Container>
-
-      {/* Delete Step Confirmation Modal */}
-      <Modal
-        show={showStepDeleteModal}
-        onHide={() => setShowStepDeleteModal(false)}
-        size="xl"
-      >
-        <Modal.Header
-          closeButton
-          className="border-0 pb-0 pt-4 px-4"
-          style={{ backgroundColor: "#f8f9fa" }}
-        >
-          <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
-            <div
-              className="icon-wrapper bg-danger me-3 rounded-circle d-flex align-items-center justify-content-center"
-              style={{ width: "48px", height: "48px" }}
-            >
-              <FaTrash className="text-white" size={24} />
-            </div>
-            <div>
-              Delete Step
-              <div className="text-muted fw-normal small">
-                Remove this step from workflow
-              </div>
-            </div>
-          </h5>
-        </Modal.Header>
-        <Modal.Body className="px-4 py-4">
-          <p className="text-dark mb-0">
-            Are you sure you want to remove this step from the workflow? The
-            remaining steps will be automatically reordered.
-          </p>
-        </Modal.Body>
-        <Modal.Footer
-          className="border-0 pt-0 px-4 pb-4"
-          style={{ backgroundColor: "#f8f9fa" }}
-        >
-          <Button
-            size="sm"
-            variant="outline-secondary"
-            onClick={() => setShowStepDeleteModal(false)}
-            className="px-4 py-2 rounded-3 fw-semibold"
-          >
-            Cancel
-          </Button>
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={() => stepToDelete && handleDeleteStep(stepToDelete)}
-            className="px-4 py-2 rounded-3 fw-semibold"
-          >
-            <FaTrash className="me-2" />
-            Delete Step
-          </Button>
-        </Modal.Footer>
-      </Modal>
 
       {/* Create Workflow Modal */}
       <Modal
