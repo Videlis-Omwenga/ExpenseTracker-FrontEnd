@@ -74,6 +74,8 @@ type ExpenseStep = {
   comments?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  hierarchyName?: string | null;
+  nextApprovers?: UserLite[];
 };
 
 type Currency = {
@@ -886,7 +888,7 @@ export default function ExpenseApprovalPage() {
                             <div className="mb-1 small text-muted">
                               {approvedSteps}/{totalSteps} approved{" "}
                               {currentStep
-                                ? `• Now: ${currentStep.role?.name ?? "—"}`
+                                ? `• Now: ${currentStep.hierarchyName || currentStep.role?.name || "—"}`
                                 : ""}
                             </div>
                             <ProgressBar
@@ -1217,7 +1219,7 @@ export default function ExpenseApprovalPage() {
                                     <div className="fw-semibold text-dark">
                                       Step {step.order}{" "}
                                       <span className="text-muted small">
-                                        • {step.role?.name ?? "Unassigned role"}
+                                        • {step.hierarchyName || step.role?.name || "Unassigned role"}
                                       </span>
                                     </div>
                                     <Badge
@@ -1242,6 +1244,8 @@ export default function ExpenseApprovalPage() {
                                       <FaUser className="me-1 text-secondary" />
                                       {step.approver
                                         ? `${step.approver.firstName} ${step.approver.lastName}`
+                                        : step.nextApprovers && step.nextApprovers.length > 0
+                                        ? step.nextApprovers.map(u => `${u.firstName} ${u.lastName}`).join(", ")
                                         : "—"}
                                     </span>
 

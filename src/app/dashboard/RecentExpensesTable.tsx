@@ -46,6 +46,12 @@ interface ExpenseStep {
     email: string;
   } | null;
   workflowStepId: number;
+  hierarchyName?: string | null;
+  nextApprovers?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  }[];
 }
 
 interface Expense {
@@ -593,7 +599,7 @@ export default function RecentExpensesTable({
                                   <thead className="table-light">
                                     <tr>
                                       <th style={{ width: "60px" }}>Order</th>
-                                      <th>Role</th>
+                                      <th>Role/Hierarchy</th>
                                       <th>Approver</th>
                                       <th>Status</th>
                                       <th>Comments</th>
@@ -611,7 +617,7 @@ export default function RecentExpensesTable({
                                           </Badge>
                                         </td>
                                         <td className="fw-semibold">
-                                          {step.role?.name || "N/A"}
+                                          {step.hierarchyName || step.role?.name || "N/A"}
                                         </td>
                                         <td>
                                           {step.approver ? (
@@ -623,6 +629,19 @@ export default function RecentExpensesTable({
                                               <small className="text-muted">
                                                 {step.approver.email}
                                               </small>
+                                            </div>
+                                          ) : step.nextApprovers && step.nextApprovers.length > 0 ? (
+                                            <div>
+                                              {step.nextApprovers.map((approver, idx) => (
+                                                <div key={idx} className="mb-1">
+                                                  <div className="fw-semibold small">
+                                                    {approver.firstName} {approver.lastName}
+                                                  </div>
+                                                  <small className="text-muted">
+                                                    {approver.email}
+                                                  </small>
+                                                </div>
+                                              ))}
                                             </div>
                                           ) : (
                                             <span className="text-muted">
