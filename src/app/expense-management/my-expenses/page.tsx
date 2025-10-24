@@ -104,6 +104,8 @@ interface ExpenseStep {
   approver?: User | null;
   workflowStep?: WorkflowStep | null;
   level?: number;
+  nextApprovers?: User[];
+  hierarchyName?: string | null;
 }
 
 interface Currency {
@@ -364,6 +366,8 @@ export default function FinanceDashboard() {
                 const stepObj = s as Record<string, unknown>;
                 const roleObj = stepObj.role as Record<string, unknown> | undefined;
                 const approverObj = stepObj.approver as Record<string, unknown> | undefined;
+                const nextApproversArr = stepObj.nextApprovers as unknown[] | undefined;
+
                 return {
                 id: Number(stepObj.id ?? 0),
                 order: Number(stepObj.order ?? 0),
@@ -384,6 +388,18 @@ export default function FinanceDashboard() {
                       email: String(approverObj.email ?? ""),
                     }
                   : undefined,
+                nextApprovers: nextApproversArr
+                  ? nextApproversArr.map((na: unknown) => {
+                      const naObj = na as Record<string, unknown>;
+                      return {
+                        id: Number(naObj.id ?? 0),
+                        firstName: String(naObj.firstName ?? ""),
+                        lastName: String(naObj.lastName ?? ""),
+                        email: String(naObj.email ?? ""),
+                      };
+                    })
+                  : [],
+                hierarchyName: stepObj.hierarchyName ? String(stepObj.hierarchyName) : null,
                 level: Number(stepObj.order ?? 0),
               };
             })
@@ -1771,7 +1787,7 @@ export default function FinanceDashboard() {
                                               <div className="current-step-info text-center mt-1 bg-danger bg-opacity-10 border-danger">
                                                 <small className="text-danger fw-medium">
                                                   <XCircle size={10} className="me-1" />
-                                                  Rejected at: {rejectedStep?.role?.name || "Unknown step"}
+                                                  Rejected at: {rejectedStep?.hierarchyName || rejectedStep?.role?.name || "Unknown step"}
                                                 </small>
                                               </div>
                                             );
@@ -1783,11 +1799,22 @@ export default function FinanceDashboard() {
                                           );
 
                                           if (currentStep) {
+                                            // Show hierarchy name and first approver only
+                                            const hierarchyName = currentStep.hierarchyName || currentStep.role?.name || "Unknown";
+                                            const nextApprover = currentStep.nextApprovers && currentStep.nextApprovers.length > 0
+                                              ? `${currentStep.nextApprovers[0].firstName} ${currentStep.nextApprovers[0].lastName}`
+                                              : null;
+
                                             return (
                                               <div className="current-step-info text-center mt-1">
                                                 <small className="text-muted">
                                                   <Clock size={10} className="me-1" />
-                                                  Waiting for: {currentStep.role?.name || "Unknown"}
+                                                  {hierarchyName}
+                                                  {nextApprover && (
+                                                    <div className="mt-1">
+                                                      <strong>{nextApprover}</strong>
+                                                    </div>
+                                                  )}
                                                 </small>
                                               </div>
                                             );
@@ -2156,16 +2183,19 @@ export default function FinanceDashboard() {
                           <div className="approval-timeline">
                             {selectedExpense.expenseSteps.map((s) => {
                               const statusText = normalizeStatus(s.status);
-                              const name =
-                                s.approver?.firstName || s.approver?.lastName
-                                  ? `${s.approver?.firstName ?? ""} ${
-                                      s.approver?.lastName ?? ""
-                                    }`.trim()
-                                  : "Pending approval";
-                              const role =
-                                s.role?.name ??
-                                s.workflowStep?.role?.name ??
-                                "No role";
+
+                              // Determine approver name based on status and nextApprovers
+                              let name = "Pending approval";
+                              if (s.approver?.firstName || s.approver?.lastName) {
+                                // If already approved/rejected, show who did it
+                                name = `${s.approver?.firstName ?? ""} ${s.approver?.lastName ?? ""}`.trim();
+                              } else if (s.nextApprovers && s.nextApprovers.length > 0) {
+                                // If pending, show who can approve
+                                name = s.nextApprovers.map(u => `${u.firstName} ${u.lastName}`).join(", ");
+                              }
+
+                              // Use hierarchy name if available
+                              const role = s.hierarchyName ?? s.role?.name ?? s.workflowStep?.role?.name ?? "No role";
 
                               return (
                                 <div className="timeline-item" key={s.id}>
@@ -2209,7 +2239,7 @@ export default function FinanceDashboard() {
                                     <div className="approver-info">
                                       <small className="text-muted">
                                         <Person className="me-1" size={12} />
-                                        {name || "Pending approval"}
+                                        {name}
                                       </small>
                                     </div>
 
