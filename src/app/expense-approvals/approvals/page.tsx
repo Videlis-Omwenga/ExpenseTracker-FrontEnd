@@ -100,6 +100,8 @@ type ExpenseStep = {
   comments?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  hierarchyName?: string | null;
+  nextApprovers?: UserLite[];
 };
 
 type Currency = {
@@ -1896,11 +1898,22 @@ export default function ExpenseApprovalPage() {
                                     }
 
                                     if (currentStep) {
+                                      // Show hierarchy name and first approver only
+                                      const hierarchyName = currentStep.hierarchyName || currentStep.hierarchyLevel?.role?.name || currentStep.role?.name || "Unknown";
+                                      const nextApprover = currentStep.nextApprovers && currentStep.nextApprovers.length > 0
+                                        ? `${currentStep.nextApprovers[0].firstName} ${currentStep.nextApprovers[0].lastName}`
+                                        : null;
+
                                       return (
                                         <div className="current-step-info text-center mt-1">
                                           <small className="text-muted">
                                             <ClockHistory size={10} className="me-1" />
-                                            Waiting for: {currentStep.hierarchyLevel?.role?.name || currentStep.role?.name || "Unknown"}
+                                            {hierarchyName}
+                                            {nextApprover && (
+                                              <div className="mt-1">
+                                                <strong>{nextApprover}</strong>
+                                              </div>
+                                            )}
                                           </small>
                                         </div>
                                       );
@@ -2231,7 +2244,7 @@ export default function ExpenseApprovalPage() {
                                     <div className="fw-semibold text-dark">
                                       Step {step.order}{" "}
                                       <span className="text-muted small">
-                                        • {(step.hierarchyLevel?.role?.name || step.role?.name) ?? "Unassigned role"}
+                                        • {step.hierarchyName || step.hierarchyLevel?.role?.name || step.role?.name || "Unassigned role"}
                                       </span>
                                     </div>
                                     <Badge
@@ -2256,6 +2269,8 @@ export default function ExpenseApprovalPage() {
                                       <Person className="me-1 text-secondary" />
                                       {step.approver
                                         ? `${step.approver.firstName} ${step.approver.lastName}`
+                                        : step.nextApprovers && step.nextApprovers.length > 0
+                                        ? step.nextApprovers.map(u => `${u.firstName} ${u.lastName}`).join(", ")
                                         : "—"}
                                     </span>
 
