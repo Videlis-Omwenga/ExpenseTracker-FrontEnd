@@ -247,10 +247,14 @@ const getProgressPercent = (steps: ExpenseStep[]) => {
   if (!steps?.length) return 0;
 
   // If any step is rejected, stop progress calculation at that point
-  const hasRejectedStep = steps.some(step => normalizeStatus(step.status) === "REJECTED");
+  const hasRejectedStep = steps.some(
+    (step) => normalizeStatus(step.status) === "REJECTED"
+  );
   if (hasRejectedStep) {
     // Find the index of the rejected step and calculate progress up to that point
-    const rejectedIndex = steps.findIndex(step => normalizeStatus(step.status) === "REJECTED");
+    const rejectedIndex = steps.findIndex(
+      (step) => normalizeStatus(step.status) === "REJECTED"
+    );
     return Math.floor(((rejectedIndex + 1) / steps.length) * 100);
   }
 
@@ -307,7 +311,9 @@ export default function FinanceDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 100;
-  const [selectedExpenses, setSelectedExpenses] = useState<Set<number>>(new Set());
+  const [selectedExpenses, setSelectedExpenses] = useState<Set<number>>(
+    new Set()
+  );
   const [showBulkActions, setShowBulkActions] = useState(false);
 
   const router = useRouter();
@@ -364,49 +370,59 @@ export default function FinanceDashboard() {
           const steps: ExpenseStep[] = Array.isArray(item.expenseSteps)
             ? (item.expenseSteps as unknown[]).map((s: unknown) => {
                 const stepObj = s as Record<string, unknown>;
-                const roleObj = stepObj.role as Record<string, unknown> | undefined;
-                const approverObj = stepObj.approver as Record<string, unknown> | undefined;
-                const nextApproversArr = stepObj.nextApprovers as unknown[] | undefined;
+                const roleObj = stepObj.role as
+                  | Record<string, unknown>
+                  | undefined;
+                const approverObj = stepObj.approver as
+                  | Record<string, unknown>
+                  | undefined;
+                const nextApproversArr = stepObj.nextApprovers as
+                  | unknown[]
+                  | undefined;
 
                 return {
-                id: Number(stepObj.id ?? 0),
-                order: Number(stepObj.order ?? 0),
-                isOptional: Boolean(stepObj.isOptional ?? false),
-                status: (stepObj.status as ApprovalStatus) || "PENDING",
-                comments: stepObj.comments ? String(stepObj.comments) : null,
-                role: roleObj
-                  ? {
-                      id: Number(roleObj.id ?? 0),
-                      name: String(roleObj.name ?? ""),
-                    }
-                  : null,
-                approver: approverObj
-                  ? {
-                      id: Number(approverObj.id ?? 0),
-                      firstName: String(approverObj.firstName ?? ""),
-                      lastName: String(approverObj.lastName ?? ""),
-                      email: String(approverObj.email ?? ""),
-                    }
-                  : undefined,
-                nextApprovers: nextApproversArr
-                  ? nextApproversArr.map((na: unknown) => {
-                      const naObj = na as Record<string, unknown>;
-                      return {
-                        id: Number(naObj.id ?? 0),
-                        firstName: String(naObj.firstName ?? ""),
-                        lastName: String(naObj.lastName ?? ""),
-                        email: String(naObj.email ?? ""),
-                      };
-                    })
-                  : [],
-                hierarchyName: stepObj.hierarchyName ? String(stepObj.hierarchyName) : null,
-                level: Number(stepObj.order ?? 0),
-              };
-            })
+                  id: Number(stepObj.id ?? 0),
+                  order: Number(stepObj.order ?? 0),
+                  isOptional: Boolean(stepObj.isOptional ?? false),
+                  status: (stepObj.status as ApprovalStatus) || "PENDING",
+                  comments: stepObj.comments ? String(stepObj.comments) : null,
+                  role: roleObj
+                    ? {
+                        id: Number(roleObj.id ?? 0),
+                        name: String(roleObj.name ?? ""),
+                      }
+                    : null,
+                  approver: approverObj
+                    ? {
+                        id: Number(approverObj.id ?? 0),
+                        firstName: String(approverObj.firstName ?? ""),
+                        lastName: String(approverObj.lastName ?? ""),
+                        email: String(approverObj.email ?? ""),
+                      }
+                    : undefined,
+                  nextApprovers: nextApproversArr
+                    ? nextApproversArr.map((na: unknown) => {
+                        const naObj = na as Record<string, unknown>;
+                        return {
+                          id: Number(naObj.id ?? 0),
+                          firstName: String(naObj.firstName ?? ""),
+                          lastName: String(naObj.lastName ?? ""),
+                          email: String(naObj.email ?? ""),
+                        };
+                      })
+                    : [],
+                  hierarchyName: stepObj.hierarchyName
+                    ? String(stepObj.hierarchyName)
+                    : null,
+                  level: Number(stepObj.order ?? 0),
+                };
+              })
             : [];
 
           // Map related entities
-          const currencyObj = item.currency as Record<string, unknown> | undefined;
+          const currencyObj = item.currency as
+            | Record<string, unknown>
+            | undefined;
           const currency = currencyObj
             ? {
                 id: Number(currencyObj.id ?? 0),
@@ -416,7 +432,9 @@ export default function FinanceDashboard() {
               }
             : null;
 
-          const categoryObj = item.category as Record<string, unknown> | undefined;
+          const categoryObj = item.category as
+            | Record<string, unknown>
+            | undefined;
           const category = categoryObj
             ? {
                 id: Number(categoryObj.id ?? 0),
@@ -424,7 +442,9 @@ export default function FinanceDashboard() {
               }
             : null;
 
-          const departmentObj = item.department as Record<string, unknown> | undefined;
+          const departmentObj = item.department as
+            | Record<string, unknown>
+            | undefined;
           const department = departmentObj
             ? {
                 id: Number(departmentObj.id ?? 0),
@@ -432,7 +452,9 @@ export default function FinanceDashboard() {
               }
             : null;
 
-          const paymentMethodObj = item.paymentMethod as Record<string, unknown> | undefined;
+          const paymentMethodObj = item.paymentMethod as
+            | Record<string, unknown>
+            | undefined;
           const paymentMethod = paymentMethodObj
             ? {
                 id: Number(paymentMethodObj.id ?? 0),
@@ -467,7 +489,9 @@ export default function FinanceDashboard() {
             department,
             paymentMethod,
             region,
-            referenceNumber: item.referenceNumber ? String(item.referenceNumber) : null,
+            referenceNumber: item.referenceNumber
+              ? String(item.referenceNumber)
+              : null,
             userId: Number(item.userId ?? 0),
             user: mappedUser,
             workflowId:
@@ -523,16 +547,30 @@ export default function FinanceDashboard() {
     const thisYear = new Date(now.getFullYear(), 0, 1);
 
     // Filter expenses for different periods
-    const thisMonthExpenses = expenses.filter(e => new Date(e.createdAt) >= thisMonth);
-    const lastMonthExpenses = expenses.filter(e =>
-      new Date(e.createdAt) >= lastMonth && new Date(e.createdAt) < thisMonth
+    const thisMonthExpenses = expenses.filter(
+      (e) => new Date(e.createdAt) >= thisMonth
     );
-    const thisYearExpenses = expenses.filter(e => new Date(e.createdAt) >= thisYear);
+    const lastMonthExpenses = expenses.filter(
+      (e) =>
+        new Date(e.createdAt) >= lastMonth && new Date(e.createdAt) < thisMonth
+    );
+    const thisYearExpenses = expenses.filter(
+      (e) => new Date(e.createdAt) >= thisYear
+    );
 
     // Calculate totals
-    const thisMonthTotal = thisMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
-    const lastMonthTotal = lastMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
-    const thisYearTotal = thisYearExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const thisMonthTotal = thisMonthExpenses.reduce(
+      (sum, e) => sum + e.amount,
+      0
+    );
+    const lastMonthTotal = lastMonthExpenses.reduce(
+      (sum, e) => sum + e.amount,
+      0
+    );
+    const thisYearTotal = thisYearExpenses.reduce(
+      (sum, e) => sum + e.amount,
+      0
+    );
 
     // Status breakdown
     const statusBreakdown = expenses.reduce((acc, expense) => {
@@ -542,14 +580,14 @@ export default function FinanceDashboard() {
 
     // Category spending
     const categorySpending = expenses.reduce((acc, expense) => {
-      const category = expense.category?.name || 'Uncategorized';
+      const category = expense.category?.name || "Uncategorized";
       acc[category] = (acc[category] || 0) + expense.amount;
       return acc;
     }, {} as Record<string, number>);
 
     // Top categories (only first 2)
     const topCategories = Object.entries(categorySpending)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 2);
 
     // Monthly trend (last 6 months)
@@ -557,28 +595,36 @@ export default function FinanceDashboard() {
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const nextMonth = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-      const monthExpenses = expenses.filter(e =>
-        new Date(e.createdAt) >= date && new Date(e.createdAt) < nextMonth
+      const monthExpenses = expenses.filter(
+        (e) =>
+          new Date(e.createdAt) >= date && new Date(e.createdAt) < nextMonth
       );
       const total = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
       monthlyTrend.push({
-        month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        month: date.toLocaleDateString("en-US", {
+          month: "short",
+          year: "numeric",
+        }),
         amount: total,
-        count: monthExpenses.length
+        count: monthExpenses.length,
       });
     }
 
     // Calculate growth
-    const monthlyGrowth = lastMonthTotal === 0 ? 0 :
-      ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100;
+    const monthlyGrowth =
+      lastMonthTotal === 0
+        ? 0
+        : ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100;
 
     // Average expense
-    const averageExpense = expenses.length > 0 ?
-      expenses.reduce((sum, e) => sum + e.amount, 0) / expenses.length : 0;
+    const averageExpense =
+      expenses.length > 0
+        ? expenses.reduce((sum, e) => sum + e.amount, 0) / expenses.length
+        : 0;
 
     // Pending approvals count
-    const pendingCount = expenses.filter(e =>
-      e.expenseSteps.some(step => normalizeStatus(step.status) === 'PENDING')
+    const pendingCount = expenses.filter((e) =>
+      e.expenseSteps.some((step) => normalizeStatus(step.status) === "PENDING")
     ).length;
 
     return {
@@ -592,7 +638,7 @@ export default function FinanceDashboard() {
       monthlyTrend,
       averageExpense,
       pendingCount,
-      totalExpenses: expenses.length
+      totalExpenses: expenses.length,
     };
   }, [expenses]);
 
@@ -727,48 +773,52 @@ export default function FinanceDashboard() {
       setSelectedExpenses(new Set());
       setShowBulkActions(false);
     } else {
-      const allIds = new Set(currentItems.map(expense => expense.id));
+      const allIds = new Set(currentItems.map((expense) => expense.id));
       setSelectedExpenses(allIds);
       setShowBulkActions(true);
     }
   };
 
   const handleBulkExport = () => {
-    const selectedData = currentItems.filter(e => selectedExpenses.has(e.id));
+    const selectedData = currentItems.filter((e) => selectedExpenses.has(e.id));
     const csvContent = [
       ["ID", "Date", "Payee", "Category", "Description", "Amount", "Status"],
-      ...selectedData.map(e => [
+      ...selectedData.map((e) => [
         e.id,
         new Date(e.createdAt).toLocaleDateString(),
         e.payee,
         e.category?.name || "N/A",
         e.description,
         e.amount,
-        e.status
-      ])
-    ].map(row => row.join(",")).join("\n");
+        e.status,
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `selected_expenses_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `selected_expenses_${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success(`Exported ${selectedExpenses.size} selected expenses!`);
   };
 
   const handleBulkFilter = (filterType: string) => {
-    const selectedData = currentItems.filter(e => selectedExpenses.has(e.id));
+    const selectedData = currentItems.filter((e) => selectedExpenses.has(e.id));
     switch (filterType) {
-      case 'pending':
-        setStatusFilter('PENDING');
+      case "pending":
+        setStatusFilter("PENDING");
         break;
-      case 'approved':
-        setStatusFilter('APPROVED');
+      case "approved":
+        setStatusFilter("APPROVED");
         break;
-      case 'rejected':
-        setStatusFilter('REJECTED');
+      case "rejected":
+        setStatusFilter("REJECTED");
         break;
     }
     setSelectedExpenses(new Set());
@@ -806,9 +856,7 @@ export default function FinanceDashboard() {
                   <Clipboard2Data className="text-primary" size={28} />
                 </div>
                 <div>
-                  <h2 className="fw-bold text-dark mb-0">
-                    My Expenses
-                  </h2>
+                  <h2 className="fw-bold text-dark mb-0">My Expenses</h2>
                   <p className="text-muted mb-0 small">
                     Track and manage your expense submissions
                   </p>
@@ -956,22 +1004,36 @@ export default function FinanceDashboard() {
                       className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
                       onClick={() => {
                         const csvContent = [
-                          ["ID", "Date", "Payee", "Category", "Description", "Amount", "Status"],
-                          ...filteredExpenses.map(e => [
+                          [
+                            "ID",
+                            "Date",
+                            "Payee",
+                            "Category",
+                            "Description",
+                            "Amount",
+                            "Status",
+                          ],
+                          ...filteredExpenses.map((e) => [
                             e.id,
                             new Date(e.createdAt).toLocaleDateString(),
                             e.payee,
                             e.category?.name || "N/A",
                             e.description,
                             e.amount,
-                            e.status
-                          ])
-                        ].map(row => row.join(",")).join("\n");
-                        const blob = new Blob([csvContent], { type: "text/csv" });
+                            e.status,
+                          ]),
+                        ]
+                          .map((row) => row.join(","))
+                          .join("\n");
+                        const blob = new Blob([csvContent], {
+                          type: "text/csv",
+                        });
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement("a");
                         a.href = url;
-                        a.download = `expenses_${new Date().toISOString().split('T')[0]}.csv`;
+                        a.download = `expenses_${
+                          new Date().toISOString().split("T")[0]
+                        }.csv`;
                         a.click();
                         URL.revokeObjectURL(url);
                         toast.success("Expenses exported successfully!");
@@ -997,8 +1059,12 @@ export default function FinanceDashboard() {
                         if (navigator.share) {
                           navigator.share({
                             title: "My Expenses Summary",
-                            text: `I have ${expenses.length} expenses totaling KES ${expenses.reduce((sum, e) => sum + e.amount, 0).toLocaleString()}`,
-                            url: window.location.href
+                            text: `I have ${
+                              expenses.length
+                            } expenses totaling KES ${expenses
+                              .reduce((sum, e) => sum + e.amount, 0)
+                              .toLocaleString()}`,
+                            url: window.location.href,
                           });
                         } else {
                           navigator.clipboard.writeText(window.location.href);
@@ -1026,8 +1092,12 @@ export default function FinanceDashboard() {
                     <GraphUp size={24} className="text-info" />
                   </div>
                   <div>
-                    <h5 className="fw-bold text-dark mb-1">Expense Analytics</h5>
-                    <p className="text-muted mb-0 small">Insights and trends from your expense data</p>
+                    <h5 className="fw-bold text-dark mb-1">
+                      Expense Analytics
+                    </h5>
+                    <p className="text-muted mb-0 small">
+                      Insights and trends from your expense data
+                    </p>
                   </div>
                 </div>
 
@@ -1038,18 +1108,34 @@ export default function FinanceDashboard() {
                       <Col sm={6} md={3}>
                         <div className="analytics-card bg-primary bg-opacity-10 p-3 rounded-3 border-start border-primary border-3">
                           <div className="d-flex align-items-center">
-                            <GraphUpArrow size={20} className="text-primary me-2" />
+                            <GraphUpArrow
+                              size={20}
+                              className="text-primary me-2"
+                            />
                             <div>
-                              <p className="text-muted small mb-1">This Month</p>
+                              <p className="text-muted small mb-1">
+                                This Month
+                              </p>
                               <h6 className="mb-0 fw-bold">
-                                KES {analyticsData.thisMonthTotal.toLocaleString()}
+                                KES{" "}
+                                {analyticsData.thisMonthTotal.toLocaleString()}
                               </h6>
                               {analyticsData.lastMonthTotal > 0 ? (
-                                <small className={`fw-medium ${analyticsData.monthlyGrowth >= 0 ? 'text-success' : 'text-danger'}`}>
-                                  {analyticsData.monthlyGrowth >= 0 ? '+' : ''}{analyticsData.monthlyGrowth.toFixed(1)}% vs last month
+                                <small
+                                  className={`fw-medium ${
+                                    analyticsData.monthlyGrowth >= 0
+                                      ? "text-success"
+                                      : "text-danger"
+                                  }`}
+                                >
+                                  {analyticsData.monthlyGrowth >= 0 ? "+" : ""}
+                                  {analyticsData.monthlyGrowth.toFixed(1)}% vs
+                                  last month
                                 </small>
                               ) : (
-                                <small className="text-muted">First month data</small>
+                                <small className="text-muted">
+                                  First month data
+                                </small>
                               )}
                             </div>
                           </div>
@@ -1062,7 +1148,8 @@ export default function FinanceDashboard() {
                             <div>
                               <p className="text-muted small mb-1">This Year</p>
                               <h6 className="mb-0 fw-bold">
-                                KES {analyticsData.thisYearTotal.toLocaleString()}
+                                KES{" "}
+                                {analyticsData.thisYearTotal.toLocaleString()}
                               </h6>
                               <small className="text-muted">
                                 {analyticsData.totalExpenses} total expenses
@@ -1078,10 +1165,15 @@ export default function FinanceDashboard() {
                             <div>
                               <p className="text-muted small mb-1">Average</p>
                               <h6 className="mb-0 fw-bold">
-                                KES {Math.round(analyticsData.averageExpense).toLocaleString()}
+                                KES{" "}
+                                {Math.round(
+                                  analyticsData.averageExpense
+                                ).toLocaleString()}
                               </h6>
                               <small className="text-muted">
-                                {analyticsData.totalExpenses > 0 ? 'per expense' : 'no expenses yet'}
+                                {analyticsData.totalExpenses > 0
+                                  ? "per expense"
+                                  : "no expenses yet"}
                               </small>
                             </div>
                           </div>
@@ -1093,8 +1185,12 @@ export default function FinanceDashboard() {
                             <Clock size={20} className="text-danger me-2" />
                             <div>
                               <p className="text-muted small mb-1">Pending</p>
-                              <h6 className="mb-0 fw-bold">{analyticsData.pendingCount}</h6>
-                              <small className="text-muted">awaiting approval</small>
+                              <h6 className="mb-0 fw-bold">
+                                {analyticsData.pendingCount}
+                              </h6>
+                              <small className="text-muted">
+                                awaiting approval
+                              </small>
                             </div>
                           </div>
                         </div>
@@ -1108,28 +1204,58 @@ export default function FinanceDashboard() {
                         6-Month Spending Trend
                       </h6>
                       <div className="chart-container">
-                        <div className="d-flex align-items-end justify-content-between" style={{ height: '120px' }}>
+                        <div
+                          className="d-flex align-items-end justify-content-between"
+                          style={{ height: "120px" }}
+                        >
                           {analyticsData.monthlyTrend.map((data, index) => {
-                            const maxAmount = Math.max(...analyticsData.monthlyTrend.map(d => d.amount), 1);
-                            const height = data.amount > 0 ? Math.max((data.amount / maxAmount) * 80, 8) : 8;
+                            const maxAmount = Math.max(
+                              ...analyticsData.monthlyTrend.map(
+                                (d) => d.amount
+                              ),
+                              1
+                            );
+                            const height =
+                              data.amount > 0
+                                ? Math.max((data.amount / maxAmount) * 80, 8)
+                                : 8;
 
                             // Create more realistic visual variation
                             const hasData = data.amount > 0;
-                            const barColor = hasData ? (data.amount > analyticsData.thisMonthTotal * 0.8 ? '#dc3545' :
-                                                      data.amount > analyticsData.thisMonthTotal * 0.5 ? '#ffc107' : '#0d6efd') : '#e9ecef';
+                            const barColor = hasData
+                              ? data.amount > analyticsData.thisMonthTotal * 0.8
+                                ? "#dc3545"
+                                : data.amount >
+                                  analyticsData.thisMonthTotal * 0.5
+                                ? "#ffc107"
+                                : "#0d6efd"
+                              : "#e9ecef";
 
                             return (
-                              <div key={index} className="d-flex flex-column align-items-center">
+                              <div
+                                key={index}
+                                className="d-flex flex-column align-items-center"
+                              >
                                 <OverlayTrigger
                                   placement="top"
                                   overlay={
                                     <Tooltip>
                                       <div className="text-start">
-                                        <div className="fw-bold">{data.month}</div>
-                                        <div>Amount: KES {data.amount.toLocaleString()}</div>
+                                        <div className="fw-bold">
+                                          {data.month}
+                                        </div>
+                                        <div>
+                                          Amount: KES{" "}
+                                          {data.amount.toLocaleString()}
+                                        </div>
                                         <div>Expenses: {data.count}</div>
                                         {data.count > 0 && (
-                                          <div>Avg: KES {(data.amount / data.count).toLocaleString()}</div>
+                                          <div>
+                                            Avg: KES{" "}
+                                            {(
+                                              data.amount / data.count
+                                            ).toLocaleString()}
+                                          </div>
                                         )}
                                       </div>
                                     </Tooltip>
@@ -1138,27 +1264,29 @@ export default function FinanceDashboard() {
                                   <div
                                     className="rounded-top chart-bar"
                                     style={{
-                                      width: '32px',
+                                      width: "32px",
                                       height: `${height + 12}px`,
-                                      minHeight: '12px',
+                                      minHeight: "12px",
                                       backgroundColor: barColor,
                                       opacity: hasData ? 0.9 : 0.3,
-                                      cursor: 'pointer',
-                                      transition: 'all 0.3s ease',
-                                      position: 'relative',
-                                      border: hasData ? `2px solid ${barColor}` : '1px solid #dee2e6'
+                                      cursor: "pointer",
+                                      transition: "all 0.3s ease",
+                                      position: "relative",
+                                      border: hasData
+                                        ? `2px solid ${barColor}`
+                                        : "1px solid #dee2e6",
                                     }}
                                   >
                                     {hasData && (
                                       <div
                                         style={{
-                                          position: 'absolute',
-                                          top: '-18px',
-                                          left: '50%',
-                                          transform: 'translateX(-50%)',
-                                          fontSize: '8px',
-                                          color: '#6c757d',
-                                          fontWeight: 'bold'
+                                          position: "absolute",
+                                          top: "-18px",
+                                          left: "50%",
+                                          transform: "translateX(-50%)",
+                                          fontSize: "8px",
+                                          color: "#6c757d",
+                                          fontWeight: "bold",
                                         }}
                                       >
                                         {data.count}
@@ -1166,8 +1294,14 @@ export default function FinanceDashboard() {
                                     )}
                                   </div>
                                 </OverlayTrigger>
-                                <small className="text-muted mt-1" style={{ fontSize: '0.65rem', fontWeight: '500' }}>
-                                  {data.month.split(' ')[0]}
+                                <small
+                                  className="text-muted mt-1"
+                                  style={{
+                                    fontSize: "0.65rem",
+                                    fontWeight: "500",
+                                  }}
+                                >
+                                  {data.month.split(" ")[0]}
                                 </small>
                               </div>
                             );
@@ -1186,45 +1320,68 @@ export default function FinanceDashboard() {
                       </h6>
                       <div className="category-breakdown">
                         {analyticsData.topCategories.length > 0 ? (
-                          analyticsData.topCategories.map(([category, amount], index) => {
-                            const totalSpending = analyticsData.thisYearTotal || 1;
-                            const percentage = (amount / totalSpending) * 100;
-                            const colors = ['primary', 'success'];
-                            const color = colors[index] || 'primary';
+                          analyticsData.topCategories.map(
+                            ([category, amount], index) => {
+                              const totalSpending =
+                                analyticsData.thisYearTotal || 1;
+                              const percentage = (amount / totalSpending) * 100;
+                              const colors = ["primary", "success"];
+                              const color = colors[index] || "primary";
 
-                            return (
-                              <div key={category} className="mb-4">
-                                <div className="d-flex justify-content-between align-items-center mb-2">
-                                  <div className="d-flex align-items-center">
-                                    <Tag size={12} className={`text-${color} me-2`} />
-                                    <span className="fw-medium">{category}</span>
+                              return (
+                                <div key={category} className="mb-4">
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <div className="d-flex align-items-center">
+                                      <Tag
+                                        size={12}
+                                        className={`text-${color} me-2`}
+                                      />
+                                      <span className="fw-medium">
+                                        {category}
+                                      </span>
+                                    </div>
+                                    <span className="small text-muted fw-bold">
+                                      KES {amount.toLocaleString()}
+                                    </span>
                                   </div>
-                                  <span className="small text-muted fw-bold">
-                                    KES {amount.toLocaleString()}
-                                  </span>
-                                </div>
-                                <div className="progress" style={{ height: '8px' }}>
                                   <div
-                                    className={`progress-bar bg-${color}`}
-                                    style={{
-                                      width: `${Math.max(percentage, 5)}%`,
-                                      background: `linear-gradient(135deg, var(--bs-${color}) 0%, var(--bs-${color === 'primary' ? 'info' : 'warning'}) 100%)`
-                                    }}
-                                  ></div>
+                                    className="progress"
+                                    style={{ height: "8px" }}
+                                  >
+                                    <div
+                                      className={`progress-bar bg-${color}`}
+                                      style={{
+                                        width: `${Math.max(percentage, 5)}%`,
+                                        background: `linear-gradient(135deg, var(--bs-${color}) 0%, var(--bs-${
+                                          color === "primary"
+                                            ? "info"
+                                            : "warning"
+                                        }) 100%)`,
+                                      }}
+                                    ></div>
+                                  </div>
+                                  <div className="d-flex justify-content-between mt-1">
+                                    <small className="text-muted">
+                                      {percentage.toFixed(1)}% of total spending
+                                    </small>
+                                    <small className="text-muted">
+                                      {Math.round(
+                                        amount /
+                                          (analyticsData.averageExpense || 1)
+                                      )}{" "}
+                                      expenses
+                                    </small>
+                                  </div>
                                 </div>
-                                <div className="d-flex justify-content-between mt-1">
-                                  <small className="text-muted">{percentage.toFixed(1)}% of total spending</small>
-                                  <small className="text-muted">
-                                    {Math.round(amount / (analyticsData.averageExpense || 1))} expenses
-                                  </small>
-                                </div>
-                              </div>
-                            );
-                          })
+                              );
+                            }
+                          )
                         ) : (
                           <div className="text-center py-3 text-muted">
                             <Tag size={24} className="mb-2" />
-                            <div className="small">No category data available</div>
+                            <div className="small">
+                              No category data available
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1236,28 +1393,38 @@ export default function FinanceDashboard() {
                           Status Overview
                         </h6>
                         <div className="status-overview">
-                          {Object.entries(analyticsData.statusBreakdown).map(([status, count]) => {
-                            const badge = statusBadge(status);
-                            const percentage = (count / analyticsData.totalExpenses) * 100;
+                          {Object.entries(analyticsData.statusBreakdown).map(
+                            ([status, count]) => {
+                              const badge = statusBadge(status);
+                              const percentage =
+                                (count / analyticsData.totalExpenses) * 100;
 
-                            return (
-                              <div key={status} className="d-flex justify-content-between align-items-center mb-2">
-                                <div className="d-flex align-items-center">
-                                  <Badge
-                                    bg={badge.bg}
-                                    className="me-2 d-inline-flex align-items-center py-1 px-2 rounded-pill"
-                                  >
-                                    {badge.icon}
-                                    <span className="ms-1 small">{badge.label}</span>
-                                  </Badge>
+                              return (
+                                <div
+                                  key={status}
+                                  className="d-flex justify-content-between align-items-center mb-2"
+                                >
+                                  <div className="d-flex align-items-center">
+                                    <Badge
+                                      bg={badge.bg}
+                                      className="me-2 d-inline-flex align-items-center py-1 px-2 rounded-pill"
+                                    >
+                                      {badge.icon}
+                                      <span className="ms-1 small">
+                                        {badge.label}
+                                      </span>
+                                    </Badge>
+                                  </div>
+                                  <div className="text-end">
+                                    <span className="fw-bold">{count}</span>
+                                    <small className="text-muted ms-1">
+                                      ({percentage.toFixed(0)}%)
+                                    </small>
+                                  </div>
                                 </div>
-                                <div className="text-end">
-                                  <span className="fw-bold">{count}</span>
-                                  <small className="text-muted ms-1">({percentage.toFixed(0)}%)</small>
-                                </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            }
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1348,9 +1515,7 @@ export default function FinanceDashboard() {
                     <div className="bg-primary bg-opacity-25 p-2 rounded-circle me-2">
                       <Funnel className="text-primary" size={14} />
                     </div>
-                    <h6 className="mb-0 fw-bold text-dark">
-                      Filters
-                    </h6>
+                    <h6 className="mb-0 fw-bold text-dark">Filters</h6>
                   </div>
                   <Button
                     variant="outline-primary"
@@ -1499,9 +1664,13 @@ export default function FinanceDashboard() {
                 <div className="bulk-actions-bar mt-3 p-3 bg-primary bg-opacity-10 rounded-3 border-start border-primary border-3">
                   <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div className="d-flex align-items-center">
-                      <CheckSquareFill size={18} className="text-primary me-2" />
+                      <CheckSquareFill
+                        size={18}
+                        className="text-primary me-2"
+                      />
                       <span className="fw-bold text-primary">
-                        {selectedExpenses.size} expense{selectedExpenses.size > 1 ? 's' : ''} selected
+                        {selectedExpenses.size} expense
+                        {selectedExpenses.size > 1 ? "s" : ""} selected
                       </span>
                     </div>
                     <div className="d-flex gap-2 flex-wrap">
@@ -1517,7 +1686,7 @@ export default function FinanceDashboard() {
                       <Button
                         variant="outline-warning"
                         size="sm"
-                        onClick={() => handleBulkFilter('pending')}
+                        onClick={() => handleBulkFilter("pending")}
                         className="d-flex align-items-center gap-1"
                       >
                         <Clock size={14} />
@@ -1526,7 +1695,7 @@ export default function FinanceDashboard() {
                       <Button
                         variant="outline-primary"
                         size="sm"
-                        onClick={() => handleBulkFilter('approved')}
+                        onClick={() => handleBulkFilter("approved")}
                         className="d-flex align-items-center gap-1"
                       >
                         <CheckCircle size={14} />
@@ -1569,26 +1738,57 @@ export default function FinanceDashboard() {
                 <Card className="border-0">
                   <Card.Body className="p-0">
                     <div className="table-responsive">
-                      <Table hover className="mb-0 transactions-table align-middle">
+                      <Table
+                        hover
+                        className="mb-0 transactions-table align-middle"
+                      >
                         <thead className="bg-light border-0">
                           <tr>
-                            <th className="border-0 py-3 px-4" style={{ width: "50px" }}>
+                            <th
+                              className="border-0 py-3 px-4"
+                              style={{ width: "50px" }}
+                            >
                               <Form.Check
                                 type="checkbox"
-                                checked={selectedExpenses.size === currentItems.length && currentItems.length > 0}
+                                checked={
+                                  selectedExpenses.size ===
+                                    currentItems.length &&
+                                  currentItems.length > 0
+                                }
                                 onChange={handleSelectAll}
                                 id="select-all"
                               />
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">#ID</th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Created</th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Payee</th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Category</th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Description</th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Amount</th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Owner</th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Status</th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small" style={{ minWidth: 120 }}>Approval Progress</th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              #ID
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Created
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Payee
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Category
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Description
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Amount
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Owner
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Status
+                            </th>
+                            <th
+                              className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small"
+                              style={{ minWidth: 120 }}
+                            >
+                              Approval Progress
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1605,13 +1805,22 @@ export default function FinanceDashboard() {
                             return (
                               <tr
                                 key={expense.id}
-                                className={`cursor-pointer border-bottom ${selectedExpenses.has(expense.id) ? 'table-active' : ''}`}
+                                className={`cursor-pointer border-bottom ${
+                                  selectedExpenses.has(expense.id)
+                                    ? "table-active"
+                                    : ""
+                                }`}
                               >
-                                <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
+                                <td
+                                  className="py-3 px-4"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   <Form.Check
                                     type="checkbox"
                                     checked={selectedExpenses.has(expense.id)}
-                                    onChange={() => handleSelectExpense(expense.id)}
+                                    onChange={() =>
+                                      handleSelectExpense(expense.id)
+                                    }
                                     id={`expense-${expense.id}`}
                                   />
                                 </td>
@@ -1620,14 +1829,14 @@ export default function FinanceDashboard() {
                                   onClick={() => handleViewDetails(expense)}
                                 >
                                   <div className="d-flex align-items-center">
-                                    <Tag
-                                      size={14}
-                                      className="me-1"
-                                    />
+                                    <Tag size={14} className="me-1" />
                                     <span>{expense.id}</span>
                                   </div>
                                 </td>
-                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
+                                <td
+                                  className="py-3 px-4"
+                                  onClick={() => handleViewDetails(expense)}
+                                >
                                   <div className="d-flex flex-column">
                                     <div className="">
                                       Created:{" "}
@@ -1647,7 +1856,10 @@ export default function FinanceDashboard() {
                                     </div>
                                   </div>
                                 </td>
-                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
+                                <td
+                                  className="py-3 px-4"
+                                  onClick={() => handleViewDetails(expense)}
+                                >
                                   <div className="fw-medium">
                                     {expense.payee}
                                   </div>
@@ -1655,22 +1867,11 @@ export default function FinanceDashboard() {
                                     {expense.payeeNumber}
                                   </div>
                                 </td>
-                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
+                                <td
+                                  className="py-3 px-4"
+                                  onClick={() => handleViewDetails(expense)}
+                                >
                                   <div className="d-flex align-items-center">
-                                    <Badge bg="primary" className="px-3 py-2 rounded-pill fw-semibold">
-                                      <Tag className="me-1" size={12} />
-                                      {expense.category?.name || "Uncategorized"}
-                                    </Badge>
-                                  </div>
-                                </td>
-                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
-                                  <div className="d-flex align-items-center">
-                                    <div className="transaction-icon me-2 bg-light border bg-opacity-10 p-1 rounded-3">
-                                      <ListUl
-                                        className="text-success"
-                                        size={14}
-                                      />
-                                    </div>
                                     <div>
                                       <div
                                         className="fw-medium text-truncate"
@@ -1685,7 +1886,10 @@ export default function FinanceDashboard() {
                                     </div>
                                   </div>
                                 </td>
-                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
+                                <td
+                                  className="py-3 px-4"
+                                  onClick={() => handleViewDetails(expense)}
+                                >
                                   <div className="d-flex flex-column">
                                     <span className="text-success fw-bold">
                                       {expense?.amount?.toLocaleString() ||
@@ -1705,9 +1909,15 @@ export default function FinanceDashboard() {
                                     </span>
                                   </div>
                                 </td>
-                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
+                                <td
+                                  className="py-3 px-4"
+                                  onClick={() => handleViewDetails(expense)}
+                                >
                                   <div className="d-flex align-items-center">
-                                    <div className="avatar-sm bg-primary bg-opacity-10 text-primary fw-medium d-flex align-items-center justify-content-center rounded-circle me-2" style={{width: "32px", height: "32px"}}>
+                                    <div
+                                      className="avatar-sm bg-primary bg-opacity-10 text-primary fw-medium d-flex align-items-center justify-content-center rounded-circle me-2"
+                                      style={{ width: "32px", height: "32px" }}
+                                    >
                                       {expense.user.firstName.charAt(0)}
                                       {expense.user.lastName.charAt(0)}
                                     </div>
@@ -1719,7 +1929,10 @@ export default function FinanceDashboard() {
                                     </div>
                                   </div>
                                 </td>
-                                <td className="py-3 px-4" onClick={() => handleViewDetails(expense)}>
+                                <td
+                                  className="py-3 px-4"
+                                  onClick={() => handleViewDetails(expense)}
+                                >
                                   <Badge
                                     bg={badge.bg}
                                     className="d-inline-flex align-items-center py-2 px-3 rounded-pill fw-semibold"
@@ -1727,6 +1940,19 @@ export default function FinanceDashboard() {
                                     {badge.icon}
                                     {badge.label}
                                   </Badge>
+                                </td>
+
+                                <td
+                                  className="py-3 px-4"
+                                  onClick={() => handleViewDetails(expense)}
+                                >
+                                  <div className="d-flex align-items-center">
+                                    <Badge className="px-3 py-2 rounded-pill fw-semibold bg-light bg-opacity-50 text-dark border-0 border-success border-start border-3">
+                                      <Tag className="me-1" size={12} />
+                                      {expense.category?.name ||
+                                        "Uncategorized"}
+                                    </Badge>
+                                  </div>
                                 </td>
                                 <td className="py-3 px-4">
                                   <div className="approval-timeline-compact p-2 rounded-3">
@@ -1750,21 +1976,37 @@ export default function FinanceDashboard() {
 
                                         {/* Progress Bar */}
                                         {(() => {
-                                          const hasRejectedStep = expense.expenseSteps.some(
-                                            step => normalizeStatus(step.status) === "REJECTED"
-                                          );
-                                          const allApproved = expense.expenseSteps.length > 0 &&
-                                            expense.expenseSteps.every(step => normalizeStatus(step.status) === "APPROVED");
+                                          const hasRejectedStep =
+                                            expense.expenseSteps.some(
+                                              (step) =>
+                                                normalizeStatus(step.status) ===
+                                                "REJECTED"
+                                            );
+                                          const allApproved =
+                                            expense.expenseSteps.length > 0 &&
+                                            expense.expenseSteps.every(
+                                              (step) =>
+                                                normalizeStatus(step.status) ===
+                                                "APPROVED"
+                                            );
 
                                           let variant = "info";
-                                          if (hasRejectedStep) variant = "danger";
-                                          else if (allApproved) variant = "success";
+                                          if (hasRejectedStep)
+                                            variant = "danger";
+                                          else if (allApproved)
+                                            variant = "success";
 
                                           return (
                                             <ProgressBar
                                               now={progress}
                                               variant={variant}
-                                              animated={!hasRejectedStep && !allApproved && normalizeStatus(expense.status) === "PENDING"}
+                                              animated={
+                                                !hasRejectedStep &&
+                                                !allApproved &&
+                                                normalizeStatus(
+                                                  expense.status
+                                                ) === "PENDING"
+                                              }
                                               className="rounded-pill shadow-sm"
                                               style={{ height: "6px" }}
                                             />
@@ -1774,61 +2016,63 @@ export default function FinanceDashboard() {
                                         {/* Current Step Info */}
                                         {(() => {
                                           // Check if any step has been rejected
-                                          const hasRejectedStep = expense.expenseSteps.some(
-                                            step => normalizeStatus(step.status) === "REJECTED"
-                                          );
+                                          const hasRejectedStep =
+                                            expense.expenseSteps.some(
+                                              (step) =>
+                                                normalizeStatus(step.status) ===
+                                                "REJECTED"
+                                            );
 
                                           // If rejected, show rejection info instead of next approver
                                           if (hasRejectedStep) {
-                                            const rejectedStep = expense.expenseSteps.find(
-                                              step => normalizeStatus(step.status) === "REJECTED"
-                                            );
+                                            const rejectedStep =
+                                              expense.expenseSteps.find(
+                                                (step) =>
+                                                  normalizeStatus(
+                                                    step.status
+                                                  ) === "REJECTED"
+                                              );
                                             return (
                                               <div className="current-step-info text-center mt-1 bg-danger bg-opacity-10 border-danger">
                                                 <small className="text-danger fw-medium">
-                                                  <XCircle size={10} className="me-1" />
-                                                  Rejected at: {rejectedStep?.hierarchyName || rejectedStep?.role?.name || "Unknown step"}
+                                                  <XCircle
+                                                    size={10}
+                                                    className="me-1"
+                                                  />
+                                                  Rejected at:{" "}
+                                                  {rejectedStep?.hierarchyName ||
+                                                    rejectedStep?.role?.name ||
+                                                    "Unknown step"}
                                                 </small>
                                               </div>
                                             );
                                           }
 
                                           // If not rejected, find current pending step
-                                          const currentStep = expense.expenseSteps.find(
-                                            step => normalizeStatus(step.status) === "PENDING"
-                                          );
-
-                                          if (currentStep) {
-                                            // Show hierarchy name and first approver only
-                                            const hierarchyName = currentStep.hierarchyName || currentStep.role?.name || "Unknown";
-                                            const nextApprover = currentStep.nextApprovers && currentStep.nextApprovers.length > 0
-                                              ? `${currentStep.nextApprovers[0].firstName} ${currentStep.nextApprovers[0].lastName}`
-                                              : null;
-
-                                            return (
-                                              <div className="current-step-info text-center mt-1">
-                                                <small className="text-muted">
-                                                  <Clock size={10} className="me-1" />
-                                                  {hierarchyName}
-                                                  {nextApprover && (
-                                                    <div className="mt-1">
-                                                      <strong>{nextApprover}</strong>
-                                                    </div>
-                                                  )}
-                                                </small>
-                                              </div>
+                                          const currentStep =
+                                            expense.expenseSteps.find(
+                                              (step) =>
+                                                normalizeStatus(step.status) ===
+                                                "PENDING"
                                             );
-                                          }
 
                                           // If all steps are completed (approved)
-                                          const allApproved = expense.expenseSteps.length > 0 &&
-                                            expense.expenseSteps.every(step => normalizeStatus(step.status) === "APPROVED");
+                                          const allApproved =
+                                            expense.expenseSteps.length > 0 &&
+                                            expense.expenseSteps.every(
+                                              (step) =>
+                                                normalizeStatus(step.status) ===
+                                                "APPROVED"
+                                            );
 
                                           if (allApproved) {
                                             return (
                                               <div className="current-step-info text-center mt-1 bg-success bg-opacity-10 border-success">
                                                 <small className="text-success fw-medium">
-                                                  <CheckCircle size={10} className="me-1" />
+                                                  <CheckCircle
+                                                    size={10}
+                                                    className="me-1"
+                                                  />
                                                   Fully Approved
                                                 </small>
                                               </div>
@@ -1841,7 +2085,9 @@ export default function FinanceDashboard() {
                                     ) : (
                                       <div className="text-center text-muted py-2">
                                         <Circle size={16} className="mb-1" />
-                                        <div className="small">No workflow steps</div>
+                                        <div className="small">
+                                          No workflow steps
+                                        </div>
                                       </div>
                                     )}
                                   </div>
@@ -2186,16 +2432,30 @@ export default function FinanceDashboard() {
 
                               // Determine approver name based on status and nextApprovers
                               let name = "Pending approval";
-                              if (s.approver?.firstName || s.approver?.lastName) {
+                              if (
+                                s.approver?.firstName ||
+                                s.approver?.lastName
+                              ) {
                                 // If already approved/rejected, show who did it
-                                name = `${s.approver?.firstName ?? ""} ${s.approver?.lastName ?? ""}`.trim();
-                              } else if (s.nextApprovers && s.nextApprovers.length > 0) {
+                                name = `${s.approver?.firstName ?? ""} ${
+                                  s.approver?.lastName ?? ""
+                                }`.trim();
+                              } else if (
+                                s.nextApprovers &&
+                                s.nextApprovers.length > 0
+                              ) {
                                 // If pending, show who can approve
-                                name = s.nextApprovers.map(u => `${u.firstName} ${u.lastName}`).join(", ");
+                                name = s.nextApprovers
+                                  .map((u) => `${u.firstName} ${u.lastName}`)
+                                  .join(", ");
                               }
 
                               // Use hierarchy name if available
-                              const role = s.hierarchyName ?? s.role?.name ?? s.workflowStep?.role?.name ?? "No role";
+                              const role =
+                                s.hierarchyName ??
+                                s.role?.name ??
+                                s.workflowStep?.role?.name ??
+                                "No role";
 
                               return (
                                 <div className="timeline-item" key={s.id}>

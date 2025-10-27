@@ -666,14 +666,23 @@ export default function ExpenseApprovalPage() {
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
     // Filter expenses for different periods
-    const thisMonthExpenses = expenses.filter(e => new Date(e.createdAt) >= thisMonth);
-    const lastMonthExpenses = expenses.filter(e =>
-      new Date(e.createdAt) >= lastMonth && new Date(e.createdAt) < thisMonth
+    const thisMonthExpenses = expenses.filter(
+      (e) => new Date(e.createdAt) >= thisMonth
+    );
+    const lastMonthExpenses = expenses.filter(
+      (e) =>
+        new Date(e.createdAt) >= lastMonth && new Date(e.createdAt) < thisMonth
     );
 
     // Calculate totals for approval workflow
-    const thisMonthTotal = thisMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
-    const lastMonthTotal = lastMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const thisMonthTotal = thisMonthExpenses.reduce(
+      (sum, e) => sum + e.amount,
+      0
+    );
+    const lastMonthTotal = lastMonthExpenses.reduce(
+      (sum, e) => sum + e.amount,
+      0
+    );
 
     // Approval status breakdown
     const statusBreakdown = expenses.reduce((acc, expense) => {
@@ -683,14 +692,14 @@ export default function ExpenseApprovalPage() {
 
     // Department approval breakdown
     const departmentBreakdown = expenses.reduce((acc, expense) => {
-      const dept = expense.department?.name || 'Unassigned';
+      const dept = expense.department?.name || "Unassigned";
       acc[dept] = (acc[dept] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
     // Top departments (only first 2)
     const topDepartments = Object.entries(departmentBreakdown)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 2);
 
     // Monthly approval trend (last 6 months)
@@ -698,36 +707,44 @@ export default function ExpenseApprovalPage() {
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const nextMonth = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-      const monthExpenses = expenses.filter(e =>
-        new Date(e.createdAt) >= date && new Date(e.createdAt) < nextMonth
+      const monthExpenses = expenses.filter(
+        (e) =>
+          new Date(e.createdAt) >= date && new Date(e.createdAt) < nextMonth
       );
       const total = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
       monthlyTrend.push({
-        month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        month: date.toLocaleDateString("en-US", {
+          month: "short",
+          year: "numeric",
+        }),
         amount: total,
-        count: monthExpenses.length
+        count: monthExpenses.length,
       });
     }
 
     // Calculate growth
-    const monthlyGrowth = lastMonthTotal === 0 ? 0 :
-      ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100;
+    const monthlyGrowth =
+      lastMonthTotal === 0
+        ? 0
+        : ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100;
 
     // Average expense amount for approval
-    const averageExpense = expenses.length > 0 ?
-      expenses.reduce((sum, e) => sum + e.amount, 0) / expenses.length : 0;
+    const averageExpense =
+      expenses.length > 0
+        ? expenses.reduce((sum, e) => sum + e.amount, 0) / expenses.length
+        : 0;
 
     // Pending approvals by current user (approver-specific)
-    const myPendingCount = expenses.filter(e =>
-      e.expenseSteps.some(step => step.status === 'PENDING')
+    const myPendingCount = expenses.filter((e) =>
+      e.expenseSteps.some((step) => step.status === "PENDING")
     ).length;
 
     // Approval efficiency - percentage of expenses fully processed
-    const fullyProcessedCount = expenses.filter(e =>
-      e.status === 'APPROVED' || e.status === 'REJECTED'
+    const fullyProcessedCount = expenses.filter(
+      (e) => e.status === "APPROVED" || e.status === "REJECTED"
     ).length;
-    const approvalEfficiency = expenses.length > 0 ?
-      (fullyProcessedCount / expenses.length) * 100 : 0;
+    const approvalEfficiency =
+      expenses.length > 0 ? (fullyProcessedCount / expenses.length) * 100 : 0;
 
     return {
       thisMonthTotal,
@@ -741,7 +758,7 @@ export default function ExpenseApprovalPage() {
       myPendingCount,
       totalExpenses: expenses.length,
       approvalEfficiency,
-      fullyProcessedCount
+      fullyProcessedCount,
     };
   }, [expenses]);
 
@@ -762,9 +779,7 @@ export default function ExpenseApprovalPage() {
                   <ListCheck className="text-primary" size={28} />
                 </div>
                 <div>
-                  <h2 className="fw-bold text-dark mb-0">
-                    Expense Approvals
-                  </h2>
+                  <h2 className="fw-bold text-dark mb-0">Expense Approvals</h2>
                   <p className="text-muted mb-0 small">
                     Review and approve pending expense requests
                   </p>
@@ -804,7 +819,9 @@ export default function ExpenseApprovalPage() {
                           <ClockHistory size={20} className="text-warning" />
                         </div>
                         <div>
-                          <p className="text-muted small mb-1">Pending Approval</p>
+                          <p className="text-muted small mb-1">
+                            Pending Approval
+                          </p>
                           <h6 className="mb-0 fw-bold">{pendingCount}</h6>
                         </div>
                       </div>
@@ -875,8 +892,18 @@ export default function ExpenseApprovalPage() {
                       className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
                       onClick={() => {
                         const csvContent = [
-                          ["ID", "Date", "Payee", "Department", "Category", "Description", "Amount", "Status", "Progress"],
-                          ...filteredExpenses.map(e => [
+                          [
+                            "ID",
+                            "Date",
+                            "Payee",
+                            "Department",
+                            "Category",
+                            "Description",
+                            "Amount",
+                            "Status",
+                            "Progress",
+                          ],
+                          ...filteredExpenses.map((e) => [
                             e.id,
                             new Date(e.createdAt).toLocaleDateString(),
                             e.payee,
@@ -885,14 +912,20 @@ export default function ExpenseApprovalPage() {
                             e.description,
                             e.amount,
                             e.status,
-                            getApprovalProgress(e)
-                          ])
-                        ].map(row => row.join(",")).join("\n");
-                        const blob = new Blob([csvContent], { type: "text/csv" });
+                            getApprovalProgress(e),
+                          ]),
+                        ]
+                          .map((row) => row.join(","))
+                          .join("\n");
+                        const blob = new Blob([csvContent], {
+                          type: "text/csv",
+                        });
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement("a");
                         a.href = url;
-                        a.download = `approvals_${new Date().toISOString().split('T')[0]}.csv`;
+                        a.download = `approvals_${
+                          new Date().toISOString().split("T")[0]
+                        }.csv`;
                         a.click();
                         URL.revokeObjectURL(url);
                         toast.success("Approvals exported successfully!");
@@ -930,8 +963,12 @@ export default function ExpenseApprovalPage() {
                         if (navigator.share) {
                           navigator.share({
                             title: "Expense Approvals Summary",
-                            text: `I have ${expenses.length} expenses to review totaling KES ${expenses.reduce((sum, e) => sum + e.amount, 0).toLocaleString()}`,
-                            url: window.location.href
+                            text: `I have ${
+                              expenses.length
+                            } expenses to review totaling KES ${expenses
+                              .reduce((sum, e) => sum + e.amount, 0)
+                              .toLocaleString()}`,
+                            url: window.location.href,
                           });
                         } else {
                           navigator.clipboard.writeText(window.location.href);
@@ -959,8 +996,12 @@ export default function ExpenseApprovalPage() {
                     <GraphUp size={24} className="text-info" />
                   </div>
                   <div>
-                    <h5 className="fw-bold text-dark mb-1">Approval Analytics</h5>
-                    <p className="text-muted mb-0 small">Performance insights and approval trends</p>
+                    <h5 className="fw-bold text-dark mb-1">
+                      Approval Analytics
+                    </h5>
+                    <p className="text-muted mb-0 small">
+                      Performance insights and approval trends
+                    </p>
                   </div>
                 </div>
 
@@ -971,18 +1012,34 @@ export default function ExpenseApprovalPage() {
                       <Col sm={6} md={3}>
                         <div className="analytics-card bg-primary bg-opacity-10 p-3 rounded-3 border-start border-primary border-3">
                           <div className="d-flex align-items-center">
-                            <GraphUpArrow size={20} className="text-primary me-2" />
+                            <GraphUpArrow
+                              size={20}
+                              className="text-primary me-2"
+                            />
                             <div>
-                              <p className="text-muted small mb-1">This Month</p>
+                              <p className="text-muted small mb-1">
+                                This Month
+                              </p>
                               <h6 className="mb-0 fw-bold">
-                                KES {analyticsData.thisMonthTotal.toLocaleString()}
+                                KES{" "}
+                                {analyticsData.thisMonthTotal.toLocaleString()}
                               </h6>
                               {analyticsData.lastMonthTotal > 0 ? (
-                                <small className={`fw-medium ${analyticsData.monthlyGrowth >= 0 ? 'text-success' : 'text-danger'}`}>
-                                  {analyticsData.monthlyGrowth >= 0 ? '+' : ''}{analyticsData.monthlyGrowth.toFixed(1)}% vs last month
+                                <small
+                                  className={`fw-medium ${
+                                    analyticsData.monthlyGrowth >= 0
+                                      ? "text-success"
+                                      : "text-danger"
+                                  }`}
+                                >
+                                  {analyticsData.monthlyGrowth >= 0 ? "+" : ""}
+                                  {analyticsData.monthlyGrowth.toFixed(1)}% vs
+                                  last month
                                 </small>
                               ) : (
-                                <small className="text-muted">First month data</small>
+                                <small className="text-muted">
+                                  First month data
+                                </small>
                               )}
                             </div>
                           </div>
@@ -993,12 +1050,15 @@ export default function ExpenseApprovalPage() {
                           <div className="d-flex align-items-center">
                             <Award size={20} className="text-success me-2" />
                             <div>
-                              <p className="text-muted small mb-1">Efficiency</p>
+                              <p className="text-muted small mb-1">
+                                Efficiency
+                              </p>
                               <h6 className="mb-0 fw-bold">
                                 {analyticsData.approvalEfficiency.toFixed(1)}%
                               </h6>
                               <small className="text-muted">
-                                {analyticsData.fullyProcessedCount} of {analyticsData.totalExpenses} processed
+                                {analyticsData.fullyProcessedCount} of{" "}
+                                {analyticsData.totalExpenses} processed
                               </small>
                             </div>
                           </div>
@@ -1011,10 +1071,15 @@ export default function ExpenseApprovalPage() {
                             <div>
                               <p className="text-muted small mb-1">Average</p>
                               <h6 className="mb-0 fw-bold">
-                                KES {Math.round(analyticsData.averageExpense).toLocaleString()}
+                                KES{" "}
+                                {Math.round(
+                                  analyticsData.averageExpense
+                                ).toLocaleString()}
                               </h6>
                               <small className="text-muted">
-                                {analyticsData.totalExpenses > 0 ? 'per expense' : 'no expenses yet'}
+                                {analyticsData.totalExpenses > 0
+                                  ? "per expense"
+                                  : "no expenses yet"}
                               </small>
                             </div>
                           </div>
@@ -1023,11 +1088,18 @@ export default function ExpenseApprovalPage() {
                       <Col sm={6} md={3}>
                         <div className="analytics-card bg-danger bg-opacity-10 p-3 rounded-3 border-start border-danger border-3">
                           <div className="d-flex align-items-center">
-                            <ClockHistory size={20} className="text-danger me-2" />
+                            <ClockHistory
+                              size={20}
+                              className="text-danger me-2"
+                            />
                             <div>
                               <p className="text-muted small mb-1">My Queue</p>
-                              <h6 className="mb-0 fw-bold">{analyticsData.myPendingCount}</h6>
-                              <small className="text-muted">awaiting my approval</small>
+                              <h6 className="mb-0 fw-bold">
+                                {analyticsData.myPendingCount}
+                              </h6>
+                              <small className="text-muted">
+                                awaiting my approval
+                              </small>
                             </div>
                           </div>
                         </div>
@@ -1041,50 +1113,82 @@ export default function ExpenseApprovalPage() {
                         6-Month Approval Trend
                       </h6>
                       <div className="chart-container">
-                        <div className="d-flex align-items-end justify-content-between" style={{ height: '120px' }}>
+                        <div
+                          className="d-flex align-items-end justify-content-between"
+                          style={{ height: "120px" }}
+                        >
                           {analyticsData.monthlyTrend.map((data, index) => {
-                            const maxAmount = Math.max(...analyticsData.monthlyTrend.map(d => d.amount), 1);
-                            const height = data.amount > 0 ? Math.max((data.amount / maxAmount) * 80, 8) : 8;
+                            const maxAmount = Math.max(
+                              ...analyticsData.monthlyTrend.map(
+                                (d) => d.amount
+                              ),
+                              1
+                            );
+                            const height =
+                              data.amount > 0
+                                ? Math.max((data.amount / maxAmount) * 80, 8)
+                                : 8;
 
                             const hasData = data.amount > 0;
-                            const barColor = hasData ? (data.amount > analyticsData.thisMonthTotal * 0.8 ? '#dc3545' :
-                                                      data.amount > analyticsData.thisMonthTotal * 0.5 ? '#ffc107' : '#0d6efd') : '#e9ecef';
+                            const barColor = hasData
+                              ? data.amount > analyticsData.thisMonthTotal * 0.8
+                                ? "#dc3545"
+                                : data.amount >
+                                  analyticsData.thisMonthTotal * 0.5
+                                ? "#ffc107"
+                                : "#0d6efd"
+                              : "#e9ecef";
 
                             return (
-                              <div key={index} className="d-flex flex-column align-items-center">
+                              <div
+                                key={index}
+                                className="d-flex flex-column align-items-center"
+                              >
                                 <div
                                   className="rounded-top chart-bar"
                                   style={{
-                                    width: '32px',
+                                    width: "32px",
                                     height: `${height + 12}px`,
-                                    minHeight: '12px',
+                                    minHeight: "12px",
                                     backgroundColor: barColor,
                                     opacity: hasData ? 0.9 : 0.3,
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    position: 'relative',
-                                    border: hasData ? `2px solid ${barColor}` : '1px solid #dee2e6'
+                                    cursor: "pointer",
+                                    transition: "all 0.3s ease",
+                                    position: "relative",
+                                    border: hasData
+                                      ? `2px solid ${barColor}`
+                                      : "1px solid #dee2e6",
                                   }}
-                                  title={`${data.month}: KES ${data.amount.toLocaleString()} (${data.count} expenses)`}
+                                  title={`${
+                                    data.month
+                                  }: KES ${data.amount.toLocaleString()} (${
+                                    data.count
+                                  } expenses)`}
                                 >
                                   {hasData && (
                                     <div
                                       style={{
-                                        position: 'absolute',
-                                        top: '-18px',
-                                        left: '50%',
-                                        transform: 'translateX(-50%)',
-                                        fontSize: '8px',
-                                        color: '#6c757d',
-                                        fontWeight: 'bold'
+                                        position: "absolute",
+                                        top: "-18px",
+                                        left: "50%",
+                                        transform: "translateX(-50%)",
+                                        fontSize: "8px",
+                                        color: "#6c757d",
+                                        fontWeight: "bold",
                                       }}
                                     >
                                       {data.count}
                                     </div>
                                   )}
                                 </div>
-                                <small className="text-muted mt-1" style={{ fontSize: '0.65rem', fontWeight: '500' }}>
-                                  {data.month.split(' ')[0]}
+                                <small
+                                  className="text-muted mt-1"
+                                  style={{
+                                    fontSize: "0.65rem",
+                                    fontWeight: "500",
+                                  }}
+                                >
+                                  {data.month.split(" ")[0]}
                                 </small>
                               </div>
                             );
@@ -1103,44 +1207,68 @@ export default function ExpenseApprovalPage() {
                       </h6>
                       <div className="category-breakdown">
                         {analyticsData.topDepartments.length > 0 ? (
-                          analyticsData.topDepartments.map(([department, count], index) => {
-                            const percentage = (count / analyticsData.totalExpenses) * 100;
-                            const colors = ['primary', 'success'];
-                            const color = colors[index] || 'primary';
+                          analyticsData.topDepartments.map(
+                            ([department, count], index) => {
+                              const percentage =
+                                (count / analyticsData.totalExpenses) * 100;
+                              const colors = ["primary", "success"];
+                              const color = colors[index] || "primary";
 
-                            return (
-                              <div key={department} className="mb-4">
-                                <div className="d-flex justify-content-between align-items-center mb-2">
-                                  <div className="d-flex align-items-center">
-                                    <Building size={12} className={`text-${color} me-2`} />
-                                    <span className="fw-medium">{department}</span>
+                              return (
+                                <div key={department} className="mb-4">
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <div className="d-flex align-items-center">
+                                      <Building
+                                        size={12}
+                                        className={`text-${color} me-2`}
+                                      />
+                                      <span className="fw-medium">
+                                        {department}
+                                      </span>
+                                    </div>
+                                    <span className="small text-muted fw-bold">
+                                      {count} expenses
+                                    </span>
                                   </div>
-                                  <span className="small text-muted fw-bold">
-                                    {count} expenses
-                                  </span>
-                                </div>
-                                <div className="progress" style={{ height: '8px' }}>
                                   <div
-                                    className={`progress-bar bg-${color}`}
-                                    style={{
-                                      width: `${Math.max(percentage, 5)}%`,
-                                      background: `linear-gradient(135deg, var(--bs-${color}) 0%, var(--bs-${color === 'primary' ? 'info' : 'warning'}) 100%)`
-                                    }}
-                                  ></div>
+                                    className="progress"
+                                    style={{ height: "8px" }}
+                                  >
+                                    <div
+                                      className={`progress-bar bg-${color}`}
+                                      style={{
+                                        width: `${Math.max(percentage, 5)}%`,
+                                        background: `linear-gradient(135deg, var(--bs-${color}) 0%, var(--bs-${
+                                          color === "primary"
+                                            ? "info"
+                                            : "warning"
+                                        }) 100%)`,
+                                      }}
+                                    ></div>
+                                  </div>
+                                  <div className="d-flex justify-content-between mt-1">
+                                    <small className="text-muted">
+                                      {percentage.toFixed(1)}% of total
+                                    </small>
+                                    <small className="text-muted">
+                                      Avg: KES{" "}
+                                      {count > 0
+                                        ? Math.round(
+                                            analyticsData.averageExpense
+                                          ).toLocaleString()
+                                        : "0"}
+                                    </small>
+                                  </div>
                                 </div>
-                                <div className="d-flex justify-content-between mt-1">
-                                  <small className="text-muted">{percentage.toFixed(1)}% of total</small>
-                                  <small className="text-muted">
-                                    Avg: KES {count > 0 ? Math.round(analyticsData.averageExpense).toLocaleString() : '0'}
-                                  </small>
-                                </div>
-                              </div>
-                            );
-                          })
+                              );
+                            }
+                          )
                         ) : (
                           <div className="text-center py-3 text-muted">
                             <Building size={24} className="mb-2" />
-                            <div className="small">No department data available</div>
+                            <div className="small">
+                              No department data available
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1152,32 +1280,60 @@ export default function ExpenseApprovalPage() {
                           Status Overview
                         </h6>
                         <div className="status-overview">
-                          {Object.entries(analyticsData.statusBreakdown).map(([status, count]) => {
-                            const percentage = (count / analyticsData.totalExpenses) * 100;
-                            const statusColors = {
-                              PENDING: { bg: 'warning', icon: <ClockHistory size={12} /> },
-                              APPROVED: { bg: 'success', icon: <CheckCircle size={12} /> },
-                              REJECTED: { bg: 'danger', icon: <XCircle size={12} /> },
-                              PAID: { bg: 'primary', icon: <CheckCircle size={12} /> }
-                            };
-                            const statusInfo = statusColors[status as keyof typeof statusColors] ||
-                              { bg: 'secondary', icon: <InfoCircle size={12} /> };
+                          {Object.entries(analyticsData.statusBreakdown).map(
+                            ([status, count]) => {
+                              const percentage =
+                                (count / analyticsData.totalExpenses) * 100;
+                              const statusColors = {
+                                PENDING: {
+                                  bg: "warning",
+                                  icon: <ClockHistory size={12} />,
+                                },
+                                APPROVED: {
+                                  bg: "success",
+                                  icon: <CheckCircle size={12} />,
+                                },
+                                REJECTED: {
+                                  bg: "danger",
+                                  icon: <XCircle size={12} />,
+                                },
+                                PAID: {
+                                  bg: "primary",
+                                  icon: <CheckCircle size={12} />,
+                                },
+                              };
+                              const statusInfo = statusColors[
+                                status as keyof typeof statusColors
+                              ] || {
+                                bg: "secondary",
+                                icon: <InfoCircle size={12} />,
+                              };
 
-                            return (
-                              <div key={status} className="d-flex justify-content-between align-items-center mb-2">
-                                <div className="d-flex align-items-center">
-                                  <span className={`badge bg-${statusInfo.bg} me-2 d-inline-flex align-items-center py-1 px-2 rounded-pill`}>
-                                    {statusInfo.icon}
-                                    <span className="ms-1 small">{status}</span>
-                                  </span>
+                              return (
+                                <div
+                                  key={status}
+                                  className="d-flex justify-content-between align-items-center mb-2"
+                                >
+                                  <div className="d-flex align-items-center">
+                                    <span
+                                      className={`badge bg-${statusInfo.bg} me-2 d-inline-flex align-items-center py-1 px-2 rounded-pill`}
+                                    >
+                                      {statusInfo.icon}
+                                      <span className="ms-1 small">
+                                        {status}
+                                      </span>
+                                    </span>
+                                  </div>
+                                  <div className="text-end">
+                                    <span className="fw-bold">{count}</span>
+                                    <small className="text-muted ms-1">
+                                      ({percentage.toFixed(0)}%)
+                                    </small>
+                                  </div>
                                 </div>
-                                <div className="text-end">
-                                  <span className="fw-bold">{count}</span>
-                                  <small className="text-muted ms-1">({percentage.toFixed(0)}%)</small>
-                                </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            }
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1418,9 +1574,7 @@ export default function ExpenseApprovalPage() {
                   <div className="bg-primary bg-opacity-25 p-2 rounded-circle me-2">
                     <Funnel className="text-primary" size={14} />
                   </div>
-                  <h6 className="mb-0 fw-bold text-dark">
-                    Filters
-                  </h6>
+                  <h6 className="mb-0 fw-bold text-dark">Filters</h6>
                 </div>
                 <Button
                   variant="outline-primary"
@@ -1454,7 +1608,9 @@ export default function ExpenseApprovalPage() {
                       className="form-select-modern"
                       value={statusFilter}
                       onChange={(e) => {
-                        setStatusFilter(e.target.value as "all" | ExpenseStatus);
+                        setStatusFilter(
+                          e.target.value as "all" | ExpenseStatus
+                        );
                         setCurrentPage(1);
                       }}
                     >
@@ -1620,7 +1776,8 @@ export default function ExpenseApprovalPage() {
                 </div>
                 <h5 className="fw-bold text-dark">No expenses to approve</h5>
                 <p className="text-muted">
-                  When expenses are submitted for your approval, they will appear here.
+                  When expenses are submitted for your approval, they will
+                  appear here.
                 </p>
               </div>
             ) : (
@@ -1628,7 +1785,10 @@ export default function ExpenseApprovalPage() {
                 <Table hover className="align-middle mb-0">
                   <thead className="bg-light border-0">
                     <tr>
-                      <th className="border-0 py-3 px-4" style={{ width: "40px" }}>
+                      <th
+                        className="border-0 py-3 px-4"
+                        style={{ width: "40px" }}
+                      >
                         <Form.Check
                           type="checkbox"
                           checked={allSelected}
@@ -1639,20 +1799,45 @@ export default function ExpenseApprovalPage() {
                           className="mb-0"
                         />
                       </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">#ID</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Created</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Payee</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Payee Number</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Description</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Amount</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Employee</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Department</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Category</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Budget</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small" style={{ minWidth: 200 }}>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                        #ID
+                      </th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                        Created
+                      </th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                        Payee
+                      </th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                        Payee Number
+                      </th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                        Description
+                      </th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                        Amount
+                      </th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                        Employee
+                      </th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                        Department
+                      </th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                        Category
+                      </th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                        Budget
+                      </th>
+                      <th
+                        className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small"
+                        style={{ minWidth: 200 }}
+                      >
                         Progress
                       </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-end">Actions</th>
+                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-end">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1686,16 +1871,15 @@ export default function ExpenseApprovalPage() {
                           <td className="py-3 px-4">
                             <div className="d-flex align-items-center">
                               <Tag size={14} className="me-1 text-primary" />
-                              <span className="fw-semibold text-primary">{exp.id}</span>
+                              <span className="fw-semibold text-primary">
+                                {exp.id}
+                              </span>
                             </div>
                           </td>
                           <td className="py-3 px-4">
                             <div className="d-flex flex-column">
                               <div className="fw-medium">
-                                Created: {formatDate(exp.createdAt)}
-                              </div>
-                              <div className="text-muted small">
-                                Updated: {formatDate(exp.updatedAt)}
+                                {formatDate(exp.createdAt)}
                               </div>
                             </div>
                           </td>
@@ -1768,12 +1952,16 @@ export default function ExpenseApprovalPage() {
                             </div>
                           </td>
                           <td className="py-3 px-4">
-                            <Badge bg="primary" className="px-3 py-2 rounded-pill fw-semibold">
+                            <Badge
+                              className="px-3 py-2 rounded-pill fw-semibold bg-light bg-opacity-50 text-dark border-0 border-success border-start border-3"
+                            >
                               {exp.department?.name || "-"}
                             </Badge>
                           </td>
                           <td className="py-3 px-4">
-                            <Badge bg="secondary" className="px-3 py-2 rounded-pill fw-semibold">
+                            <Badge
+                              className="px-3 py-2 rounded-pill fw-semibold bg-light bg-opacity-50 text-dark border-0 border-warning border-start border-3"
+                            >
                               {exp.category?.name || "-"}
                             </Badge>
                           </td>
@@ -1806,61 +1994,24 @@ export default function ExpenseApprovalPage() {
                                       {percent}% complete
                                     </span>
                                     {percent === 100 && (
-                                      <CheckCircle size={16} className="text-success" />
+                                      <CheckCircle
+                                        size={16}
+                                        className="text-success"
+                                      />
                                     )}
-                                  </div>
-
-                                  {/* Timeline Steps */}
-                                  <div className="steps-flow d-flex align-items-center gap-1 mb-2">
-                                    {exp.expenseSteps.map((step, index) => {
-                                      const status = step.status;
-                                      const isLast = index === exp.expenseSteps.length - 1;
-
-                                      return (
-                                        <div key={step.id} className="d-flex align-items-center">
-                                          <div
-                                            className={`timeline-node ${status.toLowerCase()}`}
-                                            style={{
-                                              width: "20px",
-                                              height: "20px",
-                                              borderRadius: "50%",
-                                              display: "flex",
-                                              alignItems: "center",
-                                              justifyContent: "center",
-                                              fontSize: "10px",
-                                              fontWeight: "bold",
-                                              color: "white",
-                                              cursor: "pointer",
-                                              transition: "all 0.2s ease"
-                                            }}
-                                            title={`Step ${step.order}: ${step.hierarchyLevel?.role?.name || step.role?.name || "Unknown"} - ${status}`}
-                                          >
-                                            {status === "APPROVED" && <CheckCircle size={12} />}
-                                            {status === "REJECTED" && <XCircle size={12} />}
-                                            {status === "PENDING" && <Stopwatch size={12} />}
-                                            {status === "NOT_STARTED" && <HourglassSplit size={12} />}
-                                          </div>
-
-                                          {!isLast && (
-                                            <ChevronRight
-                                              size={12}
-                                              className={`mx-1 ${
-                                                status === "APPROVED" ? "text-success" : "text-muted"
-                                              }`}
-                                            />
-                                          )}
-                                        </div>
-                                      );
-                                    })}
                                   </div>
 
                                   {/* Progress Bar */}
                                   {(() => {
-                                    const hasRejectedStep = exp.expenseSteps.some(
-                                      step => step.status === "REJECTED"
-                                    );
-                                    const allApproved = exp.expenseSteps.length > 0 &&
-                                      exp.expenseSteps.every(step => step.status === "APPROVED");
+                                    const hasRejectedStep =
+                                      exp.expenseSteps.some(
+                                        (step) => step.status === "REJECTED"
+                                      );
+                                    const allApproved =
+                                      exp.expenseSteps.length > 0 &&
+                                      exp.expenseSteps.every(
+                                        (step) => step.status === "APPROVED"
+                                      );
 
                                     let variant = "info";
                                     if (hasRejectedStep) variant = "danger";
@@ -1870,7 +2021,11 @@ export default function ExpenseApprovalPage() {
                                       <ProgressBar
                                         now={percent}
                                         variant={variant}
-                                        animated={!hasRejectedStep && !allApproved && exp.status === "PENDING"}
+                                        animated={
+                                          !hasRejectedStep &&
+                                          !allApproved &&
+                                          exp.status === "PENDING"
+                                        }
                                         className="rounded-pill shadow-sm"
                                         style={{ height: "6px" }}
                                       />
@@ -1879,54 +2034,47 @@ export default function ExpenseApprovalPage() {
 
                                   {/* Current Step Info */}
                                   {(() => {
-                                    const hasRejectedStep = exp.expenseSteps.some(
-                                      step => step.status === "REJECTED"
-                                    );
+                                    const hasRejectedStep =
+                                      exp.expenseSteps.some(
+                                        (step) => step.status === "REJECTED"
+                                      );
 
                                     if (hasRejectedStep) {
-                                      const rejectedStep = exp.expenseSteps.find(
-                                        step => step.status === "REJECTED"
-                                      );
+                                      const rejectedStep =
+                                        exp.expenseSteps.find(
+                                          (step) => step.status === "REJECTED"
+                                        );
                                       return (
                                         <div className="current-step-info text-center mt-1 bg-danger bg-opacity-10 border-danger">
                                           <small className="text-danger fw-medium">
-                                            <XCircle size={10} className="me-1" />
-                                            Rejected at: {rejectedStep?.hierarchyLevel?.role?.name || rejectedStep?.role?.name || "Unknown step"}
+                                            <XCircle
+                                              size={10}
+                                              className="me-1"
+                                            />
+                                            Rejected at:{" "}
+                                            {rejectedStep?.hierarchyLevel?.role
+                                              ?.name ||
+                                              rejectedStep?.role?.name ||
+                                              "Unknown step"}
                                           </small>
                                         </div>
                                       );
                                     }
 
-                                    if (currentStep) {
-                                      // Show hierarchy name and first approver only
-                                      const hierarchyName = currentStep.hierarchyName || currentStep.hierarchyLevel?.role?.name || currentStep.role?.name || "Unknown";
-                                      const nextApprover = currentStep.nextApprovers && currentStep.nextApprovers.length > 0
-                                        ? `${currentStep.nextApprovers[0].firstName} ${currentStep.nextApprovers[0].lastName}`
-                                        : null;
-
-                                      return (
-                                        <div className="current-step-info text-center mt-1">
-                                          <small className="text-muted">
-                                            <ClockHistory size={10} className="me-1" />
-                                            {hierarchyName}
-                                            {nextApprover && (
-                                              <div className="mt-1">
-                                                <strong>{nextApprover}</strong>
-                                              </div>
-                                            )}
-                                          </small>
-                                        </div>
+                                    const allApproved =
+                                      exp.expenseSteps.length > 0 &&
+                                      exp.expenseSteps.every(
+                                        (step) => step.status === "APPROVED"
                                       );
-                                    }
-
-                                    const allApproved = exp.expenseSteps.length > 0 &&
-                                      exp.expenseSteps.every(step => step.status === "APPROVED");
 
                                     if (allApproved) {
                                       return (
                                         <div className="current-step-info text-center mt-1 bg-success bg-opacity-10 border-success">
                                           <small className="text-success fw-medium">
-                                            <CheckCircle size={10} className="me-1" />
+                                            <CheckCircle
+                                              size={10}
+                                              className="me-1"
+                                            />
                                             Fully Approved
                                           </small>
                                         </div>
@@ -2244,7 +2392,11 @@ export default function ExpenseApprovalPage() {
                                     <div className="fw-semibold text-dark">
                                       Step {step.order}{" "}
                                       <span className="text-muted small">
-                                        • {step.hierarchyName || step.hierarchyLevel?.role?.name || step.role?.name || "Unassigned role"}
+                                        •{" "}
+                                        {step.hierarchyName ||
+                                          step.hierarchyLevel?.role?.name ||
+                                          step.role?.name ||
+                                          "Unassigned role"}
                                       </span>
                                     </div>
                                     <Badge
@@ -2269,8 +2421,14 @@ export default function ExpenseApprovalPage() {
                                       <Person className="me-1 text-secondary" />
                                       {step.approver
                                         ? `${step.approver.firstName} ${step.approver.lastName}`
-                                        : step.nextApprovers && step.nextApprovers.length > 0
-                                        ? step.nextApprovers.map(u => `${u.firstName} ${u.lastName}`).join(", ")
+                                        : step.nextApprovers &&
+                                          step.nextApprovers.length > 0
+                                        ? step.nextApprovers
+                                            .map(
+                                              (u) =>
+                                                `${u.firstName} ${u.lastName}`
+                                            )
+                                            .join(", ")
                                         : "—"}
                                     </span>
 
@@ -2504,13 +2662,17 @@ export default function ExpenseApprovalPage() {
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
           }
           .analytics-card::before {
-            content: '';
+            content: "";
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            background: linear-gradient(
+              135deg,
+              rgba(255, 255, 255, 0.1) 0%,
+              rgba(255, 255, 255, 0.05) 100%
+            );
             pointer-events: none;
           }
           .chart-container {
@@ -2518,7 +2680,7 @@ export default function ExpenseApprovalPage() {
             background: white;
             border-radius: 0.5rem;
             padding: 1rem;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
           }
           .chart-bar:hover {
             transform: scaleY(1.05) !important;
@@ -2526,7 +2688,7 @@ export default function ExpenseApprovalPage() {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
           }
           .category-breakdown .progress {
-            background-color: rgba(0,0,0,0.05);
+            background-color: rgba(0, 0, 0, 0.05);
             border-radius: 3px;
           }
           .category-breakdown .progress-bar {
@@ -2567,9 +2729,15 @@ export default function ExpenseApprovalPage() {
             background: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
           }
           @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
+            0% {
+              opacity: 1;
+            }
+            50% {
+              opacity: 0.7;
+            }
+            100% {
+              opacity: 1;
+            }
           }
           .steps-flow {
             padding: 0.5rem;
