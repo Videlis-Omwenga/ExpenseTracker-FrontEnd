@@ -43,12 +43,6 @@ interface Role {
   name: string;
 }
 
-interface WorkflowStepAssignment {
-  stepOrder: number;
-  userId: number;
-  user?: User;
-}
-
 interface HierarchyAssignment {
   id: number;
   hierarchyId: number;
@@ -115,7 +109,6 @@ export default function WorkflowEditor() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [workflowName, setWorkflowName] = useState("");
-  const [roles, setRoles] = useState<Role[]>([]);
   const [selectedHierarchyId, setSelectedHierarchyId] = useState<number | null>(null);
   const [allAssignments, setAllAssignments] = useState<HierarchyAssignment[]>([]);
   const [queuedHierarchies, setQueuedHierarchies] = useState<Hierarchy[]>([]);
