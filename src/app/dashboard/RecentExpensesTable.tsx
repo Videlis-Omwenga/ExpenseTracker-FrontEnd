@@ -273,41 +273,51 @@ export default function RecentExpensesTable({
 
   if (expenses.length === 0) {
     return (
-      <div className="text-center text-muted py-5">
-        <div className="mb-3" style={{ fontSize: "3rem" }}>
-          📋
-        </div>
-        <h5>No expenses found</h5>
-        <p className="text-muted">There are no expense records to display.</p>
-      </div>
+      <Card className="border-0 shadow-sm">
+        <Card.Body className="text-center py-5">
+          <div className="bg-light rounded-circle d-inline-flex p-4 mb-3">
+            <Search size={48} className="text-muted" />
+          </div>
+          <h5 className="text-dark mb-2">No expenses found</h5>
+          <p className="text-muted mb-0">
+            There are no expense records to display.
+          </p>
+        </Card.Body>
+      </Card>
     );
   }
 
   return (
     <div>
       {/* Advanced Filters and Search */}
-      <Card className="mb-3 border-0 shadow-sm">
-        <Card.Body className="p-3">
+      <Card className="mb-4 border-0 shadow-sm">
+        <Card.Body className="p-4">
+          <div className="mb-3">
+            <h6 className="text-dark fw-bold mb-0 d-flex align-items-center gap-2">
+              <Search size={18} className="text-primary" />
+              Search & Filter
+            </h6>
+          </div>
           <Row className="g-3">
             <Col md={4}>
-              <InputGroup size="sm">
-                <InputGroup.Text className="bg-light border-end-0">
-                  <Search size={16} className="text-muted" />
+              <InputGroup>
+                <InputGroup.Text className="bg-white border-end-0">
+                  <Search size={16} className="text-primary" />
                 </InputGroup.Text>
                 <Form.Control
                   type="text"
-                  placeholder="Search by ID, description..."
+                  placeholder="Search by ID or description..."
                   value={filters.search}
                   onChange={(e) => handleFilterChange("search", e.target.value)}
-                  className="border-start-0"
+                  className="border-start-0 ps-0"
                 />
               </InputGroup>
             </Col>
             <Col md={2}>
               <Form.Select
-                size="sm"
                 value={filters.status}
                 onChange={(e) => handleFilterChange("status", e.target.value)}
+                className="form-select-sm"
               >
                 <option value="">All Statuses</option>
                 {uniqueStatuses.map((status) => (
@@ -319,9 +329,9 @@ export default function RecentExpensesTable({
             </Col>
             <Col md={2}>
               <Form.Select
-                size="sm"
                 value={filters.category}
                 onChange={(e) => handleFilterChange("category", e.target.value)}
+                className="form-select-sm"
               >
                 <option value="">All Categories</option>
                 {uniqueCategories.map((category) => (
@@ -333,11 +343,11 @@ export default function RecentExpensesTable({
             </Col>
             <Col md={2}>
               <Form.Select
-                size="sm"
                 value={filters.department}
                 onChange={(e) =>
                   handleFilterChange("department", e.target.value)
                 }
+                className="form-select-sm"
               >
                 <option value="">All Departments</option>
                 {uniqueDepartments.map((dept) => (
@@ -348,31 +358,38 @@ export default function RecentExpensesTable({
               </Form.Select>
             </Col>
             <Col md={2}>
-              <div className="d-flex gap-1">
-                <Button
-                  size="sm"
-                  variant="outline-secondary"
-                  onClick={clearFilters}
-                  className="flex-grow-1"
-                >
-                  <RotateCcw size={14} className="me-1" />
-                  Reset
-                </Button>
-              </div>
+              <Button
+                variant="outline-primary"
+                onClick={clearFilters}
+                className="w-100 d-flex align-items-center justify-content-center gap-2"
+              >
+                <RotateCcw size={16} />
+                Reset Filters
+              </Button>
             </Col>
           </Row>
 
           {/* Results Summary */}
-          <div className="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
-            <small className="text-muted">
-              Showing {paginatedExpenses.length} of{" "}
-              {filteredAndSortedExpenses.length} expenses
+          <div className="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+            <div className="text-muted small">
+              Showing{" "}
+              <span className="fw-semibold text-dark">
+                {paginatedExpenses.length}
+              </span>{" "}
+              of{" "}
+              <span className="fw-semibold text-dark">
+                {filteredAndSortedExpenses.length}
+              </span>{" "}
+              expenses
               {filteredAndSortedExpenses.length !== expenses.length && (
-                <span> (filtered from {expenses.length} total)</span>
+                <span className="text-primary">
+                  {" "}
+                  (filtered from {expenses.length} total)
+                </span>
               )}
-            </small>
+            </div>
             <div className="d-flex align-items-center gap-2">
-              <small className="text-muted">Items per page:</small>
+              <small className="text-muted fw-medium">Rows per page:</small>
               <Form.Select
                 size="sm"
                 value={itemsPerPage}
@@ -380,7 +397,8 @@ export default function RecentExpensesTable({
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                style={{ width: "auto" }}
+                style={{ width: "70px" }}
+                className="border"
               >
                 {ITEMS_PER_PAGE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -394,361 +412,267 @@ export default function RecentExpensesTable({
       </Card>
 
       {/* Enhanced Table */}
-      <div className="table-responsive">
-        <Table hover className="mb-0" style={{ fontSize: "0.9rem" }}>
-          <thead className="table-light border-bottom border-2">
-            <tr>
-              <th style={{ width: "100px" }} className="border-0">
-                <Button
-                  variant="link"
-                  className="text-dark text-decoration-none p-0 fw-semibold"
-                  onClick={() => handleSort("id")}
-                >
-                  ID <SortIcon field="id" />
-                </Button>
-              </th>
-              <th className="border-0">
-                <Button
-                  variant="link"
-                  className="text-dark text-decoration-none p-0 fw-semibold"
-                  onClick={() => handleSort("description")}
-                >
-                  Description <SortIcon field="description" />
-                </Button>
-              </th>
-              <th className="border-0">
-                <Button
-                  variant="link"
-                  className="text-dark text-decoration-none p-0 fw-semibold"
-                  onClick={() => handleSort("category")}
-                >
-                  <Tag size={14} className="me-1" />
-                  Category <SortIcon field="category" />
-                </Button>
-              </th>
-              <th className="border-0">
-                <Button
-                  variant="link"
-                  className="text-dark text-decoration-none p-0 fw-semibold"
-                  onClick={() => handleSort("department")}
-                >
-                  <Building size={14} className="me-1" />
-                  Department <SortIcon field="department" />
-                </Button>
-              </th>
-              <th className="text-end border-0">
-                <Button
-                  variant="link"
-                  className="text-dark text-decoration-none p-0 fw-semibold"
-                  onClick={() => handleSort("amount")}
-                >
-                  <DollarSign size={14} className="me-1" />
-                  Amount <SortIcon field="amount" />
-                </Button>
-              </th>
-              <th className="border-0">
-                <Button
-                  variant="link"
-                  className="text-dark text-decoration-none p-0 fw-semibold"
-                  onClick={() => handleSort("status")}
-                >
-                  Status <SortIcon field="status" />
-                </Button>
-              </th>
-              <th className="border-0">
-                <Button
-                  variant="link"
-                  className="text-dark text-decoration-none p-0 fw-semibold"
-                  onClick={() => handleSort("createdAt")}
-                >
-                  <Calendar size={14} className="me-1" />
-                  Created <SortIcon field="createdAt" />
-                </Button>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedExpenses.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="text-center py-4">
-                  <div className="text-muted">
-                    <Search size={24} className="mb-2" />
-                    <div>No expenses match your current filters</div>
-                    <small>Try adjusting your search criteria</small>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              paginatedExpenses.map((exp, index) => (
-                <Fragment key={exp.id}>
-                  <tr
-                    className={`${
-                      expandedRow === exp.id ? "table-active" : ""
-                    } ${index % 2 === 0 ? "bg-light bg-opacity-25" : ""}`}
-                    style={{
-                      cursor: "pointer",
-                      borderLeft: `4px solid ${getStatusColor(exp.status)}`,
-                      transition: "all 0.2s ease",
-                    }}
-                    onClick={() => toggleRow(exp.id)}
+      <Card className="border-0 shadow-sm">
+        <div className="table-responsive">
+          <Table hover className="mb-0 align-middle">
+            <thead className="bg-light">
+              <tr className="border-bottom">
+                <th style={{ width: "80px" }} className="py-3 ps-4 border-0">
+                  <Button
+                    variant="link"
+                    className="text-dark text-decoration-none p-0 fw-bold"
+                    onClick={() => handleSort("id")}
                   >
-                    <td className="align-middle">
-                      <div className="d-flex align-items-center">
-                        <div className="me-2">
-                          {expandedRow === exp.id ? (
-                            <ChevronDown size={16} className="text-primary" />
-                          ) : (
-                            <ChevronRight size={16} className="text-muted" />
-                          )}
-                        </div>
-                        <div className="fw-bold text-primary">#{exp.id}</div>
-                      </div>
-                    </td>
-                    <td className="align-middle">
-                      <div>
-                        <div
-                          className="fw-semibold text-truncate"
-                          style={{ maxWidth: "220px" }}
-                        >
-                          {exp.description}
-                        </div>
-                        {exp.pendingApprovalSteps &&
-                          exp.pendingApprovalSteps.length > 0 && (
-                            <small className="text-info">
-                              <User size={12} className="me-1" />
-                              {exp.pendingApprovalSteps.length} pending step(s)
-                            </small>
-                          )}
-                      </div>
-                    </td>
-                    <td className="align-middle">
-                      {exp.category?.name ? (
-                        <Badge bg="light" text="dark" className="border">
-                          <Tag size={12} className="me-1" />
-                          {exp.category.name}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted small">No category</span>
-                      )}
-                    </td>
-                    <td className="align-middle">
-                      {exp.department?.name ? (
-                        <Badge
-                          bg="info"
-                          className="bg-opacity-25 text-dark border border-secondary"
-                        >
-                          <Building size={12} className="me-1" />
-                          {exp.department.name}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted small">No department</span>
-                      )}
-                    </td>
-                    <td className="text-end align-middle">
-                      <div className="fw-bold text-success">
-                        {exp.amount.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </div>
-                    </td>
-                    <td className="align-middle">
-                      <Badge
-                        bg={
-                          STATUS_COLORS[
-                            exp.status as keyof typeof STATUS_COLORS
-                          ] || "secondary"
-                        }
-                        className="d-inline-flex align-items-center px-2 py-1"
-                      >
-                        {getStatusIcon(exp.status)}
-                        <span className="ms-1">{exp.status}</span>
-                      </Badge>
-                    </td>
-                    <td className="align-middle">
-                      <DateTimeDisplay date={exp.createdAt} />
-                      {exp.updatedAt !== exp.createdAt && (
-                        <div className="small text-muted">
-                          Updated:{" "}
-                          <DateTimeDisplay date={exp.updatedAt} isHighlighted />
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-
-                  {/* Expanded Row for Approval Steps */}
-                  {exp.pendingApprovalSteps &&
-                    exp.pendingApprovalSteps.length > 0 &&
-                    expandedRow === exp.id && (
-                      <tr>
-                        <td colSpan={7} className="p-0 border-0">
-                          <div className="bg-light bg-opacity-75 border border-0 border-start border-3 border-info rounded border-end">
-                            <div className="p-4">
-                              <div className="d-flex justify-content-between align-items-center mb-3">
-                                <h6 className="mb-0 text-muted">
-                                  <User size={16} className="me-2" />
-                                  Approval Workflow Steps
-                                </h6>
-                                <Badge bg="info">
-                                  {exp.pendingApprovalSteps.length} step(s)
-                                  pending
-                                </Badge>
-                              </div>
-                              <div className="table-responsive">
-                                <Table size="sm" className="mb-0">
-                                  <thead className="table-light">
-                                    <tr>
-                                      <th style={{ width: "60px" }}>Order</th>
-                                      <th>Role/Hierarchy</th>
-                                      <th>Approver</th>
-                                      <th>Status</th>
-                                      <th>Comments</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {exp.pendingApprovalSteps.map((step) => (
-                                      <tr key={step.id}>
-                                        <td>
-                                          <Badge
-                                            bg="outline-info"
-                                            className="rounded-circle px-2"
-                                          >
-                                            {step.order}
-                                          </Badge>
-                                        </td>
-                                        <td className="fw-semibold">
-                                          {step.hierarchyName || step.role?.name || "N/A"}
-                                        </td>
-                                        <td>
-                                          {step.approver ? (
-                                            <div>
-                                              <div className="fw-semibold">
-                                                {step.approver.firstName}{" "}
-                                                {step.approver.lastName}
-                                              </div>
-                                              <small className="text-muted">
-                                                {step.approver.email}
-                                              </small>
-                                            </div>
-                                          ) : step.nextApprovers && step.nextApprovers.length > 0 ? (
-                                            <div>
-                                              {step.nextApprovers.map((approver, idx) => (
-                                                <div key={idx} className="mb-1">
-                                                  <div className="fw-semibold small">
-                                                    {approver.firstName} {approver.lastName}
-                                                  </div>
-                                                  <small className="text-muted">
-                                                    {approver.email}
-                                                  </small>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          ) : (
-                                            <span className="text-muted">
-                                              Not assigned
-                                            </span>
-                                          )}
-                                        </td>
-                                        <td>
-                                          <div className="d-flex gap-1">
-                                            <Badge
-                                              bg={
-                                                STATUS_COLORS[
-                                                  step.status as keyof typeof STATUS_COLORS
-                                                ] || "secondary"
-                                              }
-                                            >
-                                              {step.status}
-                                            </Badge>
-                                            {step.isOptional && (
-                                              <Badge
-                                                bg="info"
-                                                className="small"
-                                              >
-                                                Optional
-                                              </Badge>
-                                            )}
-                                          </div>
-                                        </td>
-                                        <td>
-                                          {step.comments ? (
-                                            <div className="small">
-                                              <span className="text-muted">
-                                                &quot;
-                                              </span>
-                                              {step.comments}
-                                              <span className="text-muted">
-                                                &quot;
-                                              </span>
-                                            </div>
-                                          ) : (
-                                            <span className="text-muted small">
-                                              No comments
-                                            </span>
-                                          )}
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </Table>
-                              </div>
-                              <br />
-                            </div>
+                    ID <SortIcon field="id" />
+                  </Button>
+                </th>
+                <th className="py-3 border-0">
+                  <Button
+                    variant="link"
+                    className="text-dark text-decoration-none p-0 fw-bold"
+                    onClick={() => handleSort("description")}
+                  >
+                    Description <SortIcon field="description" />
+                  </Button>
+                </th>
+                <th className="py-3 border-0">
+                  <Button
+                    variant="link"
+                    className="text-dark text-decoration-none p-0 fw-bold"
+                    onClick={() => handleSort("category")}
+                  >
+                    <Tag size={14} className="me-1" />
+                    Category <SortIcon field="category" />
+                  </Button>
+                </th>
+                <th className="py-3 border-0">
+                  <Button
+                    variant="link"
+                    className="text-dark text-decoration-none p-0 fw-bold"
+                    onClick={() => handleSort("department")}
+                  >
+                    <Building size={14} className="me-1" />
+                    Department <SortIcon field="department" />
+                  </Button>
+                </th>
+                <th className="text-end py-3 border-0">
+                  <Button
+                    variant="link"
+                    className="text-dark text-decoration-none p-0 fw-bold"
+                    onClick={() => handleSort("amount")}
+                  >
+                    <DollarSign size={14} className="me-1" />
+                    Amount <SortIcon field="amount" />
+                  </Button>
+                </th>
+                <th className="py-3 border-0">
+                  <Button
+                    variant="link"
+                    className="text-dark text-decoration-none p-0 fw-bold"
+                    onClick={() => handleSort("status")}
+                  >
+                    Status <SortIcon field="status" />
+                  </Button>
+                </th>
+                <th className="py-3 pe-4 border-0">
+                  <Button
+                    variant="link"
+                    className="text-dark text-decoration-none p-0 fw-bold"
+                    onClick={() => handleSort("createdAt")}
+                  >
+                    <Calendar size={14} className="me-1" />
+                    Created <SortIcon field="createdAt" />
+                  </Button>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedExpenses.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-5">
+                    <div className="bg-light rounded-circle d-inline-flex p-3 mb-3">
+                      <Search size={32} className="text-muted" />
+                    </div>
+                    <div className="text-dark fw-medium mb-1">
+                      No expenses match your filters
+                    </div>
+                    <small className="text-muted">
+                      Try adjusting your search criteria
+                    </small>
+                  </td>
+                </tr>
+              ) : (
+                paginatedExpenses.map((exp) => (
+                  <Fragment key={exp.id}>
+                    <tr
+                      className={`${
+                        expandedRow === exp.id ? "bg-primary bg-opacity-10" : ""
+                      }`}
+                      style={{
+                        cursor: "pointer",
+                        borderLeft: `3px solid ${getStatusColor(exp.status)}`,
+                        transition: "all 0.15s ease",
+                      }}
+                      onClick={() => toggleRow(exp.id)}
+                    >
+                      <td className="align-middle ps-4 py-3">
+                        <div className="d-flex align-items-center gap-2">
+                          <div className="text-muted">
+                            {expandedRow === exp.id ? (
+                              <ChevronDown size={18} className="text-primary" />
+                            ) : (
+                              <ChevronRight size={18} />
+                            )}
                           </div>
-                        </td>
-                      </tr>
-                    )}
-                </Fragment>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </div>
+                          <div className="fw-bold text-primary">#{exp.id}</div>
+                        </div>
+                      </td>
+                      <td className="align-middle py-3">
+                        <div>
+                          <div
+                            className="fw-medium text-dark text-truncate"
+                            style={{ maxWidth: "250px" }}
+                          >
+                            {exp.description}
+                          </div>
+                          {exp.pendingApprovalSteps &&
+                            exp.pendingApprovalSteps.length > 0 && (
+                              <small className="text-warning d-flex align-items-center gap-1 mt-1">
+                                <Clock size={12} />
+                                {exp.pendingApprovalSteps.length} pending
+                                approval(s)
+                              </small>
+                            )}
+                        </div>
+                      </td>
+                      <td className="align-middle py-3">
+                        {exp.category?.name ? (
+                          <Badge
+                            bg="light"
+                            text="dark"
+                            className="bg-opacity-10 border px-2 py-1 fw-normal border-0 border-bottom border-success"
+                          >
+                            <Tag size={12} className="me-1" />
+                            {exp.category.name}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted small fst-italic">
+                            No category
+                          </span>
+                        )}
+                      </td>
+                      <td className="align-middle py-3">
+                        {exp.department?.name ? (
+                          <Badge
+                            bg="light"
+                            text="dark"
+                            className="bg-opacity-10 border px-2 py-1 fw-normal border-0 border-bottom border-info"
+                          >
+                            <Building size={12} className="me-1" />
+                            {exp.department.name}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted small fst-italic">
+                            No department
+                          </span>
+                        )}
+                      </td>
+                      <td className="text-end align-middle py-3">
+                        <div className="fw-bold text-success fs-6">
+                          {exp.amount.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </div>
+                      </td>
+                      <td className="align-middle py-3">
+                        <Badge
+                          bg={
+                            STATUS_COLORS[
+                              exp.status as keyof typeof STATUS_COLORS
+                            ] || "secondary"
+                          }
+                          className="d-inline-flex align-items-center gap-1 px-3 py-2"
+                        >
+                          {getStatusIcon(exp.status)}
+                          <span>{exp.status}</span>
+                        </Badge>
+                      </td>
+                      <td className="align-middle py-3 pe-4">
+                        <div className="text-dark small">
+                          <DateTimeDisplay date={exp.createdAt} />
+                        </div>
+                        {exp.updatedAt !== exp.createdAt && (
+                          <div className="small text-muted">
+                            Updated:{" "}
+                            <DateTimeDisplay
+                              date={exp.updatedAt}
+                              isHighlighted
+                            />
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  </Fragment>
+                ))
+              )}
+            </tbody>
+          </Table>
+        </div>
+      </Card>
 
       {/* Enhanced Pagination */}
       {totalPages > 1 && (
-        <div className="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-          <div className="text-muted small">
-            Page {currentPage} of {totalPages}
-          </div>
-          <Pagination size="sm" className="mb-0">
-            <Pagination.First
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(1)}
-            />
-            <Pagination.Prev
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            />
+        <Card className="border-0 shadow-sm mt-4">
+          <Card.Body className="p-3">
+            <div className="d-flex justify-content-between align-items-center">
+              <div className="text-muted">
+                Page{" "}
+                <span className="fw-semibold text-dark">{currentPage}</span> of{" "}
+                <span className="fw-semibold text-dark">{totalPages}</span>
+              </div>
+              <Pagination className="mb-0">
+                <Pagination.First
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(1)}
+                />
+                <Pagination.Prev
+                  disabled={currentPage === 1}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
+                />
 
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum =
-                Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-              if (pageNum > totalPages) return null;
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageNum =
+                    Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                  if (pageNum > totalPages) return null;
 
-              return (
-                <Pagination.Item
-                  key={pageNum}
-                  active={pageNum === currentPage}
-                  onClick={() => setCurrentPage(pageNum)}
-                >
-                  {pageNum}
-                </Pagination.Item>
-              );
-            })}
+                  return (
+                    <Pagination.Item
+                      key={pageNum}
+                      active={pageNum === currentPage}
+                      onClick={() => setCurrentPage(pageNum)}
+                    >
+                      {pageNum}
+                    </Pagination.Item>
+                  );
+                })}
 
-            <Pagination.Next
-              disabled={currentPage === totalPages}
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-              }
-            />
-            <Pagination.Last
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(totalPages)}
-            />
-          </Pagination>
-        </div>
+                <Pagination.Next
+                  disabled={currentPage === totalPages}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                />
+                <Pagination.Last
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(totalPages)}
+                />
+              </Pagination>
+            </div>
+          </Card.Body>
+        </Card>
       )}
     </div>
   );

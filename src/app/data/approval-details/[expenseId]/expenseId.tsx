@@ -12,7 +12,6 @@ import {
   ProgressBar,
   Alert,
   Button,
-  ListGroup,
 } from "react-bootstrap";
 import {
   ArrowLeft,
@@ -37,7 +36,6 @@ import AuthProvider from "@/app/authPages/tokenData";
 import TopNavbar from "@/app/components/Navbar";
 import PageLoader from "@/app/components/PageLoader";
 import { ShieldCheck, Unlock } from "lucide-react";
-import { FaUser } from "react-icons/fa";
 
 interface ExpenseSteps {
   id: number;
@@ -463,37 +461,42 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
     <AuthProvider>
       <TopNavbar />
       <Container fluid className="mt-5">
-        <Card className="border-0 bg-light shadow border-start rounded-3 border-3 border-success mb-5">
-          <Row className="mb-4">
+        <Card className="border-0 bg-white shadow-sm rounded-3 mb-4">
+          <Row className="mb-0">
             <Col className="p-4">
-              <div className="d-flex justify-content-between align-items-center">
+              <div className="d-flex justify-content-between align-items-center mb-3">
                 <div>
                   <div className="d-flex align-items-center gap-3 mb-2">
-                    <FileText size={24} className="text-success" />
-                    <h6 className="mb-0 fw-bold text-success">
-                      Expense Approval Details
-                    </h6>
+                    <div className="bg-success bg-opacity-10 p-2 rounded-2">
+                      <FileText size={24} className="text-success" />
+                    </div>
+                    <div>
+                      <h4 className="mb-0 fw-bold text-dark">
+                        Expense Approval Details
+                      </h4>
+                      <p className="text-muted mb-0 small d-flex align-items-center gap-2 mt-1">
+                        <ListCheck size={14} />
+                        Tracking approval process for expense #{expense.id}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-muted d-flex align-items-center gap-2">
-                    <ListCheck size={16} />
-                    Tracking approval process for expense #{expense.id}
-                  </p>
                 </div>
-                <Button variant="secondary" onClick={() => router.back()}>
-                  &larr; Back
+                <Button
+                  variant="outline-secondary"
+                  onClick={() => router.back()}
+                  className="d-flex align-items-center gap-2"
+                >
+                  <ArrowLeft size={16} />
+                  Back
                 </Button>
               </div>
 
-              <p className="text-muted d-flex align-items-center gap-2">
-                <span className="text-muted fw-bold">Expense details</span>
-                <span>
-                  {expense.description || (
-                    <span className="text-muted fst-italic">
-                      No description
-                    </span>
-                  )}
-                </span>
-              </p>
+              {expense.description && (
+                <div className="bg-light p-3 rounded-2 mt-3">
+                  <span className="text-muted small fw-semibold d-block mb-1">Description:</span>
+                  <span className="text-dark">{expense.description}</span>
+                </div>
+              )}
             </Col>
           </Row>
         </Card>
@@ -501,18 +504,20 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
         {/* Approval Progress */}
         <Row className="mb-4">
           <Col>
-            <Card className="border-0">
-              <Card.Body className="bg-success bg-opacity-10 shadow">
-                <div className="d-flex justify-content-between align-items-center mb-2">
+            <Card className="border-0 shadow-sm">
+              <Card.Body className="bg-white p-4">
+                <div className="d-flex justify-content-between align-items-center mb-3">
                   <div className="d-flex align-items-center gap-2">
-                    <ListCheck size={18} className="text-success" />
-                    <h6 className="card-title mb-0 fw-bold">
+                    <div className="bg-primary bg-opacity-10 p-2 rounded-2">
+                      <ListCheck size={18} className="text-primary" />
+                    </div>
+                    <h5 className="card-title mb-0 fw-bold">
                       Approval Progress
-                    </h6>
+                    </h5>
                   </div>
                   <Badge
                     bg={getStatusVariant(expense.status)}
-                    className="d-flex align-items-center gap-1"
+                    className="d-flex align-items-center gap-1 px-3 py-2"
                   >
                     {expense.status === "APPROVED" && (
                       <CheckCircleFill size={12} />
@@ -532,17 +537,17 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                       : "secondary"
                   }
                   className="mb-2"
-                  style={{ height: "10px" }}
+                  style={{ height: "12px", borderRadius: "6px" }}
                 />
                 <div className="d-flex justify-content-between">
-                  <small className="text-muted">
+                  <small className="text-muted fw-medium">
                     {
                       approvalSteps.filter((s) => s.approvalStatus === "APPROVED")
                         .length
                     }{" "}
                     of {approvalSteps.length} steps completed
                   </small>
-                  <small>{Math.round(approvalProgress)}%</small>
+                  <small className="fw-bold text-dark">{Math.round(approvalProgress)}%</small>
                 </div>
               </Card.Body>
             </Card>
@@ -552,42 +557,40 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
         <Row>
           {/* Left Column - Expense Details */}
           <Col lg={8} className="mb-4">
-            <Card className="mb-4 border shadow-sm rounded-4 overflow-hidden">
-              {/* Header with gradient and subtle shadow */}
-              <div className="bg-gradient bg-dark bg-opacity-10 border-bottom">
+            <Card className="mb-4 border-0 shadow-sm rounded-3">
+              {/* Header */}
+              <div className="bg-light border-bottom">
                 <div className="container-fluid px-4 py-3">
                   <div className="d-flex align-items-center gap-3">
-                    <div className="bg-white bg-opacity-80 p-2 rounded-3 shadow-sm">
+                    <div className="bg-primary bg-opacity-10 p-2 rounded-2">
                       <FileEarmarkText className="text-primary" size={20} />
                     </div>
-                    <div>
-                      <h6 className="mb-0 fw-bold text-dark">
+                    <div className="flex-grow-1">
+                      <h5 className="mb-0 fw-bold text-dark">
                         Expense Summary
-                      </h6>
+                      </h5>
                       <p className="mb-0 small text-muted">
                         Detailed overview of expense #{expense.id}
                       </p>
                     </div>
-                    <div className="d-flex align-items-center justify-content-between ms-auto flex-column">
-                      <div className="fw-bold text-dark">
-                        Amount: {expense.amount.toLocaleString()}
+                    <div className="d-flex align-items-end justify-content-end flex-column gap-2">
+                      <div className="fw-bold text-dark fs-6">
+                        {expense.amount.toLocaleString()} {expense.currency?.initials}
                       </div>
                       <div className="small">
                         <span className="d-flex align-items-center gap-1">
                           {expense.allowEditing ? (
                             <>
-                              <Unlock size={14} className="text-muted" />
-                              <span className="text-muted">
-                                Open for editing:{" "}
-                                <span className="fw-semibold">Yes</span>
+                              <Unlock size={14} className="text-success" />
+                              <span className="text-success fw-medium">
+                                Editable
                               </span>
                             </>
                           ) : (
                             <>
                               <Lock size={14} className="text-danger" />
-                              <span className="text-danger">
-                                Open for editing:{" "}
-                                <span className="fw-semibold">No</span>
+                              <span className="text-danger fw-medium">
+                                Locked
                               </span>
                             </>
                           )}
@@ -602,67 +605,37 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                 <Row className="gy-4">
                   {/* Basic Info */}
                   <Col md={6}>
-                    <Card className="h-100 border-0 border-top border-success border-3 shadow-sm rounded-3 bg-light-subtle">
-                      <Card.Body>
-                        <h6 className="text-secondary fw-semibold small text-uppercase border-bottom pb-2 mb-3">
+                    <Card className="h-100 border shadow-sm rounded-3 bg-white">
+                      <Card.Body className="p-3">
+                        <h6 className="text-dark fw-bold mb-3 d-flex align-items-center gap-2">
+                          <InfoCircle size={16} className="text-primary" />
                           Basic Information
                         </h6>
                         <ul className="list-unstyled mb-0 small">
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Expense ID</span>
-                            <span className="fw-semibold">{expense.id}</span>
+                            <span className="fw-semibold text-dark">#{expense.id}</span>
                           </li>
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Status</span>
-                            <div
-                              className="px-3 py-2 d-inline-flex align-items-center gap-1 small"
-                              style={{
-                                backgroundColor: getStatusVariant(
-                                  expense.status
-                                ),
-                              }}
-                            >
+                            <Badge bg={getStatusVariant(expense.status)} className="px-2 py-1">
                               {expense.status}
-                            </div>
+                            </Badge>
                           </li>
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Payment Status</span>
-                            <div
-                              className="px-3 py-2 d-inline-flex align-items-center gap-1 small"
-                              style={{
-                                backgroundColor: getStatusVariant(
-                                  expense.paymentStatus
-                                ),
-                              }}
-                            >
+                            <Badge bg={getStatusVariant(expense.paymentStatus)} className="px-2 py-1">
                               {expense.paymentStatus}
-                            </div>
+                            </Badge>
                           </li>
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center">
                             <span className="text-muted">Active</span>
-                            {expense.isActive ? (
-                              <div
-                                className="px-3 py-2 d-inline-flex align-items-center gap-1 small"
-                                style={{
-                                  backgroundColor: getStatusVariant(
-                                    expense.status
-                                  ),
-                                }}
-                              >
-                                Yes
-                              </div>
-                            ) : (
-                              <div
-                                className="px-3 py-2 d-inline-flex align-items-center gap-1 small"
-                                style={{
-                                  backgroundColor: getStatusVariant(
-                                    expense.status
-                                  ),
-                                }}
-                              >
-                                No
-                              </div>
-                            )}
+                            <Badge
+                              bg={expense.isActive ? "success" : "secondary"}
+                              className="px-2 py-1"
+                            >
+                              {expense.isActive ? "Yes" : "No"}
+                            </Badge>
                           </li>
                         </ul>
                       </Card.Body>
@@ -671,49 +644,50 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
                   {/* Financial Info */}
                   <Col md={6}>
-                    <Card className="h-100 border-0 border-top border-success border-3 shadow-sm rounded-3 bg-light-subtle">
-                      <Card.Body>
-                        <h6 className="text-secondary fw-semibold small text-uppercase border-bottom pb-2 mb-3">
+                    <Card className="h-100 border shadow-sm rounded-3 bg-white">
+                      <Card.Body className="p-3">
+                        <h6 className="text-dark fw-bold mb-3 d-flex align-items-center gap-2">
+                          <WalletIcon size={16} className="text-primary" />
                           Financial Information
                         </h6>
                         <ul className="list-unstyled mb-0 small">
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Amount</span>
-                            <span className="fw-bold text-muted">
+                            <span className="fw-bold text-success">
                               {expense.amount.toLocaleString()}
                             </span>
                           </li>
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Primary Amount</span>
-                            <span>
+                            <span className="text-dark">
                               {expense.primaryAmount.toLocaleString()}{" "}
                               <small className="text-muted">
                                 {expense.currency?.initials}
                               </small>
                             </span>
                           </li>
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Exchange Rate</span>
-                            <span>
+                            <span className="text-dark">
                               {expense.exchangeRate}
                               {expense.exchangeRateUsed && (
                                 <small className="text-muted ms-1">
-                                  {expense.exchangeRateUsed}
+                                  ({expense.exchangeRateUsed})
                                 </small>
                               )}
                             </span>
                           </li>
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Currency</span>
-                            <span>{expense.currency?.initials}</span>
+                            <span className="text-dark fw-medium">{expense.currency?.initials}</span>
                           </li>
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Payment Method</span>
-                            <span>{expense.paymentMethod?.name}</span>
+                            <span className="text-dark">{expense.paymentMethod?.name}</span>
                           </li>
-                          <li className="d-flex justify-content-between">
+                          <li className="d-flex justify-content-between align-items-center">
                             <span className="text-muted">Reference No.</span>
-                            <span>{expense.referenceNumber}</span>
+                            <span className="text-dark fw-medium">{expense.referenceNumber}</span>
                           </li>
                         </ul>
                       </Card.Body>
@@ -722,26 +696,27 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
                   {/* Payee Info */}
                   <Col md={6}>
-                    <Card className="h-100 border-0 border-top border-success border-3 shadow-sm rounded-3 bg-light-subtle">
-                      <Card.Body>
-                        <h6 className="text-secondary fw-semibold small text-uppercase border-bottom pb-2 mb-3">
+                    <Card className="h-100 border shadow-sm rounded-3 bg-white">
+                      <Card.Body className="p-3">
+                        <h6 className="text-dark fw-bold mb-3 d-flex align-items-center gap-2">
+                          <PersonFill size={16} className="text-primary" />
                           Payee Details
                         </h6>
                         <ul className="list-unstyled mb-0 small">
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Payee Name</span>
-                            <span>{expense.payee}</span>
+                            <span className="text-dark fw-medium">{expense.payee}</span>
                           </li>
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Payee ID</span>
-                            <span>{expense.payeeId}</span>
+                            <span className="text-dark">{expense.payeeId}</span>
                           </li>
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Payee Number</span>
-                            <span>{expense.payeeNumber}</span>
+                            <span className="text-dark">{expense.payeeNumber || "N/A"}</span>
                           </li>
                           {expense.receiptUrl && (
-                            <li className="d-flex justify-content-between">
+                            <li className="d-flex justify-content-between align-items-center">
                               <span className="text-muted">Receipt</span>
                               <a
                                 href={expense.receiptUrl}
@@ -760,27 +735,28 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
                   {/* Organizational Info */}
                   <Col md={6}>
-                    <Card className="h-100 border-0 border-top border-success border-3 shadow-sm rounded-3 bg-light-subtle">
-                      <Card.Body>
-                        <h6 className="text-secondary fw-semibold small text-uppercase border-bottom pb-2 mb-3">
+                    <Card className="h-100 border shadow-sm rounded-3 bg-white">
+                      <Card.Body className="p-3">
+                        <h6 className="text-dark fw-bold mb-3 d-flex align-items-center gap-2">
+                          <ListCheck size={16} className="text-primary" />
                           Organizational Information
                         </h6>
                         <ul className="list-unstyled mb-0 small">
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Category</span>
-                            <span>{expense.category?.name || "N/A"}</span>
+                            <span className="text-dark fw-medium">{expense.category?.name || "N/A"}</span>
                           </li>
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Department</span>
-                            <span>{expense.department?.name || "N/A"}</span>
+                            <span className="text-dark fw-medium">{expense.department?.name || "N/A"}</span>
                           </li>
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Region</span>
-                            <span>{expense.region?.name || "N/A"}</span>
+                            <span className="text-dark fw-medium">{expense.region?.name || "N/A"}</span>
                           </li>
-                          <li className="d-flex justify-content-between">
+                          <li className="d-flex justify-content-between align-items-center">
                             <span className="text-muted">Workflow</span>
-                            <span>{expense.workflow?.name || "N/A"}</span>
+                            <span className="text-dark fw-medium">{expense.workflow?.name || "N/A"}</span>
                           </li>
                         </ul>
                       </Card.Body>
@@ -789,24 +765,25 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
                   {/* Timestamps */}
                   <Col md={6}>
-                    <Card className="h-100 border-0 border-top border-success border-3 shadow-sm rounded-3 bg-light-subtle">
-                      <Card.Body>
-                        <h6 className="text-secondary fw-semibold small text-uppercase border-bottom pb-2 mb-3">
+                    <Card className="h-100 border shadow-sm rounded-3 bg-white">
+                      <Card.Body className="p-3">
+                        <h6 className="text-dark fw-bold mb-3 d-flex align-items-center gap-2">
+                          <Clock size={16} className="text-primary" />
                           Timestamps
                         </h6>
                         <ul className="list-unstyled mb-0 small">
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Created At</span>
-                            <span>{formatDate(expense.createdAt)}</span>
+                            <span className="text-dark">{formatDate(expense.createdAt)}</span>
                           </li>
-                          <li className="d-flex justify-content-between mb-2">
+                          <li className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                             <span className="text-muted">Updated At</span>
-                            <span>{formatDate(expense.updatedAt)}</span>
+                            <span className="text-dark">{formatDate(expense.updatedAt)}</span>
                           </li>
                           {expense.paymentDate && (
-                            <li className="d-flex justify-content-between">
+                            <li className="d-flex justify-content-between align-items-center">
                               <span className="text-muted">Payment Date</span>
-                              <span>{formatDate(expense.paymentDate)}</span>
+                              <span className="text-dark">{formatDate(expense.paymentDate)}</span>
                             </li>
                           )}
                         </ul>
@@ -816,32 +793,37 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
                   {/* People */}
                   <Col md={6}>
-                    <Card className="h-100 border-0 border-top border-success border-3 shadow-sm rounded-3 bg-light-subtle">
-                      <Card.Body>
-                        <h6 className="text-secondary fw-semibold small text-uppercase border-bottom pb-2 mb-3">
-                          Payment
+                    <Card className="h-100 border shadow-sm rounded-3 bg-white">
+                      <Card.Body className="p-3">
+                        <h6 className="text-dark fw-bold mb-3 d-flex align-items-center gap-2">
+                          <WalletIcon size={16} className="text-primary" />
+                          Payment Information
                         </h6>
-                        <ul className="list-unstyled mb-0 small">
-                          <li>
-                            {expense.paidBy ? (
-                              <div className="bg-success bg-opacity-10 p-2 rounded-3 text-dark">
-                                <span className="fw-semibold">
+                        <div className="small">
+                          {expense.paidBy ? (
+                            <div className="bg-success bg-opacity-10 p-3 rounded-2 border border-success">
+                              <div className="d-flex align-items-center gap-2 mb-2">
+                                <PersonFill size={16} className="text-success" />
+                                <span className="fw-semibold text-dark">
                                   {expense.paidBy.firstName}{" "}
                                   {expense.paidBy.lastName}
                                 </span>
-                                {expense.paidBy.email && (
-                                  <small className="d-block text-muted">
-                                    {expense.paidBy.email}
-                                  </small>
-                                )}
                               </div>
-                            ) : (
-                              <div className="bg-danger bg-opacity-10 p-2 rounded-3 text-dark">
-                                Pending payment
+                              {expense.paidBy.email && (
+                                <small className="d-block text-muted">
+                                  {expense.paidBy.email}
+                                </small>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="bg-warning bg-opacity-10 p-3 rounded-2 border border-warning">
+                              <div className="d-flex align-items-center gap-2">
+                                <ClockIcon size={16} className="text-warning" />
+                                <span className="fw-medium text-dark">Pending payment</span>
                               </div>
-                            )}
-                          </li>
-                        </ul>
+                            </div>
+                          )}
+                        </div>
                       </Card.Body>
                     </Card>
                   </Col>
@@ -851,46 +833,54 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
 
             {/* Advances */}
             {expense.advances?.length > 0 && (
-              <Card className="shadow-sm border rounded-4 mt-4 overflow-hidden">
-                <Card.Header className="bg-dark bg-opacity-10 border-bottom py-2">
-                  <div className="d-flex align-items-center gap-2 p-3">
-                    <WalletIcon size={18} className="text-primary" />
-                    <h6 className="mb-0 fw-semibold text-dark">
+              <Card className="shadow-sm border-0 rounded-3 mt-4">
+                <Card.Header className="bg-light border-bottom py-3">
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="bg-info bg-opacity-10 p-2 rounded-2">
+                      <WalletIcon size={18} className="text-info" />
+                    </div>
+                    <h5 className="mb-0 fw-bold text-dark">
                       Advance Breakdown
-                    </h6>
+                    </h5>
                   </div>
                 </Card.Header>
                 <Card.Body className="p-0">
                   <Table
                     responsive
-                    striped
                     hover
-                    borderless
                     className="mb-0 align-middle small"
                   >
-                    <thead className="table-light text-muted">
+                    <thead className="bg-light">
                       <tr>
-                        <th>ID</th>
-                        <th>Primary Amount</th>
-                        <th>Exchange Rate</th>
-                        <th>Amount</th>
-                        <th>Category</th>
-                        <th>Currency</th>
+                        <th className="px-3 py-3 text-muted fw-semibold">ID</th>
+                        <th className="px-3 py-3 text-muted fw-semibold">Primary Amount</th>
+                        <th className="px-3 py-3 text-muted fw-semibold">Exchange Rate</th>
+                        <th className="px-3 py-3 text-muted fw-semibold">Amount</th>
+                        <th className="px-3 py-3 text-muted fw-semibold">Category</th>
+                        <th className="px-3 py-3 text-muted fw-semibold">Currency</th>
                       </tr>
                     </thead>
                     <tbody>
                       {expense.advances.map((advance) => (
-                        <tr key={advance.id}>
-                          <td>{advance.id}</td>
-                          <td className="fw-semibold">
+                        <tr key={advance.id} className="border-bottom">
+                          <td className="px-3 py-3">
+                            <Badge bg="light" text="dark" className="fw-medium">
+                              #{advance.id}
+                            </Badge>
+                          </td>
+                          <td className="px-3 py-3 fw-semibold text-dark">
                             {advance.primaryAmount?.toLocaleString() || "N/A"}
                           </td>
-                          <td>{advance.exchangeRate || "1.0"}</td>
-                          <td className="fw-semibold text-success">
+                          <td className="px-3 py-3 text-dark">{advance.exchangeRate || "1.0"}</td>
+                          <td className="px-3 py-3 fw-bold text-success">
                             {advance.amount?.toLocaleString() || "N/A"}
                           </td>
-                          <td>{advance.category?.name || "N/A"}</td>
-                          <td>{advance.currency?.initials || "N/A"}</td>
+                          <td className="px-3 py-3 text-dark">{advance.category?.name || "N/A"}</td>
+                          <td className="px-3 py-3">
+                            <Badge bg="primary" className="px-2 py-1">
+                              {advance.currency?.initials || "N/A"}
+                            </Badge>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -903,26 +893,25 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
           {/* Right Column - Approval Steps */}
           <Col lg={4}>
             {/* Expense Steps */}
-            <Card className="mb-4 border shadow-sm rounded-4 overflow-hidden">
-              <div className="bg-gradient bg-dark bg-opacity-10 border-bottom">
+            <Card className="mb-4 border-0 shadow-sm rounded-3">
+              <div className="bg-light border-bottom">
                 <div className="container-fluid px-4 py-3">
                   <div className="d-flex align-items-center gap-3">
-                    <div className="bg-white bg-opacity-80 p-2 rounded-3 shadow-sm">
+                    <div className="bg-primary bg-opacity-10 p-2 rounded-2">
                       <ListCheck className="text-primary" size={20} />
                     </div>
-                    <div>
-                      <h6 className="mb-0 fw-bold text-dark">
-                        Expense approval steps
-                      </h6>
+                    <div className="flex-grow-1">
+                      <h5 className="mb-0 fw-bold text-dark">
+                        Approval Steps
+                      </h5>
                       <p className="mb-0 small text-muted">
-                        Approvals for #{expense.id}
+                        Process for expense #{expense.id}
                       </p>
                     </div>
-                    <div className="ms-auto">
+                    <div>
                       <Badge
-                        bg="light"
-                        text="danger"
-                        className="border px-3 py-2"
+                        bg="primary"
+                        className="px-3 py-2"
                       >
                         {expense.expenseSteps?.length || 0} Steps
                       </Badge>
@@ -930,20 +919,23 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                   </div>
                 </div>
               </div>
-              <Card.Body>
+              <Card.Body className="p-4">
                 {!expense.expenseSteps || expense.expenseSteps.length === 0 ? (
-                  <Alert variant="info" className="mb-0">
-                    No expense process steps available.
+                  <Alert variant="info" className="mb-0 border-0">
+                    <div className="d-flex align-items-center gap-2">
+                      <InfoCircle size={18} />
+                      <span>No expense process steps available.</span>
+                    </div>
                   </Alert>
                 ) : (
-                  <ListGroup variant="flush">
+                  <div className="timeline">
                     {expense.expenseSteps.map((step, index: number) => (
-                      <ListGroup.Item
+                      <div
                         key={`expense-${step.id || index}`}
-                        className="px-0"
+                        className="timeline-item mb-4"
                       >
-                        <div className="d-flex align-items-start">
-                          <div className="me-3 text-center">
+                        <div className="d-flex align-items-start gap-3">
+                          <div className="text-center position-relative">
                             <div
                               className={`rounded-circle d-flex align-items-center justify-content-center ${
                                 step.status === "APPROVED"
@@ -952,58 +944,58 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                                   ? "bg-danger"
                                   : "bg-warning"
                               }`}
-                              style={{ width: "25px", height: "25px" }}
+                              style={{ width: "32px", height: "32px", zIndex: 1 }}
                             >
                               {step.status === "APPROVED" ? (
-                                <i className="text-white">✓</i>
+                                <CheckCircle className="text-white" size={16} />
                               ) : step.status === "REJECTED" ? (
-                                <i className="text-white">✕</i>
+                                <XCircle className="text-white" size={16} />
                               ) : (
-                                <i className="text-white">?</i>
+                                <Clock className="text-white" size={16} />
                               )}
                             </div>
                             {index < expense.expenseSteps.length - 1 && (
                               <div
+                                className="position-absolute start-50 translate-middle-x"
                                 style={{
                                   width: "2px",
-                                  height: "20px",
+                                  height: "40px",
                                   backgroundColor: "#dee2e6",
-                                  margin: "4px auto 0",
+                                  top: "32px",
                                 }}
                               ></div>
                             )}
                           </div>
                           <div className="flex-grow-1">
-                            <div className="d-flex justify-content-between align-items-start">
-                              <h6 className="mb-1 fw-s">
-                                {step.role?.name || `Step ${step.order}`}
+                            <div className="d-flex justify-content-between align-items-start mb-2">
+                              <div>
+                                <h6 className="mb-1 fw-bold text-dark">
+                                  {step.role?.name || `Step ${step.order}`}
+                                </h6>
                                 {step.approver && (
-                                  <div className="text-muted small d-flex align-items-center">
-                                    <FaUser
-                                      className="text-success me-2"
-                                      size={10}
-                                    />{" "}
+                                  <div className="text-muted small d-flex align-items-center gap-1">
+                                    <PersonFill size={12} className="text-primary" />
                                     {step.approver.firstName}{" "}
                                     {step.approver.lastName}
                                   </div>
                                 )}
-                              </h6>
-                              <Badge bg={getStatusVariant(step.status)}>
+                              </div>
+                              <Badge bg={getStatusVariant(step.status)} className="px-2 py-1">
                                 {step.status}
                               </Badge>
                             </div>
                             {step.comments && (
-                              <div className="mt-2 p-2 bg-light rounded">
-                                <small className="text-muted">
-                                  <i>&quot;{step.comments}&quot;</i>
+                              <div className="mt-2 p-2 bg-light rounded-2 border">
+                                <small className="text-muted fst-italic">
+                                  &quot;{step.comments}&quot;
                                 </small>
                               </div>
                             )}
                           </div>
                         </div>
-                      </ListGroup.Item>
+                      </div>
                     ))}
-                  </ListGroup>
+                  </div>
                 )}
               </Card.Body>
             </Card>
@@ -1012,41 +1004,46 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
       </Container>
       <Container>
         {/* Approval Steps */}
-        <Card className="mb-4 shadow-sm border rounded-4">
-          <div className="d-flex align-items-center gap-2 p-3 bg-dark bg-opacity-10 rounded-top-4">
-            <div className="bg-white bg-opacity-80 p-2 rounded-3 shadow-sm">
-              <ListCheck className="text-primary" size={20} />
-            </div>
-            <h6 className="mb-0 fw-bold text-dark">Expense Approval Logs</h6>
-            <div className="ms-auto">
-              <Badge bg="light" text="danger" className="border px-3 py-2">
-                {expense.approvalSteps?.length || 0} actions found
+        <Card className="mb-5 shadow-sm border-0 rounded-3">
+          <div className="bg-light border-bottom py-3 px-4">
+            <div className="d-flex align-items-center gap-3">
+              <div className="bg-success bg-opacity-10 p-2 rounded-2">
+                <ListCheck className="text-success" size={20} />
+              </div>
+              <div className="flex-grow-1">
+                <h5 className="mb-0 fw-bold text-dark">Expense Approval Logs</h5>
+                <p className="mb-0 small text-muted">Complete history of approval actions</p>
+              </div>
+              <Badge bg="success" className="px-3 py-2">
+                {expense.approvalSteps?.length || 0} Actions
               </Badge>
             </div>
           </div>
-          <Card.Body>
+          <Card.Body className="p-0">
             {expense.approvalSteps?.length === 0 ? (
-              <Alert variant="info" className="mb-0 rounded-3">
-                <div className="d-flex align-items-center">
-                  <InfoCircle className="me-2" />
-                  <span>No approval logs available for this expense.</span>
-                </div>
-              </Alert>
+              <div className="p-4">
+                <Alert variant="info" className="mb-0 border-0">
+                  <div className="d-flex align-items-center gap-2">
+                    <InfoCircle size={18} />
+                    <span>No approval logs available for this expense.</span>
+                  </div>
+                </Alert>
+              </div>
             ) : (
-              <div className="table-responsive rounded-">
+              <div className="table-responsive">
                 <Table hover className="align-middle mb-0">
                   <thead className="bg-light">
                     <tr>
-                      <th className="ps-4 py-3 text-uppercase small fw-semibold text-muted">
+                      <th className="ps-4 py-3 text-muted fw-semibold border-bottom">
                         Status
                       </th>
-                      <th className="py-3 text-uppercase small fw-semibold text-muted">
+                      <th className="py-3 text-muted fw-semibold border-bottom">
                         Role
                       </th>
-                      <th className="py-3 text-uppercase small fw-semibold text-muted">
+                      <th className="py-3 text-muted fw-semibold border-bottom">
                         Approver
                       </th>
-                      <th className="pe-4 py-3 text-uppercase small fw-semibold text-muted">
+                      <th className="pe-4 py-3 text-muted fw-semibold border-bottom">
                         Comments
                       </th>
                     </tr>
@@ -1056,20 +1053,20 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                       return (
                         <tr
                           key={`approval-${step.id || index}`}
-                          className="border-top"
+                          className="border-bottom"
                         >
                           {/* Status */}
                           <td className="ps-4 py-3">
-                            <div className="d-flex align-items-center">
+                            <div className="d-flex align-items-center gap-2">
                               <div
-                                className={`rounded-circle d-flex align-items-center justify-content-center me-2 ${
+                                className={`rounded-circle d-flex align-items-center justify-content-center ${
                                   step.approvalStatus === "APPROVED"
                                     ? "bg-success bg-opacity-10"
                                     : step.approvalStatus === "REJECTED"
                                     ? "bg-danger bg-opacity-10"
                                     : "bg-warning bg-opacity-10"
                                 }`}
-                                style={{ width: "25px", height: "25px" }}
+                                style={{ width: "32px", height: "32px" }}
                               >
                                 {step.approvalStatus === "APPROVED" ? (
                                   <CheckCircle
@@ -1082,35 +1079,26 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                                   <Clock className="text-warning" size={16} />
                                 )}
                               </div>
-                              <div>
-                                <Badge
-                                  bg={`${
-                                    step.approvalStatus === "APPROVED"
-                                      ? "success"
-                                      : step.approvalStatus === "REJECTED"
-                                      ? "danger"
-                                      : "warning"
-                                  }-subtle`}
-                                  className="text-uppercase"
-                                  text={
-                                    step.approvalStatus === "APPROVED"
-                                      ? "success"
-                                      : step.approvalStatus === "REJECTED"
-                                      ? "danger"
-                                      : "warning"
-                                  }
-                                >
-                                  {step.approvalStatus}
-                                </Badge>
-                              </div>
+                              <Badge
+                                bg={
+                                  step.approvalStatus === "APPROVED"
+                                    ? "success"
+                                    : step.approvalStatus === "REJECTED"
+                                    ? "danger"
+                                    : "warning"
+                                }
+                                className="px-2 py-1"
+                              >
+                                {step.approvalStatus}
+                              </Badge>
                             </div>
                           </td>
 
                           {/* Role */}
                           <td className="py-3">
-                            <div className="d-flex align-items-center">
+                            <div className="d-flex align-items-center gap-2">
                               <div
-                                className="bg-light rounded-circle d-flex align-items-center justify-content-center me-2"
+                                className="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
                                 style={{ width: "32px", height: "32px" }}
                               >
                                 <ShieldCheck
@@ -1118,7 +1106,7 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                                   size={16}
                                 />
                               </div>
-                              <span className="fw-medium">
+                              <span className="fw-medium text-dark">
                                 {step.role?.name || "—"}
                               </span>
                             </div>
@@ -1127,13 +1115,13 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                           {/* Approver */}
                           <td className="py-3">
                             {step.user || step.approver ? (
-                              <div className="d-flex align-items-center">
+                              <div className="d-flex align-items-center gap-2">
                                 <div
-                                  className="bg-light rounded-circle d-flex align-items-center justify-content-center me-2"
+                                  className="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
                                   style={{ width: "32px", height: "32px" }}
                                 >
                                   <PersonFill
-                                    className="text-primary"
+                                    className="text-success"
                                     size={16}
                                   />
                                 </div>
@@ -1148,9 +1136,9 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                                 </div>
                               </div>
                             ) : (
-                              <div className="d-flex align-items-center">
+                              <div className="d-flex align-items-center gap-2">
                                 <div
-                                  className="bg-light rounded-circle d-flex align-items-center justify-content-center me-2"
+                                  className="bg-light rounded-circle d-flex align-items-center justify-content-center"
                                   style={{ width: "32px", height: "32px" }}
                                 >
                                   <Person className="text-muted" size={16} />
@@ -1168,14 +1156,16 @@ const ExpenseApprovalDetails = ({ params }: ExpenseApprovalDetailsProps) => {
                             style={{ maxWidth: "20rem" }}
                           >
                             {step.comments ? (
-                              <div className="bg-danger bg-opacity-10 p-3 rounded-2">
-                                <p className="mb-0 text-dark fst-italic">
-                                  &quot;{step.comments}&quot; -{" "}
-                                  {formatDate(step.createdAt)}
+                              <div className="bg-light p-2 rounded-2 border">
+                                <p className="mb-1 text-dark small">
+                                  <span className="fst-italic">&quot;{step.comments}&quot;</span>
                                 </p>
+                                <small className="text-muted">
+                                  {formatDate(step.createdAt)}
+                                </small>
                               </div>
                             ) : (
-                              <span className="text-muted fst-italic">
+                              <span className="text-muted fst-italic small">
                                 No comments
                               </span>
                             )}
