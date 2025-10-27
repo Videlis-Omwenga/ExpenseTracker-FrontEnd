@@ -239,12 +239,12 @@ export default function Dashboard() {
   return (
     <AuthProvider>
       <TopNavbar />
-      <div className="min-vh-100  mt-3">
-        <Container fluid className="">
-          <Container fluid className="">
-            <Row className="mb-4 align-items-center shadow-sm border-start border-3 border-primary rounded bg-info bg-opacity-10 p-3">
+      <div className="min-vh-100 bg-light mt-3">
+        <Container fluid className="px-4">
+          <Container fluid className="px-0">
+            <Row className="mb-4 align-items-center shadow rounded-3 p-4 bg-info bg-opacity-10 border-start border-4 border-info">
               <Col>
-                <h5 className="mb-1 fw-bold mb-0">Expense Dashboard</h5>
+                <h5 className="mb-1 fw-bold text-dark">Expense Dashboard</h5>
                 <p className="text-muted mb-0">
                   Overview of all expense activities
                 </p>
@@ -253,7 +253,7 @@ export default function Dashboard() {
                 <Button
                   variant="primary"
                   size="sm"
-                  className="me-2"
+                  className="me-2 shadow-sm"
                   onClick={() =>
                     handleNavigation("/expense-management/create-expense")
                   }
@@ -262,7 +262,7 @@ export default function Dashboard() {
                   Create Expense
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="outline-primary"
                   size="sm"
                   onClick={refreshData}
                   className="me-2"
@@ -282,17 +282,17 @@ export default function Dashboard() {
           {/* Time filter controls */}
           <Row className="mb-1">
             <Col>
-              <Card className="border-0  shadow">
+              <Card className="border-0 shadow-sm rounded-3">
                 <Card.Body className="py-3 px-4">
                   <div className="d-flex flex-wrap justify-content-between align-items-center">
                     {/* Left side: Filter */}
                     <div className="d-flex align-items-center mb-2 mb-sm-0">
-                      <div className="d-flex align-items-center bg-light bg-opacity-10 rounded px-1 py-1">
-                        <Filter size={16} className="text-primary" />
+                      <div className="d-flex align-items-center bg-light rounded-2 px-3 py-2 shadow-sm">
+                        <Filter size={16} className="text-primary me-2" />
                         <Form.Select
                           size="sm"
-                          className="border-0 bg-transparent text-dark"
-                          style={{ width: "auto" }}
+                          className="border-0 bg-transparent text-dark fw-medium"
+                          style={{ width: "auto", cursor: "pointer" }}
                           value={timeFilter}
                           onChange={(e) => setTimeFilter(e.target.value)}
                         >
@@ -306,9 +306,9 @@ export default function Dashboard() {
                     </div>
 
                     {/* Right side: Date range */}
-                    <div className="text-muted  fw-medium bg-light bg-opacity-10 rounded px-1 py-1 border-0">
+                    <div className="text-muted fw-medium bg-light rounded-2 px-3 py-2 shadow-sm">
                       {data.dateRange.startDate && data.dateRange.endDate ? (
-                        <span>
+                        <span className="small">
                           Data from{" "}
                           <span className="fw-semibold text-dark">
                             {format(
@@ -325,7 +325,7 @@ export default function Dashboard() {
                           </span>
                         </span>
                       ) : (
-                        <span className="text-muted fw-semibold">
+                        <span className="text-muted fw-semibold small">
                           No date range available
                         </span>
                       )}
@@ -337,11 +337,13 @@ export default function Dashboard() {
           </Row>
           <br />
           {/* SUMMARY CARDS */}
-          <Row className="mb-4">
-            <Col xxl={2} lg={4} md={6} className="mb-3">
+          <Row className="mb-4 g-3">
+            <Col xxl={2} lg={4} md={6}>
               <Card
-                className="border-0 border-start border-3 border-primary h-100 shadow-sm bg-primary bg-opacity-10"
-                style={{ borderLeft: "4px solid var(--bs-primary)" }}
+                className="border-0 h-100 shadow-sm rounded-3 overflow-hidden bg-primary bg-opacity-10"
+                style={{
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                }}
               >
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
@@ -353,17 +355,19 @@ export default function Dashboard() {
                         {data.summary.totalExpenses ?? 0}
                       </h6>
                     </div>
-                    <div className="bg-primary bg-opacity-10 p-3 rounded">
+                    <div className="bg-primary bg-opacity-25 p-3 rounded-3">
                       <FileText size={24} className="text-primary" />
                     </div>
                   </div>
                 </Card.Body>
               </Card>
             </Col>
-            <Col xxl={2} lg={4} md={6} className="mb-3">
+            <Col xxl={2} lg={4} md={6}>
               <Card
-                className="border-0 border-start border-3 border-success h-100 shadow-sm bg-success bg-opacity-10"
-                style={{ borderLeft: "4px solid var(--bs-success)" }}
+                className="border-0 h-100 shadow-sm rounded-3 overflow-hidden bg-success bg-opacity-10"
+                style={{
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                }}
               >
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
@@ -379,17 +383,19 @@ export default function Dashboard() {
                         }) ?? 0}
                       </h6>
                     </div>
-                    <div className="bg-success bg-opacity-10 p-3 rounded">
+                    <div className="bg-success bg-opacity-25 p-3 rounded-3">
                       <TrendingUp size={24} className="text-success" />
                     </div>
                   </div>
                 </Card.Body>
               </Card>
             </Col>
-            <Col xxl={2} lg={4} md={6} className="mb-3">
+            <Col xxl={2} lg={4} md={6}>
               <Card
-                className="border-0 border-start border-3 border-info h-100 shadow-sm bg-info bg-opacity-10"
-                style={{ borderLeft: "4px solid var(--bs-info)" }}
+                className="border-0 h-100 shadow-sm rounded-3 overflow-hidden bg-info bg-opacity-10"
+                style={{
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                }}
               >
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
@@ -404,40 +410,44 @@ export default function Dashboard() {
                         }) ?? 0}
                       </h6>
                     </div>
-                    <div className="bg-info bg-opacity-10 p-3 rounded">
+                    <div className="bg-info bg-opacity-25 p-3 rounded-3">
                       <BarChart3 size={24} className="text-info" />
                     </div>
                   </div>
                 </Card.Body>
               </Card>
             </Col>
-            <Col xxl={2} lg={4} md={6} className="mb-3">
+            <Col xxl={2} lg={4} md={6}>
               <Card
-                className="border-0 border-start border-3 border-warning h-100 shadow-sm bg-warning bg-opacity-10"
-                style={{ borderLeft: "4px solid var(--bs-warning)" }}
+                className="border-0 h-100 shadow-sm rounded-3 overflow-hidden bg-warning bg-opacity-10"
+                style={{
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                }}
               >
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
                     <div className="flex-grow-1">
                       <h6 className="card-title text-muted mb-1">
                         Pending Approvals{" "}
-                        <span className="text-muted ">(steps)</span>
+                        <span className="text-muted">(steps)</span>
                       </h6>
                       <h6 className="fw-bold mb-0">
                         {data.summary.pendingApprovals ?? 0}
                       </h6>
                     </div>
-                    <div className="bg-warning bg-opacity-10 p-3 rounded">
+                    <div className="bg-warning bg-opacity-25 p-3 rounded-3">
                       <Clock size={24} className="text-warning" />
                     </div>
                   </div>
                 </Card.Body>
               </Card>
             </Col>
-            <Col xxl={2} lg={4} md={6} className="mb-3">
+            <Col xxl={2} lg={4} md={6}>
               <Card
-                className="border-0 border-start border-3 border-secondary h-100 shadow-sm bg-secondary bg-opacity-10"
-                style={{ borderLeft: "4px solid var(--bs-secondary)" }}
+                className="border-0 h-100 shadow-sm rounded-3 overflow-hidden bg-secondary bg-opacity-10"
+                style={{
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                }}
               >
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
@@ -450,17 +460,19 @@ export default function Dashboard() {
                         }) ?? 0}
                       </h6>
                     </div>
-                    <div className="bg-secondary bg-opacity-10 p-3 rounded">
+                    <div className="bg-secondary bg-opacity-25 p-3 rounded-3">
                       <CashStack size={24} className="text-secondary" />
                     </div>
                   </div>
                 </Card.Body>
               </Card>
             </Col>
-            <Col xxl={2} lg={4} md={6} className="mb-3">
+            <Col xxl={2} lg={4} md={6}>
               <Card
-                className="border-0 border-start border-3 border-warning h-100 shadow-sm bg-danger bg-opacity-10"
-                style={{ borderLeft: "4px solid var(--bs-danger)" }}
+                className="border-0 h-100 shadow-sm rounded-3 overflow-hidden bg-danger bg-opacity-10"
+                style={{
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                }}
               >
                 <Card.Body className="p-3">
                   <div className="d-flex align-items-center">
@@ -473,7 +485,7 @@ export default function Dashboard() {
                         }) ?? 0}
                       </h6>
                     </div>
-                    <div className="bg-danger bg-opacity-10 p-3 rounded">
+                    <div className="bg-danger bg-opacity-25 p-3 rounded-3">
                       <CashStack size={24} className="text-danger" />
                     </div>
                   </div>
@@ -483,10 +495,10 @@ export default function Dashboard() {
           </Row>
           <br />
           {/* CHARTS ROW */}
-          <Row className="mb-4">
-            <Col xl={6} className="mb-4">
-              <Card className="h-100 shadow-sm border">
-                <Card.Header className="bg-primary bg-opacity-10 py-4">
+          <Row className="mb-4 g-4">
+            <Col xl={6}>
+              <Card className="h-100 shadow-sm border-0 rounded-3">
+                <Card.Header className="bg-white border-0 py-4">
                   <div className="d-flex justify-content-between align-items-center">
                     <div>
                       <h6 className="mb-1 fw-bold text-primary">
@@ -498,7 +510,7 @@ export default function Dashboard() {
                     </div>
                     <Badge
                       bg="primary"
-                      className="px-3 py-2 rounded-pill fw-semibold text-white"
+                      className="px-3 py-2 rounded-pill fw-semibold text-white shadow-sm bg-opacity-100"
                     >
                       📈 Live Data
                     </Badge>
@@ -526,11 +538,17 @@ export default function Dashboard() {
                                         STATUS_COLORS[status] || COLORS[0],
                                     }}
                                   ></span>
-                                  <span>{status}</span>
+                                  <span className="small">{status}</span>
                                 </div>
-                                <span className="bg-danger bg-opacity-50 text-light p-1 rounded">
+                                <Badge
+                                  className="px-2 py-1 fw-semibold"
+                                  style={{
+                                    backgroundColor: STATUS_COLORS[status] || COLORS[0],
+                                    color: 'white'
+                                  }}
+                                >
                                   {count}
-                                </span>
+                                </Badge>
                               </ListGroup.Item>
                             )
                           )}
@@ -686,9 +704,9 @@ export default function Dashboard() {
                 </Card.Body>
               </Card>
             </Col>
-            <Col xl={6} className="mb-4">
-              <Card className="h-100 shadow-sm border">
-                <Card.Header className="bg-success bg-opacity-10 py-4">
+            <Col xl={6}>
+              <Card className="h-100 shadow-sm border-0 rounded-3">
+                <Card.Header className="bg-white border-0 py-4">
                   <div className="d-flex justify-content-between align-items-center">
                     <div>
                       <h6 className="mb-1 fw-bold text-success">
@@ -700,7 +718,7 @@ export default function Dashboard() {
                     </div>
                     <Badge
                       bg="success"
-                      className="px-3 py-2 rounded-pill fw-semibold text-white"
+                      className="px-3 py-2 rounded-pill fw-semibold text-white shadow-sm bg-opacity-100"
                     >
                       💳 Payment Data
                     </Badge>
@@ -727,11 +745,17 @@ export default function Dashboard() {
                                       COLORS[0],
                                   }}
                                 ></span>
-                                <span>{status}</span>
+                                <span className="small">{status}</span>
                               </div>
-                              <span className="bg-danger bg-opacity-50 text-light p-1 rounded">
+                              <Badge
+                                className="px-2 py-1 fw-semibold"
+                                style={{
+                                  backgroundColor: PAYMENT_STATUS_COLORS[status] || COLORS[0],
+                                  color: 'white'
+                                }}
+                              >
                                 {count}
-                              </span>
+                              </Badge>
                             </ListGroup.Item>
                           )
                         )}
@@ -797,10 +821,10 @@ export default function Dashboard() {
           </Row>
 
           {/* CATEGORIES AND DEPARTMENTS */}
-          <Row className="mb-4">
-            <Col lg={6} className="mb-4">
-              <Card className="h-100 shadow-sm border">
-                <Card.Header className="bg-warning bg-opacity-10 py-4 d-flex justify-content-between align-items-center">
+          <Row className="mb-4 g-4">
+            <Col lg={6}>
+              <Card className="h-100 shadow-sm border-0 rounded-3">
+                <Card.Header className="bg-white border-0 py-4 d-flex justify-content-between align-items-center">
                   <div>
                     <h6 className="mb-1 fw-bold text-warning">
                       📂 Expenses by Category
@@ -811,7 +835,7 @@ export default function Dashboard() {
                   </div>
                   <Badge
                     bg="warning"
-                    className="px-3 py-2 rounded-pill fw-semibold text-white"
+                    className="px-3 py-2 rounded-pill fw-semibold text-white shadow-sm bg-opacity-100"
                   >
                     📊 Analysis
                   </Badge>
@@ -935,9 +959,9 @@ export default function Dashboard() {
                 </Card.Footer>
               </Card>
             </Col>
-            <Col lg={6} className="mb-4">
-              <Card className="h-100 shadow-sm border">
-                <Card.Header className="bg-info bg-opacity-10 py-4 d-flex justify-content-between align-items-center">
+            <Col lg={6}>
+              <Card className="h-100 shadow-sm border-0 rounded-3">
+                <Card.Header className="bg-white border-0 py-4 d-flex justify-content-between align-items-center">
                   <div>
                     <h6 className="mb-1 fw-bold text-info">
                       🏢 Expenses by Department
@@ -948,7 +972,7 @@ export default function Dashboard() {
                   </div>
                   <Badge
                     bg="info"
-                    className="px-3 py-2 rounded-pill fw-semibold text-white"
+                    className="px-3 py-2 rounded-pill fw-semibold text-white shadow-sm bg-opacity-100"
                   >
                     📈 Trends
                   </Badge>
@@ -1075,11 +1099,11 @@ export default function Dashboard() {
           </Row>
 
           {/* APPROVAL STEPS AND CATEGORY DETAILS */}
-          <Row className="mb-4">
-            <Col md={6} className="mb-4">
-              <Card className="h-100 shadow-sm border">
-                <Card.Header className="bg-white py-3">
-                  <h6 className="mb-0">Approval Steps</h6>
+          <Row className="mb-4 g-4">
+            <Col md={6}>
+              <Card className="h-100 shadow-sm border-0 rounded-3">
+                <Card.Header className="bg-white border-0 py-3">
+                  <h6 className="mb-0 fw-bold">Approval Steps</h6>
                 </Card.Header>
                 <Card.Body>
                   {Object.entries(data.breakdown.approvalSteps).length > 0 ? (
@@ -1106,10 +1130,10 @@ export default function Dashboard() {
                 </Card.Body>
               </Card>
             </Col>
-            <Col md={6} className="mb-4">
-              <Card className="h-100 shadow-sm border">
-                <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
-                  <h6 className="mb-0">Top Categories</h6>
+            <Col md={6}>
+              <Card className="h-100 shadow-sm border-0 rounded-3">
+                <Card.Header className="bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                  <h6 className="mb-0 fw-bold">Top Categories</h6>
                 </Card.Header>
                 <Card.Body className="p-0">
                   <div className="table-responsive">
@@ -1163,9 +1187,9 @@ export default function Dashboard() {
           {/* RECENT EXPENSES */}
           <Row className="mb-4">
             <Col>
-              <Card className="shadow-sm border-0">
-                <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
-                  <h6 className="mb-0">Recent Expenses</h6>
+              <Card className="shadow-sm border-0 rounded-3">
+                <Card.Header className="bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                  <h6 className="mb-0 fw-bold">Recent Expenses</h6>
                 </Card.Header>
                 <Card.Body className="p-0">
                   <RecentExpensesTable expenses={data.recentExpenses} />
@@ -1179,21 +1203,60 @@ export default function Dashboard() {
       {/* Custom CSS for enhanced styling */}
       <style jsx global>{`
         .chart-container {
-          transition: all 0.3s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .chart-container:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+          transform: translateY(-4px);
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
         }
 
         .card {
-          transition: all 0.3s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .btn {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn:hover {
           transform: translateY(-2px);
-          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .table-hover tbody tr {
+          transition: all 0.2s ease;
+        }
+
+        .table-hover tbody tr:hover {
+          background-color: rgba(102, 126, 234, 0.05) !important;
+          transform: scale(1.01);
+        }
+
+        .list-group-item {
+          transition: all 0.2s ease;
+        }
+
+        .list-group-item:hover {
+          background-color: rgba(102, 126, 234, 0.03);
+        }
+
+        .form-select:focus {
+          border-color: #667eea;
+          box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .badge {
+          transition: all 0.2s ease;
+        }
+
+        .badge:hover {
+          transform: scale(1.05);
         }
       `}</style>
     </AuthProvider>
