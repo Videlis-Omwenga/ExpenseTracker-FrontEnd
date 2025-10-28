@@ -102,6 +102,51 @@ export default function CreateExpensePage() {
   const [branchCode, setBranchCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
 
+  // Validation states for payment types
+  const [paybillNumberValid, setPaybillNumberValid] = useState<boolean | null>(null);
+  const [paybillAccountValid, setPaybillAccountValid] = useState<boolean | null>(null);
+  const [tillNumberValid, setTillNumberValid] = useState<boolean | null>(null);
+  const [bankNameValid, setBankNameValid] = useState<boolean | null>(null);
+  const [bankAccountValid, setBankAccountValid] = useState<boolean | null>(null);
+  const [branchCodeValid, setBranchCodeValid] = useState<boolean | null>(null);
+  const [phoneNumberValid, setPhoneNumberValid] = useState<boolean | null>(null);
+
+  // Validation functions
+  const validatePaybillNumber = (value: string): boolean => {
+    // Must be integer (numbers only)
+    return /^\d+$/.test(value) && value.length > 0;
+  };
+
+  const validatePaybillAccount = (value: string): boolean => {
+    // Must be alphanumeric mixture
+    return /^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]+$/.test(value) && value.length > 0;
+  };
+
+  const validateTillNumber = (value: string): boolean => {
+    // Must be numbers only
+    return /^\d+$/.test(value) && value.length > 0;
+  };
+
+  const validateBankName = (value: string): boolean => {
+    // Must be words/letters only (allow spaces)
+    return /^[a-zA-Z\s]+$/.test(value) && value.length > 0;
+  };
+
+  const validateBankAccount = (value: string): boolean => {
+    // Must be numbers only
+    return /^\d+$/.test(value) && value.length > 0;
+  };
+
+  const validateBranchCode = (value: string): boolean => {
+    // Must be numbers only
+    return /^\d+$/.test(value) && value.length > 0;
+  };
+
+  const validatePhoneNumber = (value: string): boolean => {
+    // Must be 254 followed by exactly 9 digits (total 12 digits)
+    return /^254\d{9}$/.test(value);
+  };
+
   const handleAllocationChange = (categoryId: number, value: string) => {
     setAllocations((prev) => ({
       ...prev,
@@ -665,8 +710,8 @@ export default function CreateExpensePage() {
           <Row className="justify-content-center">
             <Container fluid className="py-4">
               {/* Modern Header */}
-              <div className="mb-4">
-                <div className="d-flex justify-content-between align-items-center mb-3">
+              <div className="mb-5">
+                <div className="d-flex justify-content-between align-items-center mb-5">
                   <div>
                     <div className="d-flex align-items-center mb-2">
                       <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
@@ -706,7 +751,7 @@ export default function CreateExpensePage() {
                     </Breadcrumb.Item>
                   </Breadcrumb>
                 </div>
-                <hr className="border-2 border-primary opacity-25 mb-4" />
+                <hr className="border-2 border-primary opacity-25 mb-5" />
               </div>
 
               <Row>
@@ -716,7 +761,7 @@ export default function CreateExpensePage() {
                   {duplicateWarning && (
                     <Alert
                       variant="warning"
-                      className="border-0 border-start border-3 border-warning shadow-sm mb-4 bg-warning bg-opacity-10"
+                      className="border-0 border-start border-3 border-warning shadow-sm mb-5 bg-warning bg-opacity-10"
                     >
                       <div className="d-flex align-items-center">
                         <ExclamationTriangle
@@ -732,7 +777,7 @@ export default function CreateExpensePage() {
                   )}
 
                   {/* Progress Indicator */}
-                  <Card className="border-0 shadow-sm mb-4 sticky-top rounded-3">
+                  <Card className="border-0 shadow-sm mb-5 sticky-top rounded-3">
                     <Card.Body className="p-4">
                       <div className="d-flex justify-content-between align-items-center mb-2">
                         <span className="text-muted small">
@@ -785,9 +830,9 @@ export default function CreateExpensePage() {
                     </Card.Body>
                   </Card>
                   {/* Payee Information Card */}
-                  <Card className="border-0 shadow-sm rounded-3 mb-4">
+                  <Card className="border-0 shadow-sm rounded-3 mb-5">
                     <Card.Body className="p-4">
-                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                      <div className="d-flex align-items-center mb-5 pb-3 border-bottom">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                           <Person className="text-primary" size={22} />
                         </div>
@@ -802,7 +847,7 @@ export default function CreateExpensePage() {
                       </div>
                       <Row>
                         <Col md={6}>
-                          <Form.Group className="mb-3">
+                          <Form.Group className="mb-5">
                             <Form.Label className="fw-semibold text-dark">
                               <Person className="me-1" size={16} /> Payee Name{" "}
                               <span className="text-danger">*</span>
@@ -849,7 +894,7 @@ export default function CreateExpensePage() {
                           </Form.Group>
                         </Col>
                         <Col md={6}>
-                          <Form.Group className="mb-3">
+                          <Form.Group className="mb-5">
                             <Form.Label className="fw-semibold text-dark">
                               <PersonBadge className="me-1" size={16} /> ID
                               Number <span className="text-danger">*</span>
@@ -870,8 +915,8 @@ export default function CreateExpensePage() {
                       </Row>
 
                       {/* Payment Type Helper */}
-                      <div className="border rounded-3 p-3 mb-3 bg-light">
-                        <Form.Label className="fw-bold text-dark mb-3">
+                      <div className="border rounded-3 p-3 mb-2 bg-light">
+                        <Form.Label className="fw-bold text-dark mb-5">
                           <CreditCard className="me-2" size={18} /> Select
                           Payment Type <span className="text-danger">*</span>
                           <small
@@ -891,7 +936,6 @@ export default function CreateExpensePage() {
                             onChange={(e) => {
                               if (e.target.checked) {
                                 setPaymentType("paybill");
-                                setPayeeNumber("");
                               } else {
                                 setPaymentType("");
                               }
@@ -917,7 +961,6 @@ export default function CreateExpensePage() {
                             onChange={(e) => {
                               if (e.target.checked) {
                                 setPaymentType("till");
-                                setPayeeNumber("");
                               } else {
                                 setPaymentType("");
                               }
@@ -943,7 +986,6 @@ export default function CreateExpensePage() {
                             onChange={(e) => {
                               if (e.target.checked) {
                                 setPaymentType("bank");
-                                setPayeeNumber("");
                               } else {
                                 setPaymentType("");
                               }
@@ -969,7 +1011,6 @@ export default function CreateExpensePage() {
                             onChange={(e) => {
                               if (e.target.checked) {
                                 setPaymentType("phone");
-                                setPayeeNumber("");
                               } else {
                                 setPaymentType("");
                               }
@@ -991,13 +1032,13 @@ export default function CreateExpensePage() {
 
                       {/* PayBill Fields */}
                       {paymentType === "paybill" && (
-                        <div className="border-start border-3 border-primary ps-3 mb-3 bg-light p-3 rounded">
+                        <div className="border-start border-3 border-primary ps-3 mb-2 bg-light p-3 rounded">
                           <h6 className="text-primary fw-bold mb-3">
                             PayBill Details
                           </h6>
                           <Row>
                             <Col md={6}>
-                              <Form.Group className="mb-3">
+                              <Form.Group className="mb-5">
                                 <Form.Label className="fw-semibold text-dark small">
                                   PayBill Number{" "}
                                   <span className="text-danger">*</span>
@@ -1005,17 +1046,35 @@ export default function CreateExpensePage() {
                                 <Form.Control
                                   type="text"
                                   value={paybillNumber}
-                                  onChange={(e) =>
-                                    setPaybillNumber(e.target.value)
-                                  }
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setPaybillNumber(value);
+                                    if (value) {
+                                      setPaybillNumberValid(validatePaybillNumber(value));
+                                    } else {
+                                      setPaybillNumberValid(null);
+                                    }
+                                  }}
                                   required
                                   placeholder="e.g., 400200"
-                                  className="py-2 border-2 rounded-3"
+                                  className={`py-2 rounded-3 ${
+                                    paybillNumberValid === true
+                                      ? "is-valid"
+                                      : paybillNumberValid === false
+                                      ? "is-invalid"
+                                      : ""
+                                  }`}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                  PayBill number must contain only numbers
+                                </Form.Control.Feedback>
+                                <Form.Control.Feedback type="valid">
+                                  Looks good!
+                                </Form.Control.Feedback>
                               </Form.Group>
                             </Col>
                             <Col md={6}>
-                              <Form.Group className="mb-3">
+                              <Form.Group className="mb-5">
                                 <Form.Label className="fw-semibold text-dark small">
                                   Account Number{" "}
                                   <span className="text-danger">*</span>
@@ -1023,13 +1082,31 @@ export default function CreateExpensePage() {
                                 <Form.Control
                                   type="text"
                                   value={paybillAccount}
-                                  onChange={(e) =>
-                                    setPaybillAccount(e.target.value)
-                                  }
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setPaybillAccount(value);
+                                    if (value) {
+                                      setPaybillAccountValid(validatePaybillAccount(value));
+                                    } else {
+                                      setPaybillAccountValid(null);
+                                    }
+                                  }}
                                   required
                                   placeholder="Account number"
-                                  className="py-2 border-2 rounded-3"
+                                  className={`py-2 rounded-3 ${
+                                    paybillAccountValid === true
+                                      ? "is-valid"
+                                      : paybillAccountValid === false
+                                      ? "is-invalid"
+                                      : ""
+                                  }`}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                  Account number must contain both letters and numbers
+                                </Form.Control.Feedback>
+                                <Form.Control.Feedback type="valid">
+                                  Looks good!
+                                </Form.Control.Feedback>
                               </Form.Group>
                             </Col>
                           </Row>
@@ -1038,35 +1115,55 @@ export default function CreateExpensePage() {
 
                       {/* Till Fields */}
                       {paymentType === "till" && (
-                        <div className="border-start border-3 border-success ps-3 mb-3 bg-light p-3 rounded">
-                          <h6 className="text-success fw-bold mb-3">
+                        <div className="border-start border-3 border-success ps-3 mb-2 bg-light p-3 rounded">
+                          <h6 className="text-success fw-bold mb-2">
                             Till Details
                           </h6>
-                          <Form.Group className="mb-3">
+                          <Form.Group className="mb-5">
                             <Form.Label className="fw-semibold text-dark small">
                               Till Number <span className="text-danger">*</span>
                             </Form.Label>
                             <Form.Control
                               type="text"
                               value={tillNumber}
-                              onChange={(e) => setTillNumber(e.target.value)}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setTillNumber(value);
+                                if (value) {
+                                  setTillNumberValid(validateTillNumber(value));
+                                } else {
+                                  setTillNumberValid(null);
+                                }
+                              }}
                               required
                               placeholder="e.g., 123456"
-                              className="py-2 border-2 rounded-3"
+                              className={`py-2 rounded-3 ${
+                                tillNumberValid === true
+                                  ? "is-valid"
+                                  : tillNumberValid === false
+                                  ? "is-invalid"
+                                  : ""
+                              }`}
                             />
+                            <Form.Control.Feedback type="invalid">
+                              Till number must contain only numbers
+                            </Form.Control.Feedback>
+                            <Form.Control.Feedback type="valid">
+                              Looks good!
+                            </Form.Control.Feedback>
                           </Form.Group>
                         </div>
                       )}
 
                       {/* Bank Fields */}
                       {paymentType === "bank" && (
-                        <div className="border-start border-3 border-info ps-3 mb-3 bg-light p-3 rounded">
-                          <h6 className="text-info fw-bold mb-3">
+                        <div className="border-start border-3 border-info ps-3 mb-2 bg-light p-3 rounded">
+                          <h6 className="text-info fw-bold mb-2">
                             Bank Details
                           </h6>
                           <Row>
                             <Col md={12}>
-                              <Form.Group className="mb-3">
+                              <Form.Group className="mb-5">
                                 <Form.Label className="fw-semibold text-dark small">
                                   Bank Name{" "}
                                   <span className="text-danger">*</span>
@@ -1074,15 +1171,35 @@ export default function CreateExpensePage() {
                                 <Form.Control
                                   type="text"
                                   value={bankName}
-                                  onChange={(e) => setBankName(e.target.value)}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setBankName(value);
+                                    if (value) {
+                                      setBankNameValid(validateBankName(value));
+                                    } else {
+                                      setBankNameValid(null);
+                                    }
+                                  }}
                                   required
                                   placeholder="e.g., Equity Bank"
-                                  className="py-2 border-2 rounded-3"
+                                  className={`py-2 rounded-3 ${
+                                    bankNameValid === true
+                                      ? "is-valid"
+                                      : bankNameValid === false
+                                      ? "is-invalid"
+                                      : ""
+                                  }`}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                  Bank name must contain only letters and spaces
+                                </Form.Control.Feedback>
+                                <Form.Control.Feedback type="valid">
+                                  Looks good!
+                                </Form.Control.Feedback>
                               </Form.Group>
                             </Col>
                             <Col md={6}>
-                              <Form.Group className="mb-3">
+                              <Form.Group className="mb-5">
                                 <Form.Label className="fw-semibold text-dark small">
                                   Bank Account Number{" "}
                                   <span className="text-danger">*</span>
@@ -1090,17 +1207,35 @@ export default function CreateExpensePage() {
                                 <Form.Control
                                   type="text"
                                   value={bankAccount}
-                                  onChange={(e) =>
-                                    setBankAccount(e.target.value)
-                                  }
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setBankAccount(value);
+                                    if (value) {
+                                      setBankAccountValid(validateBankAccount(value));
+                                    } else {
+                                      setBankAccountValid(null);
+                                    }
+                                  }}
                                   required
                                   placeholder="Account number"
-                                  className="py-2 border-2 rounded-3"
+                                  className={`py-2 rounded-3 ${
+                                    bankAccountValid === true
+                                      ? "is-valid"
+                                      : bankAccountValid === false
+                                      ? "is-invalid"
+                                      : ""
+                                  }`}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                  Account number must contain only numbers
+                                </Form.Control.Feedback>
+                                <Form.Control.Feedback type="valid">
+                                  Looks good!
+                                </Form.Control.Feedback>
                               </Form.Group>
                             </Col>
                             <Col md={6}>
-                              <Form.Group className="mb-3">
+                              <Form.Group className="mb-5">
                                 <Form.Label className="fw-semibold text-dark small">
                                   Branch Code{" "}
                                   <span className="text-danger">*</span>
@@ -1108,13 +1243,31 @@ export default function CreateExpensePage() {
                                 <Form.Control
                                   type="text"
                                   value={branchCode}
-                                  onChange={(e) =>
-                                    setBranchCode(e.target.value)
-                                  }
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setBranchCode(value);
+                                    if (value) {
+                                      setBranchCodeValid(validateBranchCode(value));
+                                    } else {
+                                      setBranchCodeValid(null);
+                                    }
+                                  }}
                                   required
                                   placeholder="e.g., 068"
-                                  className="py-2 border-2 rounded-3"
+                                  className={`py-2 rounded-3 ${
+                                    branchCodeValid === true
+                                      ? "is-valid"
+                                      : branchCodeValid === false
+                                      ? "is-invalid"
+                                      : ""
+                                  }`}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                  Branch code must contain only numbers
+                                </Form.Control.Feedback>
+                                <Form.Control.Feedback type="valid">
+                                  Looks good!
+                                </Form.Control.Feedback>
                               </Form.Group>
                             </Col>
                           </Row>
@@ -1123,11 +1276,11 @@ export default function CreateExpensePage() {
 
                       {/* Phone Number Fields */}
                       {paymentType === "phone" && (
-                        <div className="border-start border-3 border-warning ps-3 mb-3 bg-light p-3 rounded">
-                          <h6 className="text-warning fw-bold mb-3">
+                        <div className="border-start border-3 border-warning ps-3 mb-1 bg-light p-3 rounded">
+                          <h6 className="text-warning fw-bold mb-2">
                             Mobile Money Details
                           </h6>
-                          <Form.Group className="mb-3">
+                          <Form.Group className="mb-2">
                             <Form.Label className="fw-semibold text-dark small">
                               Phone Number{" "}
                               <span className="text-danger">*</span>
@@ -1135,11 +1288,31 @@ export default function CreateExpensePage() {
                             <Form.Control
                               type="tel"
                               value={phoneNumber}
-                              onChange={(e) => setPhoneNumber(e.target.value)}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setPhoneNumber(value);
+                                if (value) {
+                                  setPhoneNumberValid(validatePhoneNumber(value));
+                                } else {
+                                  setPhoneNumberValid(null);
+                                }
+                              }}
                               required
-                              placeholder="e.g., +254712345678"
-                              className="py-2 border-2 rounded-3"
+                              placeholder="e.g., 254712345678"
+                              className={`py-2 rounded-3 ${
+                                phoneNumberValid === true
+                                  ? "is-valid"
+                                  : phoneNumberValid === false
+                                  ? "is-invalid"
+                                  : ""
+                              }`}
                             />
+                            <Form.Control.Feedback type="invalid">
+                              Phone number must be 254 followed by 9 digits (e.g., 254712345678)
+                            </Form.Control.Feedback>
+                            <Form.Control.Feedback type="valid">
+                              Looks good!
+                            </Form.Control.Feedback>
                             <Form.Text className="text-muted">
                               Enter mobile money number (M-Pesa, Airtel Money,
                               etc.)
@@ -1200,9 +1373,9 @@ export default function CreateExpensePage() {
                   </Card>
 
                   {/* Expense Details Card */}
-                  <Card className="border-0 shadow-sm rounded-3 mb-4">
+                  <Card className="border-0 shadow-sm rounded-3 mb-5">
                     <Card.Body className="p-4">
-                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                      <div className="d-flex align-items-center mb-5 pb-3 border-bottom">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                           <Cash className="text-primary" size={22} />
                         </div>
@@ -1215,9 +1388,9 @@ export default function CreateExpensePage() {
                           </span>
                         </div>
                       </div>
-                      <Row className="mb-3">
+                      <Row className="mb-5">
                         <Col md={6}>
-                          <Form.Group className="mb-3">
+                          <Form.Group className="mb-5">
                             <Form.Label className="fw-semibold text-dark">
                               <CurrencyDollar className="me-1" size={16} />{" "}
                               Amount <span className="text-danger">*</span>
@@ -1276,7 +1449,7 @@ export default function CreateExpensePage() {
                           </Form.Group>
                         </Col>
                         <Col md={6}>
-                          <Form.Group className="mb-3">
+                          <Form.Group className="mb-5">
                             <Form.Label className="fw-semibold text-dark">
                               <CurrencyDollar className="me-1" size={16} />{" "}
                               Currency <span className="text-danger">*</span>
@@ -1301,7 +1474,7 @@ export default function CreateExpensePage() {
                         </Col>
                       </Row>
 
-                      <Form.Group className="mb-3">
+                      <Form.Group className="mb-5">
                         <Form.Label className="fw-semibold text-dark">
                           <FileEarmarkText className="me-1" size={16} />{" "}
                           Description <span className="text-danger">*</span>
@@ -1322,9 +1495,9 @@ export default function CreateExpensePage() {
                   </Card>
 
                   {/* Categorization Card */}
-                  <Card className="border-0 shadow-sm rounded-3 mb-4">
+                  <Card className="border-0 shadow-sm rounded-3 mb-5">
                     <Card.Body className="p-4">
-                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                      <div className="d-flex align-items-center mb-5 pb-3 border-bottom">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                           <Tag className="text-primary" size={22} />
                         </div>
@@ -1339,7 +1512,7 @@ export default function CreateExpensePage() {
                       </div>
                       <Row>
                         <Col md={6}>
-                          <Form.Group className="mb-3">
+                          <Form.Group className="mb-5">
                             <Form.Label className="fw-semibold text-dark">
                               <Building className="me-1" size={16} /> Department{" "}
                               <span className="text-danger">*</span>
@@ -1363,7 +1536,7 @@ export default function CreateExpensePage() {
                           </Form.Group>
                         </Col>
                         <Col md={6}>
-                          <Form.Group className="mb-3">
+                          <Form.Group className="mb-5">
                             <Form.Label className="fw-semibold text-dark">
                               <Tag className="me-1" size={16} /> Category{" "}
                               <span className="text-danger">*</span>
@@ -1390,7 +1563,7 @@ export default function CreateExpensePage() {
 
                       <Row>
                         <Col md={6}>
-                          <Form.Group className="mb-3">
+                          <Form.Group className="mb-5">
                             <Form.Label className="fw-semibold text-dark">
                               <GeoAlt className="me-1" size={16} /> Region{" "}
                               <span className="text-danger">*</span>
@@ -1418,9 +1591,9 @@ export default function CreateExpensePage() {
                   </Card>
 
                   {/* Payment Information Card */}
-                  <Card className="border-0 shadow-sm rounded-3 mb-4">
+                  <Card className="border-0 shadow-sm rounded-3 mb-5">
                     <Card.Body className="p-4">
-                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                      <div className="d-flex align-items-center mb-5 pb-3 border-bottom">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                           <CreditCard className="text-primary" size={22} />
                         </div>
@@ -1435,7 +1608,7 @@ export default function CreateExpensePage() {
                       </div>
                       <Row>
                         <Col md={6}>
-                          <Form.Group className="mb-3">
+                          <Form.Group className="mb-5">
                             <Form.Label className="fw-semibold text-dark">
                               <CreditCard className="me-1" size={16} /> Payment
                               Method <span className="text-danger">*</span>
@@ -1459,7 +1632,7 @@ export default function CreateExpensePage() {
                           </Form.Group>
                         </Col>
                         <Col md={6}>
-                          <Form.Group className="mb-3">
+                          <Form.Group className="mb-5">
                             <Form.Label className="fw-semibold text-dark">
                               <Journal className="me-1" size={16} /> Reference
                               Number
@@ -1482,9 +1655,9 @@ export default function CreateExpensePage() {
                   </Card>
 
                   {/* Advance Request Card */}
-                  <Card className="border-0 shadow-sm rounded-3 mb-4">
+                  <Card className="border-0 shadow-sm rounded-3 mb-5">
                     <Card.Body className="p-4">
-                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                      <div className="d-flex align-items-center mb-5 pb-3 border-bottom">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                           <Calculator className="text-primary" size={22} />
                         </div>
@@ -1499,7 +1672,7 @@ export default function CreateExpensePage() {
                       </div>
                       <Row>
                         <Col md={6}>
-                          <Form.Group className="mb-3">
+                          <Form.Group className="mb-5">
                             <div className="d-flex align-items-center">
                               <Form.Check
                                 type="checkbox"
@@ -1524,7 +1697,7 @@ export default function CreateExpensePage() {
 
                       {isAdvance && (
                         <div className="mt-4 p-3 border-start border-3 border-primary rounded bg-light">
-                          <h6 className="mb-3 fw-semibold d-flex align-items-center">
+                          <h6 className="mb-5 fw-semibold d-flex align-items-center">
                             <ClipboardCheck className="me-2" /> Advance
                             Allocation
                           </h6>
@@ -1535,7 +1708,7 @@ export default function CreateExpensePage() {
                           </Alert>
                           <Row>
                             {categories.map((cat) => (
-                              <Col md={6} className="mb-3" key={cat.id}>
+                              <Col md={6} className="mb-5" key={cat.id}>
                                 <Form.Group>
                                   <Form.Label className="small fw-semibold">
                                     {cat.name}
@@ -1608,9 +1781,9 @@ export default function CreateExpensePage() {
                   </Card>
 
                   {/* Attachments Card */}
-                  <Card className="border-0 shadow-sm rounded-3 mb-4">
+                  <Card className="border-0 shadow-sm rounded-3 mb-5">
                     <Card.Body className="p-4">
-                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                      <div className="d-flex align-items-center mb-5 pb-3 border-bottom">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                           <Receipt className="text-primary" size={22} />
                         </div>
@@ -1634,7 +1807,7 @@ export default function CreateExpensePage() {
                               onChange={handleFileChange}
                             />
 
-                            <div className="mb-3">
+                            <div className="mb-5">
                               <FileEarmarkPlus
                                 size={40}
                                 className="text-primary opacity-75"
@@ -1683,11 +1856,11 @@ export default function CreateExpensePage() {
                         <Col md={6}>
                           {previewUrl && (
                             <div className="receipt-preview">
-                              <h6 className="fw-semibold mb-3">
+                              <h6 className="fw-semibold mb-5">
                                 <FileEarmarkText className="me-2" />
                                 Receipt Preview
                               </h6>
-                              <div className="border rounded-3 p-2 mb-3">
+                              <div className="border rounded-3 p-2 mb-5">
                                 <img
                                   src={previewUrl}
                                   alt="Receipt preview"
@@ -1745,7 +1918,7 @@ export default function CreateExpensePage() {
                     style={{ top: "100px" }}
                   >
                     <Card.Body className="p-4">
-                      <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                      <div className="d-flex align-items-center mb-5 pb-3 border-bottom">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                           <ClipboardCheck className="text-primary" size={22} />
                         </div>
@@ -1890,7 +2063,7 @@ export default function CreateExpensePage() {
                   {/* Keyboard Shortcuts Card */}
                   <Card className="border-0 shadow-sm rounded-3 mt-4">
                     <Card.Body className="p-4">
-                      <div className="d-flex align-items-center mb-3 pb-3 border-bottom">
+                      <div className="d-flex align-items-center mb-5 pb-3 border-bottom">
                         <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                           <InfoCircle className="text-primary" size={20} />
                         </div>
@@ -1956,10 +2129,25 @@ export default function CreateExpensePage() {
             border-color: #4e54c8 !important;
             background-color: #f8f9ff;
           }
+          .form-control,
+          .form-select {
+            border: 1px solid rgba(0,0,0,.05) !important;
+            box-shadow: none !important;
+          }
           .form-control:focus,
           .form-select:focus {
-            box-shadow: none;
-            border-color: #4e54c8;
+            border: 1px solid rgba(0,0,0,.1) !important;
+            box-shadow: none !important;
+          }
+          .form-control.is-valid,
+          .form-select.is-valid {
+            border: 1px solid rgba(25,135,84,.3) !important;
+            box-shadow: none !important;
+          }
+          .form-control.is-invalid,
+          .form-select.is-invalid {
+            border: 1px solid rgba(220,53,69,.3) !important;
+            box-shadow: none !important;
           }
           .btn {
             border-radius: 0.5rem;

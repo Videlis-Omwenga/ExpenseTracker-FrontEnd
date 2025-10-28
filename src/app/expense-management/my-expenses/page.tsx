@@ -1722,17 +1722,72 @@ export default function FinanceDashboard() {
             <br />
             <Card.Body className="p-0">
               {filteredExpenses.length === 0 ? (
-                <div className="text-center py-5">
-                  <p className="text-muted">No expenses found</p>
-                  {searchQuery && (
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={() => setSearchQuery("")}
-                    >
-                      Clear search
-                    </Button>
-                  )}
+                <div className="text-center py-5 px-4">
+                  <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: "400px" }}>
+                    <div className="mb-4" style={{ position: "relative" }}>
+                      <div
+                        className="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                        style={{
+                          width: "120px",
+                          height: "120px",
+                          position: "relative"
+                        }}
+                      >
+                        <FileEarmarkX size={50} className="text-muted" />
+                      </div>
+                      <div
+                        className="position-absolute bg-white rounded-circle d-flex align-items-center justify-content-center border"
+                        style={{
+                          width: "45px",
+                          height: "45px",
+                          bottom: "-5px",
+                          right: "-5px",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+                        }}
+                      >
+                        <Search size={20} className="text-secondary" />
+                      </div>
+                    </div>
+                    <h5 className="fw-bold text-dark mb-2">
+                      {searchQuery ? "No Matching Expenses" : "No Expenses Found"}
+                    </h5>
+                    <p className="text-muted mb-5" style={{ maxWidth: "300px" }}>
+                      {searchQuery
+                        ? `We couldn't find any expenses matching "${searchQuery}". Try adjusting your search criteria.`
+                        : "You haven't created any expenses yet. Start by creating your first expense to track spending."
+                      }
+                    </p>
+                    {searchQuery ? (
+                      <div className="d-flex gap-2">
+                        <Button
+                          variant="primary"
+                          onClick={() => setSearchQuery("")}
+                          className="d-flex align-items-center gap-2"
+                        >
+                          <XCircleFill size={16} />
+                          Clear Search
+                        </Button>
+                        <Button
+                          variant="outline-secondary"
+                          onClick={() => window.location.href = "/expense-management/create-expense"}
+                          className="d-flex align-items-center gap-2"
+                        >
+                          <PlusCircle size={16} />
+                          Create Expense
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => window.location.href = "/expense-management/create-expense"}
+                        className="d-flex align-items-center gap-2"
+                      >
+                        <PlusCircle size={20} />
+                        Create Your First Expense
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <Card className="border-0">
@@ -1769,19 +1824,19 @@ export default function FinanceDashboard() {
                               Payee
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Category
-                            </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
                               Description
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
                               Amount
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Owner
+                              Requested
                             </th>
                             <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
                               Status
+                            </th>
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                              Category
                             </th>
                             <th
                               className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small"
@@ -1837,21 +1892,10 @@ export default function FinanceDashboard() {
                                   className="py-3 px-4"
                                   onClick={() => handleViewDetails(expense)}
                                 >
-                                  <div className="d-flex flex-column">
+                                  <div className="d-flex flex-column small">
                                     <div className="">
-                                      Created:{" "}
                                       <DateTimeDisplay
                                         date={expense.createdAt}
-                                      />
-                                    </div>
-                                    <div className="text-muted small">
-                                      Updated:{" "}
-                                      <DateTimeDisplay
-                                        date={expense.updatedAt}
-                                        isHighlighted={
-                                          expense.updatedAt !==
-                                          expense.createdAt
-                                        }
                                       />
                                     </div>
                                   </div>
@@ -1893,12 +1937,12 @@ export default function FinanceDashboard() {
                                   <div className="d-flex flex-column">
                                     <span className="text-success fw-bold">
                                       {expense?.amount?.toLocaleString() ||
-                                        "0.00"}{" "}
+                                        "0.00"}
                                       KES
                                     </span>
                                     <span className="text-muted small">
                                       {expense?.primaryAmount?.toLocaleString() ||
-                                        "0.00"}{" "}
+                                        "0.00"}
                                       {expense?.currency?.initials
                                         ? `${
                                             expense.currency.initials
@@ -1913,14 +1957,7 @@ export default function FinanceDashboard() {
                                   className="py-3 px-4"
                                   onClick={() => handleViewDetails(expense)}
                                 >
-                                  <div className="d-flex align-items-center">
-                                    <div
-                                      className="avatar-sm bg-primary bg-opacity-10 text-primary fw-medium d-flex align-items-center justify-content-center rounded-circle me-2"
-                                      style={{ width: "32px", height: "32px" }}
-                                    >
-                                      {expense.user.firstName.charAt(0)}
-                                      {expense.user.lastName.charAt(0)}
-                                    </div>
+                                  <div className="d-flex align-items-center small">
                                     <div>
                                       <span className="fw-medium">
                                         {expense.user.firstName}{" "}
@@ -1935,7 +1972,7 @@ export default function FinanceDashboard() {
                                 >
                                   <Badge
                                     bg={badge.bg}
-                                    className="d-inline-flex align-items-center py-2 px-3 rounded-pill fw-semibold"
+                                    className="d-inline-flex align-items-center py-2 px-3 rounded-pill fw-semibold bg-opacity-50 text-dark"
                                   >
                                     {badge.icon}
                                     {badge.label}

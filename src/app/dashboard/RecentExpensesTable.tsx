@@ -550,7 +550,7 @@ export default function RecentExpensesTable({
                           <Badge
                             bg="light"
                             text="dark"
-                            className="bg-opacity-10 border px-2 py-1 fw-normal border-0 border-bottom border-success"
+                            className="bg-opacity-10 px-2 py-1 fw-normal"
                           >
                             <Tag size={12} className="me-1" />
                             {exp.category.name}
@@ -566,7 +566,7 @@ export default function RecentExpensesTable({
                           <Badge
                             bg="light"
                             text="dark"
-                            className="bg-opacity-10 border px-2 py-1 fw-normal border-0 border-bottom border-info"
+                            className="bg-opacity-10 px-2 py-1 fw-normal"
                           >
                             <Building size={12} className="me-1" />
                             {exp.department.name}
@@ -578,7 +578,7 @@ export default function RecentExpensesTable({
                         )}
                       </td>
                       <td className="text-end align-middle py-3">
-                        <div className="fw-bold text-success fs-6">
+                        <div className="fw-bold text-success">
                           {exp.amount.toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
@@ -592,7 +592,7 @@ export default function RecentExpensesTable({
                               exp.status as keyof typeof STATUS_COLORS
                             ] || "secondary"
                           }
-                          className="d-inline-flex align-items-center gap-1 px-3 py-2"
+                          className="d-inline-flex align-items-center gap-1 px-3 py-2 bg-opacity-50 text-secondary"
                         >
                           {getStatusIcon(exp.status)}
                           <span>{exp.status}</span>
