@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Diagram3Fill, PlusCircle } from "react-bootstrap-icons";
 import {
   Container,
@@ -25,6 +25,7 @@ import {
   FaArrowDown,
   FaCheckCircle,
   FaPlusCircle,
+  FaBuilding,
 } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import { BASE_API_URL } from "../../static/apiConfig";
@@ -43,6 +44,11 @@ interface Role {
   name: string;
 }
 
+interface Department {
+  id: number;
+  name: string;
+}
+
 interface HierarchyAssignment {
   id: number;
   hierarchyId: number;
@@ -50,6 +56,7 @@ interface HierarchyAssignment {
   userId: number;
   order: number;
   isRequired: boolean;
+  restrictToDepartment: boolean;
   hierarchy?: {
     id: number;
     name: string;
@@ -65,6 +72,11 @@ interface HierarchyAssignment {
       name: string;
     };
   };
+  departmentsRestrictedTo?: {
+    id: number;
+    departmentId: number;
+    department: Department;
+  }[];
 }
 
 interface HierarchyLevel {
@@ -106,6 +118,7 @@ export default function WorkflowEditor() {
   const [workflow, setWorkflow] = useState<Workflow | null>(null);
   const [hierarchies, setHierarchies] = useState<Hierarchy[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -114,6 +127,7 @@ export default function WorkflowEditor() {
   const [allAssignments, setAllAssignments] = useState<HierarchyAssignment[]>([]);
   const [queuedHierarchies, setQueuedHierarchies] = useState<Hierarchy[]>([]);
   const [hierarchyOptionalSettings, setHierarchyOptionalSettings] = useState<Record<number, boolean>>({});
+  const [hierarchyDepartmentRestrictions, setHierarchyDepartmentRestrictions] = useState<Record<number, { restrictToDepartment: boolean; departmentIds: number[] }>>({});
 
   // Fetch data
   const fetchWorkflow = async () => {
@@ -218,6 +232,27 @@ export default function WorkflowEditor() {
     }
   };
 
+  const fetchDepartments = async () => {
+    try {
+      const response = await fetch(`${BASE_API_URL}/data-inputs/get-departments`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "expenseTrackerToken"
+          )}`,
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setDepartments(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch departments:", error);
+    }
+  };
+
   const fetchAllAssignments = async () => {
     try {
       const response = await fetch(`${BASE_API_URL}/approval-hierarchy/assignments/all`, {
@@ -246,7 +281,7 @@ export default function WorkflowEditor() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await Promise.all([fetchWorkflow(), fetchHierarchies(), fetchUsers(), fetchAllAssignments()]);
+      await Promise.all([fetchWorkflow(), fetchHierarchies(), fetchUsers(), fetchDepartments(), fetchAllAssignments()]);
       setLoading(false);
     };
     fetchData();
@@ -312,6 +347,15 @@ export default function WorkflowEditor() {
 
   const handleRemoveFromQueue = (hierarchyId: number) => {
     setQueuedHierarchies(queuedHierarchies.filter(h => h.id !== hierarchyId));
+    // Clean up settings for removed hierarchy
+    const newOptionalSettings = { ...hierarchyOptionalSettings };
+    delete newOptionalSettings[hierarchyId];
+    setHierarchyOptionalSettings(newOptionalSettings);
+
+    const newDeptRestrictions = { ...hierarchyDepartmentRestrictions };
+    delete newDeptRestrictions[hierarchyId];
+    setHierarchyDepartmentRestrictions(newDeptRestrictions);
+
     toast.info("Hierarchy removed from queue");
   };
 
@@ -332,6 +376,7 @@ export default function WorkflowEditor() {
   const handleClearQueue = () => {
     setQueuedHierarchies([]);
     setHierarchyOptionalSettings({});
+    setHierarchyDepartmentRestrictions({});
     toast.info("Queue cleared");
   };
 
@@ -340,6 +385,33 @@ export default function WorkflowEditor() {
       ...prev,
       [hierarchyId]: !(prev[hierarchyId] || false)
     }));
+  };
+
+  const toggleDepartmentRestriction = (hierarchyId: number) => {
+    setHierarchyDepartmentRestrictions(prev => ({
+      ...prev,
+      [hierarchyId]: {
+        restrictToDepartment: !(prev[hierarchyId]?.restrictToDepartment || false),
+        departmentIds: prev[hierarchyId]?.departmentIds || []
+      }
+    }));
+  };
+
+  const handleDepartmentSelection = (hierarchyId: number, departmentId: number) => {
+    setHierarchyDepartmentRestrictions(prev => {
+      const current = prev[hierarchyId] || { restrictToDepartment: false, departmentIds: [] };
+      const departmentIds = current.departmentIds.includes(departmentId)
+        ? current.departmentIds.filter(id => id !== departmentId)
+        : [...current.departmentIds, departmentId];
+
+      return {
+        ...prev,
+        [hierarchyId]: {
+          ...current,
+          departmentIds
+        }
+      };
+    });
   };
 
   const handleSaveWorkflow = async () => {
@@ -353,16 +425,22 @@ export default function WorkflowEditor() {
     setIsSubmitting(true);
 
     try {
-      // Build hierarchies data with isRequired settings
-      const hierarchiesData = queuedHierarchies.map((hierarchy, index) => ({
-        hierarchyId: hierarchy.id,
-        order: index + 1,
-        isRequired: !(hierarchyOptionalSettings[hierarchy.id] || false)
-      }));
+      // Build hierarchies data with isRequired and department restriction settings
+      const hierarchiesData = queuedHierarchies.map((hierarchy, index) => {
+        const deptRestriction = hierarchyDepartmentRestrictions[hierarchy.id] || { restrictToDepartment: false, departmentIds: [] };
+
+        return {
+          hierarchyId: hierarchy.id,
+          order: index + 1,
+          isRequired: !(hierarchyOptionalSettings[hierarchy.id] || false),
+          restrictToDepartment: deptRestriction.restrictToDepartment,
+          departmentIds: deptRestriction.restrictToDepartment ? deptRestriction.departmentIds : []
+        };
+      });
 
       const payload = {
         name: workflow.name,
-        hierarchies: hierarchiesData, // Send hierarchies with isRequired settings
+        hierarchies: hierarchiesData,
       };
 
       console.log("Sending payload:", JSON.stringify(payload, null, 2));
@@ -385,9 +463,10 @@ export default function WorkflowEditor() {
 
       if (response.ok) {
         toast.success("Workflow with queued hierarchies saved successfully!");
-        setQueuedHierarchies([]); // Clear queue after successful save
-        setHierarchyOptionalSettings({}); // Clear optional settings
-        await Promise.all([fetchWorkflow(), fetchAllAssignments()]); // Refresh both workflow and assignments
+        setQueuedHierarchies([]);
+        setHierarchyOptionalSettings({});
+        setHierarchyDepartmentRestrictions({});
+        await Promise.all([fetchWorkflow(), fetchAllAssignments()]);
       } else {
         toast.error(`${data.message}`);
       }
@@ -414,15 +493,11 @@ export default function WorkflowEditor() {
   const handleDeleteStep = (stepOrder: number) => {
     if (!workflow) return;
 
-    // Confirm deletion
     if (!confirm(`Are you sure you want to delete Step ${stepOrder}? This will remove this approval level from the workflow.`)) {
       return;
     }
 
-    // Remove the step from the workflow
     const updatedSteps = workflow.steps.filter(step => step.order !== stepOrder);
-
-    // Reorder remaining steps to maintain sequential order
     const reorderedSteps = updatedSteps.map((step, index) => ({
       ...step,
       order: index + 1,
@@ -453,7 +528,6 @@ export default function WorkflowEditor() {
     <AuthProvider>
       <Navbar />
       <Container fluid className="py-4">
-        {/* Modern Header */}
         <div className="mb-4">
           <div className="d-flex justify-content-between align-items-center mb-3">
             <div>
@@ -475,198 +549,343 @@ export default function WorkflowEditor() {
           <hr className="border-2 border-primary opacity-25 mb-4" />
         </div>
 
-        <Row>
-          <Col lg={12}>
-            {workflow ? (
-              <Card className="shadow-lg border-0 rounded-3">
-                <Card.Header className="bg-light py-4 rounded-top-3 d-flex justify-content-between align-items-center border-bottom">
-                  <div className="d-flex align-items-center">
-                    <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                      <Diagram3Fill className="text-primary" size={20} />
+        <Row className="g-4">
+          {/* LEFT SIDE: All Hierarchy Assignments */}
+          <Col lg={5}>
+            <Card className="shadow-sm border-0 rounded-3 h-100">
+              <Card.Header className="bg-light py-3 border-bottom">
+                <div className="d-flex align-items-center">
+                  <FaListOl className="me-2 text-primary" size={18} />
+                  <h6 className="mb-0 fw-bold">Current Workflow Assignments</h6>
+                </div>
+              </Card.Header>
+              <Card.Body className="p-4">
+                {allAssignments.length > 0 ? (
+                  <>
+                    <Alert variant="info" className="border-0 mb-3 small">
+                      <FaInfoCircle className="me-2" />
+                      Active hierarchies in the workflow queue
+                    </Alert>
+                    <div className="table-responsive">
+                      <Table hover className="align-middle mb-0">
+                        <thead className="bg-light">
+                          <tr>
+                            <th className="py-2 small">Order</th>
+                            <th className="py-2 small">Hierarchy</th>
+                            <th className="py-2 small">Status</th>
+                            <th className="py-2 small">Dept.</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {allAssignments.map((assignment) => (
+                            <React.Fragment key={assignment.id}>
+                              <tr>
+                                <td>
+                                  <Badge bg="primary" className="px-2 py-1 small">
+                                    {assignment.order}
+                                  </Badge>
+                                </td>
+                                <td>
+                                  <strong className="text-dark small">
+                                    {assignment.hierarchy?.name || 'Unknown'}
+                                  </strong>
+                                </td>
+                                <td>
+                                  {assignment.isRequired ? (
+                                    <Badge bg="success" className="px-2 py-1 small">
+                                      Required
+                                    </Badge>
+                                  ) : (
+                                    <Badge bg="warning" className="px-2 py-1 small">
+                                      Optional
+                                    </Badge>
+                                  )}
+                                </td>
+                                <td>
+                                  {assignment.restrictToDepartment ? (
+                                    <Badge bg="info" className="px-2 py-1 small" title="Restricted to specific departments">
+                                      <FaBuilding className="me-1" size={10} />
+                                      {assignment.departmentsRestrictedTo?.length || 0}
+                                    </Badge>
+                                  ) : (
+                                    <Badge bg="secondary" className="px-2 py-1 small" title="All departments">
+                                      All
+                                    </Badge>
+                                  )}
+                                </td>
+                              </tr>
+                              {assignment.restrictToDepartment && assignment.departmentsRestrictedTo && assignment.departmentsRestrictedTo.length > 0 && (
+                                <tr className="bg-light">
+                                  <td colSpan={4} className="py-2 ps-5">
+                                    <div className="d-flex flex-wrap gap-1">
+                                      <small className="text-muted me-2">Departments:</small>
+                                      {assignment.departmentsRestrictedTo.map((dr) => (
+                                        <Badge key={dr.id} bg="secondary" className="px-2 py-1" style={{ fontSize: '0.7rem' }}>
+                                          {dr.department.name}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          ))}
+                        </tbody>
+                      </Table>
                     </div>
-                    <h5 className="mb-0 fw-bold">Expense Approval Workflow</h5>
+                  </>
+                ) : (
+                  <Alert variant="warning" className="border-0 mb-0">
+                    <FaInfoCircle className="me-2" />
+                    No hierarchies assigned to workflow yet. Add hierarchies using the form on the right.
+                  </Alert>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
+
+          {/* RIGHT SIDE: Update Workflow */}
+          <Col lg={7}>
+            {workflow ? (
+              <Card className="shadow-sm border-0 rounded-3">
+                <Card.Header className="bg-light py-3 border-bottom">
+                  <div className="d-flex align-items-center">
+                    <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-2">
+                      <Diagram3Fill className="text-primary" size={18} />
+                    </div>
+                    <h6 className="mb-0 fw-bold">Update Workflow</h6>
                   </div>
                 </Card.Header>
                 <Card.Body className="p-4">
-                  <Alert
-                    variant="info"
-                    className="border-0 border-start border-3 border-info bg-info bg-opacity-10 mb-4"
-                  >
-                    <div className="d-flex">
-                      <FaInfoCircle className="text-info me-3 fs-5 flex-shrink-0" />
-                      <div>
-                        <h6 className="alert-heading mb-2 fw-bold">
-                          Update Workflow
-                        </h6>
-                        <p className="mb-0 small">
-                          Modify the workflow name and select the approval hierarchy.
-                          The workflow steps represent the stages an expense must
-                          go through before being paid by the finance department.
-                        </p>
+                  {/* Workflow Name Section */}
+                  <div className="mb-4">
+                    <div className="d-flex align-items-center mb-3">
+                      <div className="bg-primary bg-opacity-10 p-2 rounded me-2">
+                        <FaPencilAlt className="text-primary" size={15} />
+                      </div>
+                      <h6 className="mb-0 fw-bold text-dark" style={{ fontSize: '1rem' }}>Workflow Details</h6>
+                    </div>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-muted mb-2" style={{ fontSize: '0.9rem' }}>
+                        Workflow Name <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        value={workflow.name}
+                        onChange={(e) =>
+                          handleUpdateWorkflow("name", e.target.value)
+                        }
+                        className="py-2 rounded-3"
+                        style={{ fontSize: '0.95rem' }}
+                      />
+                      <Form.Text className="text-muted" style={{ fontSize: '0.85rem' }}>
+                        Enter a descriptive name for this workflow
+                      </Form.Text>
+                    </Form.Group>
+                  </div>
+
+                  <hr className="my-4" />
+
+                  {/* Add Hierarchy Section */}
+                  <div className="mb-4">
+                    <div className="d-flex align-items-center mb-3">
+                      <div className="bg-success bg-opacity-10 p-2 rounded me-2">
+                        <FaPlusCircle className="text-success" size={15} />
+                      </div>
+                      <h6 className="mb-0 fw-bold text-dark" style={{ fontSize: '1rem' }}>Add Hierarchy to Queue</h6>
+                    </div>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-muted mb-2" style={{ fontSize: '0.9rem' }}>
+                        Select Approval Hierarchy
+                      </Form.Label>
+                      <div className="d-flex gap-2">
+                        <Form.Select
+                          value={selectedHierarchyId || ""}
+                          required
+                          onChange={(e) => setSelectedHierarchyId(Number(e.target.value) || null)}
+                          className="py-2 rounded-3 flex-grow-1"
+                          style={{ fontSize: '0.95rem' }}
+                        >
+                          <option value="">-- Select a hierarchy --</option>
+                          {hierarchies.map((hierarchy) => (
+                            <option key={hierarchy.id} value={hierarchy.id}>
+                              {hierarchy.name}
+                            </option>
+                          ))}
+                        </Form.Select>
+                        <Button
+                          variant="success"
+                          onClick={() => selectedHierarchyId && handleAddHierarchyToQueue(selectedHierarchyId)}
+                          disabled={!selectedHierarchyId}
+                          className="px-3 rounded-3 d-flex align-items-center"
+                          style={{ fontSize: '0.9rem' }}
+                        >
+                          <FaPlusCircle className="me-2" size={16} />
+                          Add
+                        </Button>
+                      </div>
+                      <Form.Text className="text-muted" style={{ fontSize: '0.85rem' }}>
+                        Choose hierarchies to add in the order they should be processed
+                      </Form.Text>
+                    </Form.Group>
+                  </div>
+
+                  {/* Queued Hierarchies Section */}
+                  {queuedHierarchies.length > 0 && (
+                    <div className="mb-4">
+                      <hr className="my-4" />
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <div className="d-flex align-items-center">
+                          <div className="bg-warning bg-opacity-10 p-2 rounded me-2">
+                            <FaListOl className="text-warning" size={15} />
+                          </div>
+                          <h6 className="mb-0 fw-bold text-dark" style={{ fontSize: '1rem' }}>
+                            Queue Preview ({queuedHierarchies.length})
+                          </h6>
+                        </div>
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={handleClearQueue}
+                          className="rounded-pill px-3"
+                          style={{ fontSize: '0.85rem' }}
+                        >
+                          <FaTrash className="me-1" size={11} />
+                          Clear All
+                        </Button>
+                      </div>
+                      <Alert variant="success" className="border-0 bg-success bg-opacity-10 mb-3" style={{ fontSize: '0.9rem' }}>
+                        <FaCheckCircle className="me-2" />
+                        Click "Save Changes" to apply this order
+                      </Alert>
+                      <div className="d-flex flex-column gap-3">
+                            {queuedHierarchies.map((hierarchy, index) => {
+                              const deptRestriction = hierarchyDepartmentRestrictions[hierarchy.id] || { restrictToDepartment: false, departmentIds: [] };
+
+                              return (
+                                <Card
+                                  key={hierarchy.id}
+                                  className="border-0 bg-white shadow-sm"
+                                >
+                                  <Card.Body className="p-3">
+                                    <div className="d-flex justify-content-between align-items-start mb-2">
+                                      <div className="d-flex align-items-center gap-2 flex-grow-1">
+                                        <Badge bg="primary" className="px-2 py-1" style={{ fontSize: '0.85rem' }}>
+                                          #{index + 1}
+                                        </Badge>
+                                        <div className="flex-grow-1">
+                                          <h6 className="mb-0 fw-bold text-dark" style={{ fontSize: '0.95rem' }}>{hierarchy.name}</h6>
+                                          {hierarchy.description && (
+                                            <p className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>{hierarchy.description}</p>
+                                          )}
+                                        </div>
+                                        <Form.Check
+                                          type="switch"
+                                          id={`queue-optional-${hierarchy.id}`}
+                                          label={
+                                            <Badge
+                                              bg={hierarchyOptionalSettings[hierarchy.id] ? "warning" : "success"}
+                                              className="px-2 py-1"
+                                              style={{ fontSize: '0.8rem' }}
+                                            >
+                                              {hierarchyOptionalSettings[hierarchy.id] ? "Optional" : "Required"}
+                                            </Badge>
+                                          }
+                                          checked={hierarchyOptionalSettings[hierarchy.id] || false}
+                                          onChange={() => toggleHierarchyOptional(hierarchy.id)}
+                                        />
+                                      </div>
+                                      <div className="d-flex gap-1 ms-2">
+                                        <Button
+                                          variant="light"
+                                          size="sm"
+                                          onClick={() => handleMoveUp(index)}
+                                          disabled={index === 0}
+                                          title="Move up"
+                                          className="p-1 d-flex align-items-center justify-content-center"
+                                          style={{ width: '28px', height: '28px' }}
+                                        >
+                                          <FaArrowUp size={12} />
+                                        </Button>
+                                        <Button
+                                          variant="light"
+                                          size="sm"
+                                          onClick={() => handleMoveDown(index)}
+                                          disabled={index === queuedHierarchies.length - 1}
+                                          title="Move down"
+                                          className="p-1 d-flex align-items-center justify-content-center"
+                                          style={{ width: '28px', height: '28px' }}
+                                        >
+                                          <FaArrowDown size={12} />
+                                        </Button>
+                                        <Button
+                                          variant="light"
+                                          size="sm"
+                                          onClick={() => handleRemoveFromQueue(hierarchy.id)}
+                                          title="Remove from queue"
+                                          className="p-1 d-flex align-items-center justify-content-center text-danger"
+                                          style={{ width: '28px', height: '28px' }}
+                                        >
+                                          <FaTrash size={12} />
+                                        </Button>
+                                      </div>
+                                    </div>
+
+                                    {/* Department Restriction Section */}
+                                    <div className="border-top pt-2 mt-2">
+                                      <Form.Check
+                                        type="switch"
+                                        id={`dept-restrict-${hierarchy.id}`}
+                                        label={
+                                          <span className="fw-semibold" style={{ fontSize: '0.9rem' }}>
+                                            <FaBuilding className="me-1" size={13} />
+                                            Restrict to Departments
+                                          </span>
+                                        }
+                                        checked={deptRestriction.restrictToDepartment}
+                                        onChange={() => toggleDepartmentRestriction(hierarchy.id)}
+                                        className="mb-2"
+                                      />
+
+                                      {deptRestriction.restrictToDepartment && (
+                                        <div className="ps-3 mt-2">
+                                          <div className="row g-2">
+                                            {departments.map((dept) => (
+                                              <div key={dept.id} className="col-md-6 col-sm-6">
+                                                <Form.Check
+                                                  type="checkbox"
+                                                  id={`dept-${hierarchy.id}-${dept.id}`}
+                                                  label={dept.name}
+                                                  checked={deptRestriction.departmentIds.includes(dept.id)}
+                                                  onChange={() => handleDepartmentSelection(hierarchy.id, dept.id)}
+                                                  style={{ fontSize: '0.9rem' }}
+                                                />
+                                              </div>
+                                            ))}
+                                          </div>
+                                          {deptRestriction.departmentIds.length === 0 && (
+                                            <Alert variant="warning" className="mt-2 mb-0 py-1 px-2" style={{ fontSize: '0.85rem' }}>
+                                              <FaInfoCircle className="me-1" size={13} />
+                                              Select at least one department
+                                            </Alert>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </Card.Body>
+                                </Card>
+                              );
+                            })}
                       </div>
                     </div>
-                  </Alert>
+                  )}
 
-                  <h6 className="mb-3 fw-bold text-dark d-flex align-items-center border-bottom pb-3">
-                    <FaPencilAlt className="me-2 text-primary" />
-                    Workflow Details
-                  </h6>
-                  <Card className="border-0 bg-light mb-4">
-                    <Card.Body className="p-4">
-                      <Form.Group className="mb-0">
-                        <Form.Label className="fw-semibold text-dark">
-                          Workflow Name <span className="text-danger">*</span>
-                        </Form.Label>
-                        <Form.Control
-                          value={workflow.name}
-                          onChange={(e) =>
-                            handleUpdateWorkflow("name", e.target.value)
-                          }
-                          className="py-2 border-2 rounded-3"
-                          placeholder="Enter workflow name"
-                        />
-                        <Form.Text className="text-muted">
-                          Workflow name is required
-                        </Form.Text>
-                      </Form.Group>
-                    </Card.Body>
-                  </Card>
-
-                  <h6 className="mb-3 fw-bold text-dark d-flex align-items-center border-bottom pb-3">
-                    <FaListOl className="me-2 text-primary" />
-                    Approval Hierarchy Queue
-                  </h6>
-                  <Card className="border-0 bg-light mb-4">
-                    <Card.Body className="p-4">
-                      <Form.Group className="mb-3">
-                        <Form.Label className="fw-semibold text-dark">
-                          Select Approval Hierarchy to Add <span className="text-danger">*</span>
-                        </Form.Label>
-                        <div className="d-flex gap-2">
-                          <Form.Select
-                            value={selectedHierarchyId || ""}
-                            required
-                            onChange={(e) => setSelectedHierarchyId(Number(e.target.value) || null)}
-                            className="py-2 border-2 rounded-3"
-                          >
-                            <option value=""></option>
-                            {hierarchies.map((hierarchy) => (
-                              <option key={hierarchy.id} value={hierarchy.id}>
-                                {hierarchy.name}
-                              </option>
-                            ))}
-                          </Form.Select>
-                          <Button
-                            variant="primary"
-                            onClick={() => selectedHierarchyId && handleAddHierarchyToQueue(selectedHierarchyId)}
-                            disabled={!selectedHierarchyId}
-                            className="px-4 rounded-3"
-                          >
-                            <FaPlusCircle className="me-2" />
-                            Add to Queue
-                          </Button>
-                        </div>
-                        <Form.Text className="text-muted">
-                          Select hierarchies one by one and add them to the queue in order
-                        </Form.Text>
-                      </Form.Group>
-
-                      {/* Queue Preview */}
-                      {queuedHierarchies.length > 0 && (
-                        <>
-                          <div className="d-flex justify-content-between align-items-center mb-3 mt-4">
-                            <h6 className="mb-0 fw-bold text-dark">Queued Hierarchies ({queuedHierarchies.length})</h6>
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              onClick={handleClearQueue}
-                              className="rounded-3"
-                            >
-                              Clear All
-                            </Button>
-                          </div>
-                          <Alert variant="success" className="border-0 mb-3">
-                            <FaCheckCircle className="me-2" />
-                            Hierarchies will be saved in this order when you click "Save Changes"
-                          </Alert>
-                          <div className="list-group">
-                            {queuedHierarchies.map((hierarchy, index) => (
-                              <div
-                                key={hierarchy.id}
-                                className="list-group-item d-flex justify-content-between align-items-center py-3"
-                              >
-                                <div className="d-flex align-items-center gap-3 flex-grow-1">
-                                  <Badge bg="primary" className="px-3 py-2 fs-6">
-                                    {index + 1}
-                                  </Badge>
-                                  <div className="flex-grow-1">
-                                    <strong className="text-dark">{hierarchy.name}</strong>
-                                    {hierarchy.description && (
-                                      <p className="text-muted mb-0 small">{hierarchy.description}</p>
-                                    )}
-                                  </div>
-                                  <div className="me-3">
-                                    <Form.Check
-                                      type="switch"
-                                      id={`queue-optional-${hierarchy.id}`}
-                                      label={
-                                        hierarchyOptionalSettings[hierarchy.id] ? (
-                                          <Badge bg="warning" className="px-2 py-1">
-                                            Optional
-                                          </Badge>
-                                        ) : (
-                                          <Badge bg="success" className="px-2 py-1">
-                                            Required
-                                          </Badge>
-                                        )
-                                      }
-                                      checked={hierarchyOptionalSettings[hierarchy.id] || false}
-                                      onChange={() => toggleHierarchyOptional(hierarchy.id)}
-                                    />
-                                  </div>
-                                </div>
-                                <div className="d-flex gap-2">
-                                  <Button
-                                    variant="outline-secondary"
-                                    size="sm"
-                                    onClick={() => handleMoveUp(index)}
-                                    disabled={index === 0}
-                                    title="Move up"
-                                  >
-                                    <FaArrowUp />
-                                  </Button>
-                                  <Button
-                                    variant="outline-secondary"
-                                    size="sm"
-                                    onClick={() => handleMoveDown(index)}
-                                    disabled={index === queuedHierarchies.length - 1}
-                                    title="Move down"
-                                  >
-                                    <FaArrowDown />
-                                  </Button>
-                                  <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    onClick={() => handleRemoveFromQueue(hierarchy.id)}
-                                    title="Remove from queue"
-                                  >
-                                    <FaTrash />
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </>
-                      )}
-
-                      {queuedHierarchies.length === 0 && (
-                        <Alert variant="warning" className="mt-3 mb-0">
-                          <FaInfoCircle className="me-2" />
-                          No hierarchies in queue. Add hierarchies above to preview the order.
-                        </Alert>
-                      )}
-                    </Card.Body>
-                  </Card>
+                  {/* Empty State */}
+                  {queuedHierarchies.length === 0 && (
+                    <Alert variant="info" className="border-0 bg-info bg-opacity-10 mb-4" style={{ fontSize: '0.9rem' }}>
+                      <FaInfoCircle className="me-2" />
+                      No hierarchies in queue. Select a hierarchy above to get started.
+                    </Alert>
+                  )}
 
                   {workflow.steps && workflow.steps.length > 0 && (
                     <>
@@ -739,61 +958,6 @@ export default function WorkflowEditor() {
                         </tbody>
                       </Table>
                     </>
-                  )}
-
-                  {/* Display All Hierarchy Assignments */}
-                  <h6 className="mb-3 mt-4 fw-bold text-dark d-flex align-items-center border-bottom pb-3">
-                    <FaListOl className="me-2 text-primary" />
-                    All Hierarchy Assignments
-                  </h6>
-                  {allAssignments.length > 0 ? (
-                    <>
-                      <Alert variant="info" className="border-0 mb-3">
-                        <FaInfoCircle className="me-2" />
-                        Data from HierarchyAssignment table
-                      </Alert>
-                      <Table hover className="align-middle">
-                        <thead className="bg-light">
-                          <tr>
-                            <th className="py-3">Order</th>
-                            <th className="py-3">Hierarchy Name</th>
-                            <th className="py-3">Required/Optional</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {allAssignments.map((assignment) => (
-                            <tr key={assignment.id}>
-                              <td>
-                                <Badge bg="primary" className="px-3 py-2 fs-6">
-                                  {assignment.order}
-                                </Badge>
-                              </td>
-                              <td>
-                                <strong className="text-dark">
-                                  {assignment.hierarchy?.name || 'Unknown Hierarchy'}
-                                </strong>
-                              </td>
-                              <td>
-                                {assignment.isRequired ? (
-                                  <Badge bg="success" className="px-3 py-2">
-                                    Required
-                                  </Badge>
-                                ) : (
-                                  <Badge bg="warning" className="px-3 py-2">
-                                    Optional
-                                  </Badge>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
-                    </>
-                  ) : (
-                    <Alert variant="warning" className="border-0 mb-3">
-                      <FaInfoCircle className="me-2" />
-                      No hierarchy assignments found in the database.
-                    </Alert>
                   )}
 
                   <div className="d-flex justify-content-end pt-4 mt-4 border-top">
@@ -883,7 +1047,6 @@ export default function WorkflowEditor() {
         </Row>
       </Container>
 
-      {/* Create Workflow Modal */}
       <Modal
         show={showCreateModal}
         onHide={() => setShowCreateModal(false)}
