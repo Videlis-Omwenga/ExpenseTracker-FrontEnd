@@ -49,6 +49,7 @@ interface HierarchyAssignment {
   hierarchyLevelId: number | null;
   userId: number;
   order: number;
+  isRequired: boolean;
   hierarchy?: {
     id: number;
     name: string;
@@ -112,6 +113,7 @@ export default function WorkflowEditor() {
   const [selectedHierarchyId, setSelectedHierarchyId] = useState<number | null>(null);
   const [allAssignments, setAllAssignments] = useState<HierarchyAssignment[]>([]);
   const [queuedHierarchies, setQueuedHierarchies] = useState<Hierarchy[]>([]);
+  const [hierarchyOptionalSettings, setHierarchyOptionalSettings] = useState<Record<number, boolean>>({});
 
   // Fetch data
   const fetchWorkflow = async () => {
@@ -329,7 +331,15 @@ export default function WorkflowEditor() {
 
   const handleClearQueue = () => {
     setQueuedHierarchies([]);
+    setHierarchyOptionalSettings({});
     toast.info("Queue cleared");
+  };
+
+  const toggleHierarchyOptional = (hierarchyId: number) => {
+    setHierarchyOptionalSettings(prev => ({
+      ...prev,
+      [hierarchyId]: !(prev[hierarchyId] || false)
+    }));
   };
 
   const handleSaveWorkflow = async () => {
@@ -343,13 +353,19 @@ export default function WorkflowEditor() {
     setIsSubmitting(true);
 
     try {
-      // Send queued hierarchies to backend in order
-      const hierarchyIds = queuedHierarchies.map(h => h.id);
+      // Build hierarchies data with isRequired settings
+      const hierarchiesData = queuedHierarchies.map((hierarchy, index) => ({
+        hierarchyId: hierarchy.id,
+        order: index + 1,
+        isRequired: !(hierarchyOptionalSettings[hierarchy.id] || false)
+      }));
 
       const payload = {
         name: workflow.name,
-        hierarchyIds: hierarchyIds, // Send array of hierarchy IDs in order
+        hierarchies: hierarchiesData, // Send hierarchies with isRequired settings
       };
+
+      console.log("Sending payload:", JSON.stringify(payload, null, 2));
 
       const response = await fetch(
         `${BASE_API_URL}/workflows/update/${workflow.id}`,
@@ -370,6 +386,7 @@ export default function WorkflowEditor() {
       if (response.ok) {
         toast.success("Workflow with queued hierarchies saved successfully!");
         setQueuedHierarchies([]); // Clear queue after successful save
+        setHierarchyOptionalSettings({}); // Clear optional settings
         await Promise.all([fetchWorkflow(), fetchAllAssignments()]); // Refresh both workflow and assignments
       } else {
         toast.error(`${data.message}`);
@@ -578,15 +595,34 @@ export default function WorkflowEditor() {
                                 key={hierarchy.id}
                                 className="list-group-item d-flex justify-content-between align-items-center py-3"
                               >
-                                <div className="d-flex align-items-center gap-3">
+                                <div className="d-flex align-items-center gap-3 flex-grow-1">
                                   <Badge bg="primary" className="px-3 py-2 fs-6">
                                     {index + 1}
                                   </Badge>
-                                  <div>
+                                  <div className="flex-grow-1">
                                     <strong className="text-dark">{hierarchy.name}</strong>
                                     {hierarchy.description && (
                                       <p className="text-muted mb-0 small">{hierarchy.description}</p>
                                     )}
+                                  </div>
+                                  <div className="me-3">
+                                    <Form.Check
+                                      type="switch"
+                                      id={`queue-optional-${hierarchy.id}`}
+                                      label={
+                                        hierarchyOptionalSettings[hierarchy.id] ? (
+                                          <Badge bg="warning" className="px-2 py-1">
+                                            Optional
+                                          </Badge>
+                                        ) : (
+                                          <Badge bg="success" className="px-2 py-1">
+                                            Required
+                                          </Badge>
+                                        )
+                                      }
+                                      checked={hierarchyOptionalSettings[hierarchy.id] || false}
+                                      onChange={() => toggleHierarchyOptional(hierarchy.id)}
+                                    />
                                   </div>
                                 </div>
                                 <div className="d-flex gap-2">
@@ -721,7 +757,7 @@ export default function WorkflowEditor() {
                           <tr>
                             <th className="py-3">Order</th>
                             <th className="py-3">Hierarchy Name</th>
-                            <th className="py-3">User ID</th>
+                            <th className="py-3">Required/Optional</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -738,9 +774,15 @@ export default function WorkflowEditor() {
                                 </strong>
                               </td>
                               <td>
-                                <Badge bg="info" className="px-2 py-1">
-                                  {assignment.userId}
-                                </Badge>
+                                {assignment.isRequired ? (
+                                  <Badge bg="success" className="px-3 py-2">
+                                    Required
+                                  </Badge>
+                                ) : (
+                                  <Badge bg="warning" className="px-3 py-2">
+                                    Optional
+                                  </Badge>
+                                )}
                               </td>
                             </tr>
                           ))}
