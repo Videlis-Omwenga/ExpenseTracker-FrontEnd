@@ -7,30 +7,34 @@ export function useApi() {
     const response = await apiClient(`${BASE_API_URL}${endpoint}`, {
       method: "GET",
     });
-    return response.json();
+    const data = await response.json();
+    return { data, response };
   }, []);
 
-  const post = useCallback(async (endpoint: string, data: unknown) => {
+  const post = useCallback(async (endpoint: string, body: unknown) => {
     const response = await apiClient(`${BASE_API_URL}${endpoint}`, {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify(body),
     });
-    return response.json();
+    const data = await response.json();
+    return { data, response };
   }, []);
 
-  const put = useCallback(async (endpoint: string, data: unknown) => {
+  const put = useCallback(async (endpoint: string, body: unknown) => {
     const response = await apiClient(`${BASE_API_URL}${endpoint}`, {
       method: "PUT",
-      body: JSON.stringify(data),
+      body: JSON.stringify(body),
     });
-    return response.json();
+    const data = await response.json();
+    return { data, response };
   }, []);
 
   const del = useCallback(async (endpoint: string) => {
     const response = await apiClient(`${BASE_API_URL}${endpoint}`, {
       method: "DELETE",
     });
-    return response.json();
+    const data = await response.json();
+    return { data, response };
   }, []);
 
   return { get, post, put, delete: del };

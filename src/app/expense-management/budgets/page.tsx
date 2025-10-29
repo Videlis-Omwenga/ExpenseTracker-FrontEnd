@@ -76,10 +76,16 @@ const BudgetOverview = () => {
   // Calculate budget statistics
   const budgetStats = useMemo(() => {
     const totalOriginal = budgets.reduce((sum, b) => sum + b.originalBudget, 0);
-    const totalRemaining = budgets.reduce((sum, b) => sum + b.remainingBudget, 0);
+    const totalRemaining = budgets.reduce(
+      (sum, b) => sum + b.remainingBudget,
+      0
+    );
     const totalSpent = totalOriginal - totalRemaining;
-    const avgUtilization = totalOriginal > 0 ? (totalSpent / totalOriginal) * 100 : 0;
-    const criticalBudgets = budgets.filter(b => b.remainingBudget < b.originalBudget * 0.2).length;
+    const avgUtilization =
+      totalOriginal > 0 ? (totalSpent / totalOriginal) * 100 : 0;
+    const criticalBudgets = budgets.filter(
+      (b) => b.remainingBudget < b.originalBudget * 0.2
+    ).length;
 
     return {
       totalOriginal,
@@ -143,7 +149,7 @@ const BudgetOverview = () => {
   return (
     <>
       {/* ===== Activator Card ===== */}
-      <Col xs={6} md={2} onClick={handleOpen} style={{ cursor: 'pointer' }}>
+      <Col xs={6} md={2} onClick={handleOpen} style={{ cursor: "pointer" }}>
         <div className="budget-activator-card position-relative overflow-hidden">
           <div className="gradient-overlay"></div>
           <div className="card-content position-relative">
@@ -287,125 +293,152 @@ const BudgetOverview = () => {
               {/* Budget Table */}
               <div className="table-responsive rounded-3 shadow-sm">
                 <Table hover className="mb-0 border modern-table">
-                <thead>
-                  <tr>
-                    <th className="ps-4">
-                      <div className="d-flex align-items-center">
-                        <Tag size={14} className="me-2" />
-                        <span>ID</span>
-                      </div>
-                    </th>
-                    <th>Category</th>
-                    <th>Department</th>
-                    <th>
-                      <div className="d-flex align-items-center">
-                        <MapPin size={14} className="me-2" />
-                        <span>Region</span>
-                      </div>
-                    </th>
-                    <th>Original Budget</th>
-                    <th>
-                      <div className="d-flex align-items-center">
-                        <TrendingUp size={14} className="me-2" />
-                        <span>Remaining</span>
-                      </div>
-                    </th>
-                    <th>
-                      <div className="d-flex align-items-center">
-                        <Percent size={14} className="me-2" />
-                        <span>Utilization</span>
-                      </div>
-                    </th>
-                    <th className="pe-4">
-                      <div className="d-flex align-items-center">
-                        <Calendar size={14} className="me-2" />
-                        <span>Period</span>
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {budgets.map((b) => {
-                    const utilizationPercentage = Math.max(
-                      0,
-                      Math.min(
-                        100,
-                        100 - (b.remainingBudget / b.originalBudget) * 100
-                      )
-                    );
-                    const isCritical =
-                      b.remainingBudget < b.originalBudget * 0.2;
-                    const isWarning =
-                      !isCritical && b.remainingBudget < b.originalBudget * 0.5;
+                  <thead>
+                    <tr>
+                      <th className="ps-4">
+                        <div className="d-flex align-items-center">
+                          <Tag size={14} className="me-2" />
+                          <span>ID</span>
+                        </div>
+                      </th>
+                      <th>Category</th>
+                      <th>Department</th>
+                      <th>
+                        <div className="d-flex align-items-center">
+                          <MapPin size={14} className="me-2" />
+                          <span>Region</span>
+                        </div>
+                      </th>
+                      <th>Original Budget</th>
+                      <th>
+                        <div className="d-flex align-items-center">
+                          <TrendingUp size={14} className="me-2" />
+                          <span>Remaining</span>
+                        </div>
+                      </th>
+                      <th>
+                        <div className="d-flex align-items-center">
+                          <Percent size={14} className="me-2" />
+                          <span>Utilization</span>
+                        </div>
+                      </th>
+                      <th className="pe-4">
+                        <div className="d-flex align-items-center">
+                          <Calendar size={14} className="me-2" />
+                          <span>Period</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {budgets.map((b) => {
+                      const utilizationPercentage = Math.max(
+                        0,
+                        Math.min(
+                          100,
+                          100 - (b.remainingBudget / b.originalBudget) * 100
+                        )
+                      );
+                      const isCritical =
+                        b.remainingBudget < b.originalBudget * 0.2;
+                      const isWarning =
+                        !isCritical &&
+                        b.remainingBudget < b.originalBudget * 0.5;
 
-                    return (
-                      <tr key={b.id} className="table-row-hover">
-                        <td className="ps-4">
-                          <div className="d-flex align-items-center">
-                            <span className="budget-id">{b.id}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="category-badge">
-                            {b.expenseCategory?.name || "N/A"}
-                          </span>
-                        </td>
-                        <td>
-                          <span className="department-text">
-                            {b.department?.name || `Department ${b.departmentId}`}
-                          </span>
-                        </td>
-                        <td>
-                          <span className="region-badge">
-                            <MapPin size={12} className="me-1" />
-                            {b.region?.name || `Region ${b.regionId}`}
-                          </span>
-                        </td>
-                        <td>
-                          <span className="budget-amount fw-semibold">
-                            ${b.originalBudget.toLocaleString()}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="d-flex align-items-center">
-                            {isCritical ? (
-                              <AlertTriangle size={16} className="me-2 text-danger" />
-                            ) : isWarning ? (
-                              <AlertTriangle size={16} className="me-2 text-warning" />
-                            ) : (
-                              <CheckCircle size={16} className="me-2 text-success" />
-                            )}
-                            <span className={`remaining-amount fw-semibold ${
-                              isCritical ? "text-danger" : isWarning ? "text-warning" : "text-success"
-                            }`}>
-                              ${b.remainingBudget.toLocaleString()}
-                            </span>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="utilization-wrapper">
-                            <div className="progress-container">
-                              <div
-                                className={`progress-bar-modern ${
-                                  isCritical ? "progress-danger" : isWarning ? "progress-warning" : "progress-success"
-                                }`}
-                                style={{ width: `${utilizationPercentage}%` }}
-                              ></div>
+                      return (
+                        <tr key={b.id} className="table-row-hover">
+                          <td className="ps-4">
+                            <div className="d-flex align-items-center">
+                              <span className="budget-id">{b.id}</span>
                             </div>
-                            <span className={`utilization-percent ${
-                              isCritical ? "text-danger" : isWarning ? "text-warning" : "text-success"
-                            }`}>
-                              {Math.round(utilizationPercentage)}%
+                          </td>
+                          <td>
+                            <span className="category-badge">
+                              {b.expenseCategory?.name || "N/A"}
                             </span>
-                          </div>
-                        </td>
-                        <td className="pe-4">
-                          <span className="period-text">{b.monthYear}</span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
+                          </td>
+                          <td>
+                            <span className="department-text">
+                              {b.department?.name ||
+                                `Department ${b.departmentId}`}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="region-badge">
+                              <MapPin size={12} className="me-1" />
+                              {b.region?.name || `Region ${b.regionId}`}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="budget-amount fw-semibold">
+                              ${b.originalBudget.toLocaleString()}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              {isCritical ? (
+                                <AlertTriangle
+                                  size={16}
+                                  className="me-2 text-danger"
+                                />
+                              ) : isWarning ? (
+                                <AlertTriangle
+                                  size={16}
+                                  className="me-2 text-warning"
+                                />
+                              ) : (
+                                <CheckCircle
+                                  size={16}
+                                  className="me-2 text-success"
+                                />
+                              )}
+                              <span
+                                className={`remaining-amount fw-semibold ${
+                                  isCritical
+                                    ? "text-danger"
+                                    : isWarning
+                                    ? "text-warning"
+                                    : "text-success"
+                                }`}
+                              >
+                                ${b.remainingBudget.toLocaleString()}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="utilization-wrapper">
+                              <div className="progress-container">
+                                <div
+                                  className={`progress-bar-modern ${
+                                    isCritical
+                                      ? "progress-danger"
+                                      : isWarning
+                                      ? "progress-warning"
+                                      : "progress-success"
+                                  }`}
+                                  style={{ width: `${utilizationPercentage}%` }}
+                                ></div>
+                              </div>
+                              <span
+                                className={`utilization-percent ${
+                                  isCritical
+                                    ? "text-danger"
+                                    : isWarning
+                                    ? "text-warning"
+                                    : "text-success"
+                                }`}
+                              >
+                                {Math.round(utilizationPercentage)}%
+                              </span>
+                            </div>
+                          </td>
+                          <td className="pe-4">
+                            <span className="period-text">{b.monthYear}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
                 </Table>
               </div>
             </>
@@ -576,7 +609,12 @@ const BudgetOverview = () => {
           left: 0;
           right: 0;
           height: 3px;
-          background: linear-gradient(90deg, transparent, currentColor, transparent);
+          background: linear-gradient(
+            90deg,
+            transparent,
+            currentColor,
+            transparent
+          );
           opacity: 0;
           transition: opacity 0.3s ease;
         }
@@ -664,7 +702,8 @@ const BudgetOverview = () => {
         }
 
         @keyframes pulse {
-          0%, 100% {
+          0%,
+          100% {
             opacity: 1;
           }
           50% {
@@ -822,7 +861,8 @@ const BudgetOverview = () => {
         }
 
         @keyframes pulse-danger {
-          0%, 100% {
+          0%,
+          100% {
             box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
           }
           50% {

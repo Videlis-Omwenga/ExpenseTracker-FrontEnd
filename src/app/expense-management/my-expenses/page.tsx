@@ -18,7 +18,6 @@ import {
   ProgressBar,
 } from "react-bootstrap";
 import {
-  ArrowDownCircle,
   Clock,
   FileText,
   CheckCircle,
@@ -43,24 +42,15 @@ import {
   Eye,
   Person,
   PlusCircle,
-  ListUl,
   GraphUp,
   GraphUpArrow,
   Calendar,
   Award,
-  Star,
   Activity,
   Share,
   Printer,
-  Filter,
-  SortDown,
-  CheckAll,
   FiletypeXlsx,
-  FiletypePdf,
   Lightning,
-  ChevronRight,
-  Stopwatch,
-  HourglassSplit,
   CheckSquareFill,
 } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
@@ -213,29 +203,6 @@ const statusBadge = (status: string) => {
         label: s || "UNKNOWN",
       };
   }
-};
-
-const stepPillStyle = (step: ExpenseStep) => {
-  const s = normalizeStatus(step.status) as ApprovalStatus;
-  if (s === "APPROVED")
-    return {
-      className: "bg-success text-white",
-      icon: <CheckCircle size={12} className="me-1" />,
-    };
-  if (s === "REJECTED")
-    return {
-      className: "bg-danger text-white",
-      icon: <XCircle size={12} className="me-1" />,
-    };
-  if (s === "PENDING")
-    return {
-      className: "bg-warning text-dark",
-      icon: <ClockHistory size={12} className="me-1" />,
-    };
-  return {
-    className: "bg-secondary text-white",
-    icon: <Circle size={12} className="me-1" />,
-  }; // NOT_STARTED
 };
 
 const countCompletedSteps = (steps: ExpenseStep[]) =>
@@ -856,245 +823,132 @@ export default function FinanceDashboard() {
                   <Clipboard2Data className="text-primary" size={28} />
                 </div>
                 <div>
-                  <h2 className="fw-bold text-dark mb-0">My Expenses</h2>
+                  <h5 className="fw-bold text-primary mb-0">My Expenses</h5>
                   <p className="text-muted mb-0 small">
                     Track and manage your expense submissions
                   </p>
                 </div>
               </div>
             </div>
-            <Button
-              size="sm"
-              variant="primary"
-              className="d-inline-flex align-items-center px-4 py-2 rounded-pill fw-semibold shadow-sm"
-              onClick={handleRefresh}
-              disabled={refreshing}
-            >
-              {refreshing ? (
-                <Spinner animation="border" size="sm" className="me-2" />
-              ) : (
-                <ArrowRepeat size={16} className="me-2" />
-              )}
-              Refresh
-            </Button>
+            <div className="d-flex gap-2 flex-wrap">
+              <Button
+                variant="primary"
+                size="sm"
+                className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
+                onClick={() => handleNavigation("create-expense")}
+              >
+                <PlusCircle size={14} />
+                New Expense
+              </Button>
+              <Button
+                variant="success"
+                size="sm"
+                className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
+                onClick={() => {
+                  const csvContent = [
+                    [
+                      "ID",
+                      "Date",
+                      "Payee",
+                      "Category",
+                      "Description",
+                      "Amount",
+                      "Status",
+                    ],
+                    ...filteredExpenses.map((e) => [
+                      e.id,
+                      new Date(e.createdAt).toLocaleDateString(),
+                      e.payee,
+                      e.category?.name || "N/A",
+                      e.description,
+                      e.amount,
+                      e.status,
+                    ]),
+                  ]
+                    .map((row) => row.join(","))
+                    .join("\n");
+                  const blob = new Blob([csvContent], {
+                    type: "text/csv",
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `expenses_${
+                    new Date().toISOString().split("T")[0]
+                  }.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success("Expenses exported successfully!");
+                }}
+              >
+                <FiletypeXlsx size={14} />
+                Export CSV
+              </Button>
+              <Button
+                variant="info"
+                size="sm"
+                className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
+                onClick={() => window.print()}
+              >
+                <Printer size={14} />
+                Budget overview
+              </Button>
+              <Button
+                variant="outline-dark"
+                size="sm"
+                className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: "My Expenses Summary",
+                      text: `I have ${
+                        expenses.length
+                      } expenses totaling KES ${expenses
+                        .reduce((sum, e) => sum + e.amount, 0)
+                        .toLocaleString()}`,
+                      url: window.location.href,
+                    });
+                  } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success("Page URL copied to clipboard!");
+                  }
+                }}
+              >
+                <Share size={14} />
+                Share
+              </Button>
+              <Button
+                size="sm"
+                variant="primary"
+                className="d-inline-flex align-items-center px-4 py-2 rounded-pill fw-semibold shadow-sm"
+                onClick={handleRefresh}
+                disabled={refreshing}
+              >
+                {refreshing ? (
+                  <Spinner animation="border" size="sm" className="me-2" />
+                ) : (
+                  <ArrowRepeat size={16} className="me-2" />
+                )}
+                Refresh
+              </Button>
+            </div>
           </div>
           <hr className="border-2 border-primary opacity-25 mb-4" />
         </div>
-
-        {/* Stats Cards */}
-        <Row className="mb-4">
-          <Col>
-            <Card className="border-0 shadow-sm rounded-3">
-              <Card.Body className="p-4">
-                <Row className="g-4">
-                  <Col xs={6} md={2}>
-                    <div className="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-primary border-2">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
-                          <CashStack size={20} className="text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-muted small mb-1">
-                            Monthly Budget
-                          </p>
-                          <h6 className="mb-0 fw-bold">
-                            $
-                            {(budgetSummary?.totalBudget || 0).toLocaleString()}
-                          </h6>
-                        </div>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col xs={6} md={2}>
-                    <div className="bg-success p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-success border-2">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-warning bg-opacity-10 p-2 rounded me-3">
-                          <BarChart size={20} className="text-warning" />
-                        </div>
-                        <div>
-                          <p className="text-muted small mb-1">Spent</p>
-                          <h6 className="mb-0 fw-bold">
-                            ${(budgetSummary?.totalSpent || 0).toLocaleString()}
-                          </h6>
-                        </div>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col xs={6} md={2}>
-                    <div className="bg-info p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-info border-2">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-success bg-opacity-10 p-2 rounded me-3">
-                          <Wallet2 size={20} className="text-success" />
-                        </div>
-                        <div>
-                          <p className="text-muted small mb-1">Remaining</p>
-                          <h6 className="mb-0 fw-bold">
-                            $
-                            {(
-                              budgetSummary?.totalRemaining || 0
-                            ).toLocaleString()}
-                          </h6>
-                        </div>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col xs={6} md={2}>
-                    <div className="bg-warning p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-warning border-2">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-info bg-opacity-10 p-2 rounded me-3">
-                          <PieChart size={20} className="text-info" />
-                        </div>
-                        <div>
-                          <p className="text-muted small mb-1">Utilization</p>
-                          <h6 className="mb-0 fw-bold">
-                            {budgetSummary?.overallUtilization?.toFixed(1) || 0}
-                            %
-                          </h6>
-                        </div>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col xs={6} md={2}>
-                    <div className="bg-secondary p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-secondary border-2">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-secondary bg-opacity-10 p-2 rounded me-3">
-                          <Download size={20} className="text-secondary" />
-                        </div>
-                        <div>
-                          <p className="text-secondary small mb-1">
-                            Generate report
-                          </p>
-                          <h6 className="mb-0 fw-bold">Export expenses</h6>
-                        </div>
-                      </div>
-                    </div>
-                  </Col>
-                  <BudgetOverview />
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Quick Actions Bar */}
-        <Row className="mb-4">
-          <Col>
-            <Card className="border-0 shadow-sm rounded-3">
-              <Card.Body className="p-4">
-                <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                  <div className="d-flex align-items-center">
-                    <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
-                      <Lightning size={20} className="text-warning" />
-                    </div>
-                    <h6 className="fw-bold text-dark mb-0">Quick Actions</h6>
-                  </div>
-                  <div className="d-flex gap-2 flex-wrap">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
-                      onClick={() => handleNavigation("create-expense")}
-                    >
-                      <PlusCircle size={14} />
-                      New Expense
-                    </Button>
-                    <Button
-                      variant="success"
-                      size="sm"
-                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
-                      onClick={() => {
-                        const csvContent = [
-                          [
-                            "ID",
-                            "Date",
-                            "Payee",
-                            "Category",
-                            "Description",
-                            "Amount",
-                            "Status",
-                          ],
-                          ...filteredExpenses.map((e) => [
-                            e.id,
-                            new Date(e.createdAt).toLocaleDateString(),
-                            e.payee,
-                            e.category?.name || "N/A",
-                            e.description,
-                            e.amount,
-                            e.status,
-                          ]),
-                        ]
-                          .map((row) => row.join(","))
-                          .join("\n");
-                        const blob = new Blob([csvContent], {
-                          type: "text/csv",
-                        });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = `expenses_${
-                          new Date().toISOString().split("T")[0]
-                        }.csv`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                        toast.success("Expenses exported successfully!");
-                      }}
-                    >
-                      <FiletypeXlsx size={14} />
-                      Export CSV
-                    </Button>
-                    <Button
-                      variant="outline-info"
-                      size="sm"
-                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
-                      onClick={() => window.print()}
-                    >
-                      <Printer size={14} />
-                      Print
-                    </Button>
-                    <Button
-                      variant="outline-dark"
-                      size="sm"
-                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
-                      onClick={() => {
-                        if (navigator.share) {
-                          navigator.share({
-                            title: "My Expenses Summary",
-                            text: `I have ${
-                              expenses.length
-                            } expenses totaling KES ${expenses
-                              .reduce((sum, e) => sum + e.amount, 0)
-                              .toLocaleString()}`,
-                            url: window.location.href,
-                          });
-                        } else {
-                          navigator.clipboard.writeText(window.location.href);
-                          toast.success("Page URL copied to clipboard!");
-                        }
-                      }}
-                    >
-                      <Share size={14} />
-                      Share
-                    </Button>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
 
         {/* Analytics Dashboard */}
         <Row className="mb-4">
           <Col>
             <Card className="border-0 shadow-sm rounded-3">
               <Card.Body className="p-4">
-                <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                <div className="d-flex align-items-center mb-4 pb-3">
                   <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
                     <GraphUp size={24} className="text-info" />
                   </div>
                   <div>
-                    <h5 className="fw-bold text-dark mb-1">
+                    <h6 className="fw-bold text-dark mb-1">
                       Expense Analytics
-                    </h5>
+                    </h6>
                     <p className="text-muted mb-0 small">
                       Insights and trends from your expense data
                     </p>
@@ -1195,6 +1049,83 @@ export default function FinanceDashboard() {
                           </div>
                         </div>
                       </Col>
+                      <Col sm={6} md={3}>
+                        <div className="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-primary border-2">
+                          <div className="d-flex align-items-center">
+                            <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
+                              <CashStack size={20} className="text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-muted small mb-1">
+                                Monthly Budget
+                              </p>
+                              <h6 className="mb-0 fw-bold">
+                                $
+                                {(
+                                  budgetSummary?.totalBudget || 0
+                                ).toLocaleString()}
+                              </h6>
+                            </div>
+                          </div>
+                        </div>
+                      </Col>
+                      <Col sm={6} md={3}>
+                        <div className="bg-success p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-success border-2">
+                          <div className="d-flex align-items-center">
+                            <div className="bg-warning bg-opacity-10 p-2 rounded me-3">
+                              <BarChart size={20} className="text-warning" />
+                            </div>
+                            <div>
+                              <p className="text-muted small mb-1">Spent</p>
+                              <h6 className="mb-0 fw-bold">
+                                $
+                                {(
+                                  budgetSummary?.totalSpent || 0
+                                ).toLocaleString()}
+                              </h6>
+                            </div>
+                          </div>
+                        </div>
+                      </Col>
+                      <Col sm={6} md={3}>
+                        <div className="bg-info p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-info border-2">
+                          <div className="d-flex align-items-center">
+                            <div className="bg-success bg-opacity-10 p-2 rounded me-3">
+                              <Wallet2 size={20} className="text-success" />
+                            </div>
+                            <div>
+                              <p className="text-muted small mb-1">Remaining</p>
+                              <h6 className="mb-0 fw-bold">
+                                $
+                                {(
+                                  budgetSummary?.totalRemaining || 0
+                                ).toLocaleString()}
+                              </h6>
+                            </div>
+                          </div>
+                        </div>
+                      </Col>
+                      <Col sm={6} md={3}>
+                        <div className="bg-warning p-3 rounded-3 shadow-sm bg-opacity-10 border-start border-warning border-2">
+                          <div className="d-flex align-items-center">
+                            <div className="bg-info bg-opacity-10 p-2 rounded me-3">
+                              <PieChart size={20} className="text-info" />
+                            </div>
+                            <div>
+                              <p className="text-muted small mb-1">
+                                Utilization
+                              </p>
+                              <h6 className="mb-0 fw-bold">
+                                {budgetSummary?.overallUtilization?.toFixed(
+                                  1
+                                ) || 0}
+                                %
+                              </h6>
+                            </div>
+                          </div>
+                        </div>
+                      </Col>
+                      <BudgetOverview />
                     </Row>
 
                     {/* Monthly Trend Chart */}
@@ -1458,13 +1389,12 @@ export default function FinanceDashboard() {
                 <Col xs={12} md={5} className="mb-2 mb-md-0">
                   <div className="modern-search-container position-relative">
                     <div className="d-flex align-items-center gap-2">
-                      <div className="search-icon-external border">
+                      <div className="search-icon-external">
                         <Search size={18} className="text-primary" />
                       </div>
-                      <div className="search-input-wrapper flex-grow-1">
+                      <div className="flex-grow-1">
                         <Form.Control
                           type="search"
-                          placeholder="Search by description, amount, reference, payee..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           className="modern-search-input"
@@ -1510,17 +1440,16 @@ export default function FinanceDashboard() {
 
               {/* Horizontal Filters Row */}
               <div className="filters-section">
-                <div className="filter-header-bar d-flex align-items-center justify-content-between mb-3 p-3 bg-primary bg-opacity-10 rounded-3 border-0">
+                <div className="filter-header-bar d-flex align-items-center justify-content-between mb-3 p-3 bg-secondary bg-opacity-10 rounded-3 border-0">
                   <div className="d-flex align-items-center">
-                    <div className="bg-primary bg-opacity-25 p-2 rounded-circle me-2">
+                    <div className="p-2 rounded-circle me-2">
                       <Funnel className="text-primary" size={14} />
                     </div>
                     <h6 className="mb-0 fw-bold text-dark">Filters</h6>
                   </div>
                   <Button
-                    variant="outline-primary"
                     size="sm"
-                    className="rounded-pill px-3 py-1 fw-semibold"
+                    className="rounded-pill border-0 text-muted px-3 py-1 fw-semibold bg-light"
                     onClick={() => {
                       setStatusFilter("All Statuses");
                       setDateRangeFilter("All Time");
@@ -1723,14 +1652,17 @@ export default function FinanceDashboard() {
             <Card.Body className="p-0">
               {filteredExpenses.length === 0 ? (
                 <div className="text-center py-5 px-4">
-                  <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: "400px" }}>
+                  <div
+                    className="d-flex flex-column align-items-center justify-content-center"
+                    style={{ minHeight: "400px" }}
+                  >
                     <div className="mb-4" style={{ position: "relative" }}>
                       <div
                         className="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
                         style={{
                           width: "120px",
                           height: "120px",
-                          position: "relative"
+                          position: "relative",
                         }}
                       >
                         <FileEarmarkX size={50} className="text-muted" />
@@ -1742,20 +1674,24 @@ export default function FinanceDashboard() {
                           height: "45px",
                           bottom: "-5px",
                           right: "-5px",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                         }}
                       >
                         <Search size={20} className="text-secondary" />
                       </div>
                     </div>
                     <h5 className="fw-bold text-dark mb-2">
-                      {searchQuery ? "No Matching Expenses" : "No Expenses Found"}
+                      {searchQuery
+                        ? "No Matching Expenses"
+                        : "No Expenses Found"}
                     </h5>
-                    <p className="text-muted mb-5" style={{ maxWidth: "300px" }}>
+                    <p
+                      className="text-muted mb-5"
+                      style={{ maxWidth: "300px" }}
+                    >
                       {searchQuery
                         ? `We couldn't find any expenses matching "${searchQuery}". Try adjusting your search criteria.`
-                        : "You haven't created any expenses yet. Start by creating your first expense to track spending."
-                      }
+                        : "You haven't created any expenses yet. Start by creating your first expense to track spending."}
                     </p>
                     {searchQuery ? (
                       <div className="d-flex gap-2">
@@ -1769,7 +1705,10 @@ export default function FinanceDashboard() {
                         </Button>
                         <Button
                           variant="outline-secondary"
-                          onClick={() => window.location.href = "/expense-management/create-expense"}
+                          onClick={() =>
+                            (window.location.href =
+                              "/expense-management/create-expense")
+                          }
                           className="d-flex align-items-center gap-2"
                         >
                           <PlusCircle size={16} />
@@ -1780,7 +1719,10 @@ export default function FinanceDashboard() {
                       <Button
                         variant="primary"
                         size="sm"
-                        onClick={() => window.location.href = "/expense-management/create-expense"}
+                        onClick={() =>
+                          (window.location.href =
+                            "/expense-management/create-expense")
+                        }
                         className="d-flex align-items-center gap-2"
                       >
                         <PlusCircle size={20} />
@@ -2617,13 +2559,7 @@ export default function FinanceDashboard() {
 
           /* Horizontal Filter Styles */
           .filters-section {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 1rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            
           }
           .filter-header-bar {
             background: rgba(248, 249, 250, 0.8);
