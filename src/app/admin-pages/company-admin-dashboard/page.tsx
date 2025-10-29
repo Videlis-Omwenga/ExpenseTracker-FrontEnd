@@ -3725,10 +3725,14 @@ function AdminDashboardContent() {
                                     label={
                                       <span>
                                         {dept.name}
-                                        {dept.region && (
+                                        {dept.region ? (
                                           <Badge bg="secondary" className="ms-2 small">
                                             {dept.region.name}
                                           </Badge>
+                                        ) : (
+                                          <span className="ms-2 small text-muted fst-italic">
+                                            (No Region)
+                                          </span>
                                         )}
                                       </span>
                                     }

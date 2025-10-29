@@ -301,7 +301,7 @@ export default function UserDetailsModal({ user, show, onHide }: UserDetailsModa
                               </Badge>
                             </div>
 
-                            {hierarchy.departments.length > 0 && (
+                            {hierarchy.departments.length > 0 ? (
                               <div className="mt-2">
                                 <label className="small text-muted fw-semibold text-uppercase d-block mb-2">
                                   <BuildingFill className="me-1" size={12} />
@@ -315,14 +315,25 @@ export default function UserDetailsModal({ user, show, onHide }: UserDetailsModa
                                       className="px-2 py-1 fw-medium"
                                     >
                                       {dept.name}
-                                      {dept.region && (
+                                      {dept.region ? (
                                         <Badge bg="secondary" className="ms-1 small">
                                           {dept.region.name}
                                         </Badge>
+                                      ) : (
+                                        <span className="ms-1 small text-muted fst-italic">
+                                          (No Region)
+                                        </span>
                                       )}
                                     </Badge>
                                   ))}
                                 </div>
+                              </div>
+                            ) : (
+                              <div className="mt-2">
+                                <Badge bg="success" className="px-2 py-1 small">
+                                  <BuildingFill className="me-1" size={12} />
+                                  Can Approve For All Departments
+                                </Badge>
                               </div>
                             )}
                           </div>
