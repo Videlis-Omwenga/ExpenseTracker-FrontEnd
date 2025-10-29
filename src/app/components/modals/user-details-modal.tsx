@@ -46,16 +46,23 @@ interface User {
       name: string;
     };
   }>;
-  hierarchyAssignments?: Array<{
-    hierarchy: {
+  departmentsRestrictedTo?: Array<{
+    id: number;
+    department: {
       id: number;
       name: string;
+      region?: {
+        name: string;
+      };
     };
-    hierarchyLevel: {
+    hierarchyAssignment: {
       id: number;
       order: number;
+      hierarchy: {
+        id: number;
+        name: string;
+      };
     };
-    order: number;
   }>;
   createdAt: string;
   updatedAt: string;
@@ -228,32 +235,105 @@ export default function UserDetailsModal({ user, show, onHide }: UserDetailsModa
               <Card.Header className="bg-light border-0 py-3">
                 <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
                   <Diagram3 className="me-2 text-warning" size={18} />
-                  Approval Hierarchies
+                  Approval Hierarchies & Department Restrictions
                 </h6>
               </Card.Header>
               <Card.Body className="p-3">
-                <div className="mb-0">
-                  <label className="small text-muted fw-semibold text-uppercase d-flex align-items-center mb-2">
-                    <Diagram3 className="me-1" size={12} />
-                    Assigned Hierarchies
-                  </label>
-                  <div className="d-flex flex-wrap gap-2">
-                    {getHierarchies().length > 0 ? (
-                      getHierarchies().map((hierarchy: string, index: number) => (
-                        <Badge
-                          key={index}
-                          bg="warning"
-                          text="dark"
-                          className="px-3 py-2 rounded-pill fw-medium"
-                        >
-                          {hierarchy}
-                        </Badge>
-                      ))
-                    ) : (
-                      <span className="text-muted">No approval hierarchies assigned</span>
-                    )}
-                  </div>
-                </div>
+                {(() => {
+                  // Get hierarchies from HierarchyRoles and merge with departmentsRestrictedTo
+                  const hierarchyMap = new Map<number, {
+                    id: number;
+                    name: string;
+                    departments: Array<{
+                      id: number;
+                      name: string;
+                      region?: { name: string };
+                    }>;
+                  }>();
+
+                  // First, get all hierarchies from HierarchyRoles
+                  if (user.HierarchyRoles && user.HierarchyRoles.length > 0) {
+                    user.HierarchyRoles.forEach((hr) => {
+                      hierarchyMap.set(hr.hierarchy.id, {
+                        id: hr.hierarchy.id,
+                        name: hr.hierarchy.name,
+                        departments: [],
+                      });
+                    });
+                  }
+
+                  // Then, add department restrictions if they exist
+                  if (user.departmentsRestrictedTo && user.departmentsRestrictedTo.length > 0) {
+                    user.departmentsRestrictedTo.forEach((dr) => {
+                      const hierarchyId = dr.hierarchyAssignment.hierarchy.id;
+                      const hierarchyName = dr.hierarchyAssignment.hierarchy.name;
+
+                      // Ensure hierarchy exists in the map
+                      if (!hierarchyMap.has(hierarchyId)) {
+                        hierarchyMap.set(hierarchyId, {
+                          id: hierarchyId,
+                          name: hierarchyName,
+                          departments: [],
+                        });
+                      }
+
+                      // Add department if not already added
+                      const hierarchy = hierarchyMap.get(hierarchyId)!;
+                      if (!hierarchy.departments.find(d => d.id === dr.department.id)) {
+                        hierarchy.departments.push(dr.department);
+                      }
+                    });
+                  }
+
+                  // Display hierarchies
+                  if (hierarchyMap.size > 0) {
+                    return (
+                      <div className="d-flex flex-column gap-3">
+                        {Array.from(hierarchyMap.values()).map((hierarchy, index) => (
+                          <div key={index} className="border rounded p-3 bg-light">
+                            <div className="d-flex align-items-center mb-2">
+                              <Badge
+                                bg="warning"
+                                text="dark"
+                                className="px-3 py-2 rounded-pill fw-medium"
+                              >
+                                {hierarchy.name}
+                              </Badge>
+                            </div>
+
+                            {hierarchy.departments.length > 0 && (
+                              <div className="mt-2">
+                                <label className="small text-muted fw-semibold text-uppercase d-block mb-2">
+                                  <BuildingFill className="me-1" size={12} />
+                                  Can Approve For These Departments
+                                </label>
+                                <div className="d-flex flex-wrap gap-2">
+                                  {hierarchy.departments.map((dept, deptIndex) => (
+                                    <Badge
+                                      key={deptIndex}
+                                      bg="info"
+                                      className="px-2 py-1 fw-medium"
+                                    >
+                                      {dept.name}
+                                      {dept.region && (
+                                        <Badge bg="secondary" className="ms-1 small">
+                                          {dept.region.name}
+                                        </Badge>
+                                      )}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+
+                  // No hierarchies at all
+                  return <span className="text-muted">No approval hierarchies assigned</span>;
+                })()}
               </Card.Body>
             </Card>
           </Col>

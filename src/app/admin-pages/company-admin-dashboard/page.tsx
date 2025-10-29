@@ -32,7 +32,6 @@ import {
   Filter,
   X,
   ShieldLock,
-  CurrencyDollar,
   Lightning,
   Activity,
   Calendar,
@@ -462,16 +461,7 @@ function AdminDashboardContent() {
       }
     }
   ];
-
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'user': return <People size={16} className="text-primary" />;
-      case 'role': return <ShieldLock size={16} className="text-success" />;
-      case 'expense': return <CurrencyDollar size={16} className="text-warning" />;
-      case 'system': return <Gear size={16} className="text-info" />;
-      default: return <Activity size={16} className="text-secondary" />;
-    }
-  };
+  
   const [loading, setLoading] = useState(false);
 
   // Handle tab change and update URL
@@ -496,6 +486,9 @@ function AdminDashboardContent() {
       const data = await response.json();
 
       if (response.ok) {
+
+        setDepartments(data.getDepartments || []);
+
         const fetchedUsers = data.getUsers || [];
         const fetchedRoles = data.getRoles || [];
         const fetchedRegions = data.getRegions || [];
@@ -590,28 +583,6 @@ function AdminDashboardContent() {
     }
   };
 
-  const fetchDepartments = async () => {
-    try {
-      const response = await fetch(`${BASE_API_URL}/data-inputs/get-departments`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setDepartments(data);
-      } else {
-        console.error("Failed to fetch departments:", data.message);
-      }
-    } catch (error) {
-      console.error("Failed to fetch departments:", error);
-    }
-  };
-
   // User CRUD Handlers
   const handleEditUser = (user: User) => {
     // Extract role IDs - try roleId first (from backend), then fall back to role.id
@@ -627,8 +598,8 @@ function AdminDashboardContent() {
     const deptRestrictions = (user as any).departmentsRestrictedTo || [];
 
     for (const restriction of deptRestrictions) {
-      const hierarchyId = restriction.hierarchyAssignment?.hierarchyId;
-      const departmentId = restriction.departmentId;
+      const hierarchyId = restriction.hierarchyAssignment?.hierarchy?.id;
+      const departmentId = restriction.department?.id;
 
       if (hierarchyId && departmentId) {
         if (!departmentRestrictions[hierarchyId]) {
@@ -968,7 +939,6 @@ function AdminDashboardContent() {
     fetchData();
     fetchPages();
     fetchApprovalHierarchies();
-    fetchDepartments();
   }, []);
 
   // Filter data based on search term and filters
@@ -3752,7 +3722,16 @@ function AdminDashboardContent() {
                                     key={dept.id}
                                     type="checkbox"
                                     id={`dept-${hierarchyId}-${dept.id}`}
-                                    label={dept.name}
+                                    label={
+                                      <span>
+                                        {dept.name}
+                                        {dept.region && (
+                                          <Badge bg="secondary" className="ms-2 small">
+                                            {dept.region.name}
+                                          </Badge>
+                                        )}
+                                      </span>
+                                    }
                                     checked={editUserFormData.departmentRestrictions[hierarchyId]?.includes(dept.id) || false}
                                     onChange={(e) => {
                                       const currentDepts = editUserFormData.departmentRestrictions[hierarchyId] || [];

@@ -103,13 +103,21 @@ export default function CreateExpensePage() {
   const [phoneNumber, setPhoneNumber] = useState("");
 
   // Validation states for payment types
-  const [paybillNumberValid, setPaybillNumberValid] = useState<boolean | null>(null);
-  const [paybillAccountValid, setPaybillAccountValid] = useState<boolean | null>(null);
+  const [paybillNumberValid, setPaybillNumberValid] = useState<boolean | null>(
+    null
+  );
+  const [paybillAccountValid, setPaybillAccountValid] = useState<
+    boolean | null
+  >(null);
   const [tillNumberValid, setTillNumberValid] = useState<boolean | null>(null);
   const [bankNameValid, setBankNameValid] = useState<boolean | null>(null);
-  const [bankAccountValid, setBankAccountValid] = useState<boolean | null>(null);
+  const [bankAccountValid, setBankAccountValid] = useState<boolean | null>(
+    null
+  );
   const [branchCodeValid, setBranchCodeValid] = useState<boolean | null>(null);
-  const [phoneNumberValid, setPhoneNumberValid] = useState<boolean | null>(null);
+  const [phoneNumberValid, setPhoneNumberValid] = useState<boolean | null>(
+    null
+  );
 
   // Validation functions
   const validatePaybillNumber = (value: string): boolean => {
@@ -119,7 +127,9 @@ export default function CreateExpensePage() {
 
   const validatePaybillAccount = (value: string): boolean => {
     // Must be alphanumeric mixture
-    return /^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]+$/.test(value) && value.length > 0;
+    return (
+      /^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]+$/.test(value) && value.length > 0
+    );
   };
 
   const validateTillNumber = (value: string): boolean => {
@@ -589,10 +599,6 @@ export default function CreateExpensePage() {
       categoryAllocations: isAdvance ? categoryAllocations : [],
     };
 
-    // Log payload for debugging
-    console.log("📤 Sending to backend:", payload);
-    console.log("💳 Payment Reference (payeeNumber):", payeeNumber);
-
     try {
       const response = await fetch(
         `${BASE_API_URL}/expense-submission/create`,
@@ -1050,7 +1056,9 @@ export default function CreateExpensePage() {
                                     const value = e.target.value;
                                     setPaybillNumber(value);
                                     if (value) {
-                                      setPaybillNumberValid(validatePaybillNumber(value));
+                                      setPaybillNumberValid(
+                                        validatePaybillNumber(value)
+                                      );
                                     } else {
                                       setPaybillNumberValid(null);
                                     }
@@ -1086,7 +1094,9 @@ export default function CreateExpensePage() {
                                     const value = e.target.value;
                                     setPaybillAccount(value);
                                     if (value) {
-                                      setPaybillAccountValid(validatePaybillAccount(value));
+                                      setPaybillAccountValid(
+                                        validatePaybillAccount(value)
+                                      );
                                     } else {
                                       setPaybillAccountValid(null);
                                     }
@@ -1102,7 +1112,8 @@ export default function CreateExpensePage() {
                                   }`}
                                 />
                                 <Form.Control.Feedback type="invalid">
-                                  Account number must contain both letters and numbers
+                                  Account number must contain both letters and
+                                  numbers
                                 </Form.Control.Feedback>
                                 <Form.Control.Feedback type="valid">
                                   Looks good!
@@ -1211,7 +1222,9 @@ export default function CreateExpensePage() {
                                     const value = e.target.value;
                                     setBankAccount(value);
                                     if (value) {
-                                      setBankAccountValid(validateBankAccount(value));
+                                      setBankAccountValid(
+                                        validateBankAccount(value)
+                                      );
                                     } else {
                                       setBankAccountValid(null);
                                     }
@@ -1247,7 +1260,9 @@ export default function CreateExpensePage() {
                                     const value = e.target.value;
                                     setBranchCode(value);
                                     if (value) {
-                                      setBranchCodeValid(validateBranchCode(value));
+                                      setBranchCodeValid(
+                                        validateBranchCode(value)
+                                      );
                                     } else {
                                       setBranchCodeValid(null);
                                     }
@@ -1292,7 +1307,9 @@ export default function CreateExpensePage() {
                                 const value = e.target.value;
                                 setPhoneNumber(value);
                                 if (value) {
-                                  setPhoneNumberValid(validatePhoneNumber(value));
+                                  setPhoneNumberValid(
+                                    validatePhoneNumber(value)
+                                  );
                                 } else {
                                   setPhoneNumberValid(null);
                                 }
@@ -1308,7 +1325,8 @@ export default function CreateExpensePage() {
                               }`}
                             />
                             <Form.Control.Feedback type="invalid">
-                              Phone number must be 254 followed by 9 digits (e.g., 254712345678)
+                              Phone number must be 254 followed by 9 digits
+                              (e.g., 254712345678)
                             </Form.Control.Feedback>
                             <Form.Control.Feedback type="valid">
                               Looks good!
@@ -2131,22 +2149,22 @@ export default function CreateExpensePage() {
           }
           .form-control,
           .form-select {
-            border: 1px solid rgba(0,0,0,.05) !important;
+            border: 1px solid rgba(0, 0, 0, 0.05) !important;
             box-shadow: none !important;
           }
           .form-control:focus,
           .form-select:focus {
-            border: 1px solid rgba(0,0,0,.1) !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
             box-shadow: none !important;
           }
           .form-control.is-valid,
           .form-select.is-valid {
-            border: 1px solid rgba(25,135,84,.3) !important;
+            border: 1px solid rgba(25, 135, 84, 0.3) !important;
             box-shadow: none !important;
           }
           .form-control.is-invalid,
           .form-select.is-invalid {
-            border: 1px solid rgba(220,53,69,.3) !important;
+            border: 1px solid rgba(220, 53, 69, 0.3) !important;
             box-shadow: none !important;
           }
           .btn {
