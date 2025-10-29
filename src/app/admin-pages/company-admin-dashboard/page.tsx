@@ -348,6 +348,7 @@ function AdminDashboardContent() {
     regionId: 0,
     roles: [] as number[],
     hierarchies: [] as number[],
+    departmentRestrictions: {} as Record<number, number[]>, // hierarchyId -> departmentIds[]
   });
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
@@ -381,6 +382,7 @@ function AdminDashboardContent() {
 
   // Approval Hierarchy States (Simplified - just names)
   const [approvalHierarchies, setApprovalHierarchies] = useState<ApprovalHierarchy[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [showCreateHierarchyModal, setShowCreateHierarchyModal] = useState(false);
   const [showEditHierarchyModal, setShowEditHierarchyModal] = useState(false);
   const [showDeleteHierarchyModal, setShowDeleteHierarchyModal] = useState(false);
@@ -588,6 +590,28 @@ function AdminDashboardContent() {
     }
   };
 
+  const fetchDepartments = async () => {
+    try {
+      const response = await fetch(`${BASE_API_URL}/data-inputs/get-departments`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setDepartments(data);
+      } else {
+        console.error("Failed to fetch departments:", data.message);
+      }
+    } catch (error) {
+      console.error("Failed to fetch departments:", error);
+    }
+  };
+
   // User CRUD Handlers
   const handleEditUser = (user: User) => {
     // Extract role IDs - try roleId first (from backend), then fall back to role.id
@@ -596,7 +620,25 @@ function AdminDashboardContent() {
     ).filter((id): id is number => id !== undefined) || [];
 
     // Extract hierarchy IDs from HierarchyRoles
-    const hierarchyIds = user.HierarchyRoles?.map((hr) => hr.hierarchy.id) || [];
+    const hierarchyIds = (user as any).HierarchyRoles?.map((hr: any) => hr.hierarchy.id) || [];
+
+    // Extract department restrictions grouped by hierarchyId
+    const departmentRestrictions: Record<number, number[]> = {};
+    const deptRestrictions = (user as any).departmentsRestrictedTo || [];
+
+    for (const restriction of deptRestrictions) {
+      const hierarchyId = restriction.hierarchyAssignment?.hierarchyId;
+      const departmentId = restriction.departmentId;
+
+      if (hierarchyId && departmentId) {
+        if (!departmentRestrictions[hierarchyId]) {
+          departmentRestrictions[hierarchyId] = [];
+        }
+        if (!departmentRestrictions[hierarchyId].includes(departmentId)) {
+          departmentRestrictions[hierarchyId].push(departmentId);
+        }
+      }
+    }
 
     setSelectedUser(user);
     setEditUserFormData({
@@ -608,6 +650,7 @@ function AdminDashboardContent() {
       regionId: user.regionId || 0,
       roles: roleIds,
       hierarchies: hierarchyIds,
+      departmentRestrictions: departmentRestrictions,
     });
     setShowEditUserModal(true);
   };
@@ -630,6 +673,7 @@ function AdminDashboardContent() {
           : undefined,
         // Always send hierarchies array, even if empty, to ensure proper deletion
         hierarchies: editUserFormData.hierarchies.filter((h): h is number => typeof h === 'number'),
+        departmentRestrictions: editUserFormData.departmentRestrictions,
       };
 
       const response = await fetch(
@@ -924,6 +968,7 @@ function AdminDashboardContent() {
     fetchData();
     fetchPages();
     fetchApprovalHierarchies();
+    fetchDepartments();
   }, []);
 
   // Filter data based on search term and filters
@@ -3673,6 +3718,71 @@ function AdminDashboardContent() {
                 </Form.Group>
               </Col>
             </Row>
+
+            {/* Department Restrictions for Each Hierarchy */}
+            {editUserFormData.hierarchies.length > 0 && (
+              <Row className="mt-4">
+                <Col>
+                  <Form.Group>
+                    <Form.Label className="d-flex align-items-center gap-2 fw-semibold text-dark mb-3">
+                      <Info size={18} className="text-primary" />
+                      Department Restrictions (Optional)
+                    </Form.Label>
+                    <div className="border rounded p-3 bg-light">
+                      <p className="small text-muted mb-3">
+                        Select which departments this user can approve expenses for in each hierarchy. Leave empty for all departments.
+                      </p>
+                      {editUserFormData.hierarchies.map((hierarchyId) => {
+                        const hierarchy = approvalHierarchies.find(h => h.id === hierarchyId);
+                        if (!hierarchy) return null;
+
+                        return (
+                          <div key={hierarchyId} className="mb-3 pb-3 border-bottom">
+                            <h6 className="text-primary mb-2">{hierarchy.name}</h6>
+                            <div
+                              className="ps-3"
+                              style={{
+                                maxHeight: "150px",
+                                overflowY: "auto"
+                              }}
+                            >
+                              {departments.length > 0 ? (
+                                departments.map((dept: any) => (
+                                  <Form.Check
+                                    key={dept.id}
+                                    type="checkbox"
+                                    id={`dept-${hierarchyId}-${dept.id}`}
+                                    label={dept.name}
+                                    checked={editUserFormData.departmentRestrictions[hierarchyId]?.includes(dept.id) || false}
+                                    onChange={(e) => {
+                                      const currentDepts = editUserFormData.departmentRestrictions[hierarchyId] || [];
+                                      const updatedDepts = e.target.checked
+                                        ? [...currentDepts, dept.id]
+                                        : currentDepts.filter((d) => d !== dept.id);
+
+                                      setEditUserFormData({
+                                        ...editUserFormData,
+                                        departmentRestrictions: {
+                                          ...editUserFormData.departmentRestrictions,
+                                          [hierarchyId]: updatedDepts,
+                                        },
+                                      });
+                                    }}
+                                    className="mb-1"
+                                  />
+                                ))
+                              ) : (
+                                <p className="text-muted small mb-0">No departments available</p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Form.Group>
+                </Col>
+              </Row>
+            )}
           </Form>
         </Modal.Body>
         <Modal.Footer className="border-0 bg-light p-4">

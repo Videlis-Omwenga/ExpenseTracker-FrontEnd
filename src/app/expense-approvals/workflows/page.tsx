@@ -118,7 +118,6 @@ export default function WorkflowEditor() {
   const [workflow, setWorkflow] = useState<Workflow | null>(null);
   const [hierarchies, setHierarchies] = useState<Hierarchy[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -127,7 +126,7 @@ export default function WorkflowEditor() {
   const [allAssignments, setAllAssignments] = useState<HierarchyAssignment[]>([]);
   const [queuedHierarchies, setQueuedHierarchies] = useState<Hierarchy[]>([]);
   const [hierarchyOptionalSettings, setHierarchyOptionalSettings] = useState<Record<number, boolean>>({});
-  const [hierarchyDepartmentRestrictions, setHierarchyDepartmentRestrictions] = useState<Record<number, { restrictToDepartment: boolean; departmentIds: number[] }>>({});
+  const [hierarchyDepartmentRestrictions, setHierarchyDepartmentRestrictions] = useState<Record<number, { restrictToDepartment: boolean }>>({});
 
   // Fetch data
   const fetchWorkflow = async () => {
@@ -232,26 +231,6 @@ export default function WorkflowEditor() {
     }
   };
 
-  const fetchDepartments = async () => {
-    try {
-      const response = await fetch(`${BASE_API_URL}/data-inputs/get-departments`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem(
-            "expenseTrackerToken"
-          )}`,
-        },
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setDepartments(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch departments:", error);
-    }
-  };
 
   const fetchAllAssignments = async () => {
     try {
@@ -281,7 +260,7 @@ export default function WorkflowEditor() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await Promise.all([fetchWorkflow(), fetchHierarchies(), fetchUsers(), fetchDepartments(), fetchAllAssignments()]);
+      await Promise.all([fetchWorkflow(), fetchHierarchies(), fetchUsers(), fetchAllAssignments()]);
       setLoading(false);
     };
     fetchData();
@@ -391,28 +370,11 @@ export default function WorkflowEditor() {
     setHierarchyDepartmentRestrictions(prev => ({
       ...prev,
       [hierarchyId]: {
-        restrictToDepartment: !(prev[hierarchyId]?.restrictToDepartment || false),
-        departmentIds: prev[hierarchyId]?.departmentIds || []
+        restrictToDepartment: !(prev[hierarchyId]?.restrictToDepartment || false)
       }
     }));
   };
 
-  const handleDepartmentSelection = (hierarchyId: number, departmentId: number) => {
-    setHierarchyDepartmentRestrictions(prev => {
-      const current = prev[hierarchyId] || { restrictToDepartment: false, departmentIds: [] };
-      const departmentIds = current.departmentIds.includes(departmentId)
-        ? current.departmentIds.filter(id => id !== departmentId)
-        : [...current.departmentIds, departmentId];
-
-      return {
-        ...prev,
-        [hierarchyId]: {
-          ...current,
-          departmentIds
-        }
-      };
-    });
-  };
 
   const handleSaveWorkflow = async () => {
     if (!workflow) return;
@@ -427,14 +389,13 @@ export default function WorkflowEditor() {
     try {
       // Build hierarchies data with isRequired and department restriction settings
       const hierarchiesData = queuedHierarchies.map((hierarchy, index) => {
-        const deptRestriction = hierarchyDepartmentRestrictions[hierarchy.id] || { restrictToDepartment: false, departmentIds: [] };
+        const deptRestriction = hierarchyDepartmentRestrictions[hierarchy.id] || { restrictToDepartment: false };
 
         return {
           hierarchyId: hierarchy.id,
           order: index + 1,
           isRequired: !(hierarchyOptionalSettings[hierarchy.id] || false),
-          restrictToDepartment: deptRestriction.restrictToDepartment,
-          departmentIds: deptRestriction.restrictToDepartment ? deptRestriction.departmentIds : []
+          restrictToDepartment: deptRestriction.restrictToDepartment
         };
       });
 
@@ -603,31 +564,17 @@ export default function WorkflowEditor() {
                                 </td>
                                 <td>
                                   {assignment.restrictToDepartment ? (
-                                    <Badge bg="info" className="px-2 py-1 small" title="Restricted to specific departments">
+                                    <Badge bg="warning" className="px-2 py-1 small">
                                       <FaBuilding className="me-1" size={10} />
-                                      {assignment.departmentsRestrictedTo?.length || 0}
+                                      Restricted
                                     </Badge>
                                   ) : (
-                                    <Badge bg="secondary" className="px-2 py-1 small" title="All departments">
-                                      All
+                                    <Badge bg="secondary" className="px-2 py-1 small">
+                                      Not Restricted
                                     </Badge>
                                   )}
                                 </td>
                               </tr>
-                              {assignment.restrictToDepartment && assignment.departmentsRestrictedTo && assignment.departmentsRestrictedTo.length > 0 && (
-                                <tr className="bg-light">
-                                  <td colSpan={4} className="py-2 ps-5">
-                                    <div className="d-flex flex-wrap gap-1">
-                                      <small className="text-muted me-2">Departments:</small>
-                                      {assignment.departmentsRestrictedTo.map((dr) => (
-                                        <Badge key={dr.id} bg="secondary" className="px-2 py-1" style={{ fontSize: '0.7rem' }}>
-                                          {dr.department.name}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </td>
-                                </tr>
-                              )}
                             </React.Fragment>
                           ))}
                         </tbody>
@@ -705,7 +652,7 @@ export default function WorkflowEditor() {
                           className="py-2 rounded-3 flex-grow-1"
                           style={{ fontSize: '0.95rem' }}
                         >
-                          <option value="">-- Select a hierarchy --</option>
+                          <option value=""></option>
                           {hierarchies.map((hierarchy) => (
                             <option key={hierarchy.id} value={hierarchy.id}>
                               {hierarchy.name}
@@ -830,7 +777,7 @@ export default function WorkflowEditor() {
                                       </div>
                                     </div>
 
-                                    {/* Department Restriction Section */}
+                                    {/* Department Restriction Indicator */}
                                     <div className="border-top pt-2 mt-2">
                                       <Form.Check
                                         type="switch"
@@ -838,37 +785,17 @@ export default function WorkflowEditor() {
                                         label={
                                           <span className="fw-semibold" style={{ fontSize: '0.9rem' }}>
                                             <FaBuilding className="me-1" size={13} />
-                                            Restrict to Departments
+                                            Restrict to Specific Departments
                                           </span>
                                         }
                                         checked={deptRestriction.restrictToDepartment}
                                         onChange={() => toggleDepartmentRestriction(hierarchy.id)}
-                                        className="mb-2"
                                       />
-
                                       {deptRestriction.restrictToDepartment && (
-                                        <div className="ps-3 mt-2">
-                                          <div className="row g-2">
-                                            {departments.map((dept) => (
-                                              <div key={dept.id} className="col-md-6 col-sm-6">
-                                                <Form.Check
-                                                  type="checkbox"
-                                                  id={`dept-${hierarchy.id}-${dept.id}`}
-                                                  label={dept.name}
-                                                  checked={deptRestriction.departmentIds.includes(dept.id)}
-                                                  onChange={() => handleDepartmentSelection(hierarchy.id, dept.id)}
-                                                  style={{ fontSize: '0.9rem' }}
-                                                />
-                                              </div>
-                                            ))}
-                                          </div>
-                                          {deptRestriction.departmentIds.length === 0 && (
-                                            <Alert variant="warning" className="mt-2 mb-0 py-1 px-2" style={{ fontSize: '0.85rem' }}>
-                                              <FaInfoCircle className="me-1" size={13} />
-                                              Select at least one department
-                                            </Alert>
-                                          )}
-                                        </div>
+                                        <Form.Text className="text-muted d-block ps-4 mt-1" style={{ fontSize: '0.85rem' }}>
+                                          <FaInfoCircle className="me-1" size={12} />
+                                          Department assignments will be configured separately
+                                        </Form.Text>
                                       )}
                                     </div>
                                   </Card.Body>
