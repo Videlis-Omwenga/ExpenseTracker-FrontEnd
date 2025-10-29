@@ -488,27 +488,27 @@ export default function WorkflowEditor() {
   return (
     <AuthProvider>
       <Navbar />
-      <Container fluid className="py-4">
-        <div className="mb-4">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <div>
-              <div className="d-flex align-items-center mb-2">
-                <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                  <Diagram3Fill className="text-primary" size={24} />
+      <Container fluid className="workflows-container px-4 py-4">
+        {/* Header Section */}
+        <Row className="mb-4">
+          <Col>
+            <Card className="page-header-card shadow-sm border-0">
+              <Card.Body>
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 className="page-title mb-1">
+                      <Diagram3Fill className="me-2 text-primary" />
+                      Workflow Management
+                    </h4>
+                    <p className="page-subtitle text-muted mb-0">
+                      Configure expense approval workflows and hierarchies
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="fw-bold text-dark mb-0">
-                    Workflow Management
-                  </h2>
-                  <p className="text-muted mb-0 small">
-                    Configure expense approval workflows and steps
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <hr className="border-2 border-primary opacity-25 mb-4" />
-        </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
 
         <Row className="g-4">
           {/* LEFT SIDE: All Hierarchy Assignments */}
@@ -528,7 +528,7 @@ export default function WorkflowEditor() {
                       Active hierarchies in the workflow queue
                     </Alert>
                     <div className="table-responsive">
-                      <Table hover className="align-middle mb-0">
+                      <Table hover className="align-middle mb-0 table-modern">
                         <thead className="bg-light">
                           <tr>
                             <th className="py-2 small">Order</th>
@@ -682,126 +682,109 @@ export default function WorkflowEditor() {
                       <hr className="my-4" />
                       <div className="d-flex justify-content-between align-items-center mb-3">
                         <div className="d-flex align-items-center">
-                          <div className="bg-warning bg-opacity-10 p-2 rounded me-2">
-                            <FaListOl className="text-warning" size={15} />
+                          <div className="bg-gradient-blue p-2 rounded-circle me-2">
+                            <FaListOl className="text-white" size={15} />
                           </div>
                           <h6 className="mb-0 fw-bold text-dark" style={{ fontSize: '1rem' }}>
-                            Queue Preview ({queuedHierarchies.length})
+                            Queue Preview <span className="badge bg-primary bg-opacity-10 text-primary ms-2">{queuedHierarchies.length}</span>
                           </h6>
                         </div>
                         <Button
-                          variant="outline-danger"
+                          variant="light"
                           size="sm"
                           onClick={handleClearQueue}
-                          className="rounded-pill px-3"
-                          style={{ fontSize: '0.85rem' }}
+                          className="btn-soft-danger"
                         >
-                          <FaTrash className="me-1" size={11} />
-                          Clear All
+                          <FaTrash className="me-2" size={12} />
+                          Clear Queue
                         </Button>
                       </div>
-                      <Alert variant="success" className="border-0 bg-success bg-opacity-10 mb-3" style={{ fontSize: '0.9rem' }}>
-                        <FaCheckCircle className="me-2" />
-                        Click "Save Changes" to apply this order
-                      </Alert>
-                      <div className="d-flex flex-column gap-3">
-                            {queuedHierarchies.map((hierarchy, index) => {
-                              const deptRestriction = hierarchyDepartmentRestrictions[hierarchy.id] || { restrictToDepartment: false, departmentIds: [] };
 
-                              return (
-                                <Card
-                                  key={hierarchy.id}
-                                  className="border-0 bg-white shadow-sm"
+                      <div className="queue-container">
+                        {queuedHierarchies.map((hierarchy, index) => {
+                          const deptRestriction = hierarchyDepartmentRestrictions[hierarchy.id] || { restrictToDepartment: false };
+                          const isOptional = hierarchyOptionalSettings[hierarchy.id] || false;
+
+                          return (
+                            <div key={hierarchy.id} className="queue-item">
+                              <div className="queue-item-header">
+                                <div className="d-flex align-items-center gap-3">
+                                  <div className="queue-number">{index + 1}</div>
+                                  <div className="flex-grow-1">
+                                    <h6 className="queue-title">{hierarchy.name}</h6>
+                                    {hierarchy.description && (
+                                      <p className="queue-description">{hierarchy.description}</p>
+                                    )}
+                                  </div>
+                                  <div className="queue-badges">
+                                    <Badge 
+                                      bg={isOptional ? "warning" : "success"} 
+                                      className="queue-badge"
+                                    >
+                                      {isOptional ? "Optional" : "Required"}
+                                    </Badge>
+                                    {deptRestriction.restrictToDepartment && (
+                                      <Badge bg="info" className="queue-badge ms-2">
+                                        <FaBuilding className="me-1" size={10} />
+                                        Department Restricted
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="queue-item-body">
+                                <div className="queue-controls">
+                                  <Form.Check
+                                    type="switch"
+                                    id={`queue-optional-${hierarchy.id}`}
+                                    label="Make step optional"
+                                    checked={isOptional}
+                                    onChange={() => toggleHierarchyOptional(hierarchy.id)}
+                                    className="modern-switch"
+                                  />
+                                  <Form.Check
+                                    type="switch"
+                                    id={`dept-restrict-${hierarchy.id}`}
+                                    label="Restrict to departments"
+                                    checked={deptRestriction.restrictToDepartment}
+                                    onChange={() => toggleDepartmentRestriction(hierarchy.id)}
+                                    className="modern-switch"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="queue-item-actions">
+                                <Button
+                                  variant="light"
+                                  size="sm"
+                                  onClick={() => handleMoveUp(index)}
+                                  disabled={index === 0}
+                                  className="btn-action"
                                 >
-                                  <Card.Body className="p-3">
-                                    <div className="d-flex justify-content-between align-items-start mb-2">
-                                      <div className="d-flex align-items-center gap-2 flex-grow-1">
-                                        <Badge bg="primary" className="px-2 py-1" style={{ fontSize: '0.85rem' }}>
-                                          #{index + 1}
-                                        </Badge>
-                                        <div className="flex-grow-1">
-                                          <h6 className="mb-0 fw-bold text-dark" style={{ fontSize: '0.95rem' }}>{hierarchy.name}</h6>
-                                          {hierarchy.description && (
-                                            <p className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>{hierarchy.description}</p>
-                                          )}
-                                        </div>
-                                        <Form.Check
-                                          type="switch"
-                                          id={`queue-optional-${hierarchy.id}`}
-                                          label={
-                                            <Badge
-                                              bg={hierarchyOptionalSettings[hierarchy.id] ? "warning" : "success"}
-                                              className="px-2 py-1"
-                                              style={{ fontSize: '0.8rem' }}
-                                            >
-                                              {hierarchyOptionalSettings[hierarchy.id] ? "Optional" : "Required"}
-                                            </Badge>
-                                          }
-                                          checked={hierarchyOptionalSettings[hierarchy.id] || false}
-                                          onChange={() => toggleHierarchyOptional(hierarchy.id)}
-                                        />
-                                      </div>
-                                      <div className="d-flex gap-1 ms-2">
-                                        <Button
-                                          variant="light"
-                                          size="sm"
-                                          onClick={() => handleMoveUp(index)}
-                                          disabled={index === 0}
-                                          title="Move up"
-                                          className="p-1 d-flex align-items-center justify-content-center"
-                                          style={{ width: '28px', height: '28px' }}
-                                        >
-                                          <FaArrowUp size={12} />
-                                        </Button>
-                                        <Button
-                                          variant="light"
-                                          size="sm"
-                                          onClick={() => handleMoveDown(index)}
-                                          disabled={index === queuedHierarchies.length - 1}
-                                          title="Move down"
-                                          className="p-1 d-flex align-items-center justify-content-center"
-                                          style={{ width: '28px', height: '28px' }}
-                                        >
-                                          <FaArrowDown size={12} />
-                                        </Button>
-                                        <Button
-                                          variant="light"
-                                          size="sm"
-                                          onClick={() => handleRemoveFromQueue(hierarchy.id)}
-                                          title="Remove from queue"
-                                          className="p-1 d-flex align-items-center justify-content-center text-danger"
-                                          style={{ width: '28px', height: '28px' }}
-                                        >
-                                          <FaTrash size={12} />
-                                        </Button>
-                                      </div>
-                                    </div>
-
-                                    {/* Department Restriction Indicator */}
-                                    <div className="border-top pt-2 mt-2">
-                                      <Form.Check
-                                        type="switch"
-                                        id={`dept-restrict-${hierarchy.id}`}
-                                        label={
-                                          <span className="fw-semibold" style={{ fontSize: '0.9rem' }}>
-                                            <FaBuilding className="me-1" size={13} />
-                                            Restrict to Specific Departments
-                                          </span>
-                                        }
-                                        checked={deptRestriction.restrictToDepartment}
-                                        onChange={() => toggleDepartmentRestriction(hierarchy.id)}
-                                      />
-                                      {deptRestriction.restrictToDepartment && (
-                                        <Form.Text className="text-muted d-block ps-4 mt-1" style={{ fontSize: '0.85rem' }}>
-                                          <FaInfoCircle className="me-1" size={12} />
-                                          Department assignments will be configured separately
-                                        </Form.Text>
-                                      )}
-                                    </div>
-                                  </Card.Body>
-                                </Card>
-                              );
-                            })}
+                                  <FaArrowUp size={12} />
+                                </Button>
+                                <Button
+                                  variant="light"
+                                  size="sm"
+                                  onClick={() => handleMoveDown(index)}
+                                  disabled={index === queuedHierarchies.length - 1}
+                                  className="btn-action"
+                                >
+                                  <FaArrowDown size={12} />
+                                </Button>
+                                <Button
+                                  variant="light"
+                                  size="sm"
+                                  onClick={() => handleRemoveFromQueue(hierarchy.id)}
+                                  className="btn-action btn-action-danger"
+                                >
+                                  <FaTrash size={12} />
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -824,7 +807,7 @@ export default function WorkflowEditor() {
                         <FaInfoCircle className="me-2" />
                         Configure whether each approval step is required or optional. User assignments are managed in the Approval Hierarchies page.
                       </Alert>
-                      <Table hover className="align-middle">
+                      <Table hover className="align-middle table-modern">
                         <thead className="bg-light">
                           <tr>
                             <th className="py-3">Step Order</th>
@@ -950,9 +933,9 @@ export default function WorkflowEditor() {
                 </Card.Body>
               </Card>
             ) : (
-              <Card className="rounded-3 text-center h-100 border-0 shadow-lg">
+              <Card className="rounded-3 text-center h-100 border-0 shadow-lg empty-state">
                 <Card.Body className="d-flex flex-column justify-content-center align-items-center py-5">
-                  <div className="bg-primary bg-opacity-10 p-4 rounded-circle mb-4">
+                  <div className="bg-primary bg-opacity-10 p-4 rounded-circle mb-4 empty-state-icon">
                     <Diagram3Fill className="text-primary" size={48} />
                   </div>
                   <h5 className="fw-bold text-dark mb-2">No Workflow Found</h5>
@@ -1063,6 +1046,301 @@ export default function WorkflowEditor() {
           </Modal.Footer>
         </Form>
       </Modal>
+
+      <style jsx global>{`
+        /* Container Styles */
+        .workflows-container {
+          background-color: #f8fafc;
+          min-height: calc(100vh - 56px);
+        }
+
+        /* Header Card */
+        .page-header-card {
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+          box-shadow: 0 2px 15px rgba(0, 0, 0, 0.04);
+          border-radius: 1rem;
+          transition: transform 0.2s ease;
+        }
+
+        .page-header-card:hover {
+          transform: translateY(-2px);
+        }
+
+        .page-title {
+          font-size: 1.6rem;
+          font-weight: 800;
+          background: linear-gradient(45deg, #0d6efd, #0dcaf0);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          margin-bottom: 0.5rem;
+        }
+
+        /* Card Styles */
+        .card {
+          border-radius: 1rem;
+          transition: all 0.2s ease;
+        }
+
+        .card:hover {
+          transform: translateY(-2px);
+        }
+
+        .card-header {
+          border-radius: 1rem 1rem 0 0 !important;
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        /* Table Styles */
+        .table-modern {
+          border-collapse: separate;
+          border-spacing: 0 0.5rem;
+        }
+
+        .table-modern thead th {
+          padding: 1rem 1.2rem;
+          font-size: 0.8rem;
+          text-transform: uppercase;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+          background-color: #f1f5f9;
+          border: none;
+          color: #64748b;
+        }
+
+        .table-modern tbody tr {
+          background: white;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+          transition: all 0.2s ease;
+        }
+
+        .table-modern tbody tr:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Form Controls */
+        .form-control, .form-select {
+          border: 1px solid #e2e8f0;
+          border-radius: 0.5rem;
+          padding: 0.75rem 1rem;
+          font-size: 0.875rem;
+          transition: all 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Badges */
+        .badge {
+          font-weight: 600;
+          letter-spacing: 0.3px;
+          padding: 0.5em 0.75em;
+        }
+
+        /* Buttons */
+        .btn {
+          font-weight: 600;
+          padding: 0.6rem 1.2rem;
+          border-radius: 0.5rem;
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-icon {
+          width: 35px;
+          height: 35px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 8px;
+        }
+
+        /* Alert Styles */
+        .alert {
+          border-radius: 0.75rem;
+          border: none;
+          padding: 1rem 1.25rem;
+        }
+
+        /* Switch Controls */
+        .form-switch {
+          padding-left: 2.5rem;
+        }
+
+        .form-switch .form-check-input {
+          width: 2rem;
+          height: 1rem;
+          border-radius: 2rem;
+          background-color: #e2e8f0;
+          border: none;
+        }
+
+        .form-switch .form-check-input:checked {
+          background-color: #3b82f6;
+        }
+
+        /* Modal Styling */
+        .modal-content {
+          border: none;
+          border-radius: 1rem;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+          border: none;
+          padding: 1.5rem;
+        }
+
+        .modal-body {
+          padding: 1.5rem;
+        }
+
+        .modal-footer {
+          border: none;
+          padding: 1.5rem;
+        }
+
+        /* Queue Item Styles */
+        .queue-item {
+          background: white;
+          border-radius: 1rem;
+          border: 1px solid #e5e7eb;
+          transition: all 0.2s ease;
+          overflow: hidden;
+        }
+
+        .queue-item:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+          border-color: #cbd5e1;
+        }
+
+        .queue-item-header {
+          padding: 1rem;
+          background: #f8fafc;
+          border-bottom: 1px solid #e5e7eb;
+        }
+
+        .queue-number {
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #0d6efd;
+          color: white;
+          font-weight: 600;
+          border-radius: 0.5rem;
+          font-size: 0.875rem;
+        }
+
+        .queue-title {
+          margin: 0;
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: #1e293b;
+        }
+
+        .queue-description {
+          margin: 0.25rem 0 0;
+          font-size: 0.875rem;
+          color: #64748b;
+        }
+
+        .queue-badge {
+          font-size: 0.75rem;
+          padding: 0.35em 0.65em;
+          font-weight: 600;
+        }
+
+        .queue-item-body {
+          padding: 1rem;
+        }
+
+        .queue-controls {
+          display: flex;
+          gap: 2rem;
+        }
+
+        .queue-item-actions {
+          padding: 0.75rem;
+          background: #f8fafc;
+          border-top: 1px solid #e5e7eb;
+          display: flex;
+          gap: 0.5rem;
+          justify-content: flex-end;
+        }
+
+        .btn-action {
+          width: 32px;
+          height: 32px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 0.5rem;
+          transition: all 0.2s ease;
+          background: white;
+          border: 1px solid #e5e7eb;
+        }
+
+        .btn-action:hover {
+          background: #f1f5f9;
+          border-color: #cbd5e1;
+        }
+
+        .btn-action-danger {
+          color: #dc3545;
+        }
+
+        .btn-action-danger:hover {
+          background: #dc354510;
+          color: #dc3545;
+        }
+
+        .modern-switch .form-check-input {
+          height: 1.25rem;
+          width: 2.25rem;
+          border-radius: 2rem;
+        }
+
+        .modern-switch .form-check-input:checked {
+          background-color: #0d6efd;
+          border-color: #0d6efd;
+        }
+
+        .bg-gradient-blue {
+          background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+        }
+
+        .btn-soft-danger {
+          color: #dc3545;
+          background-color: #dc354520;
+          border: none;
+          font-size: 0.875rem;
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
+        }
+
+        .btn-soft-danger:hover {
+          background-color: #dc354530;
+          color: #dc3545;
+        }
+
+        .queue-container {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+      `}</style>
     </AuthProvider>
   );
 }
