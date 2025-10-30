@@ -43,7 +43,7 @@ import {
 import { BASE_API_URL } from "@/app/static/apiConfig";
 import { InputGroup } from "react-bootstrap";
 import { toast } from "react-toastify";
-import { Upload } from "lucide-react";
+import { Upload, XCircle } from "lucide-react";
 import AuthProvider from "@/app/authPages/tokenData";
 import TopNavbar from "@/app/components/Navbar";
 import PageLoader from "@/app/components/PageLoader";
@@ -724,38 +724,97 @@ export default function CreateExpensePage() {
                         <FileEarmarkPlus className="text-primary" size={28} />
                       </div>
                       <div>
-                        <h2 className="fw-bold text-dark mb-0">
+                        <h5 className="fw-bold text-primary mb-0">
                           Create New Expense
-                        </h2>
+                        </h5>
                         <p className="text-muted mb-0 small">
                           Submit a new expense for approval and payment
                         </p>
                       </div>
                     </div>
                   </div>
-                  <Breadcrumb className="mb-0 d-none d-md-flex">
-                    <Breadcrumb.Item
+                  <div 
+                    className="d-none d-md-flex align-items-center"
+                    style={{
+                      gap: '0.5rem'
+                    }}
+                  >
+                    {/* Home */}
+                    <a
                       href="/"
-                      className="d-flex align-items-center small"
+                      className="d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none"
+                      style={{
+                        background: 'white',
+                        border: '2px solid #e9ecef',
+                        transition: 'all 0.2s ease',
+                        fontSize: '0.85rem',
+                        fontWeight: '500',
+                        color: '#64748b'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = '#667eea';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.15)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = '#e9ecef';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
                     >
-                      <HouseDoor size={14} className="me-1" />
-                      Home
-                    </Breadcrumb.Item>
-                    <Breadcrumb.Item
+                      <HouseDoor size={14} />
+                      <span>Home</span>
+                    </a>
+
+                    {/* Separator */}
+                    <div style={{ color: '#cbd5e1', fontSize: '1.2rem' }}>›</div>
+
+                    {/* My Expenses */}
+                    <a
                       href="/expense-management/my-expenses"
-                      className="d-flex align-items-center small"
+                      className="d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none"
+                      style={{
+                        background: 'white',
+                        border: '2px solid #e9ecef',
+                        transition: 'all 0.2s ease',
+                        fontSize: '0.85rem',
+                        fontWeight: '500',
+                        color: '#64748b'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = '#667eea';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.15)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = '#e9ecef';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
                     >
-                      <ListCheck size={14} className="me-1" />
-                      My Expenses
-                    </Breadcrumb.Item>
-                    <Breadcrumb.Item
-                      active
-                      className="d-flex align-items-center small"
+                      <ListCheck size={14} />
+                      <span>My Expenses</span>
+                    </a>
+
+                    {/* Separator */}
+                    <div style={{ color: '#cbd5e1', fontSize: '1.2rem' }}>›</div>
+
+                    {/* Current Page - Active */}
+                    <div
+                      className="d-flex align-items-center gap-2 px-3 py-2 rounded-3"
+                      style={{
+                        background: '#667eea',
+                        border: '2px solid #667eea',
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                        color: 'white',
+                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+                      }}
                     >
-                      <PlusCircle size={14} className="me-1" />
-                      Create New
-                    </Breadcrumb.Item>
-                  </Breadcrumb>
+                      <PlusCircle size={14} />
+                      <span>Create New</span>
+                    </div>
+                  </div>
                 </div>
                 <hr className="border-2 border-primary opacity-25 mb-5" />
               </div>
@@ -1348,43 +1407,166 @@ export default function CreateExpensePage() {
 
                       {/* Payment Reference Display - Only shown when payment type is selected */}
                       {paymentType !== "" && payeeNumber && (
-                        <div className="mt-3">
-                          <Alert
-                            variant="success"
-                            className="border-0 shadow-sm mb-0"
+                        <div className="mt-4">
+                          <div 
+                            className="payment-reference-card border-0 shadow-sm mb-0"
+                            style={{
+                              background: 'linear-gradient(135deg, #f8f9ff 0%, #e7f1ff 100%)',
+                              borderRadius: '1rem',
+                              padding: '1.5rem',
+                              border: '2px solid #667eea',
+                              position: 'relative',
+                              overflow: 'hidden'
+                            }}
                           >
-                            <div className="d-flex align-items-start gap-3">
-                              <div className="bg-success bg-opacity-25 p-2 rounded-circle">
+                            {/* Decorative Background Elements */}
+                            <div style={{
+                              position: 'absolute',
+                              top: '-20px',
+                              right: '-20px',
+                              width: '100px',
+                              height: '100px',
+                              background: 'rgba(102, 126, 234, 0.1)',
+                              borderRadius: '50%',
+                              filter: 'blur(30px)'
+                            }}></div>
+                            <div style={{
+                              position: 'absolute',
+                              bottom: '-30px',
+                              left: '-30px',
+                              width: '120px',
+                              height: '120px',
+                              background: 'rgba(102, 126, 234, 0.08)',
+                              borderRadius: '50%',
+                              filter: 'blur(40px)'
+                            }}></div>
+
+                            <div className="d-flex align-items-start gap-3" style={{ position: 'relative', zIndex: 1 }}>
+                              <div 
+                                className="flex-shrink-0"
+                                style={{
+                                  background: '#667eea',
+                                  padding: '0.75rem',
+                                  borderRadius: '0.75rem',
+                                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
                                 <CheckCircle
-                                  size={20}
-                                  className="text-success"
+                                  size={24}
+                                  className="text-white"
+                                  style={{ 
+                                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                                  }}
                                 />
                               </div>
+                              
                               <div className="flex-grow-1">
-                                <h6 className="fw-bold text-success mb-2">
-                                  <PersonBadge className="me-1" size={16} />{" "}
-                                  Payment Reference Generated
-                                  <Badge bg="success" className="ms-2 small">
-                                    <Check2 size={12} className="me-1" />
-                                    Ready
+                                <div className="d-flex align-items-center justify-content-between mb-3">
+                                  <h6 className="fw-bold mb-0" style={{ 
+                                    color: '#4c51bf',
+                                    fontSize: '1rem',
+                                    letterSpacing: '0.3px'
+                                  }}>
+                                    <PersonBadge className="me-2" size={18} />
+                                    Payment Reference Generated
+                                  </h6>
+                                  <Badge 
+                                    bg=""
+                                    className="px-3 py-2"
+                                    style={{
+                                      background: '#667eea',
+                                      color: 'white',
+                                      borderRadius: '0.5rem',
+                                      fontSize: '0.75rem',
+                                      fontWeight: '700',
+                                      letterSpacing: '0.5px',
+                                      boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.35rem'
+                                    }}
+                                  >
+                                    <Check2 size={14} />
+                                    READY
                                   </Badge>
-                                </h6>
-                                <div className="bg-white rounded-3 p-3 border border-success">
+                                </div>
+                                
+                                <div 
+                                  className="payment-reference-value"
+                                  style={{
+                                    background: 'white',
+                                    borderRadius: '0.75rem',
+                                    padding: '1.25rem 1.5rem',
+                                    border: '2px solid #667eea',
+                                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.15)',
+                                    marginBottom: '1rem',
+                                    position: 'relative',
+                                    overflow: 'hidden'
+                                  }}
+                                >
+                                  <div style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    height: '3px',
+                                    background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)'
+                                  }}></div>
+                                  
                                   <code
-                                    className="text-dark fs-6 fw-bold d-block"
-                                    style={{ letterSpacing: "0.5px" }}
+                                    className="text-dark d-block"
+                                    style={{ 
+                                      fontSize: '0.9rem',
+                                      fontWeight: '600',
+                                      letterSpacing: '0.5px',
+                                      fontFamily: '"Courier New", monospace',
+                                      color: '#4c51bf',
+                                      wordBreak: 'break-word'
+                                    }}
                                   >
                                     {payeeNumber}
                                   </code>
                                 </div>
-                                <small className="text-muted d-block mt-2">
-                                  <InfoCircle size={12} className="me-1" />
-                                  This payment reference will be sent to the
-                                  backend for processing
-                                </small>
+                                
+                                <div 
+                                  className="d-flex align-items-center gap-2 p-3"
+                                  style={{
+                                    background: 'rgba(255, 255, 255, 0.7)',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid rgba(102, 126, 234, 0.2)'
+                                  }}
+                                >
+                                  <div 
+                                    className="flex-shrink-0"
+                                    style={{
+                                      background: '#667eea',
+                                      padding: '0.4rem',
+                                      borderRadius: '0.4rem',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center'
+                                    }}
+                                  >
+                                    <InfoCircle size={14} className="text-white" />
+                                  </div>
+                                  <small 
+                                    className="mb-0"
+                                    style={{ 
+                                      color: '#4c51bf',
+                                      fontSize: '0.85rem',
+                                      fontWeight: '500',
+                                      lineHeight: '1.5'
+                                    }}
+                                  >
+                                    This payment reference will be sent to the backend for processing
+                                  </small>
+                                </div>
                               </div>
                             </div>
-                          </Alert>
+                          </div>
                         </div>
                       )}
                     </Card.Body>
@@ -1802,7 +1984,13 @@ export default function CreateExpensePage() {
                   <Card className="border-0 shadow-sm rounded-3 mb-5">
                     <Card.Body className="p-4">
                       <div className="d-flex align-items-center mb-5 pb-3 border-bottom">
-                        <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                        <div 
+                          className="p-3 rounded-3 me-3"
+                          style={{
+                            background: 'linear-gradient(135deg, #f0f4ff 0%, #e7f1ff 100%)',
+                            border: '2px solid #667eea'
+                          }}
+                        >
                           <Receipt className="text-primary" size={22} />
                         </div>
                         <div>
@@ -1810,13 +1998,27 @@ export default function CreateExpensePage() {
                             Attachments
                           </h6>
                           <span className="text-muted small">
-                            Upload supporting documents
+                            Upload supporting documents (PDF, JPG, PNG, DOCX - Max 10MB)
                           </span>
                         </div>
                       </div>
                       <Row>
                         <Col md={6}>
-                          <div className="file-upload-area border border-2 border-primary border-dashed rounded-3 p-4 text-center bg-primary bg-opacity-10">
+                          <div 
+                            className="file-upload-area border border-2 border-dashed rounded-3 p-4 text-center position-relative"
+                            style={{
+                              background: fileName 
+                                ? 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)' 
+                                : 'linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%)',
+                              borderColor: fileName ? '#10b981' : '#cbd5e1',
+                              transition: 'all 0.3s ease',
+                              minHeight: '280px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'center',
+                              alignItems: 'center'
+                            }}
+                          >
                             <input
                               type="file"
                               id="file-upload"
@@ -1825,47 +2027,178 @@ export default function CreateExpensePage() {
                               onChange={handleFileChange}
                             />
 
-                            <div className="mb-5">
-                              <FileEarmarkPlus
-                                size={40}
-                                className="text-primary opacity-75"
-                              />
-                            </div>
-
-                            <label
-                              htmlFor="file-upload"
-                              className="btn btn-primary rounded-pill mb-2 px-4 fw-semibold shadow-sm"
-                            >
-                              <Upload size={16} className="me-2" /> Choose File
-                            </label>
-
-                            {fileName ? (
-                              <div className="mt-3">
-                                <span className="text-success small fw-semibold d-flex align-items-center justify-content-center">
-                                  <CheckCircle className="me-1" /> {fileName}
-                                </span>
-                                <Button
-                                  variant="link"
-                                  className="text-danger p-0 small d-block"
-                                  onClick={() => {
-                                    setSelectedFile(null);
-                                    setFileName("");
-                                    setPreviewUrl("");
-                                    setExtractedData({});
+                            {!fileName ? (
+                              <>
+                                <div 
+                                  className="mb-4 p-4 rounded-circle"
+                                  style={{
+                                    background: 'rgba(102, 126, 234, 0.1)',
+                                    border: '3px dashed #667eea'
                                   }}
                                 >
-                                  Remove File
-                                </Button>
-                              </div>
+                                  <FileEarmarkPlus
+                                    size={48}
+                                    style={{ color: '#667eea' }}
+                                  />
+                                </div>
+
+                                <h6 className="fw-bold mb-2" style={{ color: '#1f2937' }}>
+                                  Drop your files here
+                                </h6>
+                                <p className="text-muted small mb-3">
+                                  or click the button below to browse
+                                </p>
+
+                                <label
+                                  htmlFor="file-upload"
+                                  className="btn px-4 py-2 fw-semibold"
+                                  style={{
+                                    background: '#667eea',
+                                    color: 'white',
+                                    borderRadius: '0.75rem',
+                                    border: 'none',
+                                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                                  }}
+                                >
+                                  <Upload size={16} className="me-2" /> 
+                                  Choose File
+                                </label>
+
+                                <div className="mt-4 d-flex align-items-center justify-content-center gap-2">
+                                  <div 
+                                    className="px-2 py-1 rounded"
+                                    style={{
+                                      background: '#f1f5f9',
+                                      fontSize: '0.7rem',
+                                      fontWeight: '600',
+                                      color: '#64748b'
+                                    }}
+                                  >
+                                    PDF
+                                  </div>
+                                  <div 
+                                    className="px-2 py-1 rounded"
+                                    style={{
+                                      background: '#f1f5f9',
+                                      fontSize: '0.7rem',
+                                      fontWeight: '600',
+                                      color: '#64748b'
+                                    }}
+                                  >
+                                    JPG
+                                  </div>
+                                  <div 
+                                    className="px-2 py-1 rounded"
+                                    style={{
+                                      background: '#f1f5f9',
+                                      fontSize: '0.7rem',
+                                      fontWeight: '600',
+                                      color: '#64748b'
+                                    }}
+                                  >
+                                    PNG
+                                  </div>
+                                  <div 
+                                    className="px-2 py-1 rounded"
+                                    style={{
+                                      background: '#f1f5f9',
+                                      fontSize: '0.7rem',
+                                      fontWeight: '600',
+                                      color: '#64748b'
+                                    }}
+                                  >
+                                    DOCX
+                                  </div>
+                                </div>
+                              </>
                             ) : (
-                              <p className="small text-muted mt-3 mb-0">
-                                Upload receipts, invoices, or supporting
-                                documents
-                                <br />
-                                <span className="text-muted">
-                                  (PDF, JPG, PNG, DOCX - Max 10MB)
-                                </span>
-                              </p>
+                              <div className="w-100">
+                                <div 
+                                  className="mb-3 p-3 rounded-circle mx-auto"
+                                  style={{
+                                    background: '#10b981',
+                                    width: '80px',
+                                    height: '80px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                                  }}
+                                >
+                                  <CheckCircle size={40} className="text-white" />
+                                </div>
+                                
+                                <h6 className="fw-bold mb-2" style={{ color: '#047857' }}>
+                                  File Uploaded Successfully!
+                                </h6>
+                                
+                                <div 
+                                  className="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3 mb-3"
+                                  style={{
+                                    background: 'white',
+                                    border: '2px solid #10b981'
+                                  }}
+                                >
+                                  <FileEarmarkText size={16} style={{ color: '#10b981' }} />
+                                  <span 
+                                    className="small fw-semibold"
+                                    style={{ color: '#047857' }}
+                                  >
+                                    {fileName}
+                                  </span>
+                                </div>
+
+                                <div className="d-flex gap-2 justify-content-center">
+                                  <label
+                                    htmlFor="file-upload"
+                                    className="btn btn-sm px-3 py-2"
+                                    style={{
+                                      background: 'white',
+                                      color: '#667eea',
+                                      border: '2px solid #667eea',
+                                      borderRadius: '0.5rem',
+                                      fontWeight: '600',
+                                      cursor: 'pointer',
+                                      fontSize: '0.85rem'
+                                    }}
+                                  >
+                                    Change File
+                                  </label>
+                                  
+                                  <Button
+                                    variant=""
+                                    size="sm"
+                                    className="px-3 py-2"
+                                    style={{
+                                      background: 'white',
+                                      color: '#ef4444',
+                                      border: '2px solid #ef4444',
+                                      borderRadius: '0.5rem',
+                                      fontWeight: '600',
+                                      fontSize: '0.85rem'
+                                    }}
+                                    onClick={() => {
+                                      setSelectedFile(null);
+                                      setFileName("");
+                                      setPreviewUrl("");
+                                      setExtractedData({});
+                                    }}
+                                  >
+                                    <XCircle size={14} className="me-1" />
+                                    Remove
+                                  </Button>
+                                </div>
+                              </div>
                             )}
                           </div>
                         </Col>
@@ -1873,12 +2206,28 @@ export default function CreateExpensePage() {
                         {/* Preview and Extracted Data */}
                         <Col md={6}>
                           {previewUrl && (
-                            <div className="receipt-preview">
-                              <h6 className="fw-semibold mb-5">
-                                <FileEarmarkText className="me-2" />
-                                Receipt Preview
-                              </h6>
-                              <div className="border rounded-3 p-2 mb-5">
+                            <div className="receipt-preview mb-4">
+                              <div 
+                                className="d-flex align-items-center gap-2 mb-3 pb-2"
+                                style={{ borderBottom: '2px solid #e9ecef' }}
+                              >
+                                <div 
+                                  className="p-2 rounded"
+                                  style={{ background: '#f1f5f9' }}
+                                >
+                                  <FileEarmarkText size={18} style={{ color: '#667eea' }} />
+                                </div>
+                                <h6 className="fw-bold mb-0" style={{ color: '#1f2937' }}>
+                                  Preview
+                                </h6>
+                              </div>
+                              <div 
+                                className="border rounded-3 p-3"
+                                style={{
+                                  background: '#f8f9fa',
+                                  borderColor: '#e9ecef !important'
+                                }}
+                              >
                                 <img
                                   src={previewUrl}
                                   alt="Receipt preview"
@@ -1887,6 +2236,7 @@ export default function CreateExpensePage() {
                                     maxHeight: "200px",
                                     width: "100%",
                                     objectFit: "contain",
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                                   }}
                                 />
                               </div>
@@ -1894,31 +2244,64 @@ export default function CreateExpensePage() {
                           )}
 
                           {Object.keys(extractedData).length > 0 && (
-                            <div className="extracted-data bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 p-3">
-                              <h6 className="fw-semibold text-success mb-2">
-                                <Shield className="me-2" />
-                                Extracted Data
-                              </h6>
-                              {extractedData.amount && (
-                                <div className="small mb-1">
-                                  <strong>Amount:</strong> $
-                                  {extractedData.amount}
+                            <div 
+                              className="rounded-3 p-4"
+                              style={{
+                                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                                border: '2px solid #10b981'
+                              }}
+                            >
+                              <div className="d-flex align-items-center gap-2 mb-3">
+                                <div 
+                                  className="p-2 rounded"
+                                  style={{ background: '#10b981' }}
+                                >
+                                  <Shield size={18} className="text-white" />
                                 </div>
-                              )}
-                              {extractedData.vendor && (
-                                <div className="small mb-1">
-                                  <strong>Vendor:</strong>{" "}
-                                  {extractedData.vendor}
-                                </div>
-                              )}
-                              {extractedData.date && (
-                                <div className="small">
-                                  <strong>Date:</strong> {extractedData.date}
-                                </div>
-                              )}
-                              <div className="small text-muted mt-2">
-                                <InfoCircle size={12} className="me-1" />
-                                Data automatically filled in form
+                                <h6 className="fw-bold mb-0" style={{ color: '#047857' }}>
+                                  Extracted Data
+                                </h6>
+                              </div>
+                              
+                              <div className="small" style={{ color: '#047857' }}>
+                                {extractedData.amount && (
+                                  <div 
+                                    className="d-flex justify-content-between align-items-center mb-2 p-2 rounded"
+                                    style={{ background: 'rgba(255, 255, 255, 0.7)' }}
+                                  >
+                                    <strong>Amount:</strong>
+                                    <span className="fw-semibold">${extractedData.amount}</span>
+                                  </div>
+                                )}
+                                {extractedData.vendor && (
+                                  <div 
+                                    className="d-flex justify-content-between align-items-center mb-2 p-2 rounded"
+                                    style={{ background: 'rgba(255, 255, 255, 0.7)' }}
+                                  >
+                                    <strong>Vendor:</strong>
+                                    <span className="fw-semibold">{extractedData.vendor}</span>
+                                  </div>
+                                )}
+                                {extractedData.date && (
+                                  <div 
+                                    className="d-flex justify-content-between align-items-center p-2 rounded"
+                                    style={{ background: 'rgba(255, 255, 255, 0.7)' }}
+                                  >
+                                    <strong>Date:</strong>
+                                    <span className="fw-semibold">{extractedData.date}</span>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div 
+                                className="small mt-3 p-2 rounded d-flex align-items-center gap-2"
+                                style={{ 
+                                  background: 'rgba(255, 255, 255, 0.7)',
+                                  color: '#047857'
+                                }}
+                              >
+                                <InfoCircle size={14} />
+                                <span>Data automatically filled in form</span>
                               </div>
                             </div>
                           )}
@@ -2133,45 +2516,385 @@ export default function CreateExpensePage() {
           </Row>
         </Form>
         <style jsx global>{`
+          /* Modern Create Expense Page Styles */
           .create-expense-page {
             min-height: 100vh;
+            background: #f8f9fa;
           }
+
+          /* Enhanced Card Styles */
+          .card {
+            border-radius: 1rem !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none !important;
+          }
+
+          .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+          }
+
+          /* Form Control Enhancements */
+          .form-control,
+          .form-select {
+            border: 2px solid #e9ecef !important;
+            border-radius: 0.75rem !important;
+            padding: 0.75rem 1rem !important;
+            font-size: 0.95rem !important;
+            transition: all 0.3s ease !important;
+            background-color: #fff !important;
+          }
+
+          .form-control:hover,
+          .form-select:hover {
+            border-color: #cbd5e1 !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+          }
+
+          .form-control:focus,
+          .form-select:focus {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
+            background-color: #fff !important;
+          }
+
+          .form-control.is-valid,
+          .form-select.is-valid {
+            border-color: #e9ecef !important;
+            background-color: #fff !important;
+          }
+
+          .form-control.is-valid:focus,
+          .form-select.is-valid:focus {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
+          }
+
+          /* Valid feedback - green text only */
+          .valid-feedback {
+            color: #10b981 !important;
+          }
+
+          .form-control.is-invalid,
+          .form-select.is-invalid {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+          }
+
+          .form-control.is-invalid:focus,
+          .form-select.is-invalid:focus {
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+          }
+
+          /* Form Labels */
+          .form-label {
+            font-weight: 600 !important;
+            color: #1f2937 !important;
+            margin-bottom: 0.5rem !important;
+            font-size: 0.9rem !important;
+            letter-spacing: 0.3px !important;
+          }
+
+          /* File Upload Area */
+          .file-upload-area {
+            border: 2px dashed #cbd5e1 !important;
+            border-radius: 1rem !important;
+            transition: all 0.3s ease !important;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%) !important;
+          }
+
+          .file-upload-area:hover {
+            border-color: #667eea !important;
+            background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15) !important;
+          }
+
           .border-dashed {
             border-style: dashed !important;
           }
-          .file-upload-area {
-            border-color: #dee2e6 !important;
-            transition: all 0.3s ease;
-          }
-          .file-upload-area:hover {
-            border-color: #4e54c8 !important;
-            background-color: #f8f9ff;
-          }
-          .form-control,
-          .form-select {
-            border: 1px solid rgba(0, 0, 0, 0.05) !important;
-            box-shadow: none !important;
-          }
-          .form-control:focus,
-          .form-select:focus {
-            border: 1px solid rgba(0, 0, 0, 0.1) !important;
-            box-shadow: none !important;
-          }
-          .form-control.is-valid,
-          .form-select.is-valid {
-            border: 1px solid rgba(25, 135, 84, 0.3) !important;
-            box-shadow: none !important;
-          }
-          .form-control.is-invalid,
-          .form-select.is-invalid {
-            border: 1px solid rgba(220, 53, 69, 0.3) !important;
-            box-shadow: none !important;
-          }
+
+          /* Button Enhancements */
           .btn {
-            border-radius: 0.5rem;
+            border-radius: 0.75rem !important;
+            padding: 0.75rem 1.5rem !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.3px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border: none !important;
           }
+
+          /* Smaller buttons for payment type selection */
+          .btn-sm {
+            padding: 0.4rem 0.9rem !important;
+            font-size: 0.8rem !important;
+            border-radius: 0.5rem !important;
+          }
+
+          .btn-primary {
+            background: #667eea !important;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+          }
+
+          .btn-primary:hover {
+            background: #5568d3 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4) !important;
+          }
+
+          .btn-primary:active {
+            transform: translateY(0);
+          }
+
+          .btn-outline-primary {
+            border: 2px solid #667eea !important;
+            color: #667eea !important;
+            background: transparent !important;
+          }
+
+          .btn-outline-primary:hover {
+            background: #667eea !important;
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3) !important;
+          }
+
+          .btn-outline-secondary {
+            border: 2px solid #6c757d !important;
+            color: #6c757d !important;
+            background: white !important;
+          }
+
+          .btn-outline-secondary:hover {
+            background: #6c757d !important;
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(108, 117, 125, 0.2) !important;
+          }
+
+          /* Radio and Checkbox Styles */
+          .form-check-input {
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+            border: 2px solid #cbd5e1 !important;
+            transition: all 0.2s ease !important;
+          }
+
+          .form-check-input:checked {
+            background-color: #667eea !important;
+            border-color: #667eea !important;
+          }
+
+          .form-check-input:focus {
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
+          }
+
+          .form-check-label {
+            font-weight: 500 !important;
+            margin-left: 0.5rem !important;
+            cursor: pointer !important;
+          }
+
+          /* Alert Enhancements */
+          .alert {
+            border-radius: 0.75rem !important;
+            border: none !important;
+            padding: 1rem 1.25rem !important;
+          }
+
+          .alert-warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #fffbeb 100%) !important;
+            border-left: 4px solid #f59e0b !important;
+          }
+
+          /* Badge Enhancements */
+          .badge {
+            padding: 0.5rem 1rem !important;
+            border-radius: 0.5rem !important;
+            font-weight: 600 !important;
+            font-size: 0.8rem !important;
+            letter-spacing: 0.3px !important;
+          }
+
+          /* Progress Bar */
+          .progress {
+            height: 8px !important;
+            border-radius: 999px !important;
+            background-color: #e9ecef !important;
+            overflow: hidden !important;
+          }
+
+          .progress-bar {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
+            transition: width 0.6s ease !important;
+          }
+
+          /* Input Group Enhancements */
+          .input-group-text {
+            background-color: #f1f5f9 !important;
+            border: 2px solid #e9ecef !important;
+            border-right: none !important;
+            border-radius: 0.75rem 0 0 0.75rem !important;
+            color: #64748b !important;
+            font-weight: 600 !important;
+          }
+
+          .input-group .form-control {
+            border-left: none !important;
+            border-radius: 0 0.75rem 0.75rem 0 !important;
+          }
+
+          .input-group .form-control:focus {
+            border-left: none !important;
+          }
+
+          /* Kbd (Keyboard Shortcut) Styling */
+          kbd {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            padding: 0.35rem 0.6rem !important;
+            border-radius: 0.4rem !important;
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3) !important;
+            border: none !important;
+          }
+
+          /* Breadcrumb Enhancements */
+          .breadcrumb {
+            background: transparent !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+
+          .breadcrumb-item {
+            font-size: 0.9rem !important;
+          }
+
+          .breadcrumb-item + .breadcrumb-item::before {
+            color: #cbd5e1 !important;
+          }
+
+          .breadcrumb-item a {
+            color: #64748b !important;
+            text-decoration: none !important;
+            transition: color 0.2s ease !important;
+          }
+
+          .breadcrumb-item a:hover {
+            color: #667eea !important;
+          }
+
+          .breadcrumb-item.active {
+            color: #667eea !important;
+            font-weight: 600 !important;
+          }
+
+          /* Sticky Top Enhancement */
+          .sticky-top {
+            top: 1rem !important;
+            z-index: 100 !important;
+          }
+
+          /* Spinner */
+          .spinner-border-sm {
+            width: 1rem !important;
+            height: 1rem !important;
+          }
+
+          /* Validation Feedback */
+          .invalid-feedback,
+          .valid-feedback {
+            font-size: 0.85rem !important;
+            font-weight: 500 !important;
+            margin-top: 0.5rem !important;
+          }
+
+          /* Custom Scrollbar */
+          ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+          }
+
+          ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+          }
+
+          ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+          }
+
+          ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+          }
+
+          /* Smooth Animations */
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
           .card {
-            border-radius: 0.75rem;
+            animation: fadeIn 0.3s ease-out;
+          }
+
+          /* Responsive Enhancements */
+          @media (max-width: 768px) {
+            .card {
+              margin-bottom: 1.5rem !important;
+            }
+
+            .btn {
+              width: 100%;
+              margin-bottom: 0.5rem;
+            }
+
+            .form-control,
+            .form-select {
+              font-size: 16px !important; /* Prevents zoom on iOS */
+            }
+          }
+
+          /* Auto-save Indicator */
+          .auto-save-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+          }
+
+          /* Icon Containers */
+          .bg-primary.bg-opacity-10 {
+            background-color: rgba(102, 126, 234, 0.1) !important;
+          }
+
+          .rounded-circle {
+            transition: all 0.3s ease !important;
+          }
+
+          .rounded-circle:hover {
+            transform: rotate(360deg);
+          }
+
+          /* Shadow Enhancements */
+          .shadow-sm {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+          }
+
+          /* HR Line */
+          .border-primary {
+            border-color: #667eea !important;
+          }
+
+          .opacity-25 {
+            opacity: 0.25 !important;
           }
         `}</style>
       </Container>
