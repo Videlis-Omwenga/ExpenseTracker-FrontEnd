@@ -1629,85 +1629,18 @@ export default function ExpenseApprovalPage() {
 
             <hr className="my-5" />
 
-            {/* Bulk Actions Section */}
-            {selectedExpenses.length > 0 && (
-              <div className="mb-5 bg-light bg-opacity-50 p-4 rounded-3 border">
-                <Row className="align-items-center">
-                  <Col md={6}>
-                    <span className="fw-medium">
-                      {selectedExpenses.length} expense(s) selected
-                    </span>
-                  </Col>
-                  <Col md={6} className="text-end">
-                    <div className="position-relative d-inline-block me-2">
-                      <Button
-                        variant="success"
-                        size="sm"
-                        className="me-2"
-                        disabled={buttonsDisabled}
-                        title={
-                          exceedsBudget
-                            ? `Selected amount exceeds remaining budget of ${budgetRemaining.toLocaleString()} KES`
-                            : !hasSameCategory
-                              ? "All selected expenses must be from the same category"
-                              : ""
-                        }
-                        onClick={handleBulkApprove}
-                      >
-                        <CheckLg size={16} className="me-1" />
-                        Approve Selected
-                      </Button>
-                      {(exceedsBudget || !hasSameCategory) &&
-                        selectedExpenses.length > 0 && (
-                          <div
-                            className="position-absolute top-100 start-0 mt-1 w-100 text-center"
-                            style={{
-                              fontSize: "0.7rem",
-                              color: "#dc3545",
-                              whiteSpace: "nowrap",
-                              left: 0,
-                            }}
-                            title={
-                              exceedsBudget
-                                ? `Selected amount (${totalAmount.toLocaleString()} KES) exceeds remaining budget (${budgetRemaining.toLocaleString()} KES) by ${(
-                                  totalAmount - budgetRemaining
-                                ).toLocaleString()} KES`
-                                : "Please select expenses from the same category"
-                            }
-                          >
-                            {exceedsBudget
-                              ? `Budget exceeded by ${(
-                                totalAmount - budgetRemaining
-                              ).toLocaleString()} KES`
-                              : "Same category required"}
-                          </div>
-                        )}
-                    </div>
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      onClick={handleBulkReject}
-                      title="Reject selected expenses without budget or category restrictions"
-                    >
-                      <XLg size={16} className="me-1" />
-                      Reject Selected
-                    </Button>
-                  </Col>
-                </Row>
-              </div>
-            )}
-            {/* End Bulk Actions Section */}
+
 
             {/* Search and Filters Section */}
             <div className="mb-0">
-              <div 
+              <div
                 className="d-flex align-items-center mb-4 p-4 rounded-3"
                 style={{
                   background: '#f0f9ff',
                   border: '1px solid #e0f2fe'
                 }}
               >
-                <div 
+                <div
                   className="p-3 rounded-3 me-3"
                   style={{
                     background: '#667eea',
@@ -1741,40 +1674,106 @@ export default function ExpenseApprovalPage() {
                   </small>
                 </Col>
                 <Col xs={12} md={5} className="mb-2 mb-md-0">
-                  <div className="modern-search-container position-relative">
-                    <div className="d-flex align-items-center gap-2">
-                      <div className="search-icon-external border">
-                        <Search size={18} className="text-primary" />
+                  <div className="position-relative">
+                    <div
+                      className="d-flex align-items-center rounded-3 shadow-sm"
+                      style={{
+                        background: '#ffffff',
+                        border: '2px solid #e5e7eb',
+                        padding: '8px 16px',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = '#667eea';
+                        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = '#e5e7eb';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <div
+                        className="p-2 rounded-2 me-2"
+                        style={{
+                          background: '#ede9fe',
+                          border: '1px solid #ddd6fe'
+                        }}
+                      >
+                        <Search size={18} style={{ color: '#667eea' }} />
                       </div>
-                      <div className="search-input-wrapper flex-grow-1">
-                        <Form.Control
-                          type="search"
-                          placeholder="Search by payee, payee number, description, employee, category..."
-                          value={searchQuery}
-                          onChange={(e) => {
-                            setCurrentPage(1);
-                            setSearchQuery(e.target.value);
+                      <Form.Control
+                        type="search"
+                        placeholder="Search by payee, payee number, description, employee, category..."
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setCurrentPage(1);
+                          setSearchQuery(e.target.value);
+                        }}
+                        style={{
+                          border: 'none',
+                          outline: 'none',
+                          boxShadow: 'none',
+                          padding: '8px 4px',
+                          fontSize: '0.875rem',
+                          color: '#1e293b'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.parentElement!.style.borderColor = '#667eea';
+                          e.currentTarget.parentElement!.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.parentElement!.style.borderColor = '#e5e7eb';
+                          e.currentTarget.parentElement!.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+                        }}
+                      />
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setSearchQuery("")}
+                          aria-label="Clear search"
+                          className="p-2 rounded-2"
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: '#94a3b8',
+                            transition: 'all 0.2s ease'
                           }}
-                          className="modern-search-input"
-                        />
-                        {searchQuery && (
-                          <button
-                            type="button"
-                            className="clear-search-btn"
-                            onClick={() => setSearchQuery("")}
-                            aria-label="Clear search"
-                          >
-                            <XCircle size={16} />
-                          </button>
-                        )}
-                      </div>
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#f1f5f9';
+                            e.currentTarget.style.color = '#475569';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = '#94a3b8';
+                          }}
+                        >
+                          <XCircle size={18} />
+                        </button>
+                      )}
                     </div>
                     {searchQuery && (
-                      <div className="search-results-count">
-                        <small className="text-primary fw-medium">
+                      <div
+                        className="mt-2"
+                        style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0
+                        }}
+                      >
+                        <span
+                          className="px-3 py-1 rounded-pill d-inline-flex align-items-center"
+                          style={{
+                            background: '#ede9fe',
+                            color: '#667eea',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            border: '1px solid #ddd6fe'
+                          }}
+                        >
                           <Funnel size={12} className="me-1" />
                           {filteredExpenses.length} results found
-                        </small>
+                        </span>
                       </div>
                     )}
                   </div>
@@ -1795,14 +1794,14 @@ export default function ExpenseApprovalPage() {
 
               {/* Horizontal Filters Row */}
               <div className="filters-section">
-                <div 
+                <div
                   className="filter-header-bar d-flex align-items-center justify-content-between mb-4 p-4"
                   style={{
                     background: 'transparent'
                   }}
                 >
                   <div className="d-flex align-items-center gap-3">
-                    <div 
+                    <div
                       className="p-3 rounded-3"
                       style={{
                         background: '#667eea',
@@ -1853,92 +1852,117 @@ export default function ExpenseApprovalPage() {
                   {/* Status Filter */}
                   <Col xs={12} sm={6} md={2}>
                     <div className="filter-item">
-                      <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-dark">
-                        <div 
-                          className="p-1 rounded me-2"
-                          style={{ background: '#dbeafe' }}
-                        >
-                          <CheckCircle className="text-primary" size={14} />
-                        </div>
+                      <label className="filter-label mb-2 fw-semibold" style={{ color: '#1e293b', fontSize: '0.875rem' }}>
                         Status
                       </label>
-                      <Form.Select
-                        size="sm"
-                        className="form-select-modern shadow-sm"
-                        value={statusFilter}
-                        onChange={(e) => {
-                          setStatusFilter(
-                            e.target.value as "all" | ExpenseStatus
-                          );
-                          setCurrentPage(1);
-                        }}
-                        style={{
-                          borderRadius: '8px',
-                          border: '2px solid #e5e7eb',
-                          padding: '10px 12px',
-                          fontSize: '0.875rem',
-                          fontWeight: '500',
-                          transition: 'all 0.3s ease'
-                        }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = '#667eea';
-                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = '#e5e7eb';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                      >
+                      <div className="position-relative">
+                        <div 
+                          className="position-absolute"
+                          style={{
+                            left: '12px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            pointerEvents: 'none',
+                            zIndex: 1
+                          }}
+                        >
+                          <CheckCircle size={16} style={{ color: '#667eea' }} />
+                        </div>
+                        <Form.Select
+                          size="sm"
+                          value={statusFilter}
+                          onChange={(e) => {
+                            setStatusFilter(
+                              e.target.value as "all" | ExpenseStatus
+                            );
+                            setCurrentPage(1);
+                          }}
+                          style={{
+                            borderRadius: '12px',
+                            border: '1px solid #e5e7eb',
+                            paddingLeft: '40px',
+                            paddingRight: '12px',
+                            paddingTop: '10px',
+                            paddingBottom: '10px',
+                            fontSize: '0.875rem',
+                            fontWeight: '500',
+                            background: '#ffffff',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease',
+                            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                          }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.borderColor = '#667eea';
+                            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.borderColor = '#e5e7eb';
+                            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+                          }}
+                        >
                         <option value="all">All Statuses</option>
                         <option value="PENDING">⏳ Pending</option>
                         <option value="APPROVED">✅ Approved</option>
                         <option value="REJECTED">❌ Rejected</option>
                         <option value="PAID">💰 Paid</option>
                       </Form.Select>
+                      </div>
                     </div>
                   </Col>
 
                   {/* Category Filter */}
                   <Col xs={12} sm={6} md={2}>
                     <div className="filter-item">
-                      <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-dark">
-                        <div 
-                          className="p-1 rounded me-2"
-                          style={{ background: '#fef3c7' }}
-                        >
-                          <Tag className="text-warning" size={14} />
-                        </div>
+                      <label className="filter-label mb-2 fw-semibold" style={{ color: '#1e293b', fontSize: '0.875rem' }}>
                         Category
                       </label>
-                      <Form.Select
-                        size="sm"
-                        className="form-select-modern shadow-sm"
-                        value={categoryFilter}
-                        onChange={(e) => {
-                          setCategoryFilter(
-                            e.target.value === "all"
-                              ? "all"
-                              : Number(e.target.value)
-                          );
-                          setCurrentPage(1);
-                        }}
-                        style={{
-                          borderRadius: '8px',
-                          border: '2px solid #e5e7eb',
-                          padding: '10px 12px',
-                          fontSize: '0.875rem',
-                          fontWeight: '500',
-                          transition: 'all 0.3s ease'
-                        }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = '#f59e0b';
-                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(245, 158, 11, 0.1)';
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = '#e5e7eb';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                      >
+                      <div className="position-relative">
+                        <div 
+                          className="position-absolute"
+                          style={{
+                            left: '12px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            pointerEvents: 'none',
+                            zIndex: 1
+                          }}
+                        >
+                          <Tag size={16} style={{ color: '#f59e0b' }} />
+                        </div>
+                        <Form.Select
+                          size="sm"
+                          value={categoryFilter}
+                          onChange={(e) => {
+                            setCategoryFilter(
+                              e.target.value === "all"
+                                ? "all"
+                                : Number(e.target.value)
+                            );
+                            setCurrentPage(1);
+                          }}
+                          style={{
+                            borderRadius: '12px',
+                            border: '1px solid #e5e7eb',
+                            paddingLeft: '40px',
+                            paddingRight: '12px',
+                            paddingTop: '10px',
+                            paddingBottom: '10px',
+                            fontSize: '0.875rem',
+                            fontWeight: '500',
+                            background: '#ffffff',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease',
+                            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                          }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.borderColor = '#f59e0b';
+                            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(245, 158, 11, 0.1)';
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.borderColor = '#e5e7eb';
+                            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+                          }}
+                        >
                         <option value="all">All Categories</option>
                         {categories.map((category) => (
                           <option key={category.id} value={category.id}>
@@ -1946,48 +1970,61 @@ export default function ExpenseApprovalPage() {
                           </option>
                         ))}
                       </Form.Select>
+                      </div>
                     </div>
                   </Col>
 
                   {/* Department Filter */}
                   <Col xs={12} sm={6} md={2}>
                     <div className="filter-item">
-                      <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-dark">
-                        <div 
-                          className="p-1 rounded me-2"
-                          style={{ background: '#ddd6fe' }}
-                        >
-                          <Building className="text-primary" size={14} />
-                        </div>
+                      <label className="filter-label mb-2 fw-semibold" style={{ color: '#1e293b', fontSize: '0.875rem' }}>
                         Department
                       </label>
-                      <Form.Select
-                        size="sm"
-                        className="form-select-modern shadow-sm"
-                        value={departmentFilter}
-                        onChange={(e) => {
-                          setDepartmentFilter(
-                            e.target.value === "all"
-                              ? "all"
-                              : Number(e.target.value)
-                          );
-                          setCurrentPage(1);
-                        }}
-                        style={{
-                          borderRadius: '8px',
-                          border: '2px solid #e5e7eb',
-                          padding: '10px 12px',
-                          fontSize: '0.875rem',
-                          fontWeight: '500',
-                          transition: 'all 0.3s ease'
-                        }}
-                        onFocus={(e) => {
+                      <div className="position-relative">
+                        <div 
+                          className="position-absolute"
+                          style={{
+                            left: '12px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            pointerEvents: 'none',
+                            zIndex: 1
+                          }}
+                        >
+                          <Building size={16} style={{ color: '#8b5cf6' }} />
+                        </div>
+                        <Form.Select
+                          size="sm"
+                          value={departmentFilter}
+                          onChange={(e) => {
+                            setDepartmentFilter(
+                              e.target.value === "all"
+                                ? "all"
+                                : Number(e.target.value)
+                            );
+                            setCurrentPage(1);
+                          }}
+                          style={{
+                            borderRadius: '12px',
+                            border: '1px solid #e5e7eb',
+                            paddingLeft: '40px',
+                            paddingRight: '12px',
+                            paddingTop: '10px',
+                            paddingBottom: '10px',
+                            fontSize: '0.875rem',
+                            fontWeight: '500',
+                            background: '#ffffff',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease',
+                            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                          }}
+                          onFocus={(e) => {
                           e.currentTarget.style.borderColor = '#8b5cf6';
                           e.currentTarget.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
                         }}
                         onBlur={(e) => {
                           e.currentTarget.style.borderColor = '#e5e7eb';
-                          e.currentTarget.style.boxShadow = 'none';
+                          e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
                         }}
                       >
                         <option value="all">All Departments</option>
@@ -1997,73 +2034,112 @@ export default function ExpenseApprovalPage() {
                           </option>
                         ))}
                       </Form.Select>
+                      </div>
                     </div>
                   </Col>
 
                   {/* Amount Range */}
                   <Col xs={12} sm={6} md={2}>
                     <div className="filter-item">
-                      <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-dark">
-                        <div 
-                          className="p-1 rounded me-2"
-                          style={{ background: '#d1fae5' }}
-                        >
-                          <CashStack className="text-success" size={14} />
-                        </div>
+                      <label className="filter-label mb-2 fw-semibold" style={{ color: '#1e293b', fontSize: '0.875rem' }}>
                         Amount (KES)
                       </label>
                       <Row className="g-2">
                         <Col xs={6}>
-                          <Form.Control
-                            size="sm"
-                            type="number"
-                            placeholder="Min"
-                            value={minAmount}
-                            onChange={(e) => setMinAmount(e.target.value)}
-                            className="form-control-modern shadow-sm"
-                            style={{
-                              borderRadius: '8px',
-                              border: '2px solid #e5e7eb',
-                              padding: '10px 12px',
-                              fontSize: '0.875rem',
-                              fontWeight: '500',
-                              transition: 'all 0.3s ease'
-                            }}
-                            onFocus={(e) => {
+                          <div className="position-relative">
+                            <div 
+                              className="position-absolute"
+                              style={{
+                                left: '10px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                pointerEvents: 'none',
+                                zIndex: 1,
+                                fontSize: '0.75rem',
+                                color: '#10b981',
+                                fontWeight: '600'
+                              }}
+                            >
+                              ₭
+                            </div>
+                            <Form.Control
+                              size="sm"
+                              type="number"
+                              placeholder="Min"
+                              value={minAmount}
+                              onChange={(e) => setMinAmount(e.target.value)}
+                              style={{
+                                borderRadius: '12px',
+                                border: '1px solid #e5e7eb',
+                                paddingLeft: '28px',
+                                paddingRight: '10px',
+                                paddingTop: '10px',
+                                paddingBottom: '10px',
+                                fontSize: '0.875rem',
+                                fontWeight: '500',
+                                background: '#ffffff',
+                                color: '#1e293b',
+                                transition: 'all 0.3s ease',
+                                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                              }}
+                              onFocus={(e) => {
                               e.currentTarget.style.borderColor = '#10b981';
                               e.currentTarget.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
                             }}
                             onBlur={(e) => {
                               e.currentTarget.style.borderColor = '#e5e7eb';
-                              e.currentTarget.style.boxShadow = 'none';
+                              e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
                             }}
                           />
+                          </div>
                         </Col>
                         <Col xs={6}>
-                          <Form.Control
-                            size="sm"
-                            type="number"
-                            placeholder="Max"
-                            value={maxAmount}
-                            onChange={(e) => setMaxAmount(e.target.value)}
-                            className="form-control-modern shadow-sm"
-                            style={{
-                              borderRadius: '8px',
-                              border: '2px solid #e5e7eb',
-                              padding: '10px 12px',
-                              fontSize: '0.875rem',
-                              fontWeight: '500',
-                              transition: 'all 0.3s ease'
-                            }}
-                            onFocus={(e) => {
-                              e.currentTarget.style.borderColor = '#10b981';
-                              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
-                            }}
-                            onBlur={(e) => {
-                              e.currentTarget.style.borderColor = '#e5e7eb';
-                              e.currentTarget.style.boxShadow = 'none';
-                            }}
-                          />
+                          <div className="position-relative">
+                            <div 
+                              className="position-absolute"
+                              style={{
+                                left: '10px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                pointerEvents: 'none',
+                                zIndex: 1,
+                                fontSize: '0.75rem',
+                                color: '#10b981',
+                                fontWeight: '600'
+                              }}
+                            >
+                              ₭
+                            </div>
+                            <Form.Control
+                              size="sm"
+                              type="number"
+                              placeholder="Max"
+                              value={maxAmount}
+                              onChange={(e) => setMaxAmount(e.target.value)}
+                              style={{
+                                borderRadius: '12px',
+                                border: '1px solid #e5e7eb',
+                                paddingLeft: '28px',
+                                paddingRight: '10px',
+                                paddingTop: '10px',
+                                paddingBottom: '10px',
+                                fontSize: '0.875rem',
+                                fontWeight: '500',
+                                background: '#ffffff',
+                                color: '#1e293b',
+                                transition: 'all 0.3s ease',
+                                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                              }}
+                              onFocus={(e) => {
+                                e.currentTarget.style.borderColor = '#10b981';
+                                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                              }}
+                              onBlur={(e) => {
+                                e.currentTarget.style.borderColor = '#e5e7eb';
+                                e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+                              }}
+                            />
+                          </div>
                         </Col>
                       </Row>
                     </div>
@@ -2072,83 +2148,108 @@ export default function ExpenseApprovalPage() {
                   {/* Date Range Filter */}
                   <Col xs={12} sm={6} md={2}>
                     <div className="filter-item">
-                      <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-dark">
-                        <div 
-                          className="p-1 rounded me-2"
-                          style={{ background: '#fee2e2' }}
-                        >
-                          <CalendarEvent className="text-danger" size={14} />
-                        </div>
+                      <label className="filter-label mb-2 fw-semibold" style={{ color: '#1e293b', fontSize: '0.875rem' }}>
                         Date Range
                       </label>
-                      <Form.Select
-                        size="sm"
-                        className="form-select-modern shadow-sm"
-                        value={dateRangeFilter}
-                        onChange={(e) => setDateRangeFilter(e.target.value)}
-                        style={{
-                          borderRadius: '8px',
-                          border: '2px solid #e5e7eb',
-                          padding: '10px 12px',
-                          fontSize: '0.875rem',
-                          fontWeight: '500',
-                          transition: 'all 0.3s ease'
-                        }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = '#ef4444';
-                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = '#e5e7eb';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                      >
+                      <div className="position-relative">
+                        <div 
+                          className="position-absolute"
+                          style={{
+                            left: '12px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            pointerEvents: 'none',
+                            zIndex: 1
+                          }}
+                        >
+                          <CalendarEvent size={16} style={{ color: '#ef4444' }} />
+                        </div>
+                        <Form.Select
+                          size="sm"
+                          value={dateRangeFilter}
+                          onChange={(e) => setDateRangeFilter(e.target.value)}
+                          style={{
+                            borderRadius: '12px',
+                            border: '1px solid #e5e7eb',
+                            paddingLeft: '40px',
+                            paddingRight: '12px',
+                            paddingTop: '10px',
+                            paddingBottom: '10px',
+                            fontSize: '0.875rem',
+                            fontWeight: '500',
+                            background: '#ffffff',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease',
+                            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                          }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.borderColor = '#ef4444';
+                            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.borderColor = '#e5e7eb';
+                            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+                          }}
+                        >
                         <option value="All Time">All Time</option>
                         <option value="Today">📅 Today</option>
                         <option value="This Week">📆 This Week</option>
                         <option value="This Month">🗓️ This Month</option>
                         <option value="Last 30 Days">⏰ Last 30 Days</option>
                       </Form.Select>
+                      </div>
                     </div>
                   </Col>
 
                   {/* Approval Progress Filter */}
                   <Col xs={12} sm={6} md={2}>
                     <div className="filter-item">
-                      <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-dark">
-                        <div 
-                          className="p-1 rounded me-2"
-                          style={{ background: '#e0f2fe' }}
-                        >
-                          <ListCheck className="text-info" size={14} />
-                        </div>
+                      <label className="filter-label mb-2 fw-semibold" style={{ color: '#1e293b', fontSize: '0.875rem' }}>
                         Progress
                       </label>
-                      <Form.Select
-                        size="sm"
-                        className="form-select-modern shadow-sm"
-                        value={approvalFilter}
-                        onChange={(e) => {
-                          setApprovalFilter(e.target.value);
-                          setCurrentPage(1);
-                        }}
-                        style={{
-                          borderRadius: '8px',
-                          border: '2px solid #e5e7eb',
-                          padding: '10px 12px',
-                          fontSize: '0.875rem',
-                          fontWeight: '500',
-                          transition: 'all 0.3s ease'
-                        }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = '#06b6d4';
-                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(6, 182, 212, 0.1)';
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = '#e5e7eb';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                      >
+                      <div className="position-relative">
+                        <div 
+                          className="position-absolute"
+                          style={{
+                            left: '12px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            pointerEvents: 'none',
+                            zIndex: 1
+                          }}
+                        >
+                          <ListCheck size={16} style={{ color: '#06b6d4' }} />
+                        </div>
+                        <Form.Select
+                          size="sm"
+                          value={approvalFilter}
+                          onChange={(e) => {
+                            setApprovalFilter(e.target.value);
+                            setCurrentPage(1);
+                          }}
+                          style={{
+                            borderRadius: '12px',
+                            border: '1px solid #e5e7eb',
+                            paddingLeft: '40px',
+                            paddingRight: '12px',
+                            paddingTop: '10px',
+                            paddingBottom: '10px',
+                            fontSize: '0.875rem',
+                            fontWeight: '500',
+                            background: '#ffffff',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease',
+                            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                          }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.borderColor = '#06b6d4';
+                            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(6, 182, 212, 0.1)';
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.borderColor = '#e5e7eb';
+                            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+                          }}
+                        >
                         <option value="all">All Progress</option>
                         {approvalStatuses
                           .filter((status) => status !== "all")
@@ -2158,10 +2259,79 @@ export default function ExpenseApprovalPage() {
                             </option>
                           ))}
                       </Form.Select>
+                      </div>
                     </div>
                   </Col>
                 </Row>
               </div>
+
+              {/* Bulk Actions Section */}
+              {selectedExpenses.length > 0 && (
+                <div className="mb-5 bg-light bg-opacity-50 p-4 rounded-3 border">
+                  <Row className="align-items-center">
+                    <Col md={6}>
+                      <span className="fw-medium">
+                        {selectedExpenses.length} expense(s) selected
+                      </span>
+                    </Col>
+                    <Col md={6} className="text-end">
+                      <div className="position-relative d-inline-block me-2">
+                        <Button
+                          variant="success"
+                          size="sm"
+                          className="me-2"
+                          disabled={buttonsDisabled}
+                          title={
+                            exceedsBudget
+                              ? `Selected amount exceeds remaining budget of ${budgetRemaining.toLocaleString()} KES`
+                              : !hasSameCategory
+                                ? "All selected expenses must be from the same category"
+                                : ""
+                          }
+                          onClick={handleBulkApprove}
+                        >
+                          <CheckLg size={16} className="me-1" />
+                          Approve Selected
+                        </Button>
+                        {(exceedsBudget || !hasSameCategory) &&
+                          selectedExpenses.length > 0 && (
+                            <div
+                              className="position-absolute top-100 start-0 mt-1 w-100 text-center"
+                              style={{
+                                fontSize: "0.7rem",
+                                color: "#dc3545",
+                                whiteSpace: "nowrap",
+                                left: 0,
+                              }}
+                              title={
+                                exceedsBudget
+                                  ? `Selected amount (${totalAmount.toLocaleString()} KES) exceeds remaining budget (${budgetRemaining.toLocaleString()} KES) by ${(
+                                    totalAmount - budgetRemaining
+                                  ).toLocaleString()} KES`
+                                  : "Please select expenses from the same category"
+                              }
+                            >
+                              {exceedsBudget
+                                ? `Budget exceeded by ${(
+                                  totalAmount - budgetRemaining
+                                ).toLocaleString()} KES`
+                                : "Same category required"}
+                            </div>
+                          )}
+                      </div>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={handleBulkReject}
+                        title="Reject selected expenses without budget or category restrictions"
+                      >
+                        <XLg size={16} className="me-1" />
+                        Reject Selected
+                      </Button>
+                    </Col>
+                  </Row>
+                </div>
+              )}
 
               {/* Table Section */}
               <div className="mt-4">
@@ -2177,13 +2347,29 @@ export default function ExpenseApprovalPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="table-responsive">
-                    <Table hover className="align-middle mb-0">
-                      <thead className="bg-light border-0">
+                  <div
+                    className="table-responsive rounded-3 shadow-sm"
+                    style={{
+                      border: '1px solid #e5e7eb',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <Table hover className="align-middle mb-0" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+                      <thead
+                        style={{
+                          background: 'linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%)',
+                          borderBottom: '2px solid #e2e8f0'
+                        }}
+                      >
                         <tr>
                           <th
-                            className="border-0 py-3 px-4"
-                            style={{ width: "40px" }}
+                            className="py-3 px-4"
+                            style={{
+                              width: "40px",
+                              borderBottom: '2px solid #e2e8f0',
+                              fontWeight: '600',
+                              color: '#475569'
+                            }}
                           >
                             <Form.Check
                               type="checkbox"
@@ -2195,48 +2381,154 @@ export default function ExpenseApprovalPage() {
                               className="mb-0"
                             />
                           </th>
-                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                          <th
+                            className="py-3 px-4 text-uppercase"
+                            style={{
+                              borderBottom: '2px solid #e2e8f0',
+                              fontWeight: '600',
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px',
+                              color: '#475569'
+                            }}
+                          >
                             #ID
                           </th>
-                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                          <th
+                            className="py-3 px-4 text-uppercase"
+                            style={{
+                              borderBottom: '2px solid #e2e8f0',
+                              fontWeight: '600',
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px',
+                              color: '#475569'
+                            }}
+                          >
                             Created
                           </th>
-                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                          <th
+                            className="py-3 px-4 text-uppercase"
+                            style={{
+                              borderBottom: '2px solid #e2e8f0',
+                              fontWeight: '600',
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px',
+                              color: '#475569'
+                            }}
+                          >
                             Payee
                           </th>
-                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                            Payee Number
+                          <th
+                            className="py-3 px-4 text-uppercase"
+                            style={{
+                              borderBottom: '2px solid #e2e8f0',
+                              fontWeight: '600',
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px',
+                              color: '#475569'
+                            }}
+                          >
+                            Receiver
                           </th>
-                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                          <th
+                            className="py-3 px-4 text-uppercase"
+                            style={{
+                              borderBottom: '2px solid #e2e8f0',
+                              fontWeight: '600',
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px',
+                              color: '#475569'
+                            }}
+                          >
                             Description
                           </th>
-                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                          <th
+                            className="py-3 px-4 text-uppercase"
+                            style={{
+                              borderBottom: '2px solid #e2e8f0',
+                              fontWeight: '600',
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px',
+                              color: '#475569'
+                            }}
+                          >
                             Amount
                           </th>
-                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                          <th
+                            className="py-3 px-4 text-uppercase"
+                            style={{
+                              borderBottom: '2px solid #e2e8f0',
+                              fontWeight: '600',
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px',
+                              color: '#475569'
+                            }}
+                          >
                             Employee
                           </th>
-                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                          <th
+                            className="py-3 px-4 text-uppercase"
+                            style={{
+                              borderBottom: '2px solid #e2e8f0',
+                              fontWeight: '600',
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px',
+                              color: '#475569'
+                            }}
+                          >
                             Department
                           </th>
-                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                          <th
+                            className="py-3 px-4 text-uppercase"
+                            style={{
+                              borderBottom: '2px solid #e2e8f0',
+                              fontWeight: '600',
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px',
+                              color: '#475569'
+                            }}
+                          >
                             Category
                           </th>
-                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                          <th
+                            className="py-3 px-4 text-uppercase"
+                            style={{
+                              borderBottom: '2px solid #e2e8f0',
+                              fontWeight: '600',
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px',
+                              color: '#475569'
+                            }}
+                          >
                             Budget
                           </th>
                           <th
-                            className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small"
-                            style={{ minWidth: 200 }}
+                            className="py-3 px-4 text-uppercase"
+                            style={{
+                              minWidth: 200,
+                              borderBottom: '2px solid #e2e8f0',
+                              fontWeight: '600',
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px',
+                              color: '#475569'
+                            }}
                           >
                             Progress
                           </th>
-                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-end">
+                          <th
+                            className="py-3 px-4 text-uppercase text-end"
+                            style={{
+                              borderBottom: '2px solid #e2e8f0',
+                              fontWeight: '600',
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px',
+                              color: '#475569'
+                            }}
+                          >
                             Actions
                           </th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody style={{ background: '#ffffff' }}>
                         {currentExpenses.map((exp) => {
                           const totalSteps = exp.expenseSteps.length || 0;
                           const approvedSteps = exp.expenseSteps.filter(
@@ -2253,9 +2545,21 @@ export default function ExpenseApprovalPage() {
                           return (
                             <tr
                               key={exp.id}
-                              className="cursor-pointer border-bottom"
+                              className="cursor-pointer"
+                              style={{
+                                borderBottom: '1px solid #f1f5f9',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#f8fafc';
+                                e.currentTarget.style.transform = 'scale(1.001)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = '#ffffff';
+                                e.currentTarget.style.transform = 'scale(1)';
+                              }}
                             >
-                              <td className="py-3 px-4">
+                              <td className="py-3 px-4" style={{ borderBottom: '1px solid #f1f5f9' }}>
                                 <Form.Check className="mb-0">
                                   <Form.Check.Input
                                     type="checkbox"
@@ -2264,30 +2568,47 @@ export default function ExpenseApprovalPage() {
                                   />
                                 </Form.Check>
                               </td>
-                              <td className="py-3 px-4">
+                              <td className="py-3 px-4" style={{ borderBottom: '1px solid #f1f5f9' }}>
                                 <div className="d-flex align-items-center">
-                                  <Tag size={14} className="me-1 text-primary" />
-                                  <span className="fw-semibold text-primary">
-                                    {exp.id}
+                                  <div
+                                    className="p-2 rounded-2 me-2"
+                                    style={{
+                                      background: '#ede9fe',
+                                      border: '1px solid #ddd6fe'
+                                    }}
+                                  >
+                                    <Tag size={14} className="text-primary" />
+                                  </div>
+                                  <span
+                                    className="fw-bold"
+                                    style={{ color: '#667eea' }}
+                                  >
+                                    #{exp.id}
                                   </span>
                                 </div>
                               </td>
-                              <td className="py-3 px-4">
+                              <td className="py-3 px-4" style={{ borderBottom: '1px solid #f1f5f9' }}>
                                 <div className="d-flex flex-column">
-                                  <div className="fw-medium">
+                                  <div className="fw-medium" style={{ color: '#1e293b' }}>
                                     {formatDate(exp.createdAt)}
                                   </div>
                                 </div>
                               </td>
-                              <td className="py-3 px-4 fw-medium">{exp.payee}</td>
-                              <td className="py-3 px-4">{exp.payeeNumber}</td>
-                              <td className="py-3 px-4">
+                              <td className="py-3 px-4 fw-medium" style={{ borderBottom: '1px solid #f1f5f9', color: '#334155' }}>
+                                <span title={exp.payee}>
+                                  {exp.payee.length > 10 ? exp.payee.substring(0, 10) + '...' : exp.payee}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4" style={{ borderBottom: '1px solid #f1f5f9', color: '#64748b' }}>{exp.payeeNumber}</td>
+                              <td className="py-3 px-4" style={{ borderBottom: '1px solid #f1f5f9' }}>
                                 <div className="d-flex align-items-center ">
-                                  <div className="transaction-icon me-1 bg-danger border bg-opacity-50 p-1 rounded-3"></div>
                                   <div>
                                     <div
                                       className="fw-medium text-truncate"
-                                      style={{ maxWidth: "200px" }}
+                                      style={{
+                                        maxWidth: "200px",
+                                        color: '#1e293b'
+                                      }}
                                       title={exp.description}
                                     >
                                       {exp.description}
@@ -2295,12 +2616,24 @@ export default function ExpenseApprovalPage() {
                                   </div>
                                 </div>
                               </td>
-                              <td className="">
+                              <td className="py-3 px-4" style={{ borderBottom: '1px solid #f1f5f9' }}>
                                 <div className="d-flex flex-column">
-                                  <span className="text-success fw-bold">
-                                    {exp?.amount?.toLocaleString() || "0.00"} KES
+                                  <span
+                                    className="fw-bold mb-1"
+                                    style={{
+                                      color: '#10b981',
+                                      fontSize: '0.95rem'
+                                    }}
+                                  >
+                                    {exp?.amount?.toLocaleString() || "0.00"}KES
                                   </span>
-                                  <span className="text-muted small">
+                                  <span
+                                    className="small"
+                                    style={{
+                                      color: '#94a3b8',
+                                      fontSize: '0.75rem'
+                                    }}
+                                  >
                                     {exp?.primaryAmount?.toLocaleString() || "0.00"}{" "}
                                     {(() => {
                                       if (!exp) return "N/A";
@@ -2338,44 +2671,94 @@ export default function ExpenseApprovalPage() {
                                   </span>
                                 </div>
                               </td>
-                              <td>
+                              <td className="py-3 px-4" style={{ borderBottom: '1px solid #f1f5f9' }}>
                                 <div className="d-flex align-items-center">
+                                  <div
+                                    className="p-2 rounded-circle me-2"
+                                    style={{
+                                      background: '#dbeafe',
+                                      border: '1px solid #bfdbfe',
+                                      width: '36px',
+                                      height: '36px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center'
+                                    }}
+                                  >
+                                    <span
+                                      className="fw-bold"
+                                      style={{
+                                        color: '#1e40af',
+                                        fontSize: '0.875rem'
+                                      }}
+                                    >
+                                      {exp.user.firstName.charAt(0)}{exp.user.lastName.charAt(0)}
+                                    </span>
+                                  </div>
                                   <div>
-                                    <span className="fw-medium">
+                                    <span
+                                      className="fw-medium"
+                                      style={{ color: '#1e293b' }}
+                                    >
                                       {exp.user.firstName} {exp.user.lastName}
                                     </span>
                                   </div>
                                 </div>
                               </td>
-                              <td className="py-3 px-4">
-                                <Badge
-                                  className="px-3 py-2 rounded-pill fw-semibold bg-light bg-opacity-50 text-dark border-0 border-success border-start border-3"
-                                >
-                                  {exp.department?.name || "-"}
-                                </Badge>
+                              <td className="py-3 px-4" style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                <div className="d-flex align-items-center">
+                                  <span
+                                    className="fw-semibold"
+                                    style={{
+                                      color: '#065f46',
+                                      fontSize: '0.875rem'
+                                    }}
+                                    title={exp.department?.name || "-"}
+                                  >
+                                    {exp.department?.name
+                                      ? (exp.department.name.length > 10
+                                        ? exp.department.name.substring(0, 10) + '...'
+                                        : exp.department.name)
+                                      : "-"}
+                                  </span>
+                                </div>
                               </td>
-                              <td className="py-3 px-4">
-                                <Badge
-                                  className="px-3 py-2 rounded-pill fw-semibold bg-light bg-opacity-50 text-dark border-0 border-warning border-start border-3"
-                                >
-                                  {exp.category?.name || "-"}
-                                </Badge>
+                              <td className="py-3 px-4" style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                <div className="d-flex align-items-center">
+                                  <span
+                                    className="fw-semibold"
+                                    style={{
+                                      color: '#92400e',
+                                      fontSize: '0.875rem'
+                                    }}
+                                    title={exp.category?.name || "-"}
+                                  >
+                                    {exp.category?.name
+                                      ? (exp.category.name.length > 10
+                                        ? exp.category.name.substring(0, 10) + '...'
+                                        : exp.category.name)
+                                      : "-"}
+                                  </span>
+                                </div>
                               </td>
-                              <td className="py-3 px-4">
-                                <span
-                                  className={`px-2 py-1 rounded fw-bold ${exp.budget?.remainingBudget < exp.amount
-                                    ? "bg-danger bg-opacity-10 text-danger"
-                                    : "bg-success bg-opacity-10 text-success"
-                                    }`}
+                              <td className="py-3 px-4" style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                <div
+                                  className="px-3 py-2 rounded-pill fw-bold text-center"
+                                  style={{
+                                    background: exp.budget?.remainingBudget < exp.amount ? '#fee2e2' : '#d1fae5',
+                                    color: exp.budget?.remainingBudget < exp.amount ? '#991b1b' : '#065f46',
+                                    border: `1px solid ${exp.budget?.remainingBudget < exp.amount ? '#fecaca' : '#a7f3d0'}`,
+                                    fontSize: '0.875rem'
+                                  }}
                                   title={`Original Budget: ${exp.budget?.originalBudget?.toLocaleString() ||
                                     "N/A"
                                     }`}
                                 >
                                   {exp.budget?.remainingBudget?.toLocaleString() ||
                                     "0.00"}
-                                </span>
+                                </div>
                               </td>
-                              <td className="py-3 px-4" style={{ minWidth: 200 }}>
+                              <td className="py-3 px-4" style={{ minWidth: 200, borderBottom: '1px solid #f1f5f9' }}>
                                 <div className="approval-timeline-compact p-2 rounded-3">
                                   {exp.expenseSteps.length > 0 ? (
                                     <div className="timeline-steps d-flex flex-column gap-1">
