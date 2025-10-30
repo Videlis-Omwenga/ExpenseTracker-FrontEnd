@@ -40,19 +40,12 @@ import {
   GraphUp,
   GraphUpArrow,
   Award,
-  Star,
   Activity,
   Share,
   Printer,
   Lightning,
-  PlusCircle,
   FiletypeXlsx,
-  CheckSquareFill,
-  Stopwatch,
-  HourglassSplit,
-  ChevronRight,
   BarChart,
-  PieChart,
 } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
 import TopNavbar from "@/app/components/Navbar";
@@ -874,18 +867,24 @@ export default function ExpenseApprovalPage() {
         </Row>
 
         {/* Quick Actions Bar */}
-        <Row className="mb-4">
-          <Col>
-            <Card className="border-0 shadow-sm rounded-3">
-              <Card.Body className="p-4">
-                <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                  <div className="d-flex align-items-center">
-                    <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
-                      <Lightning size={20} className="text-warning" />
-                    </div>
-                    <h6 className="fw-bold text-dark mb-0">Quick Actions</h6>
-                  </div>
-                  <div className="d-flex gap-2 flex-wrap">
+        {/* Main Container Card - All Content Grouped */}
+        <Card className="border-0 shadow-sm rounded-3 mb-4">
+          <Card.Body className="p-4">
+            {/* Quick Actions Section */}
+            <div className="mb-5">
+              <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
+                  <Lightning size={20} className="text-warning" />
+                </div>
+                <div>
+                  <h6 className="fw-bold text-dark mb-0">Quick Actions</h6>
+                  <span className="text-muted small">Export, print, and filter options</span>
+                </div>
+              </div>
+              <Row className="mb-4">
+                <Col>
+                  <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div className="d-flex gap-2 flex-wrap">
                     <Button
                       variant="success"
                       size="sm"
@@ -980,18 +979,17 @@ export default function ExpenseApprovalPage() {
                       Share
                     </Button>
                   </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+            {/* End Quick Actions Section */}
 
-        {/* Analytics Dashboard */}
-        <Row className="mb-4">
-          <Col>
-            <Card className="border-0 shadow-sm rounded-3">
-              <Card.Body className="p-4">
-                <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+            <hr className="my-5" />
+
+            {/* Analytics Dashboard Section */}
+            <div className="mb-5">
+              <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
                   <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
                     <GraphUp size={24} className="text-info" />
                   </div>
@@ -1339,17 +1337,15 @@ export default function ExpenseApprovalPage() {
                     </div>
                   </Col>
                 </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+            </div>
+            {/* End Analytics Dashboard Section */}
 
-        <br />
-        {/* Bulk Actions Bar */}
-        {selectedExpenses.length > 0 && (
-          <Card className="mb-4 bg-light border-0">
-            <Card.Body className="py-2">
-              <Row className="align-items-center">
+            <hr className="my-5" />
+
+            {/* Bulk Actions Section */}
+            {selectedExpenses.length > 0 && (
+              <div className="mb-5 bg-light bg-opacity-50 p-4 rounded-3 border">
+                <Row className="align-items-center">
                 <Col md={6}>
                   <span className="fw-medium">
                     {selectedExpenses.length} expense(s) selected
@@ -1411,93 +1407,26 @@ export default function ExpenseApprovalPage() {
                   </Button>
                 </Col>
               </Row>
-            </Card.Body>
-          </Card>
-        )}
-        <Modal
-          show={showRejectModal}
-          onHide={() => setShowRejectModal(false)}
-          size="xl"
-          aria-labelledby="contained-modal-title-vcenter"
-        >
-          <Modal.Header closeButton className="border-0 pb-0">
-            <div className="d-flex align-items-center gap-2">
-              <XCircle size={24} className="text-danger" />
-              <h6 className="mb-0 fw-bold">
-                Reject {selectedExpenses.length} Selected Expense
-                {selectedExpenses.length !== 1 ? "s" : ""}
-              </h6>
-            </div>
-          </Modal.Header>
-          <div className="bg-light">
-            <Modal.Body>
-              <div className="d-flex align-items-start gap-3 mb-4">
-                <div className="text-warning">
-                  <ExclamationTriangle size={20} />
+              </div>
+            )}
+            {/* End Bulk Actions Section */}
+
+            <hr className="my-5" />
+
+            {/* Search and Filters Section */}
+            <div className="mb-0">
+              <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                  <ListCheck size={22} className="text-primary" />
                 </div>
                 <div>
-                  <p className="mb-0 fw-medium">
-                    This action cannot be undone. The following expenses will be
-                    rejected:
-                  </p>
+                  <h6 className="fw-bold text-dark mb-0">Expense Requests</h6>
+                  <span className="text-muted small">Search, filter, and manage expense approvals</span>
                 </div>
               </div>
-
-              <div className="mb-4 p-3 bg-white rounded border">
-                <div className="d-flex align-items-center gap-2 mb-2">
-                  <InfoCircle size={16} className="text-primary" />
-                  <span className="small fw-medium">Expense IDs</span>
-                </div>
-                <div className="d-flex flex-wrap gap-2">
-                  {selectedExpenses.map((id) => (
-                    <Badge
-                      key={id}
-                      bg="light"
-                      text="dark"
-                      className="border d-flex align-items-center gap-1"
-                    >
-                      <XCircle size={12} className="text-danger" />
-                      <span>#{id}</span>
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <Form.Group className="mb-0">
-                <Form.Label className="small">
-                  Reason for rejection <span className="text-danger">*</span>
-                </Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  placeholder="Enter the reason for rejection"
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  className="mt-1"
-                />
-              </Form.Group>
-            </Modal.Body>
-          </div>
-          <Modal.Footer>
-            <Button
-              size="sm"
-              variant="outline-secondary"
-              onClick={() => setShowRejectModal(false)}
-            >
-              Cancel rejection
-            </Button>
-            <Button size="sm" variant="danger" onClick={confirmBulkReject}>
-              <XLg size={16} className="me-1" />
-              Reject expenses
-            </Button>
-          </Modal.Footer>
-        </Modal>
-
-        {/* Enhanced Search and Filters */}
-        <Card className="mb-4 border-0 shadow-sm rounded-3">
-          <Card.Header className="bg-light border-0 rounded-top-3 p-4">
-            {/* Search and Action Row */}
-            <Row className="align-items-center g-3 mb-3">
+        
+        {/* Search and Action Row */}
+            <Row className="align-items-center g-3 mb-4">
               <Col xs={12} md={4}>
                 <h5 className="mb-0 fw-bold text-dark">Expense Requests</h5>
                 <small className="text-muted">
@@ -1766,9 +1695,9 @@ export default function ExpenseApprovalPage() {
                 </Col>
               </Row>
             </div>
-          </Card.Header>
 
-          <Card.Body className="p-0">
+            {/* Table Section */}
+            <div className="mt-4">
             {filteredExpenses.length === 0 ? (
               <div className="text-center py-5">
                 <div className="bg-primary bg-opacity-10 d-inline-flex p-4 rounded-circle mb-3">
@@ -2188,9 +2117,92 @@ export default function ExpenseApprovalPage() {
                 />
               </Pagination>
             </div>
+            </div>
+            </div>
+            {/* End Search and Filters Section */}
           </Card.Body>
-          <Card.Footer />
         </Card>
+        {/* End Main Container Card */}
+
+        {/* Rejection Modal */}
+        <Modal
+          show={showRejectModal}
+          onHide={() => setShowRejectModal(false)}
+          size="xl"
+          aria-labelledby="contained-modal-title-vcenter"
+        >
+          <Modal.Header closeButton className="border-0 pb-0">
+            <div className="d-flex align-items-center gap-2">
+              <XCircle size={24} className="text-danger" />
+              <h6 className="mb-0 fw-bold">
+                Reject {selectedExpenses.length} Selected Expense
+                {selectedExpenses.length !== 1 ? "s" : ""}
+              </h6>
+            </div>
+          </Modal.Header>
+          <div className="bg-light">
+            <Modal.Body>
+              <div className="d-flex align-items-start gap-3 mb-4">
+                <div className="text-warning">
+                  <ExclamationTriangle size={20} />
+                </div>
+                <div>
+                  <p className="mb-0 fw-medium">
+                    This action cannot be undone. The following expenses will be
+                    rejected:
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-4 p-3 bg-white rounded border">
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <InfoCircle size={16} className="text-primary" />
+                  <span className="small fw-medium">Expense IDs</span>
+                </div>
+                <div className="d-flex flex-wrap gap-2">
+                  {selectedExpenses.map((id) => (
+                    <Badge
+                      key={id}
+                      bg="light"
+                      text="dark"
+                      className="border d-flex align-items-center gap-1"
+                    >
+                      <XCircle size={12} className="text-danger" />
+                      <span>#{id}</span>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <Form.Group className="mb-0">
+                <Form.Label className="small">
+                  Reason for rejection <span className="text-danger">*</span>
+                </Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  placeholder="Enter the reason for rejection"
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  className="mt-1"
+                />
+              </Form.Group>
+            </Modal.Body>
+          </div>
+          <Modal.Footer>
+            <Button
+              size="sm"
+              variant="outline-secondary"
+              onClick={() => setShowRejectModal(false)}
+            >
+              Cancel rejection
+            </Button>
+            <Button size="sm" variant="danger" onClick={confirmBulkReject}>
+              <XLg size={16} className="me-1" />
+              Reject expenses
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
         {/* Expense Details Modal */}
         <Modal
@@ -2512,77 +2524,102 @@ export default function ExpenseApprovalPage() {
           .modern-search-container {
             width: 100%;
           }
+          
           .search-icon-external {
-            padding: 0.5rem;
-            background: #f8f9fa;
-            border-radius: 0.5rem;
+            padding: 0.65rem;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e7f1ff 100%);
+            border-radius: 0.75rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid #667eea;
           }
+          
           .search-icon-external:hover {
-            background: #e9ecef;
-            transform: scale(1.05);
+            background: linear-gradient(135deg, #e7f1ff 0%, #d9e7ff 100%);
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
           }
+          
           .search-input-wrapper {
             position: relative;
             background: white;
             border-radius: 0.75rem;
-            border: none;
-            transition: all 0.3s ease;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
           }
+          
           .search-input-wrapper:hover {
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
           }
+          
           .search-input-wrapper:focus-within {
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
           }
+          
           .modern-search-input {
             border: none !important;
-            padding: 0.75rem 3rem 0.75rem 1rem;
+            padding: 0.85rem 3.5rem 0.85rem 1.25rem;
             font-size: 0.95rem;
             background: transparent;
             outline: none;
             box-shadow: none !important;
             border-radius: 0;
+            font-weight: 500;
           }
+          
           .modern-search-input::placeholder {
-            color: #adb5bd;
-            font-style: italic;
+            color: #94a3b8;
+            font-style: normal;
+            font-weight: 400;
           }
+          
           .clear-search-btn {
             position: absolute;
             right: 1rem;
             top: 50%;
             transform: translateY(-50%);
-            background: none;
+            background: rgba(239, 68, 68, 0.1);
             border: none;
-            color: #6c757d;
+            color: #ef4444;
             cursor: pointer;
             z-index: 5;
-            padding: 0.25rem;
+            padding: 0.4rem;
             border-radius: 50%;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
+          
           .clear-search-btn:hover {
-            color: #dc3545;
-            background: rgba(220, 53, 69, 0.1);
-            transform: translateY(-50%) scale(1.1);
+            color: white;
+            background: #ef4444;
+            transform: translateY(-50%) scale(1.15);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
           }
+          
           .search-results-count {
-            margin-top: 0.5rem;
-            padding: 0.25rem 0.75rem;
-            background: rgba(0, 123, 255, 0.05);
+            margin-top: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%);
             border-radius: 0.5rem;
-            border-left: 3px solid #007bff;
-            animation: slideInFromTop 0.3s ease;
+            border-left: 4px solid #667eea;
+            animation: slideInFromTop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
           }
+          
           @keyframes slideInFromTop {
             from {
               opacity: 0;
-              transform: translateY(-10px);
+              transform: translateY(-15px);
             }
             to {
               opacity: 1;
@@ -2590,77 +2627,89 @@ export default function ExpenseApprovalPage() {
             }
           }
 
-          /* Filter Styles */
+          /* Enhanced Filter Styles */
           .filters-section {
-            background: rgba(255, 255, 255, 0.95);
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
             backdrop-filter: blur(10px);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 2px solid rgba(102, 126, 234, 0.1);
             margin-bottom: 1rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
           }
+          
           .filter-header-bar {
-            background: rgba(248, 249, 250, 0.8);
+            background: linear-gradient(135deg, #f0f4ff 0%, #e7f1ff 100%);
             backdrop-filter: blur(5px);
-            border: 1px solid rgba(222, 226, 230, 0.3);
+            border: 2px solid #667eea !important;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
           }
+          
           .filter-item {
             background: white;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            border: 1px solid #e9ecef;
-            transition: all 0.2s ease;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             height: 100%;
           }
+          
           .filter-item:hover {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            transform: translateY(-3px);
+            border-color: #cbd5e1;
           }
+          
           .filter-label {
             display: block;
             font-size: 0.75rem;
-            font-weight: 600;
-            color: #6c757d;
-            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 0.65rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
+            display: flex;
+            align-items: center;
           }
+          
           .form-select-modern,
           .form-control-modern {
-            border: 1px solid #dee2e6;
-            border-radius: 0.375rem;
+            border: 2px solid #e9ecef;
+            border-radius: 0.5rem;
             transition: all 0.2s ease;
             background-color: white;
+            padding: 0.6rem 0.85rem;
+            font-weight: 500;
+            font-size: 0.9rem;
           }
+          
+          .form-select-modern:hover,
+          .form-control-modern:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+          }
+          
           .form-select-modern:focus,
           .form-control-modern:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
             background-color: white;
           }
-          .btn-modern {
-            border-radius: 0.5rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            border-width: 1.5px;
-          }
-          .btn-modern:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          }
 
-          /* Analytics Dashboard Styles */
+          /* Enhanced Analytics Dashboard Styles */
           .analytics-card {
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             height: 100%;
             position: relative;
             overflow: hidden;
+            border-radius: 0.75rem !important;
           }
+          
           .analytics-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
           }
+          
           .analytics-card::before {
             content: "";
             position: absolute;
@@ -2668,88 +2717,242 @@ export default function ExpenseApprovalPage() {
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(
-              135deg,
-              rgba(255, 255, 255, 0.1) 0%,
-              rgba(255, 255, 255, 0.05) 100%
-            );
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
             pointer-events: none;
           }
+          
           .chart-container {
             position: relative;
             background: white;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
           }
+          
+          .chart-bar {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          }
+          
           .chart-bar:hover {
-            transform: scaleY(1.05) !important;
-            filter: brightness(1.1);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform: scaleY(1.08) translateY(-2px) !important;
+            filter: brightness(1.15);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
           }
+          
           .category-breakdown .progress {
-            background-color: rgba(0, 0, 0, 0.05);
-            border-radius: 3px;
+            background-color: rgba(102, 126, 234, 0.08);
+            border-radius: 999px;
+            height: 10px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
           }
+          
           .category-breakdown .progress-bar {
-            transition: width 0.8s ease;
-            border-radius: 3px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 999px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
           }
+          
           .status-overview .badge {
-            font-size: 0.7rem;
-            font-weight: 500;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.5rem 0.85rem;
+            border-radius: 0.5rem;
+            letter-spacing: 0.3px;
           }
 
-          /* Timeline Visualization Styles */
+          /* Enhanced Timeline Visualization Styles */
           .approval-timeline-compact {
-            background: rgba(248, 249, 250, 0.5);
-            border: 1px solid rgba(222, 226, 230, 0.3);
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+            border: 2px solid rgba(102, 126, 234, 0.15);
             min-width: 200px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
           }
+          
           .timeline-node {
-            border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            border: 3px solid white;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           }
+          
           .timeline-node:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform: scale(1.2);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
           }
+          
           .timeline-node.approved {
-            background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+            background: #10b981;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
           }
+          
           .timeline-node.rejected {
-            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            background: #ef4444;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
           }
+          
           .timeline-node.pending {
-            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
-            animation: pulse 2s infinite;
+            background: #f59e0b;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
           }
+          
           .timeline-node.not_started {
-            background: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
+            background: #94a3b8;
+            box-shadow: 0 2px 6px rgba(148, 163, 184, 0.2);
           }
+          
           @keyframes pulse {
-            0% {
+            0%, 100% {
               opacity: 1;
+              transform: scale(1);
             }
             50% {
-              opacity: 0.7;
-            }
-            100% {
-              opacity: 1;
+              opacity: 0.75;
+              transform: scale(1.05);
             }
           }
+          
           .steps-flow {
-            padding: 0.5rem;
+            padding: 0.75rem;
             background: white;
-            border-radius: 0.5rem;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 0.75rem;
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
           }
+          
           .current-step-info {
-            background: rgba(255, 193, 7, 0.1);
-            border-radius: 0.25rem;
-            padding: 0.25rem 0.5rem;
-            border-left: 3px solid #ffc107;
+            background: rgba(102, 126, 234, 0.08);
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.85rem;
+            border-left: 4px solid #667eea;
+            font-weight: 600;
+          }
+
+          /* Enhanced Table Styles */
+          .table thead th {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%) !important;
+            border-bottom: 2px solid #667eea !important;
+            color: #1f2937 !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.5px !important;
+          }
+          
+          .table tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f1f5f9 !important;
+          }
+          
+          .table tbody tr:hover {
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%) !important;
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+          }
+
+          /* Enhanced Card Styles */
+          .card {
+            border-radius: 1rem !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          }
+          
+          .card:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+          }
+
+          /* Enhanced Button Styles */
+          .btn {
+            border-radius: 0.75rem !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.3px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            padding: 0.6rem 1.25rem !important;
+          }
+          
+          .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
+          }
+          
+          .btn-sm {
+            padding: 0.45rem 1rem !important;
+            font-size: 0.85rem !important;
+          }
+          
+          .btn-primary {
+            background: #667eea !important;
+            border-color: #667eea !important;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+          }
+          
+          .btn-primary:hover {
+            background: #5568d3 !important;
+            border-color: #5568d3 !important;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+          }
+          
+          .rounded-pill {
+            border-radius: 999px !important;
+          }
+
+          /* Enhanced Badge Styles */
+          .badge {
+            font-weight: 600 !important;
+            letter-spacing: 0.3px !important;
+            padding: 0.5rem 0.9rem !important;
+            border-radius: 0.5rem !important;
+            font-size: 0.8rem !important;
+          }
+
+          /* Progress Bar Enhancement */
+          .progress {
+            border-radius: 999px !important;
+            background-color: rgba(102, 126, 234, 0.1) !important;
+            height: 8px !important;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+          }
+          
+          .progress-bar {
+            border-radius: 999px !important;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+          }
+
+          /* Pagination Enhancement */
+          .pagination .page-item .page-link {
+            border-radius: 0.5rem !important;
+            margin: 0 0.25rem;
+            border: 2px solid #e9ecef;
+            color: #64748b;
+            font-weight: 600;
+            transition: all 0.2s ease;
+          }
+          
+          .pagination .page-item .page-link:hover {
+            background: #f0f4ff;
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+          }
+          
+          .pagination .page-item.active .page-link {
+            background: #667eea !important;
+            border-color: #667eea !important;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+          }
+
+          /* Responsive Enhancements */
+          @media (max-width: 768px) {
+            .search-icon-external {
+              padding: 0.5rem;
+            }
+            
+            .filter-item {
+              padding: 0.75rem;
+            }
+            
+            .filters-section {
+              padding: 1rem;
+            }
           }
         `}</style>
       </Container>
