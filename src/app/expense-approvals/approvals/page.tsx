@@ -465,9 +465,8 @@ export default function ExpenseApprovalPage() {
     const q = searchQuery.toLowerCase();
     return expenses.filter((exp) => {
       // Enhanced search functionality
-      const employee = `${exp.user?.firstName ?? ""} ${
-        exp.user?.lastName ?? ""
-      }`.trim();
+      const employee = `${exp.user?.firstName ?? ""} ${exp.user?.lastName ?? ""
+        }`.trim();
       const department =
         exp.department?.name || exp.user?.department?.name || "";
       const category = exp.category?.name || "";
@@ -779,564 +778,723 @@ export default function ExpenseApprovalPage() {
                 </div>
               </div>
             </div>
-            <Button
-              size="sm"
-              variant="primary"
-              className="d-inline-flex align-items-center px-4 py-2 rounded-pill fw-semibold shadow-sm"
-              onClick={fetchExpensesToApprove}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>Loading...</>
-              ) : (
-                <>
-                  <ArrowRepeat size={16} className="me-2" />
-                  Refresh
-                </>
-              )}
-            </Button>
+
+            <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+              <div className="d-flex gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  variant="primary"
+                  className="d-inline-flex align-items-center px-4 py-2 rounded-pill fw-semibold shadow-sm"
+                  onClick={fetchExpensesToApprove}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>Loading...</>
+                  ) : (
+                    <>
+                      <ArrowRepeat size={16} className="me-2" />
+                      Refresh
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="success"
+                  size="sm"
+                  className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
+                  onClick={() => {
+                    const csvContent = [
+                      [
+                        "ID",
+                        "Date",
+                        "Payee",
+                        "Department",
+                        "Category",
+                        "Description",
+                        "Amount",
+                        "Status",
+                        "Progress",
+                      ],
+                      ...filteredExpenses.map((e) => [
+                        e.id,
+                        new Date(e.createdAt).toLocaleDateString(),
+                        e.payee,
+                        e.department?.name || "N/A",
+                        e.category?.name || "N/A",
+                        e.description,
+                        e.amount,
+                        e.status,
+                        getApprovalProgress(e),
+                      ]),
+                    ]
+                      .map((row) => row.join(","))
+                      .join("\n");
+                    const blob = new Blob([csvContent], {
+                      type: "text/csv",
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `approvals_${new Date().toISOString().split("T")[0]
+                      }.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success("Approvals exported successfully!");
+                  }}
+                >
+                  <FiletypeXlsx size={14} />
+                  Export CSV
+                </Button>
+                <Button
+                  variant="outline-info"
+                  size="sm"
+                  className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
+                  onClick={() => window.print()}
+                >
+                  <Printer size={14} />
+                  Print
+                </Button>
+                <Button
+                  variant="outline-warning"
+                  size="sm"
+                  className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
+                  onClick={() => {
+                    setStatusFilter("PENDING");
+                    toast.info("Filtered to show pending approvals");
+                  }}
+                >
+                  <ClockHistory size={14} />
+                  Pending Only
+                </Button>
+                <Button
+                  variant="outline-dark"
+                  size="sm"
+                  className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: "Expense Approvals Summary",
+                        text: `I have ${expenses.length
+                          } expenses to review totaling KES ${expenses
+                            .reduce((sum, e) => sum + e.amount, 0)
+                            .toLocaleString()}`,
+                        url: window.location.href,
+                      });
+                    } else {
+                      navigator.clipboard.writeText(window.location.href);
+                      toast.success("Page URL copied to clipboard!");
+                    }
+                  }}
+                >
+                  <Share size={14} />
+                  Share
+                </Button>
+              </div>
+            </div>
           </div>
-          <hr className="border-2 border-primary opacity-25 mb-4" />
         </div>
-
-        {/* Stats Cards */}
-        <Row className="mb-4">
-          <Col>
-            <Card className="border-0 shadow-sm rounded-3">
-              <Card.Body className="p-4">
-                <Row className="g-4">
-                  <Col md={3}>
-                    <div className="bg-warning bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-warning border-2">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-warning bg-opacity-10 p-2 rounded me-3">
-                          <ClockHistory size={20} className="text-warning" />
-                        </div>
-                        <div>
-                          <p className="text-muted small mb-1">
-                            Pending Approval
-                          </p>
-                          <h6 className="mb-0 fw-bold">{pendingCount}</h6>
-                        </div>
-                      </div>
-                    </div>
-                  </Col>
-
-                  <Col md={3}>
-                    <div className="bg-success bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-success border-2">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-success bg-opacity-10 p-2 rounded me-3">
-                          <CashStack size={20} className="text-success" />
-                        </div>
-                        <div>
-                          <p className="text-muted small mb-1">Total Amount</p>
-                          <h6 className="mb-0 fw-bold">
-                            KES{" "}
-                            {expenses
-                              .reduce(
-                                (sum, expense) => sum + (expense.amount || 0),
-                                0
-                              )
-                              .toLocaleString("en-US", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                          </h6>
-                        </div>
-                      </div>
-                    </div>
-                  </Col>
-
-                  <Col md={3}>
-                    <div className="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm border-start border-primary border-2">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
-                          <FileText size={20} className="text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-muted small mb-1">Total in list</p>
-                          <h6 className="mb-0 fw-bold">{expenses.length}</h6>
-                        </div>
-                      </div>
-                    </div>
-                  </Col>
-                  <BudgetOverviewHOD />
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
 
         {/* Quick Actions Bar */}
         {/* Main Container Card - All Content Grouped */}
         <Card className="border-0 shadow-sm rounded-3 mb-4">
           <Card.Body className="p-4">
-            {/* Quick Actions Section */}
-            <div className="mb-5">
-              <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
-                <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
-                  <Lightning size={20} className="text-warning" />
-                </div>
-                <div>
-                  <h6 className="fw-bold text-dark mb-0">Quick Actions</h6>
-                  <span className="text-muted small">Export, print, and filter options</span>
-                </div>
-              </div>
-              <Row className="mb-4">
-                <Col>
-                  <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                    <div className="d-flex gap-2 flex-wrap">
-                    <Button
-                      variant="success"
-                      size="sm"
-                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
-                      onClick={() => {
-                        const csvContent = [
-                          [
-                            "ID",
-                            "Date",
-                            "Payee",
-                            "Department",
-                            "Category",
-                            "Description",
-                            "Amount",
-                            "Status",
-                            "Progress",
-                          ],
-                          ...filteredExpenses.map((e) => [
-                            e.id,
-                            new Date(e.createdAt).toLocaleDateString(),
-                            e.payee,
-                            e.department?.name || "N/A",
-                            e.category?.name || "N/A",
-                            e.description,
-                            e.amount,
-                            e.status,
-                            getApprovalProgress(e),
-                          ]),
-                        ]
-                          .map((row) => row.join(","))
-                          .join("\n");
-                        const blob = new Blob([csvContent], {
-                          type: "text/csv",
-                        });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = `approvals_${
-                          new Date().toISOString().split("T")[0]
-                        }.csv`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                        toast.success("Approvals exported successfully!");
-                      }}
-                    >
-                      <FiletypeXlsx size={14} />
-                      Export CSV
-                    </Button>
-                    <Button
-                      variant="outline-info"
-                      size="sm"
-                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
-                      onClick={() => window.print()}
-                    >
-                      <Printer size={14} />
-                      Print
-                    </Button>
-                    <Button
-                      variant="outline-warning"
-                      size="sm"
-                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
-                      onClick={() => {
-                        setStatusFilter("PENDING");
-                        toast.info("Filtered to show pending approvals");
-                      }}
-                    >
-                      <ClockHistory size={14} />
-                      Pending Only
-                    </Button>
-                    <Button
-                      variant="outline-dark"
-                      size="sm"
-                      className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
-                      onClick={() => {
-                        if (navigator.share) {
-                          navigator.share({
-                            title: "Expense Approvals Summary",
-                            text: `I have ${
-                              expenses.length
-                            } expenses to review totaling KES ${expenses
-                              .reduce((sum, e) => sum + e.amount, 0)
-                              .toLocaleString()}`,
-                            url: window.location.href,
-                          });
-                        } else {
-                          navigator.clipboard.writeText(window.location.href);
-                          toast.success("Page URL copied to clipboard!");
-                        }
-                      }}
-                    >
-                      <Share size={14} />
-                      Share
-                    </Button>
-                  </div>
-                  </div>
-                </Col>
-              </Row>
-            </div>
-            {/* End Quick Actions Section */}
-
-            <hr className="my-5" />
-
             {/* Analytics Dashboard Section */}
             <div className="mb-5">
-              <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
-                  <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
-                    <GraphUp size={24} className="text-info" />
+              <div className="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                <div className="d-flex align-items-center">
+                  <div
+                    className="p-2 rounded-3 me-3"
+                    style={{
+                      background: '#667eea',
+                      boxShadow: '0 2px 8px rgba(102, 126, 234, 0.2)'
+                    }}
+                  >
+                    <GraphUp size={22} className="text-white" />
                   </div>
                   <div>
-                    <h5 className="fw-bold text-dark mb-1">
+                    <h6 className="fw-bold text-dark mb-1">
                       Approval Analytics
-                    </h5>
+                    </h6>
                     <p className="text-muted mb-0 small">
                       Performance insights and approval trends
                     </p>
                   </div>
                 </div>
+                <div className="d-flex gap-2">
+                  <span className="badge bg-success bg-opacity-10 text-success px-3 py-2">
+                    <span className="text-success fw-semibold">
+                      ● Updated Now
+                    </span>
+                  </span>
+                </div>
+              </div>
 
-                <Row className="g-4">
-                  {/* Key Metrics */}
-                  <Col md={8}>
-                    <Row className="g-3">
-                      <Col sm={6} md={3}>
-                        <div className="analytics-card bg-primary bg-opacity-10 p-3 rounded-3 border-start border-primary border-3">
-                          <div className="d-flex align-items-center">
-                            <GraphUpArrow
-                              size={20}
-                              className="text-primary me-2"
-                            />
-                            <div>
-                              <p className="text-muted small mb-1">
-                                This Month
-                              </p>
-                              <h6 className="mb-0 fw-bold">
-                                KES{" "}
-                                {analyticsData.thisMonthTotal.toLocaleString()}
-                              </h6>
-                              {analyticsData.lastMonthTotal > 0 ? (
-                                <small
-                                  className={`fw-medium ${
-                                    analyticsData.monthlyGrowth >= 0
-                                      ? "text-success"
-                                      : "text-danger"
+              <Row className="g-4">
+                {/* Key Metrics */}
+                <Col md={12}>
+                  <Row className="g-3">
+                    <Col sm={6} md={3}>
+                      <div
+                        className="analytics-card p-3 rounded-3 h-100 border"
+                        style={{
+                          background: '#fff',
+                          borderColor: '#667eea !important',
+                          borderWidth: '2px',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-3px)';
+                          e.currentTarget.style.boxShadow = '0 8px 20px rgba(102, 126, 234, 0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      >
+                        <div className="d-flex align-items-center">
+                          <div
+                            className="p-2 rounded-3 me-3"
+                            style={{ background: '#667eea' }}
+                          >
+                            <GraphUpArrow size={18} className="text-white" />
+                          </div>
+                          <div>
+                            <p className="text-muted small mb-1 fw-medium">
+                              This Month
+                            </p>
+                            <h6 className="mb-0 fw-bold text-dark">
+                              KES {analyticsData.thisMonthTotal.toLocaleString()}
+                            </h6>
+                            {analyticsData.lastMonthTotal > 0 ? (
+                              <small
+                                className={`fw-semibold ${analyticsData.monthlyGrowth >= 0
+                                  ? 'text-success'
+                                  : 'text-danger'
                                   }`}
-                                >
-                                  {analyticsData.monthlyGrowth >= 0 ? "+" : ""}
-                                  {analyticsData.monthlyGrowth.toFixed(1)}% vs
-                                  last month
-                                </small>
-                              ) : (
-                                <small className="text-muted">
-                                  First month data
-                                </small>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </Col>
-                      <Col sm={6} md={3}>
-                        <div className="analytics-card bg-success bg-opacity-10 p-3 rounded-3 border-start border-success border-3">
-                          <div className="d-flex align-items-center">
-                            <Award size={20} className="text-success me-2" />
-                            <div>
-                              <p className="text-muted small mb-1">
-                                Efficiency
-                              </p>
-                              <h6 className="mb-0 fw-bold">
-                                {analyticsData.approvalEfficiency.toFixed(1)}%
-                              </h6>
-                              <small className="text-muted">
-                                {analyticsData.fullyProcessedCount} of{" "}
-                                {analyticsData.totalExpenses} processed
-                              </small>
-                            </div>
-                          </div>
-                        </div>
-                      </Col>
-                      <Col sm={6} md={3}>
-                        <div className="analytics-card bg-warning bg-opacity-10 p-3 rounded-3 border-start border-warning border-3">
-                          <div className="d-flex align-items-center">
-                            <Activity size={20} className="text-warning me-2" />
-                            <div>
-                              <p className="text-muted small mb-1">Average</p>
-                              <h6 className="mb-0 fw-bold">
-                                KES{" "}
-                                {Math.round(
-                                  analyticsData.averageExpense
-                                ).toLocaleString()}
-                              </h6>
-                              <small className="text-muted">
-                                {analyticsData.totalExpenses > 0
-                                  ? "per expense"
-                                  : "no expenses yet"}
-                              </small>
-                            </div>
-                          </div>
-                        </div>
-                      </Col>
-                      <Col sm={6} md={3}>
-                        <div className="analytics-card bg-danger bg-opacity-10 p-3 rounded-3 border-start border-danger border-3">
-                          <div className="d-flex align-items-center">
-                            <ClockHistory
-                              size={20}
-                              className="text-danger me-2"
-                            />
-                            <div>
-                              <p className="text-muted small mb-1">My Queue</p>
-                              <h6 className="mb-0 fw-bold">
-                                {analyticsData.myPendingCount}
-                              </h6>
-                              <small className="text-muted">
-                                awaiting my approval
-                              </small>
-                            </div>
-                          </div>
-                        </div>
-                      </Col>
-                    </Row>
-
-                    {/* Monthly Trend Chart */}
-                    <div className="mt-4 p-3 bg-light bg-opacity-50 rounded-3">
-                      <h6 className="fw-bold mb-3">
-                        <BarChart className="me-2" size={16} />
-                        6-Month Approval Trend
-                      </h6>
-                      <div className="chart-container">
-                        <div
-                          className="d-flex align-items-end justify-content-between"
-                          style={{ height: "120px" }}
-                        >
-                          {analyticsData.monthlyTrend.map((data, index) => {
-                            const maxAmount = Math.max(
-                              ...analyticsData.monthlyTrend.map(
-                                (d) => d.amount
-                              ),
-                              1
-                            );
-                            const height =
-                              data.amount > 0
-                                ? Math.max((data.amount / maxAmount) * 80, 8)
-                                : 8;
-
-                            const hasData = data.amount > 0;
-                            const barColor = hasData
-                              ? data.amount > analyticsData.thisMonthTotal * 0.8
-                                ? "#dc3545"
-                                : data.amount >
-                                  analyticsData.thisMonthTotal * 0.5
-                                ? "#ffc107"
-                                : "#0d6efd"
-                              : "#e9ecef";
-
-                            return (
-                              <div
-                                key={index}
-                                className="d-flex flex-column align-items-center"
                               >
-                                <div
-                                  className="rounded-top chart-bar"
-                                  style={{
-                                    width: "32px",
-                                    height: `${height + 12}px`,
-                                    minHeight: "12px",
-                                    backgroundColor: barColor,
-                                    opacity: hasData ? 0.9 : 0.3,
-                                    cursor: "pointer",
-                                    transition: "all 0.3s ease",
-                                    position: "relative",
-                                    border: hasData
-                                      ? `2px solid ${barColor}`
-                                      : "1px solid #dee2e6",
-                                  }}
-                                  title={`${
-                                    data.month
-                                  }: KES ${data.amount.toLocaleString()} (${
-                                    data.count
-                                  } expenses)`}
-                                >
-                                  {hasData && (
-                                    <div
-                                      style={{
-                                        position: "absolute",
-                                        top: "-18px",
-                                        left: "50%",
-                                        transform: "translateX(-50%)",
-                                        fontSize: "8px",
-                                        color: "#6c757d",
-                                        fontWeight: "bold",
-                                      }}
-                                    >
-                                      {data.count}
-                                    </div>
-                                  )}
-                                </div>
-                                <small
-                                  className="text-muted mt-1"
-                                  style={{
-                                    fontSize: "0.65rem",
-                                    fontWeight: "500",
-                                  }}
-                                >
-                                  {data.month.split(" ")[0]}
-                                </small>
-                              </div>
-                            );
-                          })}
+                                {analyticsData.monthlyGrowth >= 0 ? '↑' : '↓'}
+                                {Math.abs(analyticsData.monthlyGrowth).toFixed(1)}% vs last month
+                              </small>
+                            ) : (
+                              <small className="text-muted">
+                                First month data
+                              </small>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Col>
+                    </Col>
+                    <Col sm={6} md={3}>
+                      <div
+                        className="analytics-card p-3 rounded-3 h-100 border"
+                        style={{
+                          background: '#fff',
+                          borderColor: '#10b981 !important',
+                          borderWidth: '2px',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-3px)';
+                          e.currentTarget.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      >
+                        <div className="d-flex align-items-center">
+                          <div
+                            className="p-2 rounded-3 me-3"
+                            style={{ background: '#10b981' }}
+                          >
+                            <Award size={18} className="text-white" />
+                          </div>
+                          <div>
+                            <p className="text-muted small mb-1 fw-medium">
+                              Efficiency Rate
+                            </p>
+                            <h6 className="mb-0 fw-bold text-dark">
+                              {analyticsData.approvalEfficiency.toFixed(1)}%
+                            </h6>
+                            <small className="text-muted">
+                              {analyticsData.fullyProcessedCount} of{" "}
+                              {analyticsData.totalExpenses} processed
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+                    </Col>
+                    <Col sm={6} md={3}>
+                      <div
+                        className="analytics-card p-3 rounded-3 h-100 border"
+                        style={{
+                          background: '#fff',
+                          borderColor: '#f59e0b !important',
+                          borderWidth: '2px',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-3px)';
+                          e.currentTarget.style.boxShadow = '0 8px 20px rgba(245, 158, 11, 0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      >
+                        <div className="d-flex align-items-center">
+                          <div
+                            className="p-2 rounded-3 me-3"
+                            style={{ background: '#f59e0b' }}
+                          >
+                            <Activity size={18} className="text-white" />
+                          </div>
+                          <div>
+                            <p className="text-muted small mb-1 fw-medium">
+                              Average Amount
+                            </p>
+                            <h6 className="mb-0 fw-bold text-dark">
+                              KES{" "}
+                              {Math.round(
+                                analyticsData.averageExpense
+                              ).toLocaleString()}
+                            </h6>
+                            <small className="text-muted">
+                              {analyticsData.totalExpenses > 0
+                                ? 'per expense transaction'
+                                : 'no expenses yet'}
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+                    </Col>
+                    <Col sm={6} md={3}>
+                      <div
+                        className="analytics-card p-3 rounded-3 h-100 border"
+                        style={{
+                          background: '#fff',
+                          borderColor: '#ef4444 !important',
+                          borderWidth: '2px',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-3px)';
+                          e.currentTarget.style.boxShadow = '0 8px 20px rgba(239, 68, 68, 0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      >
+                        <div className="d-flex align-items-center">
+                          <div
+                            className="p-2 rounded-3 me-3"
+                            style={{ background: '#ef4444' }}
+                          >
+                            <ClockHistory size={18} className="text-white" />
+                          </div>
+                          <div>
+                            <p className="text-muted small mb-1 fw-medium">
+                              My Queue
+                            </p>
+                            <h6 className="mb-0 fw-bold text-dark">
+                              {analyticsData.myPendingCount}
+                            </h6>
+                            <small className="text-muted">
+                              awaiting my approval
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+                    </Col>
 
-                  {/* Department Breakdown */}
-                  <Col md={4}>
-                    <div className="h-100 p-3 bg-light bg-opacity-50 rounded-3">
-                      <h6 className="fw-bold mb-3">
-                        <Building className="me-2" size={16} />
-                        Top Departments
-                      </h6>
-                      <div className="category-breakdown">
-                        {analyticsData.topDepartments.length > 0 ? (
-                          analyticsData.topDepartments.map(
-                            ([department, count], index) => {
-                              const percentage =
-                                (count / analyticsData.totalExpenses) * 100;
-                              const colors = ["primary", "success"];
-                              const color = colors[index] || "primary";
+                    {/* Additional Summary Cards */}
+                    <Col sm={6} md={3}>
+                      <div
+                        className="p-3 rounded-3 shadow-sm h-100 border"
+                        style={{
+                          background: '#fff',
+                          borderColor: '#f59e0b !important',
+                          borderWidth: '2px',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 6px 15px rgba(245, 158, 11, 0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                        }}
+                      >
+                        <div className="d-flex align-items-center">
+                          <div
+                            className="p-2 rounded-3 me-3"
+                            style={{ background: '#f59e0b' }}
+                          >
+                            <ClockHistory size={20} className="text-white" />
+                          </div>
+                          <div>
+                            <p className="text-muted small mb-1 fw-medium">
+                              Pending Approval
+                            </p>
+                            <h6 className="mb-0 fw-bold text-dark">{pendingCount}</h6>
+                            <small className="text-warning">Active requests</small>
+                          </div>
+                        </div>
+                      </div>
+                    </Col>
+                    <Col sm={6} md={3}>
+                      <div
+                        className="p-3 rounded-3 shadow-sm h-100 border"
+                        style={{
+                          background: '#fff',
+                          borderColor: '#10b981 !important',
+                          borderWidth: '2px',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 6px 15px rgba(16, 185, 129, 0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                        }}
+                      >
+                        <div className="d-flex align-items-center">
+                          <div
+                            className="p-2 rounded-3 me-3"
+                            style={{ background: '#10b981' }}
+                          >
+                            <CashStack size={20} className="text-white" />
+                          </div>
+                          <div>
+                            <p className="text-muted small mb-1 fw-medium">Total Amount</p>
+                            <h6 className="mb-0 fw-bold text-dark" style={{ fontSize: '0.9rem' }}>
+                              KES{" "}
+                              {expenses
+                                .reduce(
+                                  (sum, expense) => sum + (expense.amount || 0),
+                                  0
+                                )
+                                .toLocaleString("en-US", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                            </h6>
+                            <small className="text-success">All expenses</small>
+                          </div>
+                        </div>
+                      </div>
+                    </Col>
+                    <Col sm={6} md={3}>
+                      <div
+                        className="p-3 rounded-3 shadow-sm h-100 border"
+                        style={{
+                          background: '#fff',
+                          borderColor: '#667eea !important',
+                          borderWidth: '2px',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 6px 15px rgba(102, 126, 234, 0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                        }}
+                      >
+                        <div className="d-flex align-items-center">
+                          <div
+                            className="p-2 rounded-3 me-3"
+                            style={{ background: '#667eea' }}
+                          >
+                            <FileText size={20} className="text-white" />
+                          </div>
+                          <div>
+                            <p className="text-muted small mb-1 fw-medium">Total in List</p>
+                            <h6 className="mb-0 fw-bold text-dark">{expenses.length}</h6>
+                            <small className="text-primary">Items</small>
+                          </div>
+                        </div>
+                      </div>
+                    </Col>
+
+                    <BudgetOverviewHOD />
+                  </Row>
+                </Col>
+
+                {/* Charts and Insights Section */}
+                <Col md={12} className="mt-4">
+                  <Row className="g-4">
+                    {/* Monthly Trend Chart */}
+                    <Col md={8}>
+                      <div
+                        className="p-4 rounded-3 h-100 border"
+                        style={{
+                          background: '#fff',
+                          borderColor: '#e7eaff',
+                          borderWidth: '2px',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+                        }}
+                      >
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <div className="d-flex align-items-center">
+                            <div
+                              className="p-2 rounded-3 me-3"
+                              style={{ background: '#667eea' }}
+                            >
+                              <BarChart className="text-white" size={18} />
+                            </div>
+                            <div>
+                              <h6 className="fw-bold mb-0 text-dark">6-Month Approval Trend</h6>
+                              <small className="text-muted">Expense volume and amount tracking</small>
+                            </div>
+                          </div>
+                          <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                            <GraphUpArrow size={12} className="me-1" />
+                            Trending
+                          </span>
+                        </div>
+                        <div className="chart-container">
+                          <div
+                            className="d-flex align-items-end justify-content-between px-3"
+                            style={{ height: "140px" }}
+                          >
+                            {analyticsData.monthlyTrend.map((data, index) => {
+                              const maxAmount = Math.max(
+                                ...analyticsData.monthlyTrend.map(
+                                  (d) => d.amount
+                                ),
+                                1
+                              );
+                              const height =
+                                data.amount > 0
+                                  ? Math.max((data.amount / maxAmount) * 80, 8)
+                                  : 8;
+
+                              const hasData = data.amount > 0;
+                              const barColor = hasData
+                                ? data.amount > analyticsData.thisMonthTotal * 0.8
+                                  ? "#dc3545"
+                                  : data.amount >
+                                    analyticsData.thisMonthTotal * 0.5
+                                    ? "#ffc107"
+                                    : "#0d6efd"
+                                : "#e9ecef";
 
                               return (
-                                <div key={department} className="mb-4">
-                                  <div className="d-flex justify-content-between align-items-center mb-2">
-                                    <div className="d-flex align-items-center">
-                                      <Building
-                                        size={12}
-                                        className={`text-${color} me-2`}
-                                      />
-                                      <span className="fw-medium">
-                                        {department}
+                                <div
+                                  key={index}
+                                  className="d-flex flex-column align-items-center"
+                                >
+                                  <div
+                                    className="rounded-top chart-bar"
+                                    style={{
+                                      width: "32px",
+                                      height: `${height + 12}px`,
+                                      minHeight: "12px",
+                                      backgroundColor: barColor,
+                                      opacity: hasData ? 0.9 : 0.3,
+                                      cursor: "pointer",
+                                      transition: "all 0.3s ease",
+                                      position: "relative",
+                                      border: hasData
+                                        ? `2px solid ${barColor}`
+                                        : "1px solid #dee2e6",
+                                    }}
+                                    title={`${data.month
+                                      }: KES ${data.amount.toLocaleString()} (${data.count
+                                      } expenses)`}
+                                  >
+                                    {hasData && (
+                                      <div
+                                        style={{
+                                          position: "absolute",
+                                          top: "-18px",
+                                          left: "50%",
+                                          transform: "translateX(-50%)",
+                                          fontSize: "8px",
+                                          color: "#6c757d",
+                                          fontWeight: "bold",
+                                        }}
+                                      >
+                                        {data.count}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <small
+                                    className="text-muted mt-1"
+                                  >
+                                    {data.month.split(" ")[0]}
+                                  </small>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </Col>
+
+                    {/* Department Breakdown */}
+                    <Col md={4}>
+                      <div
+                        className="h-100 p-4 rounded-3 border"
+                        style={{
+                          background: '#fff',
+                          borderColor: '#ffe7e7',
+                          borderWidth: '2px',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+                        }}
+                      >
+                        <div className="d-flex align-items-center mb-4">
+                          <div
+                            className="p-2 rounded-3 me-3"
+                            style={{ background: '#ef4444' }}
+                          >
+                            <Building className="text-white" size={18} />
+                          </div>
+                          <div>
+                            <h6 className="fw-bold mb-0 text-dark">Top Departments</h6>
+                            <small className="text-muted">Activity breakdown</small>
+                          </div>
+                        </div>
+                        <div className="category-breakdown">
+                          {analyticsData.topDepartments.length > 0 ? (
+                            analyticsData.topDepartments.map(
+                              ([department, count], index) => {
+                                const percentage =
+                                  (count / analyticsData.totalExpenses) * 100;
+                                const colors = ["primary", "success"];
+                                const color = colors[index] || "primary";
+
+                                return (
+                                  <div key={department} className="mb-4">
+                                    <div className="d-flex justify-content-between align-items-center mb-2">
+                                      <div className="d-flex align-items-center">
+                                        <Building
+                                          size={12}
+                                          className={`text-${color} me-2`}
+                                        />
+                                        <span className="fw-medium">
+                                          {department}
+                                        </span>
+                                      </div>
+                                      <span className="small text-muted fw-bold">
+                                        {count} expenses
                                       </span>
                                     </div>
-                                    <span className="small text-muted fw-bold">
-                                      {count} expenses
-                                    </span>
-                                  </div>
-                                  <div
-                                    className="progress"
-                                    style={{ height: "8px" }}
-                                  >
                                     <div
-                                      className={`progress-bar bg-${color}`}
-                                      style={{
-                                        width: `${Math.max(percentage, 5)}%`,
-                                        background: `linear-gradient(135deg, var(--bs-${color}) 0%, var(--bs-${
-                                          color === "primary"
+                                      className="progress"
+                                      style={{ height: "8px" }}
+                                    >
+                                      <div
+                                        className={`progress-bar bg-${color}`}
+                                        style={{
+                                          width: `${Math.max(percentage, 5)}%`,
+                                          background: `linear-gradient(135deg, var(--bs-${color}) 0%, var(--bs-${color === "primary"
                                             ? "info"
                                             : "warning"
-                                        }) 100%)`,
-                                      }}
-                                    ></div>
-                                  </div>
-                                  <div className="d-flex justify-content-between mt-1">
-                                    <small className="text-muted">
-                                      {percentage.toFixed(1)}% of total
-                                    </small>
-                                    <small className="text-muted">
-                                      Avg: KES{" "}
-                                      {count > 0
-                                        ? Math.round(
+                                            }) 100%)`,
+                                        }}
+                                      ></div>
+                                    </div>
+                                    <div className="d-flex justify-content-between mt-1">
+                                      <small className="text-muted">
+                                        {percentage.toFixed(1)}% of total
+                                      </small>
+                                      <small className="text-muted">
+                                        Avg: KES{" "}
+                                        {count > 0
+                                          ? Math.round(
                                             analyticsData.averageExpense
                                           ).toLocaleString()
-                                        : "0"}
-                                    </small>
+                                          : "0"}
+                                      </small>
+                                    </div>
                                   </div>
-                                </div>
-                              );
-                            }
-                          )
-                        ) : (
-                          <div className="text-center py-3 text-muted">
-                            <Building size={24} className="mb-2" />
-                            <div className="small">
-                              No department data available
+                                );
+                              }
+                            )
+                          ) : (
+                            <div className="text-center py-3 text-muted">
+                              <Building size={24} className="mb-2" />
+                              <div className="small">
+                                No department data available
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Status Overview */}
-                      <div className="mt-4 pt-3 border-top">
-                        <h6 className="fw-bold mb-3">
-                          <Award className="me-2" size={16} />
-                          Status Overview
-                        </h6>
-                        <div className="status-overview">
-                          {Object.entries(analyticsData.statusBreakdown).map(
-                            ([status, count]) => {
-                              const percentage =
-                                (count / analyticsData.totalExpenses) * 100;
-                              const statusColors = {
-                                PENDING: {
-                                  bg: "warning",
-                                  icon: <ClockHistory size={12} />,
-                                },
-                                APPROVED: {
-                                  bg: "success",
-                                  icon: <CheckCircle size={12} />,
-                                },
-                                REJECTED: {
-                                  bg: "danger",
-                                  icon: <XCircle size={12} />,
-                                },
-                                PAID: {
-                                  bg: "primary",
-                                  icon: <CheckCircle size={12} />,
-                                },
-                              };
-                              const statusInfo = statusColors[
-                                status as keyof typeof statusColors
-                              ] || {
-                                bg: "secondary",
-                                icon: <InfoCircle size={12} />,
-                              };
-
-                              return (
-                                <div
-                                  key={status}
-                                  className="d-flex justify-content-between align-items-center mb-2"
-                                >
-                                  <div className="d-flex align-items-center">
-                                    <span
-                                      className={`badge bg-${statusInfo.bg} me-2 d-inline-flex align-items-center py-1 px-2 rounded-pill`}
-                                    >
-                                      {statusInfo.icon}
-                                      <span className="ms-1 small">
-                                        {status}
-                                      </span>
-                                    </span>
-                                  </div>
-                                  <div className="text-end">
-                                    <span className="fw-bold">{count}</span>
-                                    <small className="text-muted ms-1">
-                                      ({percentage.toFixed(0)}%)
-                                    </small>
-                                  </div>
-                                </div>
-                              );
-                            }
                           )}
                         </div>
+
+                        {/* Status Overview */}
+                        <div className="mt-4 pt-3 border-top">
+                          <h6 className="fw-bold mb-3">
+                            <Award className="me-2" size={16} />
+                            Status Overview
+                          </h6>
+                          <div className="status-overview">
+                            {Object.entries(analyticsData.statusBreakdown).map(
+                              ([status, count]) => {
+                                const percentage =
+                                  (count / analyticsData.totalExpenses) * 100;
+                                const statusColors = {
+                                  PENDING: {
+                                    bg: "warning",
+                                    icon: <ClockHistory size={12} />,
+                                  },
+                                  APPROVED: {
+                                    bg: "success",
+                                    icon: <CheckCircle size={12} />,
+                                  },
+                                  REJECTED: {
+                                    bg: "danger",
+                                    icon: <XCircle size={12} />,
+                                  },
+                                  PAID: {
+                                    bg: "primary",
+                                    icon: <CheckCircle size={12} />,
+                                  },
+                                };
+                                const statusInfo = statusColors[
+                                  status as keyof typeof statusColors
+                                ] || {
+                                  bg: "secondary",
+                                  icon: <InfoCircle size={12} />,
+                                };
+
+                                return (
+                                  <div
+                                    key={status}
+                                    className="d-flex justify-content-between align-items-center mb-2"
+                                  >
+                                    <div className="d-flex align-items-center">
+                                      <span
+                                        className={`badge bg-${statusInfo.bg} me-2 d-inline-flex align-items-center py-1 px-2 rounded-pill`}
+                                      >
+                                        {statusInfo.icon}
+                                        <span className="ms-1 small">
+                                          {status}
+                                        </span>
+                                      </span>
+                                    </div>
+                                    <div className="text-end">
+                                      <span className="fw-bold">{count}</span>
+                                      <small className="text-muted ms-1">
+                                        ({percentage.toFixed(0)}%)
+                                      </small>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </Col>
-                </Row>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
             </div>
             {/* End Analytics Dashboard Section */}
 
@@ -1346,67 +1504,67 @@ export default function ExpenseApprovalPage() {
             {selectedExpenses.length > 0 && (
               <div className="mb-5 bg-light bg-opacity-50 p-4 rounded-3 border">
                 <Row className="align-items-center">
-                <Col md={6}>
-                  <span className="fw-medium">
-                    {selectedExpenses.length} expense(s) selected
-                  </span>
-                </Col>
-                <Col md={6} className="text-end">
-                  <div className="position-relative d-inline-block me-2">
-                    <Button
-                      variant="success"
-                      size="sm"
-                      className="me-2"
-                      disabled={buttonsDisabled}
-                      title={
-                        exceedsBudget
-                          ? `Selected amount exceeds remaining budget of ${budgetRemaining.toLocaleString()} KES`
-                          : !hasSameCategory
-                          ? "All selected expenses must be from the same category"
-                          : ""
-                      }
-                      onClick={handleBulkApprove}
-                    >
-                      <CheckLg size={16} className="me-1" />
-                      Approve Selected
-                    </Button>
-                    {(exceedsBudget || !hasSameCategory) &&
-                      selectedExpenses.length > 0 && (
-                        <div
-                          className="position-absolute top-100 start-0 mt-1 w-100 text-center"
-                          style={{
-                            fontSize: "0.7rem",
-                            color: "#dc3545",
-                            whiteSpace: "nowrap",
-                            left: 0,
-                          }}
-                          title={
-                            exceedsBudget
-                              ? `Selected amount (${totalAmount.toLocaleString()} KES) exceeds remaining budget (${budgetRemaining.toLocaleString()} KES) by ${(
+                  <Col md={6}>
+                    <span className="fw-medium">
+                      {selectedExpenses.length} expense(s) selected
+                    </span>
+                  </Col>
+                  <Col md={6} className="text-end">
+                    <div className="position-relative d-inline-block me-2">
+                      <Button
+                        variant="success"
+                        size="sm"
+                        className="me-2"
+                        disabled={buttonsDisabled}
+                        title={
+                          exceedsBudget
+                            ? `Selected amount exceeds remaining budget of ${budgetRemaining.toLocaleString()} KES`
+                            : !hasSameCategory
+                              ? "All selected expenses must be from the same category"
+                              : ""
+                        }
+                        onClick={handleBulkApprove}
+                      >
+                        <CheckLg size={16} className="me-1" />
+                        Approve Selected
+                      </Button>
+                      {(exceedsBudget || !hasSameCategory) &&
+                        selectedExpenses.length > 0 && (
+                          <div
+                            className="position-absolute top-100 start-0 mt-1 w-100 text-center"
+                            style={{
+                              fontSize: "0.7rem",
+                              color: "#dc3545",
+                              whiteSpace: "nowrap",
+                              left: 0,
+                            }}
+                            title={
+                              exceedsBudget
+                                ? `Selected amount (${totalAmount.toLocaleString()} KES) exceeds remaining budget (${budgetRemaining.toLocaleString()} KES) by ${(
                                   totalAmount - budgetRemaining
                                 ).toLocaleString()} KES`
-                              : "Please select expenses from the same category"
-                          }
-                        >
-                          {exceedsBudget
-                            ? `Budget exceeded by ${(
+                                : "Please select expenses from the same category"
+                            }
+                          >
+                            {exceedsBudget
+                              ? `Budget exceeded by ${(
                                 totalAmount - budgetRemaining
                               ).toLocaleString()} KES`
-                            : "Same category required"}
-                        </div>
-                      )}
-                  </div>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    onClick={handleBulkReject}
-                    title="Reject selected expenses without budget or category restrictions"
-                  >
-                    <XLg size={16} className="me-1" />
-                    Reject Selected
-                  </Button>
-                </Col>
-              </Row>
+                              : "Same category required"}
+                          </div>
+                        )}
+                    </div>
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      onClick={handleBulkReject}
+                      title="Reject selected expenses without budget or category restrictions"
+                    >
+                      <XLg size={16} className="me-1" />
+                      Reject Selected
+                    </Button>
+                  </Col>
+                </Row>
               </div>
             )}
             {/* End Bulk Actions Section */}
@@ -1424,700 +1582,698 @@ export default function ExpenseApprovalPage() {
                   <span className="text-muted small">Search, filter, and manage expense approvals</span>
                 </div>
               </div>
-        
-        {/* Search and Action Row */}
-            <Row className="align-items-center g-3 mb-4">
-              <Col xs={12} md={4}>
-                <h5 className="mb-0 fw-bold text-dark">Expense Requests</h5>
-                <small className="text-muted">
-                  Showing{" "}
-                  {Math.min(
-                    (currentPage - 1) * itemsPerPage + 1,
-                    filteredExpenses.length
-                  )}
-                  -
-                  {Math.min(
-                    currentPage * itemsPerPage,
-                    filteredExpenses.length
-                  )}{" "}
-                  of {filteredExpenses.length} expenses
-                </small>
-              </Col>
-              <Col xs={12} md={5} className="mb-2 mb-md-0">
-                <div className="modern-search-container position-relative">
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="search-icon-external border">
-                      <Search size={18} className="text-primary" />
-                    </div>
-                    <div className="search-input-wrapper flex-grow-1">
-                      <Form.Control
-                        type="search"
-                        placeholder="Search by payee, payee number, description, employee, category..."
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setCurrentPage(1);
-                          setSearchQuery(e.target.value);
-                        }}
-                        className="modern-search-input"
-                      />
-                      {searchQuery && (
-                        <button
-                          type="button"
-                          className="clear-search-btn"
-                          onClick={() => setSearchQuery("")}
-                          aria-label="Clear search"
-                        >
-                          <XCircle size={16} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  {searchQuery && (
-                    <div className="search-results-count">
-                      <small className="text-primary fw-medium">
-                        <Funnel size={12} className="me-1" />
-                        {filteredExpenses.length} results found
-                      </small>
-                    </div>
-                  )}
-                </div>
-              </Col>
-              <Col xs={12} md={3} className="text-end">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => window.print()}
-                  title="Quick export via browser print"
-                  className="rounded-pill px-4 py-2 fw-semibold shadow-sm"
-                >
-                  <Download size={16} className="me-1" />
-                  Export
-                </Button>
-              </Col>
-            </Row>
 
-            {/* Horizontal Filters Row */}
-            <div className="filters-section">
-              <div className="filter-header-bar d-flex align-items-center justify-content-between mb-3 p-3 bg-primary bg-opacity-10 rounded-3 border-0">
-                <div className="d-flex align-items-center">
-                  <div className="bg-primary bg-opacity-25 p-2 rounded-circle me-2">
-                    <Funnel className="text-primary" size={14} />
-                  </div>
-                  <h6 className="mb-0 fw-bold text-dark">Filters</h6>
-                </div>
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  className="rounded-pill px-3 py-1 fw-semibold"
-                  onClick={() => {
-                    // setStatusFilter("All Statuses");
-                    // setDateRangeFilter("All Time");
-                    // setCategoryFilter("All Categories");
-                    // setMinAmount("");
-                    // setMaxAmount("");
-                    // setApprovalFilter("All Approval Status");
-                    // setSearchQuery("");
-                  }}
-                >
-                  <ArrowRepeat className="me-1" size={14} />
-                  Reset All
-                </Button>
-              </div>
-
-              <Row className="g-3">
-                {/* Status Filter */}
-                <Col xs={12} sm={6} md={2}>
-                  <div className="filter-item">
-                    <label className="filter-label">
-                      <CheckCircle className="me-1" size={12} />
-                      Status
-                    </label>
-                    <Form.Select
-                      size="sm"
-                      className="form-select-modern"
-                      value={statusFilter}
-                      onChange={(e) => {
-                        setStatusFilter(
-                          e.target.value as "all" | ExpenseStatus
-                        );
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <option value="all">All</option>
-                      <option value="PENDING">Pending</option>
-                      <option value="APPROVED">Approved</option>
-                      <option value="REJECTED">Rejected</option>
-                      <option value="PAID">Paid</option>
-                    </Form.Select>
-                  </div>
-                </Col>
-
-                {/* Category Filter */}
-                <Col xs={12} sm={6} md={2}>
-                  <div className="filter-item">
-                    <label className="filter-label">
-                      <Tag className="me-1" size={12} />
-                      Category
-                    </label>
-                    <Form.Select
-                      size="sm"
-                      className="form-select-modern"
-                      value={categoryFilter}
-                      onChange={(e) => {
-                        setCategoryFilter(
-                          e.target.value === "all"
-                            ? "all"
-                            : Number(e.target.value)
-                        );
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <option value="all">All</option>
-                      {categories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </div>
-                </Col>
-
-                {/* Department Filter */}
-                <Col xs={12} sm={6} md={2}>
-                  <div className="filter-item">
-                    <label className="filter-label">
-                      <Building className="me-1" size={12} />
-                      Department
-                    </label>
-                    <Form.Select
-                      size="sm"
-                      className="form-select-modern"
-                      value={departmentFilter}
-                      onChange={(e) => {
-                        setDepartmentFilter(
-                          e.target.value === "all"
-                            ? "all"
-                            : Number(e.target.value)
-                        );
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <option value="all">All</option>
-                      {departments.map((department) => (
-                        <option key={department.id} value={department.id}>
-                          {department.name}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </div>
-                </Col>
-
-                {/* Amount Range */}
-                <Col xs={12} sm={6} md={2}>
-                  <div className="filter-item">
-                    <label className="filter-label">
-                      <CashStack className="me-1" size={12} />
-                      Amount Range (KES)
-                    </label>
-                    <Row className="g-1">
-                      <Col xs={6}>
-                        <Form.Control
-                          size="sm"
-                          type="number"
-                          placeholder="Min"
-                          value={minAmount}
-                          onChange={(e) => setMinAmount(e.target.value)}
-                          className="form-control-modern"
-                        />
-                      </Col>
-                      <Col xs={6}>
-                        <Form.Control
-                          size="sm"
-                          type="number"
-                          placeholder="Max"
-                          value={maxAmount}
-                          onChange={(e) => setMaxAmount(e.target.value)}
-                          className="form-control-modern"
-                        />
-                      </Col>
-                    </Row>
-                  </div>
-                </Col>
-
-                {/* Date Range Filter */}
-                <Col xs={12} sm={6} md={2}>
-                  <div className="filter-item">
-                    <label className="filter-label">
-                      <CalendarEvent className="me-1" size={12} />
-                      Created Date
-                    </label>
-                    <Form.Select
-                      size="sm"
-                      className="form-select-modern"
-                      value={dateRangeFilter}
-                      onChange={(e) => setDateRangeFilter(e.target.value)}
-                    >
-                      <option value="All Time">All Time</option>
-                      <option value="Today">Today</option>
-                      <option value="This Week">This Week</option>
-                      <option value="This Month">This Month</option>
-                      <option value="Last 30 Days">Last 30 Days</option>
-                    </Form.Select>
-                  </div>
-                </Col>
-
-                {/* Approval Progress Filter */}
-                <Col xs={12} sm={6} md={2}>
-                  <div className="filter-item">
-                    <label className="filter-label">
-                      <ListCheck className="me-1" size={12} />
-                      Approval Progress
-                    </label>
-                    <Form.Select
-                      size="sm"
-                      className="form-select-modern"
-                      value={approvalFilter}
-                      onChange={(e) => {
-                        setApprovalFilter(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <option value="all">All</option>
-                      {approvalStatuses
-                        .filter((status) => status !== "all")
-                        .map((status) => (
-                          <option key={status} value={status}>
-                            {status}
-                          </option>
-                        ))}
-                    </Form.Select>
-                  </div>
-                </Col>
-              </Row>
-            </div>
-
-            {/* Table Section */}
-            <div className="mt-4">
-            {filteredExpenses.length === 0 ? (
-              <div className="text-center py-5">
-                <div className="bg-primary bg-opacity-10 d-inline-flex p-4 rounded-circle mb-3">
-                  <FileText size={48} className="text-primary" />
-                </div>
-                <h5 className="fw-bold text-dark">No expenses to approve</h5>
-                <p className="text-muted">
-                  When expenses are submitted for your approval, they will
-                  appear here.
-                </p>
-              </div>
-            ) : (
-              <div className="table-responsive">
-                <Table hover className="align-middle mb-0">
-                  <thead className="bg-light border-0">
-                    <tr>
-                      <th
-                        className="border-0 py-3 px-4"
-                        style={{ width: "40px" }}
-                      >
-                        <Form.Check
-                          type="checkbox"
-                          checked={allSelected}
-                          ref={(input) => {
-                            if (input) input.indeterminate = someSelected;
-                          }}
-                          onChange={toggleSelectAll}
-                          className="mb-0"
-                        />
-                      </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                        #ID
-                      </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                        Created
-                      </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                        Payee
-                      </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                        Payee Number
-                      </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                        Description
-                      </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                        Amount
-                      </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                        Employee
-                      </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                        Department
-                      </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                        Category
-                      </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                        Budget
-                      </th>
-                      <th
-                        className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small"
-                        style={{ minWidth: 200 }}
-                      >
-                        Progress
-                      </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-end">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentExpenses.map((exp) => {
-                      const totalSteps = exp.expenseSteps.length || 0;
-                      const approvedSteps = exp.expenseSteps.filter(
-                        (s) => s.status === "APPROVED"
-                      ).length;
-                      const percent =
-                        totalSteps === 0
-                          ? 0
-                          : Math.round((approvedSteps / totalSteps) * 100);
-                      const currentStep = exp.expenseSteps.find(
-                        (s) => s.status === "PENDING"
-                      );
-
-                      return (
-                        <tr
-                          key={exp.id}
-                          className="cursor-pointer border-bottom"
-                        >
-                          <td className="py-3 px-4">
-                            <Form.Check className="mb-0">
-                              <Form.Check.Input
-                                type="checkbox"
-                                checked={selectedExpenses.includes(exp.id)}
-                                onChange={() => toggleExpenseSelection(exp.id)}
-                              />
-                            </Form.Check>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="d-flex align-items-center">
-                              <Tag size={14} className="me-1 text-primary" />
-                              <span className="fw-semibold text-primary">
-                                {exp.id}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="d-flex flex-column">
-                              <div className="fw-medium">
-                                {formatDate(exp.createdAt)}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 fw-medium">{exp.payee}</td>
-                          <td className="py-3 px-4">{exp.payeeNumber}</td>
-                          <td className="py-3 px-4">
-                            <div className="d-flex align-items-center ">
-                              <div className="transaction-icon me-1 bg-danger border bg-opacity-50 p-1 rounded-3"></div>
-                              <div>
-                                <div
-                                  className="fw-medium text-truncate"
-                                  style={{ maxWidth: "200px" }}
-                                  title={exp.description}
-                                >
-                                  {exp.description}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="">
-                            <div className="d-flex flex-column">
-                              <span className="text-success fw-bold">
-                                {exp?.amount?.toLocaleString() || "0.00"} KES
-                              </span>
-                              <span className="text-muted small">
-                                {exp?.primaryAmount?.toLocaleString() || "0.00"}{" "}
-                                {(() => {
-                                  if (!exp) return "N/A";
-
-                                  // If currency is a string (direct currency code)
-                                  if (
-                                    exp.currency &&
-                                    typeof exp.currency === "string"
-                                  ) {
-                                    return exp.currency;
-                                  }
-
-                                  // If currency is an object with initials (type-safe check)
-                                  if (
-                                    exp.currency &&
-                                    typeof exp.currency === "object" &&
-                                    exp.currency !== null &&
-                                    "initials" in exp.currency
-                                  ) {
-                                    return (
-                                      exp.currency as { initials: string }
-                                    ).initials;
-                                  }
-
-                                  // If currencyDetails exists and has initials (type-safe check)
-                                  if (
-                                    exp.currencyDetails &&
-                                    "initials" in exp.currencyDetails
-                                  ) {
-                                    return exp.currencyDetails.initials;
-                                  }
-
-                                  return "N/A";
-                                })()}
-                              </span>
-                            </div>
-                          </td>
-                          <td>
-                            <div className="d-flex align-items-center">
-                              <div>
-                                <span className="fw-medium">
-                                  {exp.user.firstName} {exp.user.lastName}
-                                </span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <Badge
-                              className="px-3 py-2 rounded-pill fw-semibold bg-light bg-opacity-50 text-dark border-0 border-success border-start border-3"
-                            >
-                              {exp.department?.name || "-"}
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-4">
-                            <Badge
-                              className="px-3 py-2 rounded-pill fw-semibold bg-light bg-opacity-50 text-dark border-0 border-warning border-start border-3"
-                            >
-                              {exp.category?.name || "-"}
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span
-                              className={`px-2 py-1 rounded fw-bold ${
-                                exp.budget?.remainingBudget < exp.amount
-                                  ? "bg-danger bg-opacity-10 text-danger"
-                                  : "bg-success bg-opacity-10 text-success"
-                              }`}
-                              title={`Original Budget: ${
-                                exp.budget?.originalBudget?.toLocaleString() ||
-                                "N/A"
-                              }`}
-                            >
-                              {exp.budget?.remainingBudget?.toLocaleString() ||
-                                "0.00"}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4" style={{ minWidth: 200 }}>
-                            <div className="approval-timeline-compact p-2 rounded-3">
-                              {exp.expenseSteps.length > 0 ? (
-                                <div className="timeline-steps d-flex flex-column gap-1">
-                                  {/* Progress Header */}
-                                  <div className="d-flex align-items-center justify-content-between mb-2">
-                                    <span className="badge bg-secondary-subtle text-dark fw-semibold">
-                                      {approvedSteps}/{totalSteps} Steps
-                                    </span>
-                                    <span className="text-muted small">
-                                      {percent}% complete
-                                    </span>
-                                    {percent === 100 && (
-                                      <CheckCircle
-                                        size={16}
-                                        className="text-success"
-                                      />
-                                    )}
-                                  </div>
-
-                                  {/* Progress Bar */}
-                                  {(() => {
-                                    const hasRejectedStep =
-                                      exp.expenseSteps.some(
-                                        (step) => step.status === "REJECTED"
-                                      );
-                                    const allApproved =
-                                      exp.expenseSteps.length > 0 &&
-                                      exp.expenseSteps.every(
-                                        (step) => step.status === "APPROVED"
-                                      );
-
-                                    let variant = "info";
-                                    if (hasRejectedStep) variant = "danger";
-                                    else if (allApproved) variant = "success";
-
-                                    return (
-                                      <ProgressBar
-                                        now={percent}
-                                        variant={variant}
-                                        animated={
-                                          !hasRejectedStep &&
-                                          !allApproved &&
-                                          exp.status === "PENDING"
-                                        }
-                                        className="rounded-pill shadow-sm"
-                                        style={{ height: "6px" }}
-                                      />
-                                    );
-                                  })()}
-
-                                  {/* Current Step Info */}
-                                  {(() => {
-                                    const hasRejectedStep =
-                                      exp.expenseSteps.some(
-                                        (step) => step.status === "REJECTED"
-                                      );
-
-                                    if (hasRejectedStep) {
-                                      const rejectedStep =
-                                        exp.expenseSteps.find(
-                                          (step) => step.status === "REJECTED"
-                                        );
-                                      return (
-                                        <div className="current-step-info text-center mt-1 bg-danger bg-opacity-10 border-danger">
-                                          <small className="text-danger fw-medium">
-                                            <XCircle
-                                              size={10}
-                                              className="me-1"
-                                            />
-                                            Rejected at:{" "}
-                                            {rejectedStep?.hierarchyLevel?.role
-                                              ?.name ||
-                                              rejectedStep?.role?.name ||
-                                              "Unknown step"}
-                                          </small>
-                                        </div>
-                                      );
-                                    }
-
-                                    const allApproved =
-                                      exp.expenseSteps.length > 0 &&
-                                      exp.expenseSteps.every(
-                                        (step) => step.status === "APPROVED"
-                                      );
-
-                                    if (allApproved) {
-                                      return (
-                                        <div className="current-step-info text-center mt-1 bg-success bg-opacity-10 border-success">
-                                          <small className="text-success fw-medium">
-                                            <CheckCircle
-                                              size={10}
-                                              className="me-1"
-                                            />
-                                            Fully Approved
-                                          </small>
-                                        </div>
-                                      );
-                                    }
-
-                                    return null;
-                                  })()}
-                                </div>
-                              ) : (
-                                <div className="text-center text-muted py-2">
-                                  <InfoCircle size={16} className="mb-1" />
-                                  <div className="small">No workflow steps</div>
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-end">
-                            <div className="d-flex gap-2 justify-content-end">
-                              <Button
-                                variant="outline-primary"
-                                size="sm"
-                                onClick={() => handleViewDetails(exp)}
-                                className="d-flex align-items-center justify-content-center rounded-pill"
-                                style={{ width: "32px", height: "32px" }}
-                                title="View Details"
-                              >
-                                <Eye size={14} />
-                              </Button>
-
-                              {exp.status === "PENDING" && (
-                                <>
-                                  <Button
-                                    variant="outline-success"
-                                    size="sm"
-                                    onClick={() => handleApprove(exp.id)}
-                                    className="d-flex align-items-center justify-content-center rounded-pill"
-                                    style={{ width: "32px", height: "32px" }}
-                                    title="Approve"
-                                  >
-                                    <CheckLg size={14} />
-                                  </Button>
-
-                                  <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedExpense(exp);
-                                      setShowDetailsModal(true);
-                                    }}
-                                    className="d-flex align-items-center justify-content-center rounded-pill"
-                                    style={{ width: "32px", height: "32px" }}
-                                    title="Reject"
-                                  >
-                                    <XLg size={14} />
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </Table>
-              </div>
-            )}
-
-            {/* Pagination Footer */}
-            <div className="d-flex justify-content-between align-items-center p-3 border-top">
-              <div className="text-muted small">
-                Showing{" "}
-                {filteredExpenses.length === 0
-                  ? 0
-                  : Math.min(
+              {/* Search and Action Row */}
+              <Row className="align-items-center g-3 mb-4">
+                <Col xs={12} md={4}>
+                  <h5 className="mb-0 fw-bold text-dark">Expense Requests</h5>
+                  <small className="text-muted">
+                    Showing{" "}
+                    {Math.min(
                       (currentPage - 1) * itemsPerPage + 1,
                       filteredExpenses.length
+                    )}
+                    -
+                    {Math.min(
+                      currentPage * itemsPerPage,
+                      filteredExpenses.length
                     )}{" "}
-                to{" "}
-                {Math.min(currentPage * itemsPerPage, filteredExpenses.length)}{" "}
-                of {filteredExpenses.length} entries
-              </div>
-              <Pagination className="mb-0">
-                <Pagination.Prev
-                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                  disabled={currentPage === 1}
-                />
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum: number;
-                  if (totalPages <= 5) pageNum = i + 1;
-                  else if (currentPage <= 3) pageNum = i + 1;
-                  else if (currentPage >= totalPages - 2)
-                    pageNum = totalPages - 4 + i;
-                  else pageNum = currentPage - 2 + i;
+                    of {filteredExpenses.length} expenses
+                  </small>
+                </Col>
+                <Col xs={12} md={5} className="mb-2 mb-md-0">
+                  <div className="modern-search-container position-relative">
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="search-icon-external border">
+                        <Search size={18} className="text-primary" />
+                      </div>
+                      <div className="search-input-wrapper flex-grow-1">
+                        <Form.Control
+                          type="search"
+                          placeholder="Search by payee, payee number, description, employee, category..."
+                          value={searchQuery}
+                          onChange={(e) => {
+                            setCurrentPage(1);
+                            setSearchQuery(e.target.value);
+                          }}
+                          className="modern-search-input"
+                        />
+                        {searchQuery && (
+                          <button
+                            type="button"
+                            className="clear-search-btn"
+                            onClick={() => setSearchQuery("")}
+                            aria-label="Clear search"
+                          >
+                            <XCircle size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {searchQuery && (
+                      <div className="search-results-count">
+                        <small className="text-primary fw-medium">
+                          <Funnel size={12} className="me-1" />
+                          {filteredExpenses.length} results found
+                        </small>
+                      </div>
+                    )}
+                  </div>
+                </Col>
+                <Col xs={12} md={3} className="text-end">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => window.print()}
+                    title="Quick export via browser print"
+                    className="rounded-pill px-4 py-2 fw-semibold shadow-sm"
+                  >
+                    <Download size={16} className="me-1" />
+                    Export
+                  </Button>
+                </Col>
+              </Row>
 
-                  return (
-                    <Pagination.Item
-                      key={pageNum}
-                      active={pageNum === currentPage}
-                      onClick={() => setCurrentPage(pageNum)}
-                    >
-                      {pageNum}
-                    </Pagination.Item>
-                  );
-                })}
-                <Pagination.Next
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(p + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages}
-                />
-              </Pagination>
-            </div>
-            </div>
+              {/* Horizontal Filters Row */}
+              <div className="filters-section">
+                <div className="filter-header-bar d-flex align-items-center justify-content-between mb-3 p-3 bg-primary bg-opacity-10 rounded-3 border-0">
+                  <div className="d-flex align-items-center">
+                    <div className="bg-primary bg-opacity-25 p-2 rounded-circle me-2">
+                      <Funnel className="text-primary" size={14} />
+                    </div>
+                    <h6 className="mb-0 fw-bold text-dark">Filters</h6>
+                  </div>
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    className="rounded-pill px-3 py-1 fw-semibold"
+                    onClick={() => {
+                      // setStatusFilter("All Statuses");
+                      // setDateRangeFilter("All Time");
+                      // setCategoryFilter("All Categories");
+                      // setMinAmount("");
+                      // setMaxAmount("");
+                      // setApprovalFilter("All Approval Status");
+                      // setSearchQuery("");
+                    }}
+                  >
+                    <ArrowRepeat className="me-1" size={14} />
+                    Reset All
+                  </Button>
+                </div>
+
+                <Row className="g-3">
+                  {/* Status Filter */}
+                  <Col xs={12} sm={6} md={2}>
+                    <div className="filter-item">
+                      <label className="filter-label">
+                        <CheckCircle className="me-1" size={12} />
+                        Status
+                      </label>
+                      <Form.Select
+                        size="sm"
+                        className="form-select-modern"
+                        value={statusFilter}
+                        onChange={(e) => {
+                          setStatusFilter(
+                            e.target.value as "all" | ExpenseStatus
+                          );
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <option value="all">All</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="REJECTED">Rejected</option>
+                        <option value="PAID">Paid</option>
+                      </Form.Select>
+                    </div>
+                  </Col>
+
+                  {/* Category Filter */}
+                  <Col xs={12} sm={6} md={2}>
+                    <div className="filter-item">
+                      <label className="filter-label">
+                        <Tag className="me-1" size={12} />
+                        Category
+                      </label>
+                      <Form.Select
+                        size="sm"
+                        className="form-select-modern"
+                        value={categoryFilter}
+                        onChange={(e) => {
+                          setCategoryFilter(
+                            e.target.value === "all"
+                              ? "all"
+                              : Number(e.target.value)
+                          );
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <option value="all">All</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </div>
+                  </Col>
+
+                  {/* Department Filter */}
+                  <Col xs={12} sm={6} md={2}>
+                    <div className="filter-item">
+                      <label className="filter-label">
+                        <Building className="me-1" size={12} />
+                        Department
+                      </label>
+                      <Form.Select
+                        size="sm"
+                        className="form-select-modern"
+                        value={departmentFilter}
+                        onChange={(e) => {
+                          setDepartmentFilter(
+                            e.target.value === "all"
+                              ? "all"
+                              : Number(e.target.value)
+                          );
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <option value="all">All</option>
+                        {departments.map((department) => (
+                          <option key={department.id} value={department.id}>
+                            {department.name}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </div>
+                  </Col>
+
+                  {/* Amount Range */}
+                  <Col xs={12} sm={6} md={2}>
+                    <div className="filter-item">
+                      <label className="filter-label">
+                        <CashStack className="me-1" size={12} />
+                        Amount Range (KES)
+                      </label>
+                      <Row className="g-1">
+                        <Col xs={6}>
+                          <Form.Control
+                            size="sm"
+                            type="number"
+                            placeholder="Min"
+                            value={minAmount}
+                            onChange={(e) => setMinAmount(e.target.value)}
+                            className="form-control-modern"
+                          />
+                        </Col>
+                        <Col xs={6}>
+                          <Form.Control
+                            size="sm"
+                            type="number"
+                            placeholder="Max"
+                            value={maxAmount}
+                            onChange={(e) => setMaxAmount(e.target.value)}
+                            className="form-control-modern"
+                          />
+                        </Col>
+                      </Row>
+                    </div>
+                  </Col>
+
+                  {/* Date Range Filter */}
+                  <Col xs={12} sm={6} md={2}>
+                    <div className="filter-item">
+                      <label className="filter-label">
+                        <CalendarEvent className="me-1" size={12} />
+                        Created Date
+                      </label>
+                      <Form.Select
+                        size="sm"
+                        className="form-select-modern"
+                        value={dateRangeFilter}
+                        onChange={(e) => setDateRangeFilter(e.target.value)}
+                      >
+                        <option value="All Time">All Time</option>
+                        <option value="Today">Today</option>
+                        <option value="This Week">This Week</option>
+                        <option value="This Month">This Month</option>
+                        <option value="Last 30 Days">Last 30 Days</option>
+                      </Form.Select>
+                    </div>
+                  </Col>
+
+                  {/* Approval Progress Filter */}
+                  <Col xs={12} sm={6} md={2}>
+                    <div className="filter-item">
+                      <label className="filter-label">
+                        <ListCheck className="me-1" size={12} />
+                        Approval Progress
+                      </label>
+                      <Form.Select
+                        size="sm"
+                        className="form-select-modern"
+                        value={approvalFilter}
+                        onChange={(e) => {
+                          setApprovalFilter(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <option value="all">All</option>
+                        {approvalStatuses
+                          .filter((status) => status !== "all")
+                          .map((status) => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                      </Form.Select>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              {/* Table Section */}
+              <div className="mt-4">
+                {filteredExpenses.length === 0 ? (
+                  <div className="text-center py-5">
+                    <div className="bg-primary bg-opacity-10 d-inline-flex p-4 rounded-circle mb-3">
+                      <FileText size={48} className="text-primary" />
+                    </div>
+                    <h5 className="fw-bold text-dark">No expenses to approve</h5>
+                    <p className="text-muted">
+                      When expenses are submitted for your approval, they will
+                      appear here.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="table-responsive">
+                    <Table hover className="align-middle mb-0">
+                      <thead className="bg-light border-0">
+                        <tr>
+                          <th
+                            className="border-0 py-3 px-4"
+                            style={{ width: "40px" }}
+                          >
+                            <Form.Check
+                              type="checkbox"
+                              checked={allSelected}
+                              ref={(input) => {
+                                if (input) input.indeterminate = someSelected;
+                              }}
+                              onChange={toggleSelectAll}
+                              className="mb-0"
+                            />
+                          </th>
+                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            #ID
+                          </th>
+                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            Created
+                          </th>
+                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            Payee
+                          </th>
+                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            Payee Number
+                          </th>
+                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            Description
+                          </th>
+                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            Amount
+                          </th>
+                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            Employee
+                          </th>
+                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            Department
+                          </th>
+                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            Category
+                          </th>
+                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            Budget
+                          </th>
+                          <th
+                            className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small"
+                            style={{ minWidth: 200 }}
+                          >
+                            Progress
+                          </th>
+                          <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-end">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentExpenses.map((exp) => {
+                          const totalSteps = exp.expenseSteps.length || 0;
+                          const approvedSteps = exp.expenseSteps.filter(
+                            (s) => s.status === "APPROVED"
+                          ).length;
+                          const percent =
+                            totalSteps === 0
+                              ? 0
+                              : Math.round((approvedSteps / totalSteps) * 100);
+                          const currentStep = exp.expenseSteps.find(
+                            (s) => s.status === "PENDING"
+                          );
+
+                          return (
+                            <tr
+                              key={exp.id}
+                              className="cursor-pointer border-bottom"
+                            >
+                              <td className="py-3 px-4">
+                                <Form.Check className="mb-0">
+                                  <Form.Check.Input
+                                    type="checkbox"
+                                    checked={selectedExpenses.includes(exp.id)}
+                                    onChange={() => toggleExpenseSelection(exp.id)}
+                                  />
+                                </Form.Check>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="d-flex align-items-center">
+                                  <Tag size={14} className="me-1 text-primary" />
+                                  <span className="fw-semibold text-primary">
+                                    {exp.id}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="d-flex flex-column">
+                                  <div className="fw-medium">
+                                    {formatDate(exp.createdAt)}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4 fw-medium">{exp.payee}</td>
+                              <td className="py-3 px-4">{exp.payeeNumber}</td>
+                              <td className="py-3 px-4">
+                                <div className="d-flex align-items-center ">
+                                  <div className="transaction-icon me-1 bg-danger border bg-opacity-50 p-1 rounded-3"></div>
+                                  <div>
+                                    <div
+                                      className="fw-medium text-truncate"
+                                      style={{ maxWidth: "200px" }}
+                                      title={exp.description}
+                                    >
+                                      {exp.description}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="">
+                                <div className="d-flex flex-column">
+                                  <span className="text-success fw-bold">
+                                    {exp?.amount?.toLocaleString() || "0.00"} KES
+                                  </span>
+                                  <span className="text-muted small">
+                                    {exp?.primaryAmount?.toLocaleString() || "0.00"}{" "}
+                                    {(() => {
+                                      if (!exp) return "N/A";
+
+                                      // If currency is a string (direct currency code)
+                                      if (
+                                        exp.currency &&
+                                        typeof exp.currency === "string"
+                                      ) {
+                                        return exp.currency;
+                                      }
+
+                                      // If currency is an object with initials (type-safe check)
+                                      if (
+                                        exp.currency &&
+                                        typeof exp.currency === "object" &&
+                                        exp.currency !== null &&
+                                        "initials" in exp.currency
+                                      ) {
+                                        return (
+                                          exp.currency as { initials: string }
+                                        ).initials;
+                                      }
+
+                                      // If currencyDetails exists and has initials (type-safe check)
+                                      if (
+                                        exp.currencyDetails &&
+                                        "initials" in exp.currencyDetails
+                                      ) {
+                                        return exp.currencyDetails.initials;
+                                      }
+
+                                      return "N/A";
+                                    })()}
+                                  </span>
+                                </div>
+                              </td>
+                              <td>
+                                <div className="d-flex align-items-center">
+                                  <div>
+                                    <span className="fw-medium">
+                                      {exp.user.firstName} {exp.user.lastName}
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <Badge
+                                  className="px-3 py-2 rounded-pill fw-semibold bg-light bg-opacity-50 text-dark border-0 border-success border-start border-3"
+                                >
+                                  {exp.department?.name || "-"}
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-4">
+                                <Badge
+                                  className="px-3 py-2 rounded-pill fw-semibold bg-light bg-opacity-50 text-dark border-0 border-warning border-start border-3"
+                                >
+                                  {exp.category?.name || "-"}
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span
+                                  className={`px-2 py-1 rounded fw-bold ${exp.budget?.remainingBudget < exp.amount
+                                    ? "bg-danger bg-opacity-10 text-danger"
+                                    : "bg-success bg-opacity-10 text-success"
+                                    }`}
+                                  title={`Original Budget: ${exp.budget?.originalBudget?.toLocaleString() ||
+                                    "N/A"
+                                    }`}
+                                >
+                                  {exp.budget?.remainingBudget?.toLocaleString() ||
+                                    "0.00"}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4" style={{ minWidth: 200 }}>
+                                <div className="approval-timeline-compact p-2 rounded-3">
+                                  {exp.expenseSteps.length > 0 ? (
+                                    <div className="timeline-steps d-flex flex-column gap-1">
+                                      {/* Progress Header */}
+                                      <div className="d-flex align-items-center justify-content-between mb-2">
+                                        <span className="badge bg-secondary-subtle text-dark fw-semibold">
+                                          {approvedSteps}/{totalSteps} Steps
+                                        </span>
+                                        <span className="text-muted small">
+                                          {percent}% complete
+                                        </span>
+                                        {percent === 100 && (
+                                          <CheckCircle
+                                            size={16}
+                                            className="text-success"
+                                          />
+                                        )}
+                                      </div>
+
+                                      {/* Progress Bar */}
+                                      {(() => {
+                                        const hasRejectedStep =
+                                          exp.expenseSteps.some(
+                                            (step) => step.status === "REJECTED"
+                                          );
+                                        const allApproved =
+                                          exp.expenseSteps.length > 0 &&
+                                          exp.expenseSteps.every(
+                                            (step) => step.status === "APPROVED"
+                                          );
+
+                                        let variant = "info";
+                                        if (hasRejectedStep) variant = "danger";
+                                        else if (allApproved) variant = "success";
+
+                                        return (
+                                          <ProgressBar
+                                            now={percent}
+                                            variant={variant}
+                                            animated={
+                                              !hasRejectedStep &&
+                                              !allApproved &&
+                                              exp.status === "PENDING"
+                                            }
+                                            className="rounded-pill shadow-sm"
+                                            style={{ height: "6px" }}
+                                          />
+                                        );
+                                      })()}
+
+                                      {/* Current Step Info */}
+                                      {(() => {
+                                        const hasRejectedStep =
+                                          exp.expenseSteps.some(
+                                            (step) => step.status === "REJECTED"
+                                          );
+
+                                        if (hasRejectedStep) {
+                                          const rejectedStep =
+                                            exp.expenseSteps.find(
+                                              (step) => step.status === "REJECTED"
+                                            );
+                                          return (
+                                            <div className="current-step-info text-center mt-1 bg-danger bg-opacity-10 border-danger">
+                                              <small className="text-danger fw-medium">
+                                                <XCircle
+                                                  size={10}
+                                                  className="me-1"
+                                                />
+                                                Rejected at:{" "}
+                                                {rejectedStep?.hierarchyLevel?.role
+                                                  ?.name ||
+                                                  rejectedStep?.role?.name ||
+                                                  "Unknown step"}
+                                              </small>
+                                            </div>
+                                          );
+                                        }
+
+                                        const allApproved =
+                                          exp.expenseSteps.length > 0 &&
+                                          exp.expenseSteps.every(
+                                            (step) => step.status === "APPROVED"
+                                          );
+
+                                        if (allApproved) {
+                                          return (
+                                            <div className="current-step-info text-center mt-1 bg-success bg-opacity-10 border-success">
+                                              <small className="text-success fw-medium">
+                                                <CheckCircle
+                                                  size={10}
+                                                  className="me-1"
+                                                />
+                                                Fully Approved
+                                              </small>
+                                            </div>
+                                          );
+                                        }
+
+                                        return null;
+                                      })()}
+                                    </div>
+                                  ) : (
+                                    <div className="text-center text-muted py-2">
+                                      <InfoCircle size={16} className="mb-1" />
+                                      <div className="small">No workflow steps</div>
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4 text-end">
+                                <div className="d-flex gap-2 justify-content-end">
+                                  <Button
+                                    variant="outline-primary"
+                                    size="sm"
+                                    onClick={() => handleViewDetails(exp)}
+                                    className="d-flex align-items-center justify-content-center rounded-pill"
+                                    style={{ width: "32px", height: "32px" }}
+                                    title="View Details"
+                                  >
+                                    <Eye size={14} />
+                                  </Button>
+
+                                  {exp.status === "PENDING" && (
+                                    <>
+                                      <Button
+                                        variant="outline-success"
+                                        size="sm"
+                                        onClick={() => handleApprove(exp.id)}
+                                        className="d-flex align-items-center justify-content-center rounded-pill"
+                                        style={{ width: "32px", height: "32px" }}
+                                        title="Approve"
+                                      >
+                                        <CheckLg size={14} />
+                                      </Button>
+
+                                      <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        onClick={() => {
+                                          setSelectedExpense(exp);
+                                          setShowDetailsModal(true);
+                                        }}
+                                        className="d-flex align-items-center justify-content-center rounded-pill"
+                                        style={{ width: "32px", height: "32px" }}
+                                        title="Reject"
+                                      >
+                                        <XLg size={14} />
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </Table>
+                  </div>
+                )}
+
+                {/* Pagination Footer */}
+                <div className="d-flex justify-content-between align-items-center p-3 border-top">
+                  <div className="text-muted small">
+                    Showing{" "}
+                    {filteredExpenses.length === 0
+                      ? 0
+                      : Math.min(
+                        (currentPage - 1) * itemsPerPage + 1,
+                        filteredExpenses.length
+                      )}{" "}
+                    to{" "}
+                    {Math.min(currentPage * itemsPerPage, filteredExpenses.length)}{" "}
+                    of {filteredExpenses.length} entries
+                  </div>
+                  <Pagination className="mb-0">
+                    <Pagination.Prev
+                      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                      disabled={currentPage === 1}
+                    />
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum: number;
+                      if (totalPages <= 5) pageNum = i + 1;
+                      else if (currentPage <= 3) pageNum = i + 1;
+                      else if (currentPage >= totalPages - 2)
+                        pageNum = totalPages - 4 + i;
+                      else pageNum = currentPage - 2 + i;
+
+                      return (
+                        <Pagination.Item
+                          key={pageNum}
+                          active={pageNum === currentPage}
+                          onClick={() => setCurrentPage(pageNum)}
+                        >
+                          {pageNum}
+                        </Pagination.Item>
+                      );
+                    })}
+                    <Pagination.Next
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(p + 1, totalPages))
+                      }
+                      disabled={currentPage === totalPages}
+                    />
+                  </Pagination>
+                </div>
+              </div>
             </div>
             {/* End Search and Filters Section */}
           </Card.Body>
@@ -2392,10 +2548,10 @@ export default function ExpenseApprovalPage() {
                                         step.status === "PENDING"
                                           ? "#f0ad4e"
                                           : step.status === "APPROVED"
-                                          ? "#198754"
-                                          : step.status === "REJECTED"
-                                          ? "#dc3545"
-                                          : "#6c757d",
+                                            ? "#198754"
+                                            : step.status === "REJECTED"
+                                              ? "#dc3545"
+                                              : "#6c757d",
                                       boxShadow: "0 0 0 4px #fff",
                                     }}
                                   ></span>
@@ -2417,10 +2573,10 @@ export default function ExpenseApprovalPage() {
                                         step.status === "PENDING"
                                           ? "warning"
                                           : step.status === "APPROVED"
-                                          ? "success"
-                                          : step.status === "REJECTED"
-                                          ? "danger"
-                                          : "secondary"
+                                            ? "success"
+                                            : step.status === "REJECTED"
+                                              ? "danger"
+                                              : "secondary"
                                       }
                                       className="px-3 py-2 fw-semibold"
                                     >
@@ -2435,13 +2591,13 @@ export default function ExpenseApprovalPage() {
                                         ? `${step.approver.firstName} ${step.approver.lastName}`
                                         : step.nextApprovers &&
                                           step.nextApprovers.length > 0
-                                        ? step.nextApprovers
+                                          ? step.nextApprovers
                                             .map(
                                               (u) =>
                                                 `${u.firstName} ${u.lastName}`
                                             )
                                             .join(", ")
-                                        : "—"}
+                                          : "—"}
                                     </span>
 
                                     {step.updatedAt && (
