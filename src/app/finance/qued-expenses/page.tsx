@@ -377,9 +377,8 @@ export default function ExpenseApprovalPage() {
   const filteredExpenses = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return expenses.filter((exp) => {
-      const employee = `${exp.user?.firstName ?? ""} ${
-        exp.user?.lastName ?? ""
-      }`.trim();
+      const employee = `${exp.user?.firstName ?? ""} ${exp.user?.lastName ?? ""
+        }`.trim();
       const department =
         exp.department?.name || exp.user?.department?.name || "";
       const category = exp.category?.name || "";
@@ -481,45 +480,80 @@ export default function ExpenseApprovalPage() {
       <TopNavbar />
       <Container fluid className="py-4">
         {/* Modern Header */}
-        <div className="mb-4">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <div>
-              <div className="d-flex align-items-center mb-2">
-                <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                  <ListChecks className="text-primary" size={28} />
+        <Card className="mb-4 border-0 shadow-sm" style={{
+          background: '#f8f9fa',
+          borderLeft: '4px solid #0d6efd'
+        }}>
+          <Card.Body className="p-4">
+            <Row className="align-items-center">
+              <Col md={8}>
+                <div className="d-flex align-items-center mb-3">
+                  <div className="bg-primary bg-opacity-10 p-3 rounded me-3">
+                    <ListChecks size={28} className="text-primary" />
+                  </div>
+                  <div>
+                    <h5 className="mb-1 fw-bold">
+                      Queued Expenses
+                    </h5>
+                    <p className="mb-0 text-muted">
+                      Review and validate expenses ready for payment processing
+                    </p>
+                  </div>
                 </div>
                 <div>
-                  <h2 className="fw-bold text-dark mb-0">
-                    Queued Expenses
-                  </h2>
-                  <p className="text-muted mb-0 small">
-                    Review and validate expenses ready for payment
-                  </p>
+                  <Badge bg="primary" className="me-2">
+                    {filteredExpenses.length} Pending
+                  </Badge>
+                  <span className="text-muted">
+                    Total Amount: <strong>
+                      {expenses.reduce((sum, exp) => sum + exp.amount, 0).toLocaleString()} KES
+                    </strong>
+                  </span>
                 </div>
-              </div>
-            </div>
-          </div>
-          <hr className="border-2 border-primary opacity-25 mb-4" />
-        </div>
+              </Col>
+              <Col md={4} className="text-end">
+                <div className="d-flex gap-2 justify-content-end flex-wrap">
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => fetchExpensesToApprove()}
+                  >
+                    <ArrowDownCircle size={16} className="me-2" />
+                    Refresh
+                  </Button>
+                  <Button
+                    variant="success"
+                    size="sm"
+                    onClick={() => window.print()}
+                  >
+                    <Download size={16} className="me-2" />
+                    Export
+                  </Button>
+                </div>
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
 
         {/* Stats and Info */}
         <Row className="mb-4">
           <Col md={6} className="mb-4 mb-md-0">
-            <Card className="border-0 shadow-sm rounded-3 bg-primary bg-opacity-10 border-start border-primary border-2 h-100">
+            <Card className="border-0 shadow-sm rounded-3 h-100">
               <Card.Body className="p-4">
-                <p className="small text-secondary mb-2">
+                <div className="d-flex align-items-center mb-3">
+                  <FileText size={20} className="me-2 text-primary" />
+                  <h6 className="mb-0 fw-bold">Finance Review Process</h6>
+                </div>
+                <p className="small text-muted mb-3">
                   Every submitted expense goes through this check to ensure
                   compliance and readiness for payment:
                 </p>
-                <br />
-                <div className="d-flex flex-column gap-3 small text-secondary">
+                <div className="d-flex flex-column gap-3 small">
                   {/* Step 1 */}
-                  <div className="d-flex align-items-center">
-                    <div className="rounded-circle bg-success bg-opacity-10 p-2 me-3 shadow-sm">
-                      <Check2Circle className="text-success" size={18} />
-                    </div>
+                  <div className="d-flex align-items-start">
+                    <Check2Circle className="text-success me-2 mt-1" size={18} />
                     <div>
-                      <span className="fw-semibold text-dark">Accuracy</span>
+                      <span className="fw-semibold d-block mb-1">Accuracy Verification</span>
                       <div className="text-muted">
                         Verified by approvers and proper documentation attached
                       </div>
@@ -527,12 +561,10 @@ export default function ExpenseApprovalPage() {
                   </div>
 
                   {/* Step 2 */}
-                  <div className="d-flex align-items-center">
-                    <div className="rounded-circle bg-primary bg-opacity-10 p-2 me-3 shadow-sm">
-                      <ShieldCheck className="text-primary" size={18} />
-                    </div>
+                  <div className="d-flex align-items-start">
+                    <ShieldCheck className="text-primary me-2 mt-1" size={18} />
                     <div>
-                      <span className="fw-semibold text-dark">Compliance</span>
+                      <span className="fw-semibold d-block mb-1">Compliance Check</span>
                       <div className="text-muted">
                         Aligned with company policies and procedures
                       </div>
@@ -545,84 +577,71 @@ export default function ExpenseApprovalPage() {
           <Col md={6}>
             <Card className="border-0 shadow-sm rounded-3 h-100">
               <Card.Body className="p-4">
+                <h6 className="mb-3 fw-bold">Quick Statistics</h6>
                 <Row className="g-3">
                   {/* Total Expenses */}
                   <Col xs={6}>
-                    <div className="bg-success bg-opacity-10 p-3 rounded-3 border-start border-success border-2">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-success bg-opacity-10 p-2 rounded me-2">
-                          <DollarSign size={18} className="text-success" />
-                        </div>
-                        <div>
-                          <p className="text-muted small mb-1">Total Expenses</p>
-                          <h6 className="mb-0 fw-bold">
-                            {expenses.length > 0
-                              ? expenses
-                                  .reduce((sum, expense) => sum + expense.amount, 0)
-                                  .toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })
-                              : "0.00"}
-                          </h6>
-                        </div>
+                    <div className="bg-success bg-opacity-10 p-3 rounded-3 border-start border-success border-3">
+                      <div className="d-flex align-items-center mb-2">
+                        <DollarSign size={16} className="text-success me-2" />
+                        <p className="mb-0 small text-muted">Total Expenses</p>
                       </div>
+                      <h6 className="mb-0 fw-bold">
+                        {expenses.length > 0
+                          ? expenses
+                            .reduce((sum, expense) => sum + expense.amount, 0)
+                            .toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })
+                          : "0.00"}
+                      </h6>
                     </div>
                   </Col>
 
                   {/* Total in List */}
                   <Col xs={6}>
-                    <div className="bg-danger bg-opacity-10 p-3 rounded-3 border-start border-danger border-2">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-danger bg-opacity-10 p-2 rounded me-2">
-                          <FileText size={18} className="text-danger" />
-                        </div>
-                        <div>
-                          <p className="text-muted small mb-1">Total in List</p>
-                          <h6 className="mb-0 fw-bold">{expenses.length}</h6>
-                        </div>
+                    <div className="bg-danger bg-opacity-10 p-3 rounded-3 border-start border-danger border-3">
+                      <div className="d-flex align-items-center mb-2">
+                        <FileText size={16} className="text-danger me-2" />
+                        <p className="mb-0 small text-muted">Total in List</p>
                       </div>
+                      <h6 className="mb-0 fw-bold">
+                        {expenses.length}
+                      </h6>
                     </div>
                   </Col>
 
                   {/* Budgets */}
                   <Col xs={6}>
-                    <div className="bg-info bg-opacity-10 p-3 rounded-3 border-start border-info border-2">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-info bg-opacity-10 p-2 rounded me-2">
-                          <FileText size={18} className="text-info" />
-                        </div>
-                        <div>
-                          <p className="text-muted small mb-1">Budgets</p>
-                          <h6 className="mb-0 fw-bold">
-                            {expenses.length > 0
-                              ? expenses.reduce(
-                                  (sum, exp) => sum + (exp.countBudget || 0),
-                                  0
-                                )
-                              : 0}
-                          </h6>
-                        </div>
+                    <div className="bg-info bg-opacity-10 p-3 rounded-3 border-start border-info border-3">
+                      <div className="d-flex align-items-center mb-2">
+                        <FileText size={16} className="text-info me-2" />
+                        <p className="mb-0 small text-muted">Budgets</p>
                       </div>
+                      <h6 className="mb-0 fw-bold">
+                        {expenses.length > 0
+                          ? expenses.reduce(
+                            (sum, exp) => sum + (exp.countBudget || 0),
+                            0
+                          )
+                          : 0}
+                      </h6>
                     </div>
                   </Col>
 
                   {/* Last User */}
                   <Col xs={6}>
-                    <div className="bg-secondary bg-opacity-10 p-3 rounded-3 border-start border-secondary border-2">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-secondary bg-opacity-10 p-2 rounded me-2">
-                          <User size={18} className="text-secondary" />
-                        </div>
-                        <div>
-                          <p className="text-muted small mb-1">Last User</p>
-                          <h6 className="mb-0 fw-bold text-truncate" style={{ maxWidth: "120px" }}>
-                            {expenses.length > 0
-                              ? `${expenses[0].user.firstName} ${expenses[0].user.lastName}`
-                              : "N/A"}
-                          </h6>
-                        </div>
+                    <div className="bg-warning bg-opacity-10 p-3 rounded-3 border-start border-warning border-3">
+                      <div className="d-flex align-items-center mb-2">
+                        <User size={16} className="text-warning me-2" />
+                        <p className="mb-0 small text-muted">Last User</p>
                       </div>
+                      <h6 className="mb-0 fw-bold text-truncate" style={{ maxWidth: "120px" }}>
+                        {expenses.length > 0
+                          ? `${expenses[0].user.firstName} ${expenses[0].user.lastName}`
+                          : "N/A"}
+                      </h6>
                     </div>
                   </Col>
                 </Row>
@@ -633,13 +652,16 @@ export default function ExpenseApprovalPage() {
 
         {/* Bulk Actions Bar */}
         {selectedExpenses.length > 0 && (
-          <Card className="mb-4 bg-light border-0">
-            <Card.Body className="py-2">
+          <Card className="mb-4 border-0 shadow-sm bg-light">
+            <Card.Body className="py-3 px-4">
               <Row className="align-items-center">
                 <Col md={6}>
-                  <span className="fw-medium">
-                    {selectedExpenses.length} expense(s) selected
-                  </span>
+                  <div className="d-flex align-items-center">
+                    <CheckCircle size={18} className="text-primary me-2" />
+                    <span className="fw-semibold">
+                      {selectedExpenses.length} expense{selectedExpenses.length > 1 ? 's' : ''} selected
+                    </span>
+                  </div>
                 </Col>
                 <Col md={6} className="text-end">
                   <Button
@@ -648,7 +670,7 @@ export default function ExpenseApprovalPage() {
                     className="me-2"
                     onClick={handleBulkApprove}
                   >
-                    <CheckLg size={16} className="me-1" />
+                    <CheckLg size={14} className="me-1" />
                     Approve Selected
                   </Button>
                   <Button
@@ -656,7 +678,7 @@ export default function ExpenseApprovalPage() {
                     size="sm"
                     onClick={handleBulkReject}
                   >
-                    <XLg size={16} className="me-1" />
+                    <XLg size={14} className="me-1" />
                     Reject Selected
                   </Button>
                 </Col>
@@ -667,75 +689,191 @@ export default function ExpenseApprovalPage() {
 
         {/* Table */}
         <Card className="mb-4 border-0 shadow-sm rounded-3">
-          <Card.Header className="bg-white border-0 py-3 px-4">
-            <div className="d-flex justify-content-between align-items-center flex-wrap">
-              <h5 className="mb-0 me-3 fw-bold">Queued Expense Requests</h5>
-              <div className="d-flex flex-wrap gap-2 mt-2 mt-md-0">
-                <div className="search-box d-flex">
+          <Card.Header className="bg-white border-0 py-4 px-4">
+            {/* Title Section */}
+            <div className="mb-4 bg-light p-3 rounded-3 border-start border-primary border-4">
+              <Row className="align-items-center">
+                <Col md={8}>
+                  <div className="d-flex align-items-center">
+                    <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
+                      <ListChecks size={20} className="text-primary" />
+                    </div>
+                    <div>
+                      <h6 className="mb-1 fw-bold">Queued Expense Requests</h6>
+                      <p className="mb-0 small text-muted">
+                        Review and process pending expense payments
+                      </p>
+                    </div>
+                  </div>
+                </Col>
+                <Col md={4} className="text-end">
+                  <Badge bg="primary" className="px-3 py-2">
+                    {filteredExpenses.length} Total
+                  </Badge>
+                </Col>
+              </Row>
+            </div>
+
+            {/* Search and Filters */}
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+              {/* Search Box */}
+              <div style={{ position: 'relative', flex: '1 1 300px', maxWidth: '400px' }}>
+                <div style={{
+                  position: 'relative',
+                  background: '#ffffff',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease'
+                }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#667eea';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}>
+                  <div style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 1
+                  }}>
+                    <Badge style={{
+                      background: '#ede9fe',
+                      border: '1px solid #ddd6fe',
+                      borderRadius: '8px',
+                      padding: '6px 8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Filter size={14} style={{ color: '#667eea' }} />
+                    </Badge>
+                  </div>
                   <Form.Control
                     type="search"
-                    placeholder="Search expenses..."
+                    placeholder="Search by payee, department, category..."
                     value={searchQuery}
                     onChange={(e) => {
                       setCurrentPage(1);
                       setSearchQuery(e.target.value);
                     }}
-                    className="border-0 bg-light"
+                    style={{
+                      border: 'none',
+                      paddingLeft: '56px',
+                      paddingRight: searchQuery ? '40px' : '16px',
+                      paddingTop: '10px',
+                      paddingBottom: '10px',
+                      fontSize: '0.875rem',
+                      background: 'transparent',
+                      outline: 'none'
+                    }}
                   />
+                  {searchQuery && (
+                    <div
+                      onClick={() => {
+                        setSearchQuery('');
+                        setCurrentPage(1);
+                      }}
+                      style={{
+                        position: 'absolute',
+                        right: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        cursor: 'pointer',
+                        zIndex: 1,
+                        transition: 'all 0.2s ease',
+                        opacity: 0.6
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.opacity = '1';
+                        e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.opacity = '0.6';
+                        e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                      }}
+                    >
+                      <XLg size={14} style={{ color: '#64748b' }} />
+                    </div>
+                  )}
                 </div>
-                <Dropdown>
-                  <Dropdown.Toggle
-                    variant="outline-secondary"
+                {searchQuery && (
+                  <div className="mt-2">
+                    <Badge style={{
+                      background: 'rgba(102, 126, 234, 0.1)',
+                      color: '#667eea',
+                      border: '1px solid rgba(102, 126, 234, 0.2)',
+                      padding: '4px 10px',
+                      fontSize: '0.75rem',
+                      borderRadius: '6px'
+                    }}>
+                      {filteredExpenses.length} result{filteredExpenses.length !== 1 ? 's' : ''} found
+                    </Badge>
+                  </div>
+                )}
+              </div>
+
+              {/* Filters */}
+              <div className="d-flex gap-2 flex-wrap">
+                {/* Status Filter */}
+                <div style={{ position: 'relative', minWidth: '160px' }}>
+                  <div style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 1,
+                    pointerEvents: 'none'
+                  }}>
+                    <CheckCircle size={16} style={{ color: '#667eea' }} />
+                  </div>
+                  <Form.Select
                     size="sm"
-                    className="border-0 bg-light rounded-pill"
+                    value={statusFilter}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value as "all" | ExpenseStatus);
+                      setCurrentPage(1);
+                    }}
+                    style={{
+                      borderRadius: '12px',
+                      border: '1px solid #e5e7eb',
+                      paddingLeft: '40px',
+                      paddingRight: '12px',
+                      paddingTop: '10px',
+                      paddingBottom: '10px',
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      background: '#ffffff',
+                      color: '#1e293b',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = '#667eea';
+                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = '#e5e7eb';
+                      e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+                    }}
                   >
-                    <Filter size={16} className="me-1" />
-                    Status:{" "}
-                    {statusFilter === "all" ? "All" : humanStatus(statusFilter)}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <Dropdown.Item
-                      onClick={() => {
-                        setStatusFilter("all");
-                        setCurrentPage(1);
-                      }}
-                    >
-                      All
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() => {
-                        setStatusFilter("PENDING");
-                        setCurrentPage(1);
-                      }}
-                    >
-                      Pending
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() => {
-                        setStatusFilter("APPROVED");
-                        setCurrentPage(1);
-                      }}
-                    >
-                      Approved
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() => {
-                        setStatusFilter("REJECTED");
-                        setCurrentPage(1);
-                      }}
-                    >
-                      Rejected
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
+                    <option value="all">All Status</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="APPROVED">Approved</option>
+                    <option value="REJECTED">Rejected</option>
+                  </Form.Select>
+                </div>
+
                 <Button
                   variant="outline-primary"
                   size="sm"
                   onClick={() => window.print()}
-                  title="Quick export via browser print"
-                  className="rounded-pill"
                 >
-                  <Download size={16} className="me-1" />
+                  <Download size={14} className="me-1" />
                   Export
                 </Button>
               </div>
@@ -773,10 +911,23 @@ export default function ExpenseApprovalPage() {
               </div>
             ) : (
               <div className="table-responsive">
-                <Table hover className="align-middle mb-0">
-                  <thead className="border-0">
+                <Table hover className="mb-0" style={{
+                  borderCollapse: 'separate',
+                  borderSpacing: 0
+                }}>
+                  <thead style={{
+                    background: '#f8fafc',
+                    borderBottom: '2px solid #e5e7eb'
+                  }}>
                     <tr>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small" style={{ width: "40px" }}>
+                      <th className="border-0 py-3 px-4" style={{
+                        width: "40px",
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        letterSpacing: '1px',
+                        color: '#64748b'
+                      }}>
                         <Form.Check
                           type="checkbox"
                           checked={allSelected}
@@ -787,23 +938,96 @@ export default function ExpenseApprovalPage() {
                           className="mb-0"
                         />
                       </th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">#ID</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Created</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Payee</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Payee Number</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Description</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Amount</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Employee</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Department</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Category</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">Budget</th>
-                      <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small" style={{ minWidth: 200 }}>
+                      <th className="border-0 py-3 px-4" style={{
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        letterSpacing: '1px',
+                        color: '#64748b'
+                      }}>#ID</th>
+                      <th className="border-0 py-3 px-4" style={{
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        letterSpacing: '1px',
+                        color: '#64748b'
+                      }}>Created</th>
+                      <th className="border-0 py-3 px-4" style={{
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        letterSpacing: '1px',
+                        color: '#64748b'
+                      }}>Payee</th>
+                      <th className="border-0 py-3 px-4" style={{
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        letterSpacing: '1px',
+                        color: '#64748b'
+                      }}>Payee Number</th>
+                      <th className="border-0 py-3 px-4" style={{
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        letterSpacing: '1px',
+                        color: '#64748b'
+                      }}>Description</th>
+                      <th className="border-0 py-3 px-4" style={{
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        letterSpacing: '1px',
+                        color: '#64748b'
+                      }}>Amount</th>
+                      <th className="border-0 py-3 px-4" style={{
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        letterSpacing: '1px',
+                        color: '#64748b'
+                      }}>Employee</th>
+                      <th className="border-0 py-3 px-4" style={{
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        letterSpacing: '1px',
+                        color: '#64748b'
+                      }}>Department</th>
+                      <th className="border-0 py-3 px-4" style={{
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        letterSpacing: '1px',
+                        color: '#64748b'
+                      }}>Category</th>
+                      <th className="border-0 py-3 px-4" style={{
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        letterSpacing: '1px',
+                        color: '#64748b'
+                      }}>Budget</th>
+                      <th className="border-0 py-3 px-4" style={{
+                        minWidth: 200,
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        letterSpacing: '1px',
+                        color: '#64748b'
+                      }}>
                         Progress
                       </th>
-                      <th className="border-0 text-end py-3 px-4 fw-semibold text-muted text-uppercase small">Actions</th>
+                      <th className="border-0 text-end py-3 px-4" style={{
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        letterSpacing: '1px',
+                        color: '#64748b'
+                      }}>Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody style={{ background: '#ffffff' }}>
                     {currentExpenses.map((exp) => {
                       const totalSteps = exp.expenseSteps.length || 0;
                       const approvedSteps = exp.expenseSteps.filter(
@@ -820,7 +1044,19 @@ export default function ExpenseApprovalPage() {
                       return (
                         <tr
                           key={exp.id}
-                          className="cursor-pointer"
+                          style={{
+                            cursor: 'pointer',
+                            borderBottom: '1px solid #f1f5f9',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#fafbfc';
+                            e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = '#ffffff';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
                         >
                           <td className="py-3 px-4">
                             <Form.Check className="mb-0">
@@ -832,47 +1068,58 @@ export default function ExpenseApprovalPage() {
                             </Form.Check>
                           </td>
                           <td className="py-3 px-4">
-                            <div className="d-flex align-items-center">
-                              <Tag size={14} className="me-1 text-primary" />
-                              <span>{exp.id}</span>
-                            </div>
+                            <Badge style={{
+                              background: 'linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%)',
+                              color: '#5b21b6',
+                              border: '1px solid #c4b5fd',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              fontWeight: '700',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontSize: '0.75rem'
+                            }}>
+                              <Tag size={12} />
+                              {exp.id}
+                            </Badge>
                           </td>
                           <td className="py-3 px-4">
                             <div className="d-flex flex-column">
-                              <div className="">
-                                Created:{" "}
+                              <div style={{ color: '#0f172a', fontSize: '0.813rem', fontWeight: '500' }}>
                                 <DateTimeDisplay date={exp.createdAt} />
                               </div>
-                              <div className="text-muted small">
-                                Updated:{" "}
-                                <DateTimeDisplay date={exp.updatedAt} />
+                              <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>
+                                Updated: <DateTimeDisplay date={exp.updatedAt} />
                               </div>
                             </div>
                           </td>
-                          <td className="py-3 px-4">{exp.payee}</td>
-                          <td className="py-3 px-4">{exp.payeeNumber}</td>
                           <td className="py-3 px-4">
-                            <div className="d-flex align-items-center">
-                              <div className="transaction-icon me-1 bg-light border bg-opacity-10 p-1 rounded-3">
-                                <FaListAlt className="text-success" size={14} />
-                              </div>
-                              <div>
-                                <div
-                                  className="fw-medium text-truncate"
-                                  style={{ maxWidth: "200px" }}
-                                  title={exp.description}
-                                >
-                                  {exp.description}
-                                </div>
-                              </div>
+                            <span style={{ color: '#1e293b', fontWeight: '600', fontSize: '0.875rem' }} title={exp.payee}>
+                              {exp.payee.length > 10 ? exp.payee.substring(0, 10) + '...' : exp.payee}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span style={{ color: '#64748b', fontSize: '0.875rem' }}>{exp.payeeNumber}</span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div style={{
+                              maxWidth: '200px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              color: '#475569',
+                              fontSize: '0.875rem'
+                            }} title={exp.description}>
+                              {exp.description}
                             </div>
                           </td>
                           <td className="py-3 px-4">
                             <div className="d-flex flex-column">
-                              <span className="text-success fw-bold">
+                              <span style={{ color: '#059669', fontWeight: '700', fontSize: '0.938rem' }}>
                                 {exp?.amount?.toLocaleString() || "0.00"} KES
                               </span>
-                              <span className="text-muted small">
+                              <span style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: '500' }}>
                                 {exp?.primaryAmount?.toLocaleString() || "0.00"}{" "}
                                 {(() => {
                                   if (!exp) return "N/A";
@@ -912,70 +1159,116 @@ export default function ExpenseApprovalPage() {
                           </td>
                           <td className="py-3 px-4">
                             <div className="d-flex align-items-center">
-                              <div className="avatar-sm bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center rounded-circle me-2 small">
+                              <div style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                                border: '2px solid #93c5fd',
+                                color: '#1e40af',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: '700',
+                                fontSize: '0.688rem',
+                                marginRight: '10px'
+                              }}>
                                 {exp.user.firstName.charAt(0)}
                                 {exp.user.lastName.charAt(0)}
                               </div>
                               <div>
-                                <small className="fw-medium">
+                                <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '0.875rem' }}>
                                   {exp.user.firstName} {exp.user.lastName}
-                                </small>
+                                </div>
                               </div>
                             </div>
                           </td>
                           <td className="py-3 px-4">
-                            <Badge
-                              bg="success bg-opacity-10 text-success"
-                              className="px-2 py-1 rounded border"
-                            >
-                              {exp.department?.name || "-"}
+                            <Badge bg="success" bg-opacity="10" style={{
+                              background: 'rgba(5, 150, 105, 0.1)',
+                              color: '#065f46',
+                              border: '1px solid rgba(5, 150, 105, 0.2)',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              fontWeight: '600',
+                              fontSize: '0.75rem'
+                            }} title={exp.department?.name}>
+                              {exp.department?.name && exp.department.name.length > 10
+                                ? exp.department.name.substring(0, 10) + '...'
+                                : exp.department?.name || "-"}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge bg="warning" bg-opacity="10" style={{
+                              background: 'rgba(217, 119, 6, 0.1)',
+                              color: '#92400e',
+                              border: '1px solid rgba(217, 119, 6, 0.2)',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              fontWeight: '600',
+                              fontSize: '0.75rem'
+                            }} title={exp.category?.name}>
+                              {exp.category?.name && exp.category.name.length > 10
+                                ? exp.category.name.substring(0, 10) + '...'
+                                : exp.category?.name || "-"}
                             </Badge>
                           </td>
                           <td className="py-3 px-4">
                             <Badge
-                              bg="light"
-                              text="dark"
-                              className="px-2 py-1 rounded border bg-danger bg-opacity-10"
-                            >
-                              {exp.category?.name || "-"}
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-4">
-                            <Badge
-                              className={`px-2 py-1 rounded ${
-                                exp.budget?.remainingBudget < exp.amount
-                                  ? "bg-danger bg-opacity-10 text-danger"
-                                  : "bg-success bg-opacity-10 text-success"
-                              }`}
-                              title={`Original Budget: ${
-                                exp.budget?.originalBudget?.toLocaleString() ||
+                              style={{
+                                background: exp.budget?.remainingBudget < exp.amount
+                                  ? 'rgba(239, 68, 68, 0.1)'
+                                  : 'rgba(16, 185, 129, 0.1)',
+                                color: exp.budget?.remainingBudget < exp.amount
+                                  ? '#dc2626'
+                                  : '#059669',
+                                border: exp.budget?.remainingBudget < exp.amount
+                                  ? '1px solid rgba(239, 68, 68, 0.2)'
+                                  : '1px solid rgba(16, 185, 129, 0.2)',
+                                padding: '6px 12px',
+                                borderRadius: '12px',
+                                fontWeight: '600',
+                                fontSize: '0.875rem'
+                              }}
+                              title={`Original Budget: ${exp.budget?.originalBudget?.toLocaleString() ||
                                 "N/A"
-                              }`}
+                                }`}
                             >
                               {exp.budget?.remainingBudget?.toLocaleString() ||
-                                "N/A"}
+                                "N/A"} KES
                             </Badge>
                           </td>
                           <td className="py-3 px-4" style={{ minWidth: 200 }}>
-                            <div className="mb-1 small text-muted">
+                            <div className="mb-2" style={{ 
+                              fontSize: '0.75rem', 
+                              color: '#64748b',
+                              fontWeight: '500'
+                            }}>
                               {approvedSteps}/{totalSteps} approved{" "}
                               {currentStep
                                 ? `• Now: ${currentStep.hierarchyName || currentStep.role?.name || "—"}`
                                 : ""}
                             </div>
-                            <ProgressBar
-                              now={percent}
-                              className="rounded-pill"
-                              style={{ height: "6px" }}
-                              variant={
-                                exp.status === "APPROVED"
-                                  ? "success"
+                            <div style={{
+                              height: "8px",
+                              borderRadius: '8px',
+                              background: '#e5e7eb',
+                              overflow: 'hidden',
+                              boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)'
+                            }}>
+                              <div style={{
+                                width: `${percent}%`,
+                                height: '100%',
+                                borderRadius: '8px',
+                                background: exp.status === "APPROVED"
+                                  ? '#10b981'
                                   : exp.status === "PENDING"
-                                  ? "info"
-                                  : "success"
-                              }
-                              animated={exp.status === "PENDING"}
-                            />
+                                    ? '#06b6d4'
+                                    : '#10b981',
+                                transition: 'width 0.3s ease',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                              }}></div>
+                            </div>
                           </td>
                           <td className="text-end py-3 px-4">
                             <div className="d-flex gap-2 justify-content-end">
@@ -983,8 +1276,24 @@ export default function ExpenseApprovalPage() {
                                 variant="outline-primary"
                                 size="sm"
                                 onClick={() => handleViewDetails(exp)}
-                                className="d-flex align-items-center justify-content-center"
-                                style={{ width: "32px", height: "32px" }}
+                                style={{
+                                  width: '32px',
+                                  height: '32px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  padding: '0',
+                                  borderRadius: '8px',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.transform = 'scale(1.05)';
+                                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(13, 110, 253, 0.15)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.transform = 'scale(1)';
+                                  e.currentTarget.style.boxShadow = 'none';
+                                }}
                               >
                                 <Eye size={14} />
                               </Button>
@@ -995,8 +1304,24 @@ export default function ExpenseApprovalPage() {
                                     variant="outline-success"
                                     size="sm"
                                     onClick={() => handleApprove(exp.id)}
-                                    className="d-flex align-items-center justify-content-center"
-                                    style={{ width: "32px", height: "32px" }}
+                                    style={{
+                                      width: '32px',
+                                      height: '32px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      padding: '0',
+                                      borderRadius: '8px',
+                                      transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.transform = 'scale(1.05)';
+                                      e.currentTarget.style.boxShadow = '0 4px 6px rgba(25, 135, 84, 0.15)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.transform = 'scale(1)';
+                                      e.currentTarget.style.boxShadow = 'none';
+                                    }}
                                   >
                                     <CheckLg size={14} />
                                   </Button>
@@ -1008,8 +1333,24 @@ export default function ExpenseApprovalPage() {
                                       setSelectedExpense(exp);
                                       setShowDetailsModal(true);
                                     }}
-                                    className="d-flex align-items-center justify-content-center"
-                                    style={{ width: "32px", height: "32px" }}
+                                    style={{
+                                      width: '32px',
+                                      height: '32px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      padding: '0',
+                                      borderRadius: '8px',
+                                      transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.transform = 'scale(1.05)';
+                                      e.currentTarget.style.boxShadow = '0 4px 6px rgba(220, 53, 69, 0.15)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.transform = 'scale(1)';
+                                      e.currentTarget.style.boxShadow = 'none';
+                                    }}
                                   >
                                     <XLg size={14} />
                                   </Button>
@@ -1026,23 +1367,43 @@ export default function ExpenseApprovalPage() {
             )}
 
             {/* Pagination Footer */}
-            <div className="d-flex justify-content-between align-items-center p-3 border-top">
-              <div className="text-muted small">
+            <div className="d-flex justify-content-between align-items-center p-3 border-top" style={{
+              background: '#f8f9fa',
+              borderBottomLeftRadius: '12px',
+              borderBottomRightRadius: '12px'
+            }}>
+              <div style={{
+                fontSize: '0.875rem',
+                color: '#64748b',
+                fontWeight: '500'
+              }}>
                 Showing{" "}
-                {filteredExpenses.length === 0
-                  ? 0
-                  : Math.min(
+                <span style={{ color: '#1e293b', fontWeight: '600' }}>
+                  {filteredExpenses.length === 0
+                    ? 0
+                    : Math.min(
                       (currentPage - 1) * itemsPerPage + 1,
                       filteredExpenses.length
-                    )}{" "}
-                to{" "}
-                {Math.min(currentPage * itemsPerPage, filteredExpenses.length)}{" "}
-                of {filteredExpenses.length} entries
+                    )}
+                </span>
+                {" "}to{" "}
+                <span style={{ color: '#1e293b', fontWeight: '600' }}>
+                  {Math.min(currentPage * itemsPerPage, filteredExpenses.length)}
+                </span>
+                {" "}of{" "}
+                <span style={{ color: '#1e293b', fontWeight: '600' }}>
+                  {filteredExpenses.length}
+                </span>
+                {" "}entries
               </div>
               <Pagination className="mb-0">
                 <Pagination.Prev
                   onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                   disabled={currentPage === 1}
+                  style={{
+                    borderRadius: '8px',
+                    marginRight: '4px'
+                  }}
                 />
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let pageNum: number;
@@ -1057,6 +1418,10 @@ export default function ExpenseApprovalPage() {
                       key={pageNum}
                       active={pageNum === currentPage}
                       onClick={() => setCurrentPage(pageNum)}
+                      style={{
+                        borderRadius: '8px',
+                        margin: '0 2px'
+                      }}
                     >
                       {pageNum}
                     </Pagination.Item>
@@ -1067,6 +1432,10 @@ export default function ExpenseApprovalPage() {
                     setCurrentPage((p) => Math.min(p + 1, totalPages))
                   }
                   disabled={currentPage === totalPages}
+                  style={{
+                    borderRadius: '8px',
+                    marginLeft: '4px'
+                  }}
                 />
               </Pagination>
             </div>
@@ -1231,8 +1600,8 @@ export default function ExpenseApprovalPage() {
                               <span className="detail-value">
                                 {selectedExpense.exchangeRateUsed
                                   ? Number(
-                                      selectedExpense.exchangeRateUsed
-                                    ).toFixed(2)
+                                    selectedExpense.exchangeRateUsed
+                                  ).toFixed(2)
                                   : "N/A"}
                               </span>
                             </div>
@@ -1279,10 +1648,10 @@ export default function ExpenseApprovalPage() {
                                         step.status === "PENDING"
                                           ? "#f0ad4e"
                                           : step.status === "APPROVED"
-                                          ? "#198754"
-                                          : step.status === "REJECTED"
-                                          ? "#dc3545"
-                                          : "#6c757d",
+                                            ? "#198754"
+                                            : step.status === "REJECTED"
+                                              ? "#dc3545"
+                                              : "#6c757d",
                                       boxShadow: "0 0 0 4px #fff",
                                     }}
                                   ></span>
@@ -1300,10 +1669,10 @@ export default function ExpenseApprovalPage() {
                                         step.status === "PENDING"
                                           ? "warning"
                                           : step.status === "APPROVED"
-                                          ? "success"
-                                          : step.status === "REJECTED"
-                                          ? "danger"
-                                          : "secondary"
+                                            ? "success"
+                                            : step.status === "REJECTED"
+                                              ? "danger"
+                                              : "secondary"
                                       }
                                       className="px-3 py-2 fw-semibold"
                                     >
@@ -1317,8 +1686,8 @@ export default function ExpenseApprovalPage() {
                                       {step.approver
                                         ? `${step.approver.firstName} ${step.approver.lastName}`
                                         : step.nextApprovers && step.nextApprovers.length > 0
-                                        ? step.nextApprovers.map(u => `${u.firstName} ${u.lastName}`).join(", ")
-                                        : "—"}
+                                          ? step.nextApprovers.map(u => `${u.firstName} ${u.lastName}`).join(", ")
+                                          : "—"}
                                     </span>
 
                                     {step.updatedAt && (
