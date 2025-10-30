@@ -763,30 +763,101 @@ export default function ExpenseApprovalPage() {
       <TopNavbar />
       <Container fluid className="py-4">
         {/* Modern Header */}
-        <div className="mb-4">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <div>
-              <div className="d-flex align-items-center mb-2">
-                <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                  <ListCheck className="text-primary" size={28} />
+        <div
+          className="mb-4 p-4 rounded-3 border shadow-sm"
+          style={{
+            background: '#f0f4ff',
+            position: 'relative',
+            overflow: 'hidden',
+            borderColor: '#e5eaff !important'
+          }}
+        >
+          {/* Decorative Pattern Elements */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '20px',
+              width: '120px',
+              height: '120px',
+              border: '2px solid rgba(102, 126, 234, 0.1)',
+              borderRadius: '50%'
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: '40px',
+              right: '50px',
+              width: '60px',
+              height: '60px',
+              border: '2px solid rgba(102, 126, 234, 0.1)',
+              borderRadius: '50%'
+            }}
+          />
+
+          <div className="position-relative">
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-4">
+              {/* Left Side - Title and Info */}
+              <div className="d-flex align-items-center">
+                <div
+                  className="p-3 rounded-3 me-3"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.3)',
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)'
+                  }}
+                >
+                  <ListCheck style={{ color: '#1e293b' }} size={32} />
                 </div>
                 <div>
-                  <h2 className="fw-bold text-dark mb-0">Expense Approvals</h2>
-                  <p className="text-muted mb-0 small">
-                    Review and approve pending expense requests
-                  </p>
+                  <h5 className="fw-bold mb-1" style={{ color: '#1e293b' }}>
+                    Expense Approvals
+                  </h5>
+                  <div className="d-flex align-items-center gap-3">
+                    <p className="mb-0" style={{ color: '#334155' }}>
+                      Review and approve pending expense requests
+                    </p>
+                    <span
+                      className="badge px-3 py-2 rounded-pill"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.35)',
+                        backdropFilter: 'blur(10px)',
+                        color: '#1e293b',
+                        fontSize: '0.75rem',
+                        fontWeight: '600'
+                      }}
+                    >
+                      <ClockHistory size={12} className="me-1" />
+                      {pendingCount} Pending
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+              {/* Right Side - Action Buttons */}
               <div className="d-flex gap-2 flex-wrap">
                 <Button
                   size="sm"
-                  variant="primary"
-                  className="d-inline-flex align-items-center px-4 py-2 rounded-pill fw-semibold shadow-sm"
+                  className="d-inline-flex align-items-center px-4 py-2 rounded-pill fw-semibold shadow"
                   onClick={fetchExpensesToApprove}
                   disabled={isLoading}
+                  style={{
+                    background: 'white',
+                    border: '1px solid #667eea',
+                    color: '#667eea',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#667eea';
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'white';
+                    e.currentTarget.style.color = '#667eea';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
                 >
                   {isLoading ? (
                     <>Loading...</>
@@ -798,9 +869,8 @@ export default function ExpenseApprovalPage() {
                   )}
                 </Button>
                 <Button
-                  variant="success"
                   size="sm"
-                  className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
+                  className="d-flex align-items-center gap-2 rounded-pill px-4 py-2 fw-semibold shadow"
                   onClick={() => {
                     const csvContent = [
                       [
@@ -840,35 +910,78 @@ export default function ExpenseApprovalPage() {
                     URL.revokeObjectURL(url);
                     toast.success("Approvals exported successfully!");
                   }}
+                  style={{
+                    background: '#10b981',
+                    border: 'none',
+                    color: 'white',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#059669';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#10b981';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
                 >
                   <FiletypeXlsx size={14} />
-                  Export CSV
+                  Export
                 </Button>
                 <Button
-                  variant="outline-info"
                   size="sm"
-                  className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
+                  className="d-flex align-items-center gap-2 rounded-pill px-4 py-2 fw-semibold shadow"
                   onClick={() => window.print()}
+                  style={{
+                    background: 'white',
+                    border: '1px solid #475569',
+                    color: '#475569',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#475569';
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'white';
+                    e.currentTarget.style.color = '#475569';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
                 >
                   <Printer size={14} />
                   Print
                 </Button>
                 <Button
-                  variant="outline-warning"
                   size="sm"
-                  className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
+                  className="d-flex align-items-center gap-2 rounded-pill px-4 py-2 fw-semibold shadow"
                   onClick={() => {
                     setStatusFilter("PENDING");
                     toast.info("Filtered to show pending approvals");
                   }}
+                  style={{
+                    background: 'white',
+                    border: '1px solid #f59e0b',
+                    color: '#f59e0b',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#f59e0b';
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'white';
+                    e.currentTarget.style.color = '#f59e0b';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
                 >
                   <ClockHistory size={14} />
-                  Pending Only
+                  Pending
                 </Button>
                 <Button
-                  variant="outline-dark"
                   size="sm"
-                  className="d-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-semibold"
+                  className="d-flex align-items-center gap-2 rounded-pill px-4 py-2 fw-semibold shadow"
                   onClick={() => {
                     if (navigator.share) {
                       navigator.share({
@@ -883,6 +996,22 @@ export default function ExpenseApprovalPage() {
                       navigator.clipboard.writeText(window.location.href);
                       toast.success("Page URL copied to clipboard!");
                     }
+                  }}
+                  style={{
+                    background: 'white',
+                    border: '1px solid #6366f1',
+                    color: '#6366f1',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#6366f1';
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'white';
+                    e.currentTarget.style.color = '#6366f1';
+                    e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
                   <Share size={14} />
@@ -1569,17 +1698,27 @@ export default function ExpenseApprovalPage() {
             )}
             {/* End Bulk Actions Section */}
 
-            <hr className="my-5" />
-
             {/* Search and Filters Section */}
             <div className="mb-0">
-              <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
-                <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                  <ListCheck size={22} className="text-primary" />
+              <div 
+                className="d-flex align-items-center mb-4 p-4 rounded-3"
+                style={{
+                  background: '#f0f9ff',
+                  border: '1px solid #e0f2fe'
+                }}
+              >
+                <div 
+                  className="p-3 rounded-3 me-3"
+                  style={{
+                    background: '#667eea',
+                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)'
+                  }}
+                >
+                  <ListCheck size={24} className="text-white" />
                 </div>
                 <div>
-                  <h6 className="fw-bold text-dark mb-0">Expense Requests</h6>
-                  <span className="text-muted small">Search, filter, and manage expense approvals</span>
+                  <h6 className="fw-bold mb-1" style={{ color: '#1e293b' }}>Expense Requests</h6>
+                  <span className="small" style={{ color: '#64748b' }}>Search, filter, and manage expense approvals</span>
                 </div>
               </div>
 
@@ -1656,17 +1795,45 @@ export default function ExpenseApprovalPage() {
 
               {/* Horizontal Filters Row */}
               <div className="filters-section">
-                <div className="filter-header-bar d-flex align-items-center justify-content-between mb-3 p-3 bg-primary bg-opacity-10 rounded-3 border-0">
-                  <div className="d-flex align-items-center">
-                    <div className="bg-primary bg-opacity-25 p-2 rounded-circle me-2">
-                      <Funnel className="text-primary" size={14} />
+                <div 
+                  className="filter-header-bar d-flex align-items-center justify-content-between mb-4 p-4"
+                  style={{
+                    background: 'transparent'
+                  }}
+                >
+                  <div className="d-flex align-items-center gap-3">
+                    <div 
+                      className="p-3 rounded-3"
+                      style={{
+                        background: '#667eea',
+                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)'
+                      }}
+                    >
+                      <Funnel className="text-white" size={20} />
                     </div>
-                    <h6 className="mb-0 fw-bold text-dark">Filters</h6>
+                    <div>
+                      <h5 className="mb-1 fw-bold text-dark">Advanced Filters</h5>
+                      <p className="mb-0 small text-muted">Refine your search with multiple criteria</p>
+                    </div>
                   </div>
                   <Button
                     variant="outline-primary"
                     size="sm"
-                    className="rounded-pill px-3 py-1 fw-semibold"
+                    className="rounded-pill px-4 py-2 fw-semibold shadow-sm"
+                    style={{
+                      borderWidth: '2px',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#667eea';
+                      e.currentTarget.style.color = 'white';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = '#667eea';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
                     onClick={() => {
                       // setStatusFilter("All Statuses");
                       // setDateRangeFilter("All Time");
@@ -1677,22 +1844,27 @@ export default function ExpenseApprovalPage() {
                       // setSearchQuery("");
                     }}
                   >
-                    <ArrowRepeat className="me-1" size={14} />
-                    Reset All
+                    <ArrowRepeat className="me-2" size={16} />
+                    Reset All Filters
                   </Button>
                 </div>
 
-                <Row className="g-3">
+                <Row className="g-4">
                   {/* Status Filter */}
                   <Col xs={12} sm={6} md={2}>
                     <div className="filter-item">
-                      <label className="filter-label">
-                        <CheckCircle className="me-1" size={12} />
+                      <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-dark">
+                        <div 
+                          className="p-1 rounded me-2"
+                          style={{ background: '#dbeafe' }}
+                        >
+                          <CheckCircle className="text-primary" size={14} />
+                        </div>
                         Status
                       </label>
                       <Form.Select
                         size="sm"
-                        className="form-select-modern"
+                        className="form-select-modern shadow-sm"
                         value={statusFilter}
                         onChange={(e) => {
                           setStatusFilter(
@@ -1700,12 +1872,28 @@ export default function ExpenseApprovalPage() {
                           );
                           setCurrentPage(1);
                         }}
+                        style={{
+                          borderRadius: '8px',
+                          border: '2px solid #e5e7eb',
+                          padding: '10px 12px',
+                          fontSize: '0.875rem',
+                          fontWeight: '500',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = '#667eea';
+                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = '#e5e7eb';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
                       >
-                        <option value="all">All</option>
-                        <option value="PENDING">Pending</option>
-                        <option value="APPROVED">Approved</option>
-                        <option value="REJECTED">Rejected</option>
-                        <option value="PAID">Paid</option>
+                        <option value="all">All Statuses</option>
+                        <option value="PENDING">⏳ Pending</option>
+                        <option value="APPROVED">✅ Approved</option>
+                        <option value="REJECTED">❌ Rejected</option>
+                        <option value="PAID">💰 Paid</option>
                       </Form.Select>
                     </div>
                   </Col>
@@ -1713,13 +1901,18 @@ export default function ExpenseApprovalPage() {
                   {/* Category Filter */}
                   <Col xs={12} sm={6} md={2}>
                     <div className="filter-item">
-                      <label className="filter-label">
-                        <Tag className="me-1" size={12} />
+                      <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-dark">
+                        <div 
+                          className="p-1 rounded me-2"
+                          style={{ background: '#fef3c7' }}
+                        >
+                          <Tag className="text-warning" size={14} />
+                        </div>
                         Category
                       </label>
                       <Form.Select
                         size="sm"
-                        className="form-select-modern"
+                        className="form-select-modern shadow-sm"
                         value={categoryFilter}
                         onChange={(e) => {
                           setCategoryFilter(
@@ -1729,8 +1922,24 @@ export default function ExpenseApprovalPage() {
                           );
                           setCurrentPage(1);
                         }}
+                        style={{
+                          borderRadius: '8px',
+                          border: '2px solid #e5e7eb',
+                          padding: '10px 12px',
+                          fontSize: '0.875rem',
+                          fontWeight: '500',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = '#f59e0b';
+                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(245, 158, 11, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = '#e5e7eb';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
                       >
-                        <option value="all">All</option>
+                        <option value="all">All Categories</option>
                         {categories.map((category) => (
                           <option key={category.id} value={category.id}>
                             {category.name}
@@ -1743,13 +1952,18 @@ export default function ExpenseApprovalPage() {
                   {/* Department Filter */}
                   <Col xs={12} sm={6} md={2}>
                     <div className="filter-item">
-                      <label className="filter-label">
-                        <Building className="me-1" size={12} />
+                      <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-dark">
+                        <div 
+                          className="p-1 rounded me-2"
+                          style={{ background: '#ddd6fe' }}
+                        >
+                          <Building className="text-primary" size={14} />
+                        </div>
                         Department
                       </label>
                       <Form.Select
                         size="sm"
-                        className="form-select-modern"
+                        className="form-select-modern shadow-sm"
                         value={departmentFilter}
                         onChange={(e) => {
                           setDepartmentFilter(
@@ -1759,8 +1973,24 @@ export default function ExpenseApprovalPage() {
                           );
                           setCurrentPage(1);
                         }}
+                        style={{
+                          borderRadius: '8px',
+                          border: '2px solid #e5e7eb',
+                          padding: '10px 12px',
+                          fontSize: '0.875rem',
+                          fontWeight: '500',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = '#8b5cf6';
+                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = '#e5e7eb';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
                       >
-                        <option value="all">All</option>
+                        <option value="all">All Departments</option>
                         {departments.map((department) => (
                           <option key={department.id} value={department.id}>
                             {department.name}
@@ -1773,11 +2003,16 @@ export default function ExpenseApprovalPage() {
                   {/* Amount Range */}
                   <Col xs={12} sm={6} md={2}>
                     <div className="filter-item">
-                      <label className="filter-label">
-                        <CashStack className="me-1" size={12} />
-                        Amount Range (KES)
+                      <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-dark">
+                        <div 
+                          className="p-1 rounded me-2"
+                          style={{ background: '#d1fae5' }}
+                        >
+                          <CashStack className="text-success" size={14} />
+                        </div>
+                        Amount (KES)
                       </label>
-                      <Row className="g-1">
+                      <Row className="g-2">
                         <Col xs={6}>
                           <Form.Control
                             size="sm"
@@ -1785,7 +2020,23 @@ export default function ExpenseApprovalPage() {
                             placeholder="Min"
                             value={minAmount}
                             onChange={(e) => setMinAmount(e.target.value)}
-                            className="form-control-modern"
+                            className="form-control-modern shadow-sm"
+                            style={{
+                              borderRadius: '8px',
+                              border: '2px solid #e5e7eb',
+                              padding: '10px 12px',
+                              fontSize: '0.875rem',
+                              fontWeight: '500',
+                              transition: 'all 0.3s ease'
+                            }}
+                            onFocus={(e) => {
+                              e.currentTarget.style.borderColor = '#10b981';
+                              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                            }}
+                            onBlur={(e) => {
+                              e.currentTarget.style.borderColor = '#e5e7eb';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
                           />
                         </Col>
                         <Col xs={6}>
@@ -1795,7 +2046,23 @@ export default function ExpenseApprovalPage() {
                             placeholder="Max"
                             value={maxAmount}
                             onChange={(e) => setMaxAmount(e.target.value)}
-                            className="form-control-modern"
+                            className="form-control-modern shadow-sm"
+                            style={{
+                              borderRadius: '8px',
+                              border: '2px solid #e5e7eb',
+                              padding: '10px 12px',
+                              fontSize: '0.875rem',
+                              fontWeight: '500',
+                              transition: 'all 0.3s ease'
+                            }}
+                            onFocus={(e) => {
+                              e.currentTarget.style.borderColor = '#10b981';
+                              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                            }}
+                            onBlur={(e) => {
+                              e.currentTarget.style.borderColor = '#e5e7eb';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
                           />
                         </Col>
                       </Row>
@@ -1805,21 +2072,42 @@ export default function ExpenseApprovalPage() {
                   {/* Date Range Filter */}
                   <Col xs={12} sm={6} md={2}>
                     <div className="filter-item">
-                      <label className="filter-label">
-                        <CalendarEvent className="me-1" size={12} />
-                        Created Date
+                      <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-dark">
+                        <div 
+                          className="p-1 rounded me-2"
+                          style={{ background: '#fee2e2' }}
+                        >
+                          <CalendarEvent className="text-danger" size={14} />
+                        </div>
+                        Date Range
                       </label>
                       <Form.Select
                         size="sm"
-                        className="form-select-modern"
+                        className="form-select-modern shadow-sm"
                         value={dateRangeFilter}
                         onChange={(e) => setDateRangeFilter(e.target.value)}
+                        style={{
+                          borderRadius: '8px',
+                          border: '2px solid #e5e7eb',
+                          padding: '10px 12px',
+                          fontSize: '0.875rem',
+                          fontWeight: '500',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = '#ef4444';
+                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = '#e5e7eb';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
                       >
                         <option value="All Time">All Time</option>
-                        <option value="Today">Today</option>
-                        <option value="This Week">This Week</option>
-                        <option value="This Month">This Month</option>
-                        <option value="Last 30 Days">Last 30 Days</option>
+                        <option value="Today">📅 Today</option>
+                        <option value="This Week">📆 This Week</option>
+                        <option value="This Month">🗓️ This Month</option>
+                        <option value="Last 30 Days">⏰ Last 30 Days</option>
                       </Form.Select>
                     </div>
                   </Col>
@@ -1827,20 +2115,41 @@ export default function ExpenseApprovalPage() {
                   {/* Approval Progress Filter */}
                   <Col xs={12} sm={6} md={2}>
                     <div className="filter-item">
-                      <label className="filter-label">
-                        <ListCheck className="me-1" size={12} />
-                        Approval Progress
+                      <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-dark">
+                        <div 
+                          className="p-1 rounded me-2"
+                          style={{ background: '#e0f2fe' }}
+                        >
+                          <ListCheck className="text-info" size={14} />
+                        </div>
+                        Progress
                       </label>
                       <Form.Select
                         size="sm"
-                        className="form-select-modern"
+                        className="form-select-modern shadow-sm"
                         value={approvalFilter}
                         onChange={(e) => {
                           setApprovalFilter(e.target.value);
                           setCurrentPage(1);
                         }}
+                        style={{
+                          borderRadius: '8px',
+                          border: '2px solid #e5e7eb',
+                          padding: '10px 12px',
+                          fontSize: '0.875rem',
+                          fontWeight: '500',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = '#06b6d4';
+                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(6, 182, 212, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = '#e5e7eb';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
                       >
-                        <option value="all">All</option>
+                        <option value="all">All Progress</option>
                         {approvalStatuses
                           .filter((status) => status !== "all")
                           .map((status) => (
@@ -2797,7 +3106,6 @@ export default function ExpenseApprovalPage() {
           .filter-header-bar {
             background: linear-gradient(135deg, #f0f4ff 0%, #e7f1ff 100%);
             backdrop-filter: blur(5px);
-            border: 2px solid #667eea !important;
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
           }
           
