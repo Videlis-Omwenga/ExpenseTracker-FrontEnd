@@ -13,8 +13,6 @@ import {
   Modal,
   Form,
   Spinner,
-  OverlayTrigger,
-  Tooltip,
   ProgressBar,
 } from "react-bootstrap";
 import {
@@ -25,7 +23,6 @@ import {
   ArrowRepeat,
   XCircle,
   Circle,
-  CheckCircleFill,
   ChatLeftText,
   FileEarmarkX,
   Tag,
@@ -50,7 +47,6 @@ import {
   Share,
   Printer,
   FiletypeXlsx,
-  Lightning,
   CheckSquareFill,
 } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
@@ -287,7 +283,7 @@ export default function FinanceDashboard() {
   const handleNavigation = (path: string) => router.push(path);
 
   // Log budgetSummary when it changes
-  useEffect(() => {}, [budgetSummary]);
+  useEffect(() => { }, [budgetSummary]);
 
   // Fetch expenses when component mounts
   useEffect(() => {
@@ -336,54 +332,54 @@ export default function FinanceDashboard() {
           // Map steps
           const steps: ExpenseStep[] = Array.isArray(item.expenseSteps)
             ? (item.expenseSteps as unknown[]).map((s: unknown) => {
-                const stepObj = s as Record<string, unknown>;
-                const roleObj = stepObj.role as
-                  | Record<string, unknown>
-                  | undefined;
-                const approverObj = stepObj.approver as
-                  | Record<string, unknown>
-                  | undefined;
-                const nextApproversArr = stepObj.nextApprovers as
-                  | unknown[]
-                  | undefined;
+              const stepObj = s as Record<string, unknown>;
+              const roleObj = stepObj.role as
+                | Record<string, unknown>
+                | undefined;
+              const approverObj = stepObj.approver as
+                | Record<string, unknown>
+                | undefined;
+              const nextApproversArr = stepObj.nextApprovers as
+                | unknown[]
+                | undefined;
 
-                return {
-                  id: Number(stepObj.id ?? 0),
-                  order: Number(stepObj.order ?? 0),
-                  isOptional: Boolean(stepObj.isOptional ?? false),
-                  status: (stepObj.status as ApprovalStatus) || "PENDING",
-                  comments: stepObj.comments ? String(stepObj.comments) : null,
-                  role: roleObj
-                    ? {
-                        id: Number(roleObj.id ?? 0),
-                        name: String(roleObj.name ?? ""),
-                      }
-                    : null,
-                  approver: approverObj
-                    ? {
-                        id: Number(approverObj.id ?? 0),
-                        firstName: String(approverObj.firstName ?? ""),
-                        lastName: String(approverObj.lastName ?? ""),
-                        email: String(approverObj.email ?? ""),
-                      }
-                    : undefined,
-                  nextApprovers: nextApproversArr
-                    ? nextApproversArr.map((na: unknown) => {
-                        const naObj = na as Record<string, unknown>;
-                        return {
-                          id: Number(naObj.id ?? 0),
-                          firstName: String(naObj.firstName ?? ""),
-                          lastName: String(naObj.lastName ?? ""),
-                          email: String(naObj.email ?? ""),
-                        };
-                      })
-                    : [],
-                  hierarchyName: stepObj.hierarchyName
-                    ? String(stepObj.hierarchyName)
-                    : null,
-                  level: Number(stepObj.order ?? 0),
-                };
-              })
+              return {
+                id: Number(stepObj.id ?? 0),
+                order: Number(stepObj.order ?? 0),
+                isOptional: Boolean(stepObj.isOptional ?? false),
+                status: (stepObj.status as ApprovalStatus) || "PENDING",
+                comments: stepObj.comments ? String(stepObj.comments) : null,
+                role: roleObj
+                  ? {
+                    id: Number(roleObj.id ?? 0),
+                    name: String(roleObj.name ?? ""),
+                  }
+                  : null,
+                approver: approverObj
+                  ? {
+                    id: Number(approverObj.id ?? 0),
+                    firstName: String(approverObj.firstName ?? ""),
+                    lastName: String(approverObj.lastName ?? ""),
+                    email: String(approverObj.email ?? ""),
+                  }
+                  : undefined,
+                nextApprovers: nextApproversArr
+                  ? nextApproversArr.map((na: unknown) => {
+                    const naObj = na as Record<string, unknown>;
+                    return {
+                      id: Number(naObj.id ?? 0),
+                      firstName: String(naObj.firstName ?? ""),
+                      lastName: String(naObj.lastName ?? ""),
+                      email: String(naObj.email ?? ""),
+                    };
+                  })
+                  : [],
+                hierarchyName: stepObj.hierarchyName
+                  ? String(stepObj.hierarchyName)
+                  : null,
+                level: Number(stepObj.order ?? 0),
+              };
+            })
             : [];
 
           // Map related entities
@@ -392,11 +388,11 @@ export default function FinanceDashboard() {
             | undefined;
           const currency = currencyObj
             ? {
-                id: Number(currencyObj.id ?? 0),
-                currency: String(currencyObj.currency ?? ""),
-                initials: String(currencyObj.initials ?? ""),
-                rate: Number(currencyObj.rate ?? 1),
-              }
+              id: Number(currencyObj.id ?? 0),
+              currency: String(currencyObj.currency ?? ""),
+              initials: String(currencyObj.initials ?? ""),
+              rate: Number(currencyObj.rate ?? 1),
+            }
             : null;
 
           const categoryObj = item.category as
@@ -404,9 +400,9 @@ export default function FinanceDashboard() {
             | undefined;
           const category = categoryObj
             ? {
-                id: Number(categoryObj.id ?? 0),
-                name: String(categoryObj.name ?? ""),
-              }
+              id: Number(categoryObj.id ?? 0),
+              name: String(categoryObj.name ?? ""),
+            }
             : null;
 
           const departmentObj = item.department as
@@ -414,9 +410,9 @@ export default function FinanceDashboard() {
             | undefined;
           const department = departmentObj
             ? {
-                id: Number(departmentObj.id ?? 0),
-                name: String(departmentObj.name ?? ""),
-              }
+              id: Number(departmentObj.id ?? 0),
+              name: String(departmentObj.name ?? ""),
+            }
             : null;
 
           const paymentMethodObj = item.paymentMethod as
@@ -424,17 +420,17 @@ export default function FinanceDashboard() {
             | undefined;
           const paymentMethod = paymentMethodObj
             ? {
-                id: Number(paymentMethodObj.id ?? 0),
-                name: String(paymentMethodObj.name ?? ""),
-              }
+              id: Number(paymentMethodObj.id ?? 0),
+              name: String(paymentMethodObj.name ?? ""),
+            }
             : null;
 
           const regionObj = item.region as Record<string, unknown> | undefined;
           const region = regionObj
             ? {
-                id: Number(regionObj.id ?? 0),
-                name: String(regionObj.name ?? ""),
-              }
+              id: Number(regionObj.id ?? 0),
+              name: String(regionObj.name ?? ""),
+            }
             : null;
 
           return {
@@ -767,9 +763,8 @@ export default function FinanceDashboard() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `selected_expenses_${
-      new Date().toISOString().split("T")[0]
-    }.csv`;
+    a.download = `selected_expenses_${new Date().toISOString().split("T")[0]
+      }.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success(`Exported ${selectedExpenses.size} selected expenses!`);
@@ -876,9 +871,8 @@ export default function FinanceDashboard() {
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
-                  a.download = `expenses_${
-                    new Date().toISOString().split("T")[0]
-                  }.csv`;
+                  a.download = `expenses_${new Date().toISOString().split("T")[0]
+                    }.csv`;
                   a.click();
                   URL.revokeObjectURL(url);
                   toast.success("Expenses exported successfully!");
@@ -910,11 +904,10 @@ export default function FinanceDashboard() {
                   if (navigator.share) {
                     navigator.share({
                       title: "My Expenses Summary",
-                      text: `I have ${
-                        expenses.length
-                      } expenses totaling KES ${expenses
-                        .reduce((sum, e) => sum + e.amount, 0)
-                        .toLocaleString()}`,
+                      text: `I have ${expenses.length
+                        } expenses totaling KES ${expenses
+                          .reduce((sum, e) => sum + e.amount, 0)
+                          .toLocaleString()}`,
                       url: window.location.href,
                     });
                   } else {
@@ -978,9 +971,8 @@ export default function FinanceDashboard() {
                           KES {analyticsData.thisMonthTotal.toLocaleString()}
                         </div>
                         <div
-                          className={`hero-trend ${
-                            analyticsData.monthlyGrowth >= 0 ? "positive" : "negative"
-                          }`}
+                          className={`hero-trend ${analyticsData.monthlyGrowth >= 0 ? "positive" : "negative"
+                            }`}
                         >
                           {analyticsData.monthlyGrowth >= 0 ? "▲" : "▼"}{" "}
                           {Math.abs(analyticsData.monthlyGrowth).toFixed(1)}% vs
@@ -1146,10 +1138,91 @@ export default function FinanceDashboard() {
                     </div>
                   </div>
 
-                  {/* RIGHT: Category Breakdown & Status Overview (reuse original markup) */}
+                  {/* RIGHT: Category Breakdown & Status Overview (filled) */}
                   <div className="category-column p-3 bg-light bg-opacity-50 rounded-3">
-                    {/* Reuse existing Category Breakdown and Status Overview markup from the file */}
-                    {/* ...existing category breakdown and status overview code... */}
+                    <h6 className="fw-bold mb-3">
+                      <PieChart className="me-2" size={16} />
+                      Top Categories
+                    </h6>
+
+                    <div className="category-breakdown">
+                      {analyticsData.topCategories.length > 0 ? (
+                        analyticsData.topCategories.map(([category, amount], index) => {
+                          const totalSpending = analyticsData.thisYearTotal || 1;
+                          const percentage = (amount / totalSpending) * 100;
+                          const colors = ["primary", "success"];
+                          const color = colors[index] || "primary";
+
+                          return (
+                            <div key={category} className="mb-4">
+                              <div className="d-flex justify-content-between align-items-center mb-2">
+                                <div className="d-flex align-items-center">
+                                  <Tag size={12} className={`text-${color} me-2`} />
+                                  <span className="fw-medium">{category}</span>
+                                </div>
+                                <span className="small text-muted fw-bold">KES {amount.toLocaleString()}</span>
+                              </div>
+
+                              <div className="progress mb-2" style={{ height: "8px", background: "rgba(0,0,0,0.04)" }}>
+                                <div
+                                  className={`progress-bar bg-${color}`}
+                                  style={{
+                                    width: `${Math.max(percentage, 3)}%`,
+                                    background: `linear-gradient(135deg, var(--bs-${color}) 0%, var(--bs-${color === "primary" ? "info" : "warning"}) 100%)`,
+                                  }}
+                                />
+                              </div>
+
+                              <div className="d-flex justify-content-between">
+                                <small className="text-muted">{percentage.toFixed(1)}% of total</small>
+                                <small className="text-muted">
+                                  {Math.max(1, Math.round(amount / (analyticsData.averageExpense || 1)))} expenses
+                                </small>
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-center py-3 text-muted">
+                          <Tag size={24} className="mb-2" />
+                          <div className="small">No category data available</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Status Overview */}
+                    <div className="mt-4 pt-3 border-top">
+                      <h6 className="fw-bold mb-3">
+                        <Award className="me-2" size={16} />
+                        Status Overview
+                      </h6>
+
+                      <div className="status-overview">
+                        {Object.entries(analyticsData.statusBreakdown).length > 0 ? (
+                          Object.entries(analyticsData.statusBreakdown).map(([status, count]) => {
+                            const badge = statusBadge(status);
+                            const percentage = analyticsData.totalExpenses ? (count / analyticsData.totalExpenses) * 100 : 0;
+                            return (
+                              <div key={status} className="d-flex justify-content-between align-items-center mb-2">
+                                <div className="d-flex align-items-center">
+                                  <Badge bg={badge.bg} className="me-2 d-inline-flex align-items-center py-1 px-2 rounded-pill">
+                                    {badge.icon}
+                                    <span className="ms-1 small">{badge.label}</span>
+                                  </Badge>
+                                  <div className="small text-muted ms-2">{status}</div>
+                                </div>
+                                <div className="text-end">
+                                  <div className="fw-bold">{count}</div>
+                                  <small className="text-muted ms-1">({percentage.toFixed(0)}%)</small>
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="text-center text-muted small">No status data</div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1235,17 +1308,41 @@ export default function FinanceDashboard() {
               </Row>
 
               {/* Horizontal Filters Row */}
-              <div className="filters-section">
-                <div className="filter-header-bar d-flex align-items-center justify-content-between mb-3 p-3 bg-secondary bg-opacity-10 rounded-3 border-0">
+              <div className="filters-section mt-4">
+                <div className="filter-header-bar d-flex align-items-center justify-content-between mb-4 p-3 rounded-4 shadow-sm"
+                  style={{
+                    background: '#e7f1ff',
+                    border: '1px solid #b8d4fe'
+                  }}>
                   <div className="d-flex align-items-center">
-                    <div className="p-2 rounded-circle me-2">
-                      <Funnel className="text-primary" size={14} />
+                    <div className="bg-primary p-2 rounded-circle me-3 d-flex align-items-center justify-content-center"
+                      style={{ width: '36px', height: '36px' }}>
+                      <Funnel className="text-white" size={18} />
                     </div>
-                    <h6 className="mb-0 fw-bold text-dark">Filters</h6>
+                    <div>
+                      <h6 className="mb-0 fw-bold text-dark">Advanced Filters</h6>
+                      <small className="text-primary">Refine your search results</small>
+                    </div>
                   </div>
                   <Button
                     size="sm"
-                    className="rounded-pill border-0 text-muted px-3 py-1 fw-semibold bg-light"
+                    className="rounded-pill border px-4 py-2 fw-semibold shadow-sm"
+                    style={{
+                      background: 'white',
+                      color: '#0d6efd',
+                      borderColor: '#0d6efd',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#0d6efd';
+                      e.currentTarget.style.color = 'white';
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'white';
+                      e.currentTarget.style.color = '#0d6efd';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
                     onClick={() => {
                       setStatusFilter("All Statuses");
                       setDateRangeFilter("All Time");
@@ -1256,132 +1353,309 @@ export default function FinanceDashboard() {
                       setSearchQuery("");
                     }}
                   >
-                    <ArrowRepeat className="me-1" size={14} />
+                    <ArrowRepeat className="me-2" size={14} />
                     Reset All
                   </Button>
                 </div>
 
-                <Row className="g-3">
-                  {/* Status Filter */}
-                  <Col xs={12} sm={6} md={2}>
-                    <div className="filter-item">
-                      <label className="filter-label">
-                        <Circle className="me-1" size={12} />
-                        Status
-                      </label>
-                      <Form.Select
-                        size="sm"
-                        className="form-select-modern"
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                      >
-                        <option value="All Statuses">All</option>
-                        <option value="PENDING">Pending</option>
-                        <option value="APPROVED">Approved</option>
-                        <option value="REJECTED">Rejected</option>
-                        <option value="PAID">Paid</option>
-                      </Form.Select>
-                    </div>
-                  </Col>
+                <div className="p-4 bg-white rounded-4 shadow-sm border border-light">
+                  <Row className="g-4">
+                    {/* Status Filter */}
+                    <Col xs={12} sm={6} md={2}>
+                      <div className="filter-item">
+                        <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-secondary"
+                          style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>
+                          <div className="bg-primary bg-opacity-10 p-1 rounded-circle me-2">
+                            <Circle className="text-primary" size={12} />
+                          </div>
+                          Status
+                        </label>
+                        <Form.Select
+                          size="sm"
+                          className="form-select-modern border-2 rounded-3 shadow-sm"
+                          style={{
+                            borderColor: '#e0e7ff',
+                            padding: '0.5rem 0.75rem',
+                            fontSize: '0.875rem',
+                            transition: 'all 0.3s ease',
+                            cursor: 'pointer'
+                          }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.borderColor = '#667eea';
+                            e.currentTarget.style.boxShadow = '0 0 0 0.2rem rgba(102, 126, 234, 0.25)';
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.borderColor = '#e0e7ff';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                          value={statusFilter}
+                          onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                          <option value="All Statuses">All Statuses</option>
+                          <option value="PENDING">⏳ Pending</option>
+                          <option value="APPROVED">✓ Approved</option>
+                          <option value="REJECTED">✗ Rejected</option>
+                          <option value="PAID">💰 Paid</option>
+                        </Form.Select>
+                      </div>
+                    </Col>
 
-                  {/* Category Filter */}
-                  <Col xs={12} sm={6} md={2}>
-                    <div className="filter-item">
-                      <label className="filter-label">
-                        <Tag className="me-1" size={12} />
-                        Category
-                      </label>
-                      <Form.Select
-                        size="sm"
-                        className="form-select-modern"
-                        value={categoryFilter}
-                        onChange={(e) => setCategoryFilter(e.target.value)}
-                      >
-                        <option value="All Categories">All</option>
-                        {uniqueCategories.map((category) => (
-                          <option key={category} value={category}>
-                            {category}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </div>
-                  </Col>
+                    {/* Category Filter */}
+                    <Col xs={12} sm={6} md={2}>
+                      <div className="filter-item">
+                        <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-secondary"
+                          style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>
+                          <div className="bg-success bg-opacity-10 p-1 rounded-circle me-2">
+                            <Tag className="text-success" size={12} />
+                          </div>
+                          Category
+                        </label>
+                        <Form.Select
+                          size="sm"
+                          className="form-select-modern border-2 rounded-3 shadow-sm"
+                          style={{
+                            borderColor: '#dcfce7',
+                            padding: '0.5rem 0.75rem',
+                            fontSize: '0.875rem',
+                            transition: 'all 0.3s ease',
+                            cursor: 'pointer'
+                          }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.borderColor = '#10b981';
+                            e.currentTarget.style.boxShadow = '0 0 0 0.2rem rgba(16, 185, 129, 0.25)';
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.borderColor = '#dcfce7';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                          value={categoryFilter}
+                          onChange={(e) => setCategoryFilter(e.target.value)}
+                        >
+                          <option value="All Categories">All Categories</option>
+                          {uniqueCategories.map((category) => (
+                            <option key={category} value={category}>
+                              🏷️ {category}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </div>
+                    </Col>
 
-                  {/* Amount Range */}
-                  <Col xs={12} sm={6} md={3}>
-                    <div className="filter-item">
-                      <label className="filter-label">
-                        <CashStack className="me-1" size={12} />
-                        Amount Range (KES)
-                      </label>
-                      <Row className="g-1">
-                        <Col xs={6}>
-                          <Form.Control
-                            size="sm"
-                            type="number"
-                            placeholder="Min"
-                            value={minAmount}
-                            onChange={(e) => setMinAmount(e.target.value)}
-                            className="form-control-modern"
-                          />
-                        </Col>
-                        <Col xs={6}>
-                          <Form.Control
-                            size="sm"
-                            type="number"
-                            placeholder="Max"
-                            value={maxAmount}
-                            onChange={(e) => setMaxAmount(e.target.value)}
-                            className="form-control-modern"
-                          />
-                        </Col>
-                      </Row>
-                    </div>
-                  </Col>
+                    {/* Amount Range */}
+                    <Col xs={12} sm={6} md={3}>
+                      <div className="filter-item">
+                        <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-secondary"
+                          style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>
+                          <div className="bg-warning bg-opacity-10 p-1 rounded-circle me-2">
+                            <CashStack className="text-warning" size={12} />
+                          </div>
+                          Amount Range (KES)
+                        </label>
+                        <Row className="g-2">
+                          <Col xs={6}>
+                            <Form.Control
+                              size="sm"
+                              type="number"
+                              placeholder="Min"
+                              value={minAmount}
+                              onChange={(e) => setMinAmount(e.target.value)}
+                              className="form-control-modern border-2 rounded-3 shadow-sm"
+                              style={{
+                                borderColor: '#fef3c7',
+                                padding: '0.5rem 0.75rem',
+                                fontSize: '0.875rem',
+                                transition: 'all 0.3s ease'
+                              }}
+                              onFocus={(e) => {
+                                e.currentTarget.style.borderColor = '#f59e0b';
+                                e.currentTarget.style.boxShadow = '0 0 0 0.2rem rgba(245, 158, 11, 0.25)';
+                              }}
+                              onBlur={(e) => {
+                                e.currentTarget.style.borderColor = '#fef3c7';
+                                e.currentTarget.style.boxShadow = 'none';
+                              }}
+                            />
+                          </Col>
+                          <Col xs={6}>
+                            <Form.Control
+                              size="sm"
+                              type="number"
+                              placeholder="Max"
+                              value={maxAmount}
+                              onChange={(e) => setMaxAmount(e.target.value)}
+                              className="form-control-modern border-2 rounded-3 shadow-sm"
+                              style={{
+                                borderColor: '#fef3c7',
+                                padding: '0.5rem 0.75rem',
+                                fontSize: '0.875rem',
+                                transition: 'all 0.3s ease'
+                              }}
+                              onFocus={(e) => {
+                                e.currentTarget.style.borderColor = '#f59e0b';
+                                e.currentTarget.style.boxShadow = '0 0 0 0.2rem rgba(245, 158, 11, 0.25)';
+                              }}
+                              onBlur={(e) => {
+                                e.currentTarget.style.borderColor = '#fef3c7';
+                                e.currentTarget.style.boxShadow = 'none';
+                              }}
+                            />
+                          </Col>
+                        </Row>
+                      </div>
+                    </Col>
 
-                  {/* Approval Process Filter */}
-                  <Col xs={12} sm={6} md={3}>
-                    <div className="filter-item">
-                      <label className="filter-label">
-                        <CheckCircle className="me-1" size={12} />
-                        Approval Process
-                      </label>
-                      <Form.Select
-                        size="sm"
-                        className="form-select-modern"
-                        value={approvalFilter}
-                        onChange={(e) => setApprovalFilter(e.target.value)}
-                      >
-                        <option value="All Approval Status">All</option>
-                        <option value="Fully Approved">Fully Approved</option>
-                        <option value="Pending Approval">Pending</option>
-                        <option value="Has Rejections">Has Rejections</option>
-                        <option value="Not Started">Not Started</option>
-                      </Form.Select>
-                    </div>
-                  </Col>
+                    {/* Approval Process Filter */}
+                    <Col xs={12} sm={6} md={3}>
+                      <div className="filter-item">
+                        <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-secondary"
+                          style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>
+                          <div className="bg-info bg-opacity-10 p-1 rounded-circle me-2">
+                            <CheckCircle className="text-info" size={12} />
+                          </div>
+                          Approval Process
+                        </label>
+                        <Form.Select
+                          size="sm"
+                          className="form-select-modern border-2 rounded-3 shadow-sm"
+                          style={{
+                            borderColor: '#dbeafe',
+                            padding: '0.5rem 0.75rem',
+                            fontSize: '0.875rem',
+                            transition: 'all 0.3s ease',
+                            cursor: 'pointer'
+                          }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.borderColor = '#0ea5e9';
+                            e.currentTarget.style.boxShadow = '0 0 0 0.2rem rgba(14, 165, 233, 0.25)';
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.borderColor = '#dbeafe';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                          value={approvalFilter}
+                          onChange={(e) => setApprovalFilter(e.target.value)}
+                        >
+                          <option value="All Approval Status">All Status</option>
+                          <option value="Fully Approved">✓ Fully Approved</option>
+                          <option value="Pending Approval">⏳ Pending</option>
+                          <option value="Has Rejections">✗ Has Rejections</option>
+                          <option value="Not Started">○ Not Started</option>
+                        </Form.Select>
+                      </div>
+                    </Col>
 
-                  {/* Date Range Filter */}
-                  <Col xs={12} sm={6} md={2}>
-                    <div className="filter-item">
-                      <label className="filter-label">
-                        <Clock className="me-1" size={12} />
-                        Date Range
-                      </label>
-                      <Form.Select
-                        size="sm"
-                        className="form-select-modern"
-                        value={dateRangeFilter}
-                        onChange={(e) => setDateRangeFilter(e.target.value)}
-                      >
-                        <option value="All Time">All Time</option>
-                        <option value="Today">Today</option>
-                        <option value="This Week">This Week</option>
-                        <option value="This Month">This Month</option>
-                      </Form.Select>
-                    </div>
-                  </Col>
-                </Row>
+                    {/* Date Range Filter */}
+                    <Col xs={12} sm={6} md={2}>
+                      <div className="filter-item">
+                        <label className="filter-label d-flex align-items-center mb-2 fw-semibold text-secondary"
+                          style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>
+                          <div className="bg-danger bg-opacity-10 p-1 rounded-circle me-2">
+                            <Clock className="text-danger" size={12} />
+                          </div>
+                          Date Range
+                        </label>
+                        <Form.Select
+                          size="sm"
+                          className="form-select-modern border-2 rounded-3 shadow-sm"
+                          style={{
+                            borderColor: '#fee2e2',
+                            padding: '0.5rem 0.75rem',
+                            fontSize: '0.875rem',
+                            transition: 'all 0.3s ease',
+                            cursor: 'pointer'
+                          }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.borderColor = '#ef4444';
+                            e.currentTarget.style.boxShadow = '0 0 0 0.2rem rgba(239, 68, 68, 0.25)';
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.borderColor = '#fee2e2';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                          value={dateRangeFilter}
+                          onChange={(e) => setDateRangeFilter(e.target.value)}
+                        >
+                          <option value="All Time">📅 All Time</option>
+                          <option value="Today">📆 Today</option>
+                          <option value="This Week">📊 This Week</option>
+                          <option value="This Month">📈 This Month</option>
+                        </Form.Select>
+                      </div>
+                    </Col>
+                  </Row>
+
+                  {/* Active Filters Display */}
+                  {(statusFilter !== "All Statuses" ||
+                    categoryFilter !== "All Categories" ||
+                    minAmount ||
+                    maxAmount ||
+                    approvalFilter !== "All Approval Status" ||
+                    dateRangeFilter !== "All Time") && (
+                      <div className="mt-3 pt-3 border-top">
+                        <div className="d-flex align-items-center flex-wrap gap-2">
+                          <small className="text-muted fw-semibold me-2">Active Filters:</small>
+                          {statusFilter !== "All Statuses" && (
+                            <Badge bg="primary" className="rounded-pill px-3 py-2">
+                              Status: {statusFilter}
+                              <XCircle
+                                size={12}
+                                className="ms-2"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => setStatusFilter("All Statuses")}
+                              />
+                            </Badge>
+                          )}
+                          {categoryFilter !== "All Categories" && (
+                            <Badge bg="success" className="rounded-pill px-3 py-2">
+                              Category: {categoryFilter}
+                              <XCircle
+                                size={12}
+                                className="ms-2"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => setCategoryFilter("All Categories")}
+                              />
+                            </Badge>
+                          )}
+                          {(minAmount || maxAmount) && (
+                            <Badge bg="warning" className="rounded-pill px-3 py-2">
+                              Amount: {minAmount || '0'} - {maxAmount || '∞'}
+                              <XCircle
+                                size={12}
+                                className="ms-2"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => {
+                                  setMinAmount("");
+                                  setMaxAmount("");
+                                }}
+                              />
+                            </Badge>
+                          )}
+                          {approvalFilter !== "All Approval Status" && (
+                            <Badge bg="info" className="rounded-pill px-3 py-2">
+                              Approval: {approvalFilter}
+                              <XCircle
+                                size={12}
+                                className="ms-2"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => setApprovalFilter("All Approval Status")}
+                              />
+                            </Badge>
+                          )}
+                          {dateRangeFilter !== "All Time" && (
+                            <Badge bg="danger" className="rounded-pill px-3 py-2">
+                              Date: {dateRangeFilter}
+                              <XCircle
+                                size={12}
+                                className="ms-2"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => setDateRangeFilter("All Time")}
+                              />
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                </div>
               </div>
 
               {/* Bulk Actions Bar */}
@@ -1502,8 +1776,8 @@ export default function FinanceDashboard() {
                         <Button
                           variant="outline-secondary"
                           onClick={() =>
-                            (window.location.href =
-                              "/expense-management/create-expense")
+                          (window.location.href =
+                            "/expense-management/create-expense")
                           }
                           className="d-flex align-items-center gap-2"
                         >
@@ -1516,8 +1790,8 @@ export default function FinanceDashboard() {
                         variant="primary"
                         size="sm"
                         onClick={() =>
-                          (window.location.href =
-                            "/expense-management/create-expense")
+                        (window.location.href =
+                          "/expense-management/create-expense")
                         }
                         className="d-flex align-items-center gap-2"
                       >
@@ -1530,341 +1804,301 @@ export default function FinanceDashboard() {
               ) : (
                 <Card className="border-0">
                   <Card.Body className="p-0">
-                    <div className="table-responsive">
-                      <Table
-                        hover
-                        className="mb-0 transactions-table align-middle"
-                      >
-                        <thead className="bg-light border-0">
+                    <div className="table-responsive modern-table-wrapper">
+                      <Table hover className="mb-0 transactions-table align-middle">
+                        <thead className="table-header-modern">
                           <tr>
-                            <th
-                              className="border-0 py-3 px-4"
-                              style={{ width: "50px" }}
-                            >
-                              <Form.Check
-                                type="checkbox"
-                                checked={
-                                  selectedExpenses.size ===
+                            <th className="table-header-cell" style={{ width: "50px" }}>
+                              <div className="header-content">
+                                <Form.Check
+                                  type="checkbox"
+                                  checked={
+                                    selectedExpenses.size ===
                                     currentItems.length &&
-                                  currentItems.length > 0
-                                }
-                                onChange={handleSelectAll}
-                                id="select-all"
-                              />
+                                    currentItems.length > 0
+                                  }
+                                  onChange={handleSelectAll}
+                                  id="select-all"
+                                  className="modern-checkbox"
+                                />
+                              </div>
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              #ID
+                            <th className="table-header-cell">
+                              <div className="header-content">
+                                <Tag size={12} className="me-1 text-primary" />
+                                <span>ID</span>
+                              </div>
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Created
+                            <th className="table-header-cell">
+                              <div className="header-content">
+                                <Clock size={12} className="me-1 text-primary" />
+                                <span>Created</span>
+                              </div>
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Payee
+                            <th className="table-header-cell">
+                              <div className="header-content">
+                                <Person size={12} className="me-1 text-primary" />
+                                <span>Payee</span>
+                              </div>
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Description
+                            <th className="table-header-cell">
+                              <div className="header-content">
+                                <FileText size={12} className="me-1 text-primary" />
+                                <span>Description</span>
+                              </div>
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Amount
+                            <th className="table-header-cell">
+                              <div className="header-content">
+                                <CashStack size={12} className="me-1 text-primary" />
+                                <span>Amount</span>
+                              </div>
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Requested
+                            <th className="table-header-cell">
+                              <div className="header-content">
+                                <Person size={12} className="me-1 text-primary" />
+                                <span>Requested By</span>
+                              </div>
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Status
+                            <th className="table-header-cell">
+                              <div className="header-content">
+                                <Circle size={12} className="me-1 text-primary" />
+                                <span>Status</span>
+                              </div>
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
-                              Category
+                            <th className="table-header-cell">
+                              <div className="header-content">
+                                <Tag size={12} className="me-1 text-primary" />
+                                <span>Category</span>
+                              </div>
                             </th>
-                            <th
-                              className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small"
-                              style={{ minWidth: 120 }}
-                            >
-                              Approval Progress
+                            <th className="table-header-cell" style={{ minWidth: 200 }}>
+                              <div className="header-content">
+                                <BarChart size={12} className="me-1 text-primary" />
+                                <span>Approval Progress</span>
+                              </div>
                             </th>
                           </tr>
                         </thead>
-                        <tbody>
-                          {currentItems.map((expense) => {
+                        <tbody className="table-body-modern">
+                          {currentItems.map((expense, index) => {
                             const badge = statusBadge(expense.status);
-                            const completed = countCompletedSteps(
-                              expense.expenseSteps
-                            );
+                            const completed = countCompletedSteps(expense.expenseSteps);
                             const total = expense.expenseSteps.length;
-                            const progress = getProgressPercent(
-                              expense.expenseSteps
-                            );
+                            const progress = getProgressPercent(expense.expenseSteps);
+                            const isEven = index % 2 === 0;
 
                             return (
                               <tr
                                 key={expense.id}
-                                className={`cursor-pointer border-bottom ${
-                                  selectedExpenses.has(expense.id)
-                                    ? "table-active"
-                                    : ""
-                                }`}
+                                className={`table-row-modern ${selectedExpenses.has(expense.id) ? "row-selected" : ""
+                                  } ${isEven ? "row-even" : "row-odd"}`}
                               >
                                 <td
-                                  className="py-3 px-4"
+                                  className="table-cell"
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <Form.Check
                                     type="checkbox"
                                     checked={selectedExpenses.has(expense.id)}
-                                    onChange={() =>
-                                      handleSelectExpense(expense.id)
-                                    }
+                                    onChange={() => handleSelectExpense(expense.id)}
                                     id={`expense-${expense.id}`}
+                                    className="modern-checkbox"
                                   />
                                 </td>
                                 <td
-                                  className="py-3 px-4 fw-semibold text-primary"
+                                  className="table-cell cursor-pointer"
                                   onClick={() => handleViewDetails(expense)}
                                 >
-                                  <div className="d-flex align-items-center">
-                                    <Tag size={14} className="me-1" />
-                                    <span>{expense.id}</span>
-                                  </div>
-                                </td>
-                                <td
-                                  className="py-3 px-4"
-                                  onClick={() => handleViewDetails(expense)}
-                                >
-                                  <div className="d-flex flex-column small">
-                                    <div className="">
-                                      <DateTimeDisplay
-                                        date={expense.createdAt}
-                                      />
+                                  <div className="cell-content">
+                                    <div className="id-badge-modern">
+                                      <div className="id-badge-icon">
+                                        <Tag size={12} />
+                                      </div>
+                                      <span className="id-badge-text">#{expense.id}</span>
                                     </div>
                                   </div>
                                 </td>
                                 <td
-                                  className="py-3 px-4"
+                                  className="table-cell cursor-pointer"
                                   onClick={() => handleViewDetails(expense)}
                                 >
-                                  <div className="fw-medium">
-                                    {expense.payee}
-                                  </div>
-                                  <div className="text-muted small">
-                                    {expense.payeeNumber}
+                                  <div className="cell-content">
+                                    <div className="date-display">
+                                      <DateTimeDisplay date={expense.createdAt} />
+                                    </div>
                                   </div>
                                 </td>
                                 <td
-                                  className="py-3 px-4"
+                                  className="table-cell cursor-pointer"
                                   onClick={() => handleViewDetails(expense)}
                                 >
-                                  <div className="d-flex align-items-center">
-                                    <div>
+                                  <div className="cell-content">
+                                    <div className="payee-info">
+                                      <div className="payee-name fw-medium text-dark">
+                                        {expense.payee}
+                                      </div>
+                                      <div className="payee-number text-muted small">
+                                        {expense.payeeNumber}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td
+                                  className="table-cell cursor-pointer"
+                                  onClick={() => handleViewDetails(expense)}
+                                >
+                                  <div className="cell-content">
+                                    <div className="description-wrapper">
                                       <div
-                                        className="fw-medium text-truncate"
-                                        style={{ maxWidth: "300px" }}
+                                        className="description-text fw-medium"
                                         title={expense.description}
                                       >
                                         {expense.description}
                                       </div>
-                                      <div className="text-muted small">
-                                        {expense.region?.name}
+                                      {expense.region?.name && (
+                                        <div className="region-tag">
+                                          <span className="badge bg-light text-dark border">
+                                            {expense.region.name}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td
+                                  className="table-cell cursor-pointer"
+                                  onClick={() => handleViewDetails(expense)}
+                                >
+                                  <div className="cell-content">
+                                    <div className="amount-display">
+                                      <div className="primary-amount text-success fw-bold">
+                                        KES {expense?.amount?.toLocaleString() || "0.00"}
+                                      </div>
+                                      <div className="secondary-amount text-muted small">
+                                        {expense?.primaryAmount?.toLocaleString() || "0.00"}{" "}
+                                        {expense?.currency?.initials || "N/A"}
                                       </div>
                                     </div>
                                   </div>
                                 </td>
                                 <td
-                                  className="py-3 px-4"
+                                  className="table-cell cursor-pointer"
                                   onClick={() => handleViewDetails(expense)}
                                 >
-                                  <div className="d-flex flex-column">
-                                    <span className="text-success fw-bold">
-                                      {expense?.amount?.toLocaleString() ||
-                                        "0.00"}
-                                      KES
-                                    </span>
-                                    <span className="text-muted small">
-                                      {expense?.primaryAmount?.toLocaleString() ||
-                                        "0.00"}
-                                      {expense?.currency?.initials
-                                        ? `${
-                                            expense.currency.initials
-                                              ? `${expense.currency.initials}`
-                                              : ""
-                                          }`
-                                        : "N/A"}
-                                    </span>
+                                  <div className="cell-content">
+                                    <div className="requester-info">
+                                      <div className="requester-avatar">
+                                        <div className="avatar-circle">
+                                          {expense.user.firstName[0]}
+                                          {expense.user.lastName[0]}
+                                        </div>
+                                      </div>
+                                      <div className="requester-name fw-medium">
+                                        {expense.user.firstName} {expense.user.lastName}
+                                      </div>
+                                    </div>
                                   </div>
                                 </td>
                                 <td
-                                  className="py-3 px-4"
+                                  className="table-cell cursor-pointer"
                                   onClick={() => handleViewDetails(expense)}
                                 >
-                                  <div className="d-flex align-items-center small">
-                                    <div>
-                                      <span className="fw-medium">
-                                        {expense.user.firstName}{" "}
-                                        {expense.user.lastName}
+                                  <div className="cell-content">
+                                    <Badge
+                                      bg={badge.bg}
+                                      className="status-badge"
+                                    >
+                                      {badge.icon}
+                                      <span>{badge.label}</span>
+                                    </Badge>
+                                  </div>
+                                </td>
+                                <td
+                                  className="table-cell cursor-pointer"
+                                  onClick={() => handleViewDetails(expense)}
+                                >
+                                  <div className="cell-content">
+                                    <div className="category-badge">
+                                      <Tag className="me-1" size={11} />
+                                      <span title={expense.category?.name || "Uncategorized"}>
+                                        {expense.category?.name && expense.category.name.length > 10
+                                          ? `${expense.category.name.substring(0, 10)}...`
+                                          : expense.category?.name || "Uncategorized"}
                                       </span>
                                     </div>
                                   </div>
                                 </td>
-                                <td
-                                  className="py-3 px-4"
-                                  onClick={() => handleViewDetails(expense)}
-                                >
-                                  <Badge
-                                    bg={badge.bg}
-                                    className="d-inline-flex align-items-center py-2 px-3 rounded-pill fw-semibold bg-opacity-50 text-dark"
-                                  >
-                                    {badge.icon}
-                                    {badge.label}
-                                  </Badge>
-                                </td>
-
-                                <td
-                                  className="py-3 px-4"
-                                  onClick={() => handleViewDetails(expense)}
-                                >
-                                  <div className="d-flex align-items-center">
-                                    <Badge className="px-3 py-2 rounded-pill fw-semibold bg-light bg-opacity-50 text-dark border-0 border-success border-start border-3">
-                                      <Tag className="me-1" size={12} />
-                                      {expense.category?.name ||
-                                        "Uncategorized"}
-                                    </Badge>
-                                  </div>
-                                </td>
-                                <td className="py-3 px-4">
-                                  <div className="approval-timeline-compact p-2 rounded-3">
-                                    {expense.expenseSteps.length > 0 ? (
-                                      <div className="timeline-steps d-flex flex-column gap-1">
-                                        {/* Progress Header */}
-                                        <div className="d-flex align-items-center justify-content-between mb-2">
-                                          <span className="badge bg-secondary-subtle text-dark fw-semibold">
-                                            {completed}/{total} Steps
-                                          </span>
-                                          <span className="text-muted small">
-                                            {progress}% complete
-                                          </span>
-                                          {progress === 100 && (
-                                            <CheckCircleFill
-                                              size={16}
-                                              className="text-success"
-                                            />
-                                          )}
-                                        </div>
-
-                                        {/* Progress Bar */}
-                                        {(() => {
-                                          const hasRejectedStep =
-                                            expense.expenseSteps.some(
-                                              (step) =>
-                                                normalizeStatus(step.status) ===
-                                                "REJECTED"
+                                <td className="table-cell">
+                                  <div className="cell-content">
+                                    <div className="approval-progress-modern">
+                                      {expense.expenseSteps.length > 0 ? (
+                                        <>
+                                          <div className="progress-header">
+                                            <span className="progress-label">
+                                              {completed}/{total} Steps
+                                            </span>
+                                            <span className="progress-percentage">
+                                              {progress}%
+                                            </span>
+                                          </div>
+                                          <ProgressBar
+                                            now={progress}
+                                            variant={
+                                              expense.expenseSteps.some(
+                                                (step) => normalizeStatus(step.status) === "REJECTED"
+                                              )
+                                                ? "danger"
+                                                : progress === 100
+                                                  ? "success"
+                                                  : "info"
+                                            }
+                                            className="progress-bar-modern"
+                                            style={{ height: "6px" }}
+                                          />
+                                          {(() => {
+                                            const hasRejectedStep = expense.expenseSteps.some(
+                                              (step) => normalizeStatus(step.status) === "REJECTED"
                                             );
-                                          const allApproved =
-                                            expense.expenseSteps.length > 0 &&
-                                            expense.expenseSteps.every(
-                                              (step) =>
-                                                normalizeStatus(step.status) ===
-                                                "APPROVED"
-                                            );
-
-                                          let variant = "info";
-                                          if (hasRejectedStep)
-                                            variant = "danger";
-                                          else if (allApproved)
-                                            variant = "success";
-
-                                          return (
-                                            <ProgressBar
-                                              now={progress}
-                                              variant={variant}
-                                              animated={
-                                                !hasRejectedStep &&
-                                                !allApproved &&
-                                                normalizeStatus(
-                                                  expense.status
-                                                ) === "PENDING"
-                                              }
-                                              className="rounded-pill shadow-sm"
-                                              style={{ height: "6px" }}
-                                            />
-                                          );
-                                        })()}
-
-                                        {/* Current Step Info */}
-                                        {(() => {
-                                          // Check if any step has been rejected
-                                          const hasRejectedStep =
-                                            expense.expenseSteps.some(
-                                              (step) =>
-                                                normalizeStatus(step.status) ===
-                                                "REJECTED"
-                                            );
-
-                                          // If rejected, show rejection info instead of next approver
-                                          if (hasRejectedStep) {
-                                            const rejectedStep =
-                                              expense.expenseSteps.find(
-                                                (step) =>
-                                                  normalizeStatus(
-                                                    step.status
-                                                  ) === "REJECTED"
+                                            const allApproved =
+                                              expense.expenseSteps.length > 0 &&
+                                              expense.expenseSteps.every(
+                                                (step) => normalizeStatus(step.status) === "APPROVED"
                                               );
-                                            return (
-                                              <div className="current-step-info text-center mt-1 bg-danger bg-opacity-10 border-danger">
-                                                <small className="text-danger fw-medium">
-                                                  <XCircle
-                                                    size={10}
-                                                    className="me-1"
-                                                  />
-                                                  Rejected at:{" "}
-                                                  {rejectedStep?.hierarchyName ||
-                                                    rejectedStep?.role?.name ||
-                                                    "Unknown step"}
-                                                </small>
-                                              </div>
-                                            );
-                                          }
 
-                                          // If not rejected, find current pending step
-                                          const currentStep =
-                                            expense.expenseSteps.find(
-                                              (step) =>
-                                                normalizeStatus(step.status) ===
-                                                "PENDING"
-                                            );
-
-                                          // If all steps are completed (approved)
-                                          const allApproved =
-                                            expense.expenseSteps.length > 0 &&
-                                            expense.expenseSteps.every(
-                                              (step) =>
-                                                normalizeStatus(step.status) ===
-                                                "APPROVED"
-                                            );
-
-                                          if (allApproved) {
-                                            return (
-                                              <div className="current-step-info text-center mt-1 bg-success bg-opacity-10 border-success">
-                                                <small className="text-success fw-medium">
-                                                  <CheckCircle
-                                                    size={10}
-                                                    className="me-1"
-                                                  />
-                                                  Fully Approved
-                                                </small>
-                                              </div>
-                                            );
-                                          }
-
-                                          return null;
-                                        })()}
-                                      </div>
-                                    ) : (
-                                      <div className="text-center text-muted py-2">
-                                        <Circle size={16} className="mb-1" />
-                                        <div className="small">
-                                          No workflow steps
+                                            if (hasRejectedStep) {
+                                              const rejectedStep = expense.expenseSteps.find(
+                                                (step) => normalizeStatus(step.status) === "REJECTED"
+                                              );
+                                              return (
+                                                <div className="progress-status status-rejected">
+                                                  <XCircle size={10} className="me-1" />
+                                                  Rejected
+                                                </div>
+                                              );
+                                            } else if (allApproved) {
+                                              return (
+                                                <div className="progress-status status-approved">
+                                                  <CheckCircle size={10} className="me-1" />
+                                                  Completed
+                                                </div>
+                                              );
+                                            } else {
+                                              return (
+                                                <div className="progress-status status-pending">
+                                                  <Clock size={10} className="me-1" />
+                                                  In Progress
+                                                </div>
+                                              );
+                                            }
+                                          })()}
+                                        </>
+                                      ) : (
+                                        <div className="no-workflow">
+                                          <Circle size={14} className="mb-1 text-muted" />
+                                          <div className="small text-muted">No workflow</div>
                                         </div>
-                                      </div>
-                                    )}
+                                      )}
+                                    </div>
                                   </div>
                                 </td>
                               </tr>
@@ -1872,144 +2106,129 @@ export default function FinanceDashboard() {
                           })}
                         </tbody>
                       </Table>
+                    </div>
 
-                      {/* Pagination Controls */}
-                      {totalPages > 1 && (
-                        <div className="d-flex justify-content-between align-items-center px-3 py-3 border-top">
-                          <div className="text-muted small">
-                            Showing {indexOfFirstItem + 1}-
-                            {Math.min(indexOfLastItem, filteredExpenses.length)}{" "}
-                            of {filteredExpenses.length} expenses
-                          </div>
-                          <div>
-                            <nav>
-                              <ul className="pagination pagination-sm mb-0">
-                                <li
-                                  className={`page-item ${
-                                    currentPage === 1 ? "disabled" : ""
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                      <div className="d-flex justify-content-between align-items-center px-3 py-3 border-top">
+                        <div className="text-muted small">
+                          Showing {indexOfFirstItem + 1}-
+                          {Math.min(indexOfLastItem, filteredExpenses.length)}{" "}
+                          of {filteredExpenses.length} expenses
+                        </div>
+                        <div>
+                          <nav>
+                            <ul className="pagination pagination-sm mb-0">
+                              <li
+                                className={`page-item ${currentPage === 1 ? "disabled" : ""
                                   }`}
+                              >
+                                <button
+                                  className="page-link"
+                                  onClick={() =>
+                                    handlePageChange(currentPage - 1)
+                                  }
+                                  disabled={currentPage === 1}
                                 >
+                                  &laquo; Previous
+                                </button>
+                              </li>
+
+                              {/* First page */}
+                              {currentPage > 3 && (
+                                <li className="page-item">
                                   <button
                                     className="page-link"
-                                    onClick={() =>
-                                      handlePageChange(currentPage - 1)
-                                    }
-                                    disabled={currentPage === 1}
+                                    onClick={() => handlePageChange(1)}
                                   >
-                                    &laquo; Previous
+                                    1
                                   </button>
                                 </li>
+                              )}
 
-                                {/* First page */}
-                                {currentPage > 3 && (
-                                  <li className="page-item">
-                                    <button
-                                      className="page-link"
-                                      onClick={() => handlePageChange(1)}
-                                    >
-                                      1
-                                    </button>
-                                  </li>
-                                )}
+                              {/* Ellipsis if needed */}
+                              {currentPage > 4 && (
+                                <li className="page-item disabled">
+                                  <span className="page-link">...</span>
+                                </li>
+                              )}
 
-                                {/* Ellipsis if needed */}
-                                {currentPage > 4 && (
+                              {/* Middle pages */}
+                              {Array.from(
+                                { length: Math.min(3, totalPages) },
+                                (_, i) => {
+                                  let pageNum;
+                                  if (currentPage <= 2) {
+                                    pageNum = i + 1;
+                                  } else if (currentPage >= totalPages - 1) {
+                                    pageNum = totalPages - 2 + i;
+                                  } else {
+                                    pageNum = currentPage - 1 + i;
+                                  }
+
+                                  if (pageNum > 0 && pageNum <= totalPages) {
+                                    return (
+                                      <li
+                                        key={pageNum}
+                                        className={`page-item ${currentPage === pageNum
+                                          ? "active"
+                                          : ""
+                                          }`}
+                                      >
+                                        <button
+                                          className="page-link"
+                                          onClick={() =>
+                                            handlePageChange(pageNum)
+                                          }
+                                        >
+                                          {pageNum}
+                                        </button>
+                                      </li>
+                                    );
+                                  }
+                                  return null;
+                                }
+                              )}
+
+                              {/* Ellipsis if needed */}
+                              {currentPage < totalPages - 2 &&
+                                totalPages > 3 && (
                                   <li className="page-item disabled">
                                     <span className="page-link">...</span>
                                   </li>
                                 )}
 
-                                {/* Middle pages */}
-                                {Array.from(
-                                  { length: Math.min(3, totalPages) },
-                                  (_, i) => {
-                                    let pageNum;
-                                    if (currentPage <= 2) {
-                                      pageNum = i + 1;
-                                    } else if (currentPage >= totalPages - 1) {
-                                      pageNum = totalPages - 2 + i;
-                                    } else {
-                                      pageNum = currentPage - 1 + i;
-                                    }
-
-                                    if (pageNum > 0 && pageNum <= totalPages) {
-                                      return (
-                                        <li
-                                          key={pageNum}
-                                          className={`page-item ${
-                                            currentPage === pageNum
-                                              ? "active"
-                                              : ""
-                                          }`}
-                                        >
-                                          <button
-                                            className="page-link"
-                                            onClick={() =>
-                                              handlePageChange(pageNum)
-                                            }
-                                          >
-                                            {pageNum}
-                                          </button>
-                                        </li>
-                                      );
-                                    }
-                                    return null;
-                                  }
+                              {/* Last page if not already shown */}
+                              {currentPage < totalPages - 1 &&
+                                totalPages > 1 && (
+                                  <li className="page-item">
+                                    <button
+                                      className="page-link"
+                                      onClick={() =>
+                                        handlePageChange(totalPages)
+                                      }
+                                    >
+                                      {totalPages}
+                                    </button>
+                                  </li>
                                 )}
 
-                                {/* Ellipsis if needed */}
-                                {currentPage < totalPages - 2 &&
-                                  totalPages > 3 && (
-                                    <li className="page-item disabled">
-                                      <span className="page-link">...</span>
-                                    </li>
-                                  )}
-
-                                {/* Last page if not already shown */}
-                                {currentPage < totalPages - 1 &&
-                                  totalPages > 1 && (
-                                    <li className="page-item">
-                                      <button
-                                        className="page-link"
-                                        onClick={() =>
-                                          handlePageChange(totalPages)
-                                        }
-                                      >
-                                        {totalPages}
-                                      </button>
-                                    </li>
-                                  )}
-
-                                <li
-                                  className={`page-item ${
-                                    currentPage === totalPages ? "disabled" : ""
+                              <li
+                                className={`page-item ${currentPage === totalPages ? "disabled" : ""
                                   }`}
+                              >
+                                <button
+                                  className="page-link"
+                                  onClick={() =>
+                                    handlePageChange(currentPage + 1)
+                                  }
+                                  disabled={currentPage === totalPages}
                                 >
-                                  <button
-                                    className="page-link"
-                                    onClick={() =>
-                                      handlePageChange(currentPage + 1)
-                                    }
-                                    disabled={currentPage === totalPages}
-                                  >
-                                    Next &raquo;
-                                  </button>
-                                </li>
-                              </ul>
-                            </nav>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {filteredExpenses.length === 0 && (
-                      <div className="text-center py-5">
-                        <div className="py-4">
-                          <FileText size={48} className="text-muted mb-3" />
-                          <h5 className="text-muted">No transactions found</h5>
-                          <p className="text-muted">
-                            Try adjusting your filters or add a new expense
-                          </p>
+                                  Next &raquo;
+                                </button>
+                              </li>
+                            </ul>
+                          </nav>
                         </div>
                       </div>
                     )}
@@ -2026,160 +2245,204 @@ export default function FinanceDashboard() {
           onHide={() => setShowModal(false)}
           size="xl"
           className="expense-modal"
+          centered
         >
           {selectedExpense && (
             <>
               <Modal.Header
                 closeButton
-                className="border-0 pb-0 pt-4 px-4"
-                style={{ backgroundColor: "#f8f9fa" }}
+                className="border-0 pb-2 pt-4 px-4"
+                style={{
+                  background: '#6b7280',
+                  borderRadius: '0.5rem 0.5rem 0 0'
+                }}
               >
-                <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
-                  <div
-                    className="icon-wrapper bg-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
-                    style={{ width: "48px", height: "48px" }}
-                  >
-                    <Eye size={24} className="text-white" />
-                  </div>
-                  <div>
-                    Expense Details
-                    <div className="text-muted fw-normal small">
-                      Reference ID: #{selectedExpense.id}
+                <div className="w-100">
+                  <div className="d-flex align-items-center mb-3">
+                    <div
+                      className="icon-wrapper bg-white bg-opacity-25 me-3 rounded-circle d-flex align-items-center justify-content-center"
+                      style={{ width: "56px", height: "56px", boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
+                    >
+                      <Eye size={28} className="text-white" />
+                    </div>
+                    <div className="text-white">
+                      <h5 className="fw-bold mb-1">Expense Details</h5>
+                      <div className="d-flex align-items-center gap-2">
+                        <Badge bg="light" text="dark" className="px-3 py-2 rounded-pill">
+                          <Tag size={12} className="me-1" />
+                          ID: #{selectedExpense.id}
+                        </Badge>
+                        <Badge
+                          bg={statusBadge(selectedExpense.status).bg}
+                          className="px-3 py-2 rounded-pill d-flex align-items-center"
+                        >
+                          {statusBadge(selectedExpense.status).icon}
+                          {statusBadge(selectedExpense.status).label}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                </h5>
+                </div>
               </Modal.Header>
 
-              <Modal.Body className="px-4 py-4">
+              <Modal.Body className="px-4 py-4" style={{ background: '#f8f9fa' }}>
                 {/* Header with description and amount */}
-                <div className="d-flex justify-content-between align-items-start mb-4 p-4 bg-primary bg-opacity-10 border-0 rounded-3">
-                  <div className="flex-grow-1 me-3">
-                    <h6 className="mb-1 fw-bold text-dark">
-                      {selectedExpense.description}
-                    </h6>
-                    <small className="text-muted">
-                      Created on{" "}
-                      <DateTimeDisplay date={selectedExpense.createdAt} />
-                    </small>
-                  </div>
-                  <div className="text-end">
-                    <h5 className="mb-0 text-success fw-bold">
-                      {selectedExpense.amount.toLocaleString()} KES
-                    </h5>
-                    <small className="text-muted">Base currency</small>
-                  </div>
+                <div className="mb-4 p-4 bg-white border-0 rounded-4 shadow-sm">
+                  <Row className="align-items-center">
+                    <Col md={8}>
+                      <div className="d-flex align-items-start">
+                        <div className="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                          <FileText size={24} className="text-primary" />
+                        </div>
+                        <div>
+                          <h6 className="mb-2 fw-bold text-dark fs-5">
+                            {selectedExpense.description}
+                          </h6>
+                          <div className="d-flex align-items-center gap-3 text-muted small">
+                            <span className="d-flex align-items-center">
+                              <Clock size={14} className="me-1" />
+                              Created: <DateTimeDisplay date={selectedExpense.createdAt} />
+                            </span>
+                            <span className="d-flex align-items-center">
+                              <Person size={14} className="me-1" />
+                              {selectedExpense.user.firstName} {selectedExpense.user.lastName}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </Col>
+                    <Col md={4} className="text-end">
+                      <div className="bg-success bg-opacity-10 p-3 rounded-3 d-inline-block">
+                        <div className="text-muted small mb-1">Total Amount</div>
+                        <h4 className="mb-0 text-success fw-bold">
+                          KES {selectedExpense.amount.toLocaleString()}
+                        </h4>
+                        <small className="text-muted">
+                          {selectedExpense.primaryAmount?.toLocaleString()} {selectedExpense.currency?.initials || 'N/A'}
+                        </small>
+                      </div>
+                    </Col>
+                  </Row>
                 </div>
 
                 <Row className="gy-4">
                   {/* Expense Information */}
                   <Col md={6}>
-                    <Card className="border shadow-sm h-100">
-                      <Card.Body>
+                    <Card className="border-0 shadow-sm h-100" style={{ borderRadius: '1rem' }}>
+                      <Card.Body className="p-4">
                         {/* Section Header */}
-                        <div className="d-flex align-items-center mb-3 bg-primary border-start border-primary border-3 bg-opacity-10 p-3 rounded-3">
-                          <div className="bg-primary bg-opacity-10 p-2 rounded me-2">
-                            <FileText size={18} className="text-primary" />
+                        <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                          <div className="bg-primary bg-opacity-10 p-2 rounded-3 me-3">
+                            <FileText size={20} className="text-primary" />
                           </div>
-                          <h6 className="mb-0 fw-semibold">
-                            Expense Information
-                          </h6>
+                          <h6 className="mb-0 fw-bold text-dark">Expense Information</h6>
                         </div>
 
-                        <div className="detail-list small">
+                        <div className="detail-list">
                           {/* Submission Details */}
-                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3">
-                            <h6 className="text-muted fw-semibold small mb-2">
-                              Submission
+                          <div className="mb-4 p-3 bg-light rounded-3">
+                            <h6 className="text-primary fw-semibold mb-3 small d-flex align-items-center">
+                              <div className="bg-primary bg-opacity-10 p-1 rounded me-2">
+                                <Calendar size={14} className="text-primary" />
+                              </div>
+                              Submission Details
                             </h6>
-                            <div className="detail-item">
-                              <span className="detail-label">Submitted On</span>
-                              <span className="detail-value">
-                                <DateTimeDisplay
-                                  date={selectedExpense.createdAt}
-                                />
+                            <div className="detail-item mb-2">
+                              <span className="detail-label text-muted small">Submitted On</span>
+                              <span className="detail-value fw-semibold">
+                                <DateTimeDisplay date={selectedExpense.createdAt} />
                               </span>
                             </div>
-                            <div className="detail-item">
-                              <span className="detail-label">Last Updated</span>
-                              <span className="detail-value">
+                            <div className="detail-item mb-2">
+                              <span className="detail-label text-muted small">Last Updated</span>
+                              <span className="detail-value fw-semibold">
                                 <DateTimeDisplay
                                   date={selectedExpense.updatedAt}
                                   isHighlighted={
-                                    selectedExpense.updatedAt !==
-                                    selectedExpense.createdAt
+                                    selectedExpense.updatedAt !== selectedExpense.createdAt
                                   }
                                 />
                               </span>
                             </div>
                             <div className="detail-item">
-                              <span className="detail-label">
-                                Reference Number
-                              </span>
+                              <span className="detail-label text-muted small">Reference Number</span>
                               <span className="detail-value">
                                 {selectedExpense.referenceNumber ? (
-                                  <code className="bg-light px-2 py-1 rounded">
+                                  <Badge bg="dark" className="px-2 py-1 rounded-pill font-monospace">
                                     {selectedExpense.referenceNumber}
-                                  </code>
+                                  </Badge>
                                 ) : (
-                                  "N/A"
+                                  <span className="text-muted">N/A</span>
                                 )}
                               </span>
                             </div>
                           </div>
 
                           {/* Classification */}
-                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3">
-                            <h6 className="text-muted fw-semibold small mb-2">
+                          <div className="mb-4 p-3 bg-light rounded-3">
+                            <h6 className="text-success fw-semibold mb-3 small d-flex align-items-center">
+                              <div className="bg-success bg-opacity-10 p-1 rounded me-2">
+                                <Tag size={14} className="text-success" />
+                              </div>
                               Classification
                             </h6>
-                            <div className="detail-item">
-                              <span className="detail-label">Category</span>
+                            <div className="detail-item mb-2">
+                              <span className="detail-label text-muted small">Category</span>
                               <span className="detail-value">
-                                {selectedExpense.category?.name || "N/A"}
+                                <Badge bg="success" className="bg-opacity-10 text-success px-3 py-2 rounded-pill">
+                                  {selectedExpense.category?.name || "N/A"}
+                                </Badge>
+                              </span>
+                            </div>
+                            <div className="detail-item mb-2">
+                              <span className="detail-label text-muted small">Department</span>
+                              <span className="detail-value">
+                                <Badge bg="info" className="bg-opacity-10 text-info px-3 py-2 rounded-pill">
+                                  {selectedExpense.department?.name || "N/A"}
+                                </Badge>
                               </span>
                             </div>
                             <div className="detail-item">
-                              <span className="detail-label">Department</span>
+                              <span className="detail-label text-muted small">Region</span>
                               <span className="detail-value">
-                                {selectedExpense.department?.name || "N/A"}
-                              </span>
-                            </div>
-                            <div className="detail-item">
-                              <span className="detail-label">Region</span>
-                              <span className="detail-value">
-                                {selectedExpense.region?.name || "N/A"}
+                                <Badge bg="warning" className="bg-opacity-10 text-warning px-3 py-2 rounded-pill">
+                                  {selectedExpense.region?.name || "N/A"}
+                                </Badge>
                               </span>
                             </div>
                           </div>
 
                           {/* Payment */}
-                          <div className="bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3">
-                            <h6 className="text-muted fw-semibold small mb-2">
-                              Payment
+                          <div className="p-3 bg-light rounded-3">
+                            <h6 className="text-warning fw-semibold mb-3 small d-flex align-items-center">
+                              <div className="bg-warning bg-opacity-10 p-1 rounded me-2">
+                                <CashStack size={14} className="text-warning" />
+                              </div>
+                              Payment Details
                             </h6>
-                            <div className="detail-item">
-                              <span className="detail-label">
-                                Payment Method
-                              </span>
-                              <span className="detail-value">
+                            <div className="detail-item mb-2">
+                              <span className="detail-label text-muted small">Payment Method</span>
+                              <span className="detail-value fw-semibold">
                                 {selectedExpense.paymentMethod?.name || "N/A"}
                               </span>
                             </div>
-                            <div className="detail-item">
-                              <span className="detail-label">Payee ID</span>
-                              <span className="detail-value">
+                            <div className="detail-item mb-2">
+                              <span className="detail-label text-muted small">Payee</span>
+                              <span className="detail-value fw-semibold">
+                                {selectedExpense.payee || "N/A"}
+                              </span>
+                            </div>
+                            <div className="detail-item mb-2">
+                              <span className="detail-label text-muted small">Payee ID</span>
+                              <span className="detail-value fw-semibold">
                                 {selectedExpense.payeeId || "N/A"}
                               </span>
                             </div>
                             <div className="detail-item">
-                              <span className="detail-label">
-                                Exchange Rate
-                              </span>
-                              <span className="detail-value">
+                              <span className="detail-label text-muted small">Exchange Rate</span>
+                              <span className="detail-value fw-semibold">
                                 {selectedExpense.exchangeRateUsed
-                                  ? Number(
-                                      selectedExpense.exchangeRateUsed
-                                    ).toFixed(2)
+                                  ? Number(selectedExpense.exchangeRateUsed).toFixed(4)
                                   : "N/A"}
                               </span>
                             </div>
@@ -2191,41 +2454,51 @@ export default function FinanceDashboard() {
 
                   {/* Approval Details */}
                   <Col md={6}>
-                    <Card className="border shadow-sm h-100">
-                      <Card.Body>
-                        <div className="d-flex align-items-center mb-3 bg-success border-start border-success border-3 bg-opacity-10 p-3 rounded-3">
-                          <div className="bg-success bg-opacity-10 p-2 rounded me-2">
-                            <CheckCircle size={18} className="text-success" />
+                    <Card className="border-0 shadow-sm h-100" style={{ borderRadius: '1rem' }}>
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                          <div className="bg-success bg-opacity-10 p-2 rounded-3 me-3">
+                            <CheckCircle size={20} className="text-success" />
                           </div>
-                          <h6 className="mb-0 fw-semibold">Approval Process</h6>
+                          <div className="flex-grow-1">
+                            <h6 className="mb-0 fw-bold text-dark">Approval Process</h6>
+                            <small className="text-muted">
+                              {selectedExpense.expenseSteps.length} step{selectedExpense.expenseSteps.length !== 1 ? 's' : ''}
+                            </small>
+                          </div>
+                          {selectedExpense.expenseSteps.length > 0 && (
+                            <div className="text-end">
+                              <div className="progress" style={{ width: '100px', height: '8px' }}>
+                                <div
+                                  className={`progress-bar ${selectedExpense.expenseSteps.some(
+                                    (step) => normalizeStatus(step.status) === "REJECTED"
+                                  ) ? 'bg-danger' : 'bg-success'
+                                    }`}
+                                  style={{ width: `${getProgressPercent(selectedExpense.expenseSteps)}%` }}
+                                />
+                              </div>
+                              <small className="text-muted">
+                                {getProgressPercent(selectedExpense.expenseSteps)}% Complete
+                              </small>
+                            </div>
+                          )}
                         </div>
 
                         {selectedExpense.expenseSteps.length > 0 ? (
-                          <div className="approval-timeline">
-                            {selectedExpense.expenseSteps.map((s) => {
+                          <div className="approval-timeline-modern">
+                            {selectedExpense.expenseSteps.map((s, index) => {
                               const statusText = normalizeStatus(s.status);
+                              const isLast = index === selectedExpense.expenseSteps.length - 1;
 
-                              // Determine approver name based on status and nextApprovers
                               let name = "Pending approval";
-                              if (
-                                s.approver?.firstName ||
-                                s.approver?.lastName
-                              ) {
-                                // If already approved/rejected, show who did it
-                                name = `${s.approver?.firstName ?? ""} ${
-                                  s.approver?.lastName ?? ""
-                                }`.trim();
-                              } else if (
-                                s.nextApprovers &&
-                                s.nextApprovers.length > 0
-                              ) {
-                                // If pending, show who can approve
+                              if (s.approver?.firstName || s.approver?.lastName) {
+                                name = `${s.approver?.firstName ?? ""} ${s.approver?.lastName ?? ""}`.trim();
+                              } else if (s.nextApprovers && s.nextApprovers.length > 0) {
                                 name = s.nextApprovers
                                   .map((u) => `${u.firstName} ${u.lastName}`)
                                   .join(", ");
                               }
 
-                              // Use hierarchy name if available
                               const role =
                                 s.hierarchyName ??
                                 s.role?.name ??
@@ -2233,71 +2506,76 @@ export default function FinanceDashboard() {
                                 "No role";
 
                               return (
-                                <div className="timeline-item" key={s.id}>
-                                  <div className="timeline-marker">
-                                    <div
-                                      className={`status-indicator ${statusText.toLowerCase()}`}
-                                    ></div>
+                                <div className={`timeline-item-modern ${isLast ? 'last' : ''}`} key={s.id}>
+                                  <div className="timeline-marker-modern">
+                                    <div className={`status-dot ${statusText.toLowerCase()}`}>
+                                      {statusText === "APPROVED" && <CheckCircle size={16} className="text-white" />}
+                                      {statusText === "REJECTED" && <XCircle size={16} className="text-white" />}
+                                      {statusText === "PENDING" && <Clock size={16} className="text-white" />}
+                                      {statusText === "NOT_STARTED" && <Circle size={16} className="text-white" />}
+                                    </div>
+                                    {!isLast && <div className="timeline-line"></div>}
                                   </div>
-                                  <div className="timeline-content">
-                                    <div className="d-flex justify-content-between align-items-start mb-1">
-                                      <div>
-                                        <strong className="d-block">
-                                          Step {s.order}
-                                          {s.isOptional && (
-                                            <span className="text-muted">
-                                              {" "}
-                                              (Optional)
-                                            </span>
-                                          )}
-                                        </strong>
-                                        <small className="text-muted">
-                                          {role}
+                                  <div className="timeline-content-modern">
+                                    <div className="p-3 bg-light rounded-3 mb-3">
+                                      <div className="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                          <strong className="d-block text-dark">
+                                            Step {s.order}
+                                            {s.isOptional && (
+                                              <Badge bg="secondary" className="ms-2 small">Optional</Badge>
+                                            )}
+                                          </strong>
+                                          <small className="text-primary fw-semibold">{role}</small>
+                                        </div>
+                                        <Badge
+                                          bg={
+                                            statusText === "APPROVED"
+                                              ? "success"
+                                              : statusText === "REJECTED"
+                                                ? "danger"
+                                                : statusText === "PENDING"
+                                                  ? "warning"
+                                                  : "secondary"
+                                          }
+                                          className="text-uppercase px-3 py-2 rounded-pill"
+                                        >
+                                          {statusText === "APPROVED" && <CheckCircle size={12} className="me-1" />}
+                                          {statusText === "REJECTED" && <XCircle size={12} className="me-1" />}
+                                          {statusText === "PENDING" && <Clock size={12} className="me-1" />}
+                                          {statusText}
+                                        </Badge>
+                                      </div>
+
+                                      <div className="approver-info bg-white p-2 rounded-2">
+                                        <small className="text-muted d-flex align-items-center">
+                                          <Person className="me-2" size={14} />
+                                          <span className="fw-semibold text-dark">{name}</span>
                                         </small>
                                       </div>
-                                      <Badge
-                                        bg={
-                                          statusText === "APPROVED"
-                                            ? "success"
-                                            : statusText === "REJECTED"
-                                            ? "danger"
-                                            : statusText === "PENDING"
-                                            ? "warning"
-                                            : "secondary"
-                                        }
-                                        className="text-uppercase py-2"
-                                      >
-                                        {statusText}
-                                      </Badge>
-                                    </div>
 
-                                    <div className="approver-info">
-                                      <small className="text-muted">
-                                        <Person className="me-1" size={12} />
-                                        {name}
-                                      </small>
+                                      {s.comments && (
+                                        <div className="comments-box mt-2 p-3 bg-white rounded-3 border-start border-primary border-3">
+                                          <small className="text-muted d-flex align-items-start">
+                                            <ChatLeftText className="me-2 mt-1 flex-shrink-0" size={14} />
+                                            <span className="text-dark">{s.comments}</span>
+                                          </small>
+                                        </div>
+                                      )}
                                     </div>
-
-                                    {s.comments && (
-                                      <div className="comments-box mt-2 p-2 bg-light rounded">
-                                        <small className="text-muted">
-                                          <ChatLeftText
-                                            className="me-1"
-                                            size={12}
-                                          />
-                                          {s.comments}
-                                        </small>
-                                      </div>
-                                    )}
                                   </div>
                                 </div>
                               );
                             })}
                           </div>
                         ) : (
-                          <div className="text-center py-4 text-muted">
-                            <FileEarmarkX size={32} className="mb-2" />
-                            <p className="mb-0">No approval steps found</p>
+                          <div className="text-center py-5 text-muted">
+                            <div className="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                              style={{ width: '80px', height: '80px' }}>
+                              <FileEarmarkX size={40} className="text-muted" />
+                            </div>
+                            <p className="mb-0 fw-semibold">No approval steps found</p>
+                            <small>This expense doesn't have an approval workflow</small>
                           </div>
                         )}
                       </Card.Body>
@@ -2307,24 +2585,46 @@ export default function FinanceDashboard() {
               </Modal.Body>
 
               <Modal.Footer
-                className="border-0 pt-0 px-4 pb-4"
-                style={{ backgroundColor: "#f8f9fa" }}
+                className="border-0 pt-3 px-4 pb-4"
+                style={{ background: '#f8f9fa', borderRadius: '0 0 0.5rem 0.5rem' }}
               >
                 <Button
                   size="sm"
-                  variant="outline-secondary"
+                  variant="light"
                   onClick={() => setShowModal(false)}
-                  className="rounded-pill px-4 py-2 fw-semibold"
+                  className="rounded-pill px-4 py-2 fw-semibold border"
+                  style={{ transition: 'all 0.3s ease' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#e9ecef';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#f8f9fa';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
                 >
                   Close
                 </Button>
 
                 <Button
                   href={`/data/approval-details/${selectedExpense.id}`}
-                  className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 shadow-sm rounded-pill px-4 py-2 fw-semibold"
+                  className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 shadow rounded-pill px-4 py-2 fw-semibold"
+                  style={{
+                    background: '#0d6efd',
+                    border: 'none',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(13, 110, 253, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                  }}
                 >
                   <Eye size={16} className="mb-0" />
-                  View Approval Details
+                  View Full Details
                 </Button>
               </Modal.Footer>
             </>
@@ -2489,7 +2789,7 @@ export default function FinanceDashboard() {
           .sparkline-bar:hover { transform: translateY(-6px); opacity: .95; }
 
           .metrics-grid {
-            display:grid;
+            display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 0.75rem;
           }
@@ -2513,9 +2813,20 @@ export default function FinanceDashboard() {
             gap: 0.75rem;
           }
           .category-column {
+            padding: 1rem;
+            background: rgba(255,255,255,0.98);
+            border: 1px solid rgba(0,0,0,0.04);
             min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 420px;
+            overflow: auto;
           }
-
+          .category-column h6 { margin-bottom: 0.75rem; }
+          .category-column .progress { border-radius: 6px; overflow: hidden; }
+          .category-column .progress-bar { transition: width 0.7s ease; }
+          .category-column .status-overview .badge { font-size: 0.75rem; }
           @media (max-width: 1199px) {
             .analytics-grid-three { grid-template-columns: 1fr 1fr; }
             .category-column { grid-column: span 2; }
@@ -2526,6 +2837,528 @@ export default function FinanceDashboard() {
           }
 
           /* end analytics three-column adjustments */
+
+          /* Modern Table Improvements */
+          .modern-table-wrapper {
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+          }
+
+          .table-header-modern {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 2px solid #dee2e6;
+          }
+
+          .table-header-cell {
+            padding: 1rem 1.25rem;
+            border: none;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #495057;
+            white-space: nowrap;
+          }
+
+          .header-content {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+          }
+
+          .table-body-modern {
+            background: white;
+          }
+
+          .table-row-modern {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f1f3f5;
+          }
+
+          .table-row-modern.row-even {
+            background: #ffffff;
+          }
+
+          .table-row-modern.row-odd {
+            background: #fafbfc;
+          }
+
+          .table-row-modern:hover {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+          }
+
+          .table-row-modern.row-selected {
+            background: linear-gradient(135deg, #e7f3ff 0%, #cfe7ff 100%);
+            border-left: 3px solid #0d6efd;
+          }
+
+          .table-cell {
+            padding: 1rem 1.25rem;
+            border: none;
+            vertical-align: middle;
+          }
+
+          .cell-content {
+            display: flex;
+            align-items: center;
+            min-height: 2rem;
+          }
+
+          /* ID Badge */
+          .id-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.75rem;
+            background: #e7f3ff;
+            border-radius: 0.5rem;
+            border: 1px solid #0d6efd;
+            transition: all 0.2s ease;
+          }
+
+          .id-badge:hover {
+            background: #0d6efd;
+            color: white;
+            transform: scale(1.05);
+          }
+
+          /* Modern ID Badge */
+          .id-badge-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.875rem;
+            background: transparent;
+            border-radius: 8px;
+            border: 1.5px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+          }
+
+          .id-badge-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 110, 253, 0.05);
+            transition: left 0.5s ease;
+          }
+
+          .id-badge-modern:hover::before {
+            left: 100%;
+          }
+
+          .id-badge-modern:hover {
+            background: rgba(13, 110, 253, 0.1);
+            border-color: #b8d4fe;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(13, 110, 253, 0.15);
+          }
+
+          .id-badge-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #0d6efd;
+            color: white;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+          }
+
+          .id-badge-modern:hover .id-badge-icon {
+            background: white;
+            color: #0d6efd;
+            transform: rotate(360deg);
+          }
+
+          .id-badge-text {
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: #0d6efd;
+            letter-spacing: 0.3px;
+            transition: color 0.3s ease;
+          }
+
+          .id-badge-modern:hover .id-badge-text {
+            color: white;
+          }
+
+          /* Date Display */
+          .date-display {
+            font-size: 0.875rem;
+            color: #6c757d;
+          }
+
+          /* Payee Info */
+          .payee-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+          }
+
+          .payee-name {
+            font-size: 0.9rem;
+            line-height: 1.3;
+          }
+
+          .payee-number {
+            font-size: 0.8rem;
+            opacity: 0.8;
+          }
+
+          /* Description */
+          .description-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            max-width: 300px;
+          }
+
+          .description-text {
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #212529;
+          }
+
+          .region-tag .badge {
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+          }
+
+          /* Amount Display */
+          .amount-display {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+          }
+
+          .primary-amount {
+            font-size: 1rem;
+            font-weight: 700;
+          }
+
+          .secondary-amount {
+            font-size: 0.75rem;
+            opacity: 0.7;
+          }
+
+          /* Requester Info */
+          .requester-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+          }
+
+          .avatar-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            transition: all 0.2s ease;
+          }
+
+          .table-row-modern:hover .avatar-circle {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+          }
+
+          .requester-name {
+            font-size: 0.9rem;
+          }
+
+          /* Status Badge */
+          .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
+          }
+
+          .status-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+          }
+
+          /* Category Badge */
+          .category-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 0.9rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 0.75rem;
+            border-left: 3px solid #198754;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #212529;
+            transition: all 0.2s ease;
+          }
+
+          .category-badge:hover {
+            background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+            color: white;
+            transform: scale(1.05);
+          }
+
+          /* Approval Progress Modern */
+          .approval-progress-modern {
+            background: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 0.6rem;
+            border: 1px solid #e9ecef;
+            min-width: 180px;
+          }
+
+          .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+          }
+
+          .progress-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6c757d;
+          }
+
+          .progress-percentage {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #0d6efd;
+          }
+
+          .progress-bar-modern {
+            border-radius: 999px;
+            background: #e9ecef;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+          }
+
+          .progress-status {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            margin-top: 0.25rem;
+          }
+
+          .status-approved {
+            background: #d1e7dd;
+            color: #0f5132;
+          }
+
+          .status-rejected {
+            background: #f8d7da;
+            color: #842029;
+          }
+
+          .status-pending {
+            background: #fff3cd;
+            color: #997404;
+          }
+
+          .no-workflow {
+            text-align: center;
+            padding: 0.5rem;
+            color: #adb5bd;
+          }
+
+          /* Modern Checkbox */
+          :global(.modern-checkbox input[type="checkbox"]) {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            border-radius: 0.35rem;
+            border: 2px solid #dee2e6;
+            transition: all 0.2s ease;
+          }
+
+          :global(.modern-checkbox input[type="checkbox"]:checked) {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+          }
+
+          :global(.modern-checkbox input[type="checkbox"]:hover) {
+            border-color: #0d6efd;
+            transform: scale(1.1);
+          }
+
+          /* Cursor Pointer */
+          .cursor-pointer {
+            cursor: pointer;
+          }
+
+          /* Modal Timeline Styles */
+          .approval-timeline-modern {
+            position: relative;
+            padding-left: 0;
+          }
+
+          .timeline-item-modern {
+            display: flex;
+            gap: 1rem;
+            position: relative;
+            margin-bottom: 0;
+          }
+
+          .timeline-item-modern.last {
+            margin-bottom: 0;
+          }
+
+          .timeline-marker-modern {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+          }
+
+          .status-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          }
+
+          .status-dot.approved {
+            background: #22c55e;
+          }
+
+          .status-dot.rejected {
+            background: #ef4444;
+          }
+
+          .status-dot.pending {
+            background: #f59e0b;
+          }
+
+          .status-dot.not_started {
+            background: #6c757d;
+          }
+
+          .timeline-line {
+            width: 3px;
+            flex-grow: 1;
+            background: #dee2e6;
+            margin: 0.5rem 0;
+            border-radius: 2px;
+          }
+
+          .timeline-content-modern {
+            flex-grow: 1;
+            padding-bottom: 1rem;
+          }
+
+          .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+          }
+
+          .detail-label {
+            font-weight: 500;
+            color: #6c757d;
+          }
+
+          .detail-value {
+            font-weight: 600;
+            color: #212529;
+            text-align: right;
+          }
+
+          /* Modal Header Styles */
+          :global(.expense-modal .modal-content) {
+            border: none;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+          }
+
+          :global(.expense-modal .modal-header .btn-close) {
+            background: white;
+            opacity: 1;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            filter: brightness(1) contrast(1.2) invert(0.2);
+            border: 2px solid rgba(0, 0, 0, 0.2);
+          }
+
+          :global(.expense-modal .modal-header .btn-close:hover) {
+            transform: rotate(90deg);
+            background: #f1f3f5;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-color: rgba(0, 0, 0, 0.3);
+          }
+
+          /* Responsive adjustments */
+          @media (max-width: 1199px) {
+            .table-cell {
+              padding: 0.75rem 1rem;
+            }
+            
+            .description-wrapper {
+              max-width: 200px;
+            }
+          }
+
+          @media (max-width: 767px) {
+            .table-header-cell,
+            .table-cell {
+              padding: 0.65rem 0.75rem;
+              font-size: 0.85rem;
+            }
+            
+            .approval-progress-modern {
+              min-width: 150px;
+            }
+
+            .status-dot {
+              width: 32px;
+              height: 32px;
+            }
+
+            .timeline-item-modern {
+              gap: 0.75rem;
+            }
+          }
         `}</style>
 
         {/* ...rest of existing code... */}
