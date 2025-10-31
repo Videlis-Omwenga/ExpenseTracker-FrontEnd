@@ -7,7 +7,6 @@ import {
   Card,
   Col,
   Container,
-  Dropdown,
   Form,
   Modal,
   Pagination,
@@ -38,14 +37,7 @@ import {
 import DateTimeDisplay from "@/app/components/DateTimeDisplay";
 import { toast } from "react-toastify";
 import AuthProvider from "../../authPages/tokenData";
-import {
-  ArrowDownCircle,
-  DollarSign,
-  Tag,
-  ListChecks,
-  CheckCircle,
-  User,
-} from "lucide-react";
+import { ArrowDownCircle, DollarSign, Tag, CheckCircle, User } from "lucide-react";
 import TopNavbar from "../../components/Navbar";
 import { BASE_API_URL } from "@/app/static/apiConfig";
 
@@ -317,9 +309,8 @@ export default function ExpenseApprovalPage() {
   const filteredExpenses = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return expenses.filter((exp) => {
-      const employee = `${exp.user?.firstName ?? ""} ${
-        exp.user?.lastName ?? ""
-      }`.trim();
+      const employee = `${exp.user?.firstName ?? ""} ${exp.user?.lastName ?? ""
+        }`.trim();
       const department =
         exp.department?.name || exp.user?.department?.name || "";
       const category = exp.category?.name || "";
@@ -420,68 +411,96 @@ export default function ExpenseApprovalPage() {
     <AuthProvider>
       <TopNavbar />
       <Container fluid className="py-4">
-        {/* Modern Header */}
-        <div className="mb-4">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <div>
-              <div className="d-flex align-items-center mb-2">
-                <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                  <DollarSign className="text-primary" size={28} />
+        {/* Modern Header (queued expenses style) */}
+        <Card className="mb-4 border-0 shadow-sm" style={{
+          background: '#f8f9fa',
+          borderLeft: '4px solid #0d6efd'
+        }}>
+          <Card.Body className="p-4">
+            <Row className="align-items-center">
+              <Col md={8}>
+                <div className="d-flex align-items-center mb-3">
+                  <div className="bg-primary bg-opacity-10 p-3 rounded me-3">
+                    <DollarSign size={28} className="text-primary" />
+                  </div>
+                  <div>
+                    <h5 className="mb-1 fw-bold text-primary">Pay Expenses</h5>
+                    <p className="mb-0 text-muted">
+                      Review and validate expenses ready for payment processing
+                    </p>
+                  </div>
                 </div>
                 <div>
-                  <h2 className="fw-bold text-dark mb-0">
-                    Pay Expenses
-                  </h2>
-                  <p className="text-muted mb-0 small">
-                    Review and process approved expenses for payment
-                  </p>
+                  <Badge bg="primary" className="me-2">
+                    {filteredExpenses.length} Pending
+                  </Badge>
+                  <span className="text-muted">
+                    Total Amount: <strong>
+                      {expenses.reduce((sum, exp) => sum + exp.amount, 0).toLocaleString()} KES
+                    </strong>
+                  </span>
                 </div>
-              </div>
-            </div>
-          </div>
-          <hr className="border-2 border-primary opacity-25 mb-4" />
-        </div>
+              </Col>
+              <Col md={4} className="text-end">
+                <div className="d-flex gap-2 justify-content-end flex-wrap">
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => fetchExpensesToApprove()}
+                  >
+                    <ArrowDownCircle size={16} className="me-2" />
+                    Refresh
+                  </Button>
+                  <Button
+                    variant="success"
+                    size="sm"
+                    onClick={() => window.print()}
+                  >
+                    <Download size={16} className="me-2" />
+                    Export
+                  </Button>
+                </div>
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
 
         {/* Stats and Info */}
         <Row className="mb-4">
           <Col md={6} className="mb-4">
-            <Card className="border-0 shadow-sm rounded-3 bg-primary bg-opacity-10 border-start border-primary border-2 h-100">
+            <Card className="border-0 shadow-sm rounded-3 h-100">
               <Card.Body className="p-4">
-                  <p className="small text-secondary mb-2">
-                    Every submitted expense goes through this check to ensure
-                    compliance and readiness for payment:
-                  </p>
-                  <br />
-                  <div className="d-flex flex-column gap-3 small text-secondary">
-                    {/* Step 1 */}
-                    <div className="d-flex align-items-center">
-                      <div className="rounded-circle bg-success bg-opacity-10 p-2 me-3 shadow-sm">
-                        <Check2Circle className="text-success" size={18} />
-                      </div>
-                      <div>
-                        <span className="fw-semibold text-dark">Accuracy</span>
-                        <div className="text-muted">
-                          Verified by approvers and proper documentation
-                          attached
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Step 2 */}
-                    <div className="d-flex align-items-center">
-                      <div className="rounded-circle bg-primary bg-opacity-10 p-2 me-3 shadow-sm">
-                        <ShieldCheck className="text-primary" size={18} />
-                      </div>
-                      <div>
-                        <span className="fw-semibold text-dark">
-                          Compliance
-                        </span>
-                        <div className="text-muted">
-                          Aligned with company policies and procedures
-                        </div>
+                <div className="d-flex align-items-center mb-3">
+                  <FileText size={20} className="me-2 text-primary" />
+                  <h6 className="mb-0 fw-bold">Finance Review Process</h6>
+                </div>
+                <p className="small text-muted mb-3">
+                  Every submitted expense goes through this check to ensure
+                  compliance and readiness for payment:
+                </p>
+                <div className="d-flex flex-column gap-3 small">
+                  {/* Step 1 */}
+                  <div className="d-flex align-items-start">
+                    <Check2Circle className="text-success me-2 mt-1" size={18} />
+                    <div>
+                      <span className="fw-semibold d-block mb-1">Accuracy Verification</span>
+                      <div className="text-muted">
+                        Verified by approvers and proper documentation attached
                       </div>
                     </div>
                   </div>
+
+                  {/* Step 2 */}
+                  <div className="d-flex align-items-start">
+                    <ShieldCheck className="text-primary me-2 mt-1" size={18} />
+                    <div>
+                      <span className="fw-semibold d-block mb-1">Compliance Check</span>
+                      <div className="text-muted">
+                        Aligned with company policies and procedures
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </Card.Body>
             </Card>
           </Col>
@@ -500,14 +519,14 @@ export default function ExpenseApprovalPage() {
                           <h6 className="mb-0 fw-bold">
                             {expenses.length > 0
                               ? expenses
-                                  .reduce(
-                                    (sum, expense) => sum + expense.amount,
-                                    0
-                                  )
-                                  .toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })
+                                .reduce(
+                                  (sum, expense) => sum + expense.amount,
+                                  0
+                                )
+                                .toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })
                               : "0.00"}
                           </h6>
                         </div>
@@ -538,9 +557,9 @@ export default function ExpenseApprovalPage() {
                           <h6 className="mb-0 fw-bold">
                             {expenses.length > 0
                               ? expenses.reduce(
-                                  (sum, exp) => sum + (exp.countBudget || 0),
-                                  0
-                                )
+                                (sum, exp) => sum + (exp.countBudget || 0),
+                                0
+                              )
                               : 0}
                           </h6>
                         </div>
@@ -602,71 +621,193 @@ export default function ExpenseApprovalPage() {
 
         {/* Table */}
         <Card className="mb-4">
-          <Card.Header className="bg-white border-bottom-0 d-flex justify-content-between align-items-center flex-wrap">
-            <h5 className="mb-0 me-3">Expense Requests</h5>
-            <div className="d-flex flex-wrap gap-2 mt-2 mt-md-0">
-              <div className="search-box d-flex">
-                <Form.Control
-                  type="search"
-                  placeholder="Search expenses..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setCurrentPage(1);
-                    setSearchQuery(e.target.value);
+          <Card.Header className="bg-white border-0 py-4 px-4">
+            {/* Title Section */}
+            <div className="mb-4 bg-light p-3 rounded-3 border-start border-primary border-4">
+              <Row className="align-items-center">
+                <Col md={8}>
+                  <div className="d-flex align-items-center">
+                    <div className="bg-primary bg-opacity-10 p-2 rounded me-3">
+                      <DollarSign size={20} className="text-primary" />
+                    </div>
+                    <div>
+                      <h6 className="mb-1 fw-bold">Expenses Ready for Payment</h6>
+                      <p className="mb-0 small text-muted">
+                        Review and disburse approved expenses
+                      </p>
+                    </div>
+                  </div>
+                </Col>
+                <Col md={4} className="text-end">
+                  <Badge bg="primary" className="px-3 py-2">
+                    {filteredExpenses.length} Total
+                  </Badge>
+                </Col>
+              </Row>
+            </div>
+
+            {/* Search and Filters */}
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+              {/* Search Box */}
+              <div style={{ position: 'relative', flex: '1 1 300px', maxWidth: '400px' }}>
+                <div style={{
+                  position: 'relative',
+                  background: '#ffffff',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease'
+                }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#667eea';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                   }}
-                  className="ps-4"
-                />
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}>
+                  <div style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 1
+                  }}>
+                    <Badge style={{
+                      background: '#ede9fe',
+                      border: '1px solid #ddd6fe',
+                      borderRadius: '8px',
+                      padding: '6px 8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Filter size={14} />
+                    </Badge>
+                  </div>
+                  <Form.Control
+                    type="search"
+                    placeholder="Search by payee, department, category..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setCurrentPage(1);
+                      setSearchQuery(e.target.value);
+                    }}
+                    style={{
+                      border: 'none',
+                      paddingLeft: '56px',
+                      paddingRight: searchQuery ? '40px' : '16px',
+                      paddingTop: '10px',
+                      paddingBottom: '10px',
+                      fontSize: '0.875rem',
+                      background: 'transparent',
+                      outline: 'none'
+                    }}
+                  />
+                  {searchQuery && (
+                    <div
+                      onClick={() => {
+                        setSearchQuery('');
+                        setCurrentPage(1);
+                      }}
+                      style={{
+                        position: 'absolute',
+                        right: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        cursor: 'pointer',
+                        zIndex: 1,
+                        transition: 'all 0.2s ease',
+                        opacity: 0.6
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.opacity = '1';
+                        e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.opacity = '0.6';
+                        e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                      }}
+                    >
+                      <XLg size={14} style={{ color: '#64748b' }} />
+                    </div>
+                  )}
+                </div>
+                {searchQuery && (
+                  <div className="mt-2 bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3 d-inline-block">
+                    <Badge style={{
+                      border: '1px solid rgba(102, 126, 234, 0.2)',
+                      padding: '4px 10px',
+                      fontSize: '0.75rem',
+                      borderRadius: '6px'
+                    }}>
+                      {filteredExpenses.length} result{filteredExpenses.length !== 1 ? 's' : ''} found
+                    </Badge>
+                  </div>
+                )}
               </div>
-              <Dropdown>
-                <Dropdown.Toggle variant="outline-secondary" size="sm">
-                  <Filter size={16} className="me-1" />
-                  Status:{" "}
-                  {statusFilter === "all" ? "All" : humanStatus(statusFilter)}
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setStatusFilter("all");
+
+              {/* Filters */}
+              <div className="d-flex gap-2 flex-wrap">
+                {/* Status Filter */}
+                <div style={{ position: 'relative', minWidth: '160px' }}>
+                  <div style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 1,
+                    pointerEvents: 'none'
+                  }}>
+                    <CheckCircle size={16} style={{ color: '#667eea' }} />
+                  </div>
+                  <Form.Select
+                    size="sm"
+                    value={statusFilter}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value as "all" | ExpenseStatus);
                       setCurrentPage(1);
                     }}
-                  >
-                    All
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setStatusFilter("PENDING");
-                      setCurrentPage(1);
+                    style={{
+                      borderRadius: '12px',
+                      border: '1px solid #e5e7eb',
+                      paddingLeft: '40px',
+                      paddingRight: '12px',
+                      paddingTop: '10px',
+                      paddingBottom: '10px',
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      background: '#ffffff',
+                      color: '#1e293b',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = '#667eea';
+                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = '#e5e7eb';
+                      e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
                     }}
                   >
-                    Pending
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setStatusFilter("APPROVED");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    Approved
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setStatusFilter("REJECTED");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    Rejected
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-              <Button
-                variant="outline-primary"
-                size="sm"
-                onClick={() => window.print()}
-                title="Quick export via browser print"
-              >
-                <Download size={16} className="me-1" />
-                Export
-              </Button>
+                    <option value="all">All Status</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="APPROVED">Approved</option>
+                    <option value="REJECTED">Rejected</option>
+                  </Form.Select>
+                </div>
+
+                <Button
+                  variant="outline-light"
+                  size="sm"
+                  className="text-muted"
+                  onClick={() => window.print()}
+                >
+                  <Download size={14} className="me-1" />
+                  Export
+                </Button>
+              </div>
             </div>
           </Card.Header>
 
@@ -691,13 +832,109 @@ export default function ExpenseApprovalPage() {
                 </div>
               </Alert>
             ) : filteredExpenses.length === 0 ? (
-              <div className="text-center py-5">
-                <FileText size={48} className="text-muted mb-3" />
-                <h5>No expenses to approve</h5>
-                <p className="text-muted">
-                  When expenses are submitted for your approval, they will
-                  appear here.
-                </p>
+              <div className="text-center py-5 px-4" style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ maxWidth: '500px' }}>
+                  {/* Animated Icon Container */}
+                  <div style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    marginBottom: '2rem'
+                  }}>
+                    <div style={{
+                      width: '120px',
+                      height: '120px',
+                      background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto',
+                      border: '3px solid #C7D2FE',
+                      boxShadow: '0 8px 24px rgba(99, 102, 241, 0.15)',
+                      animation: 'pulse 2s ease-in-out infinite'
+                    }}>
+                      <DollarSign size={54} style={{ color: '#6366F1' }} />
+                    </div>
+                    {/* Decorative circles */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '10px',
+                      right: '-10px',
+                      width: '24px',
+                      height: '24px',
+                      background: '#FEF3C7',
+                      borderRadius: '50%',
+                      border: '2px solid #FDE047',
+                      animation: 'float 3s ease-in-out infinite'
+                    }}></div>
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '10px',
+                      left: '-10px',
+                      width: '32px',
+                      height: '32px',
+                      background: '#DBEAFE',
+                      borderRadius: '50%',
+                      border: '2px solid #93C5FD',
+                      animation: 'float 3s ease-in-out infinite 1s'
+                    }}></div>
+                  </div>
+
+                  {/* Title */}
+                  <h4 className="fw-bold mb-3" style={{
+                    color: '#1E293B',
+                    fontSize: '1.5rem'
+                  }}>
+                    All Clear! No Expenses to Pay
+                  </h4>
+
+                  {/* Description */}
+                  <p className="mb-4" style={{
+                    color: '#64748B',
+                    fontSize: '1rem',
+                    lineHeight: '1.6'
+                  }}>
+                    You're all caught up! Approved expenses ready for payment will appear here when available.
+                  </p>
+
+                  <div className="d-flex gap-3 justify-content-center flex-wrap mb-4">
+                    {/* Action Button */}
+                    <div style={{
+                      background: '#F0FDF4',
+                      border: '1px solid #BBF7D0',
+                      borderRadius: '12px',
+                      padding: '12px 20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <CheckCircle size={18} style={{ color: '#16A34A' }} />
+                      <span style={{ color: '#166534', fontSize: '0.875rem', fontWeight: '600' }}>
+                        Nothing to Process
+                      </span>
+                    </div>
+                    <Button
+                      variant="light"
+                      onClick={() => fetchExpensesToApprove()}
+                      style={{
+                        padding: '12px 28px',
+                        fontWeight: '600',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 8px 16px rgba(99, 102, 241, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <ArrowDownCircle size={18} className="me-2" />
+                      Refresh List
+                    </Button>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="table-responsive rounded-3 overflow-hidden border">
@@ -870,15 +1107,13 @@ export default function ExpenseApprovalPage() {
                           </td>
                           <td>
                             <Badge
-                              className={`px-2 py-1 rounded ${
-                                exp.budget?.remainingBudget < exp.amount
+                              className={`px-2 py-1 rounded ${exp.budget?.remainingBudget < exp.amount
                                   ? "bg-danger bg-opacity-10 text-danger"
                                   : "bg-success bg-opacity-10 text-success"
-                              }`}
-                              title={`Original Budget: ${
-                                exp.budget?.originalBudget?.toLocaleString() ||
+                                }`}
+                              title={`Original Budget: ${exp.budget?.originalBudget?.toLocaleString() ||
                                 "N/A"
-                              }`}
+                                }`}
                             >
                               {exp.budget?.remainingBudget?.toLocaleString() ||
                                 "N/A"}
@@ -899,8 +1134,8 @@ export default function ExpenseApprovalPage() {
                                 exp.status === "APPROVED"
                                   ? "success"
                                   : exp.status === "PENDING"
-                                  ? "info"
-                                  : "success"
+                                    ? "info"
+                                    : "success"
                               }
                               animated={exp.status === "PENDING"}
                             />
@@ -960,9 +1195,9 @@ export default function ExpenseApprovalPage() {
                 {filteredExpenses.length === 0
                   ? 0
                   : Math.min(
-                      (currentPage - 1) * itemsPerPage + 1,
-                      filteredExpenses.length
-                    )}{" "}
+                    (currentPage - 1) * itemsPerPage + 1,
+                    filteredExpenses.length
+                  )}{" "}
                 to{" "}
                 {Math.min(currentPage * itemsPerPage, filteredExpenses.length)}{" "}
                 of {filteredExpenses.length} entries
@@ -1159,8 +1394,8 @@ export default function ExpenseApprovalPage() {
                               <span className="detail-value">
                                 {selectedExpense.exchangeRateUsed
                                   ? Number(
-                                      selectedExpense.exchangeRateUsed
-                                    ).toFixed(2)
+                                    selectedExpense.exchangeRateUsed
+                                  ).toFixed(2)
                                   : "N/A"}
                               </span>
                             </div>
@@ -1207,10 +1442,10 @@ export default function ExpenseApprovalPage() {
                                         step.status === "PENDING"
                                           ? "#f0ad4e"
                                           : step.status === "APPROVED"
-                                          ? "#198754"
-                                          : step.status === "REJECTED"
-                                          ? "#dc3545"
-                                          : "#6c757d",
+                                            ? "#198754"
+                                            : step.status === "REJECTED"
+                                              ? "#dc3545"
+                                              : "#6c757d",
                                       boxShadow: "0 0 0 4px #fff",
                                     }}
                                   ></span>
@@ -1228,10 +1463,10 @@ export default function ExpenseApprovalPage() {
                                         step.status === "PENDING"
                                           ? "warning"
                                           : step.status === "APPROVED"
-                                          ? "success"
-                                          : step.status === "REJECTED"
-                                          ? "danger"
-                                          : "secondary"
+                                            ? "success"
+                                            : step.status === "REJECTED"
+                                              ? "danger"
+                                              : "secondary"
                                       }
                                       className="px-3 py-2 fw-semibold"
                                     >
@@ -1245,8 +1480,8 @@ export default function ExpenseApprovalPage() {
                                       {step.approver
                                         ? `${step.approver.firstName} ${step.approver.lastName}`
                                         : step.nextApprovers && step.nextApprovers.length > 0
-                                        ? step.nextApprovers.map(u => `${u.firstName} ${u.lastName}`).join(", ")
-                                        : "—"}
+                                          ? step.nextApprovers.map(u => `${u.firstName} ${u.lastName}`).join(", ")
+                                          : "—"}
                                     </span>
 
                                     {step.updatedAt && (
@@ -1600,6 +1835,28 @@ export default function ExpenseApprovalPage() {
           }
           .comments-box {
             border-left: 3px solid #dee2e6;
+          }
+
+          /* Header animations */
+          @keyframes pulse {
+            0%, 100% {
+              transform: scale(1);
+              opacity: 1;
+            }
+            50% {
+              transform: scale(1.1);
+              opacity: 0.8;
+            }
+          }
+          
+          /* Empty state float animation */
+          @keyframes float {
+            0%, 100% {
+              transform: translateY(0px);
+            }
+            50% {
+              transform: translateY(-10px);
+            }
           }
         `}</style>
       </Container>

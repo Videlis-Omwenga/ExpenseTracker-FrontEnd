@@ -256,61 +256,31 @@ export default function Dashboard() {
           <Container fluid className="px-0 mb-4">
             {/* Ultra Modern Dashboard Header */}
             <div
-              className="position-relative overflow-hidden rounded-4 shadow-lg"
+              className="position-relative overflow-hidden rounded-4"
               style={{
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                backgroundColor: "#EEF2FF",
               }}
             >
-              {/* Animated Background Pattern */}
-              <div
-                className="position-absolute w-100 h-100"
-                style={{ opacity: 0.1 }}
-              >
-                <div
-                  className="position-absolute"
-                  style={{
-                    top: "-50%",
-                    right: "-10%",
-                    width: "500px",
-                    height: "500px",
-                    background:
-                      "radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)",
-                    borderRadius: "50%",
-                  }}
-                ></div>
-                <div
-                  className="position-absolute"
-                  style={{
-                    bottom: "-30%",
-                    left: "-5%",
-                    width: "400px",
-                    height: "400px",
-                    background:
-                      "radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%)",
-                    borderRadius: "50%",
-                  }}
-                ></div>
-              </div>
 
               <Row className="align-items-center p-4 position-relative">
                 <Col lg={6} className="mb-3 mb-lg-0">
                   <div className="d-flex align-items-center gap-3">
                     <div
-                      className="bg-white bg-opacity-25 backdrop-blur p-3 rounded-3 d-flex align-items-center justify-content-center"
+                      className="bg-white bg-opacity-75 backdrop-blur p-3 rounded-3 d-flex align-items-center justify-content-center"
                       style={{ width: "60px", height: "60px" }}
                     >
-                      <BarChart3 size={32} className="text-white" />
+                      <BarChart3 size={32} className="text-primary" />
                     </div>
                     <div>
                       <div className="d-flex align-items-center gap-2 mb-1">
-                        <h5 className="mb-0 fw-bold text-white">
+                        <h5 className="mb-0 fw-bold text-dark">
                           Expense Dashboard
                         </h5>
-                        <span className="badge bg-white bg-opacity-25 text-white px-2 py-1 small">
-                          Live
+                        <span className="badge bg-success text-white px-2 py-1 small">
+                          logged in
                         </span>
                       </div>
-                      <p className="text-white text-opacity-75 mb-0 small">
+                      <p className="text-muted mb-0 small">
                         Real-time overview of all expense activities and
                         insights
                       </p>
@@ -322,35 +292,36 @@ export default function Dashboard() {
                   <div className="d-flex gap-2 justify-content-lg-end flex-wrap">
                     <Button
                       size="sm"
-                      className="btn-light shadow-sm d-inline-flex align-items-center gap-2 px-4 py-2 border-0 fw-semibold"
+                      className="d-inline-flex align-items-center gap-2 px-4 py-2 border-0 fw-semibold shadow-sm"
                       onClick={() =>
                         handleNavigation("/expense-management/create-expense")
                       }
                       style={{
-                        backdropFilter: "blur(10px)",
-                        background: "rgba(255, 255, 255, 0.95)",
-                        transition: "all 0.3s ease",
+                        background: "linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)",
+                        color: "white",
+                        borderRadius: "12px",
+                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translateY(-2px)";
+                        e.currentTarget.style.transform = "translateY(-2px) scale(1.02)";
                         e.currentTarget.style.boxShadow =
-                          "0 8px 20px rgba(0,0,0,0.15)";
+                          "0 12px 24px rgba(79, 70, 229, 0.3)";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow = "";
+                        e.currentTarget.style.transform = "translateY(0) scale(1)";
+                        e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";
                       }}
                     >
-                      <div className="bg-primary bg-opacity-10 p-1 rounded">
-                        <FaPlus size={14} className="text-primary" />
+                      <div className="bg-white bg-opacity-20 p-1 rounded-circle d-flex align-items-center justify-content-center" style={{ width: "24px", height: "24px" }}>
+                        <FaPlus size={12} className="text-primary" />
                       </div>
-                      <span className="text-dark">New Expense</span>
+                      <span>New Expense</span>
                     </Button>
 
                     <Button
                       variant="link"
                       size="sm"
-                      className="text-white text-decoration-none d-inline-flex align-items-center gap-2 px-3 py-2 bg-white bg-opacity-10 rounded-3 border-0"
+                      className="text-primary text-decoration-none d-inline-flex align-items-center gap-2 px-3 py-2 bg-primary bg-opacity-10 rounded-3 border-0"
                       onClick={refreshData}
                       style={{
                         backdropFilter: "blur(10px)",
@@ -358,11 +329,11 @@ export default function Dashboard() {
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.background =
-                          "rgba(255, 255, 255, 0.2)";
+                          "rgba(79, 70, 229, 0.15)";
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background =
-                          "rgba(255, 255, 255, 0.1)";
+                          "rgba(79, 70, 229, 0.1)";
                       }}
                     >
                       <RefreshCw size={16} />
@@ -372,7 +343,7 @@ export default function Dashboard() {
                     <Button
                       size="sm"
                       variant="link"
-                      className="text-white text-decoration-none d-inline-flex align-items-center gap-2 px-3 py-2 bg-white bg-opacity-10 rounded-3 border-0"
+                      className="text-primary text-decoration-none d-inline-flex align-items-center gap-2 px-3 py-2 bg-primary bg-opacity-10 rounded-3 border-0"
                       onClick={exportData}
                       style={{
                         backdropFilter: "blur(10px)",
@@ -380,11 +351,11 @@ export default function Dashboard() {
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.background =
-                          "rgba(255, 255, 255, 0.2)";
+                          "rgba(79, 70, 229, 0.15)";
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background =
-                          "rgba(255, 255, 255, 0.1)";
+                          "rgba(79, 70, 229, 0.1)";
                       }}
                     >
                       <Download size={16} />
@@ -413,57 +384,6 @@ export default function Dashboard() {
                       creating your first expense.
                     </p>
                   </div>
-
-                  <Row className="g-4 mb-5">
-                    <Col md={4}>
-                      <Card className="h-100 border shadow-sm">
-                        <Card.Body className="p-4">
-                          <div className="bg-success bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
-                            <FaPlus size={24} className="text-success" />
-                          </div>
-                          <h6 className="fw-bold text-dark mb-2">
-                            Create Expenses
-                          </h6>
-                          <p className="text-muted small mb-0">
-                            Start tracking your expenses by creating your first
-                            expense record
-                          </p>
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                    <Col md={4}>
-                      <Card className="h-100 border shadow-sm">
-                        <Card.Body className="p-4">
-                          <div className="bg-info bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
-                            <Clock size={24} className="text-info" />
-                          </div>
-                          <h6 className="fw-bold text-dark mb-2">
-                            Track Approvals
-                          </h6>
-                          <p className="text-muted small mb-0">
-                            Monitor the approval status of your expenses in
-                            real-time
-                          </p>
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                    <Col md={4}>
-                      <Card className="h-100 border shadow-sm">
-                        <Card.Body className="p-4">
-                          <div className="bg-warning bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
-                            <BarChart3 size={24} className="text-warning" />
-                          </div>
-                          <h6 className="fw-bold text-dark mb-2">
-                            View Analytics
-                          </h6>
-                          <p className="text-muted small mb-0">
-                            Get insights with detailed charts and reports on
-                            your spending
-                          </p>
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                  </Row>
 
                   <div className="d-flex gap-3 justify-content-center">
                     <Button
@@ -522,7 +442,7 @@ export default function Dashboard() {
                         {/* Right side: Date range */}
                         <div className="text-muted fw-medium bg-light rounded-2 px-3 py-2 shadow-sm">
                           {data.dateRange.startDate &&
-                          data.dateRange.endDate ? (
+                            data.dateRange.endDate ? (
                             <span className="small">
                               Data from{" "}
                               <span className="fw-semibold text-dark">
@@ -1342,7 +1262,7 @@ export default function Dashboard() {
                     </Card.Header>
                     <Card.Body>
                       {Object.entries(data.breakdown.approvalSteps).length >
-                      0 ? (
+                        0 ? (
                         <ListGroup variant="flush">
                           {Object.entries(data.breakdown.approvalSteps).map(
                             ([status, count]) => (

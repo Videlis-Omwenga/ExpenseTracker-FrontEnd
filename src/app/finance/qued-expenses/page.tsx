@@ -7,23 +7,19 @@ import {
   Card,
   Col,
   Container,
-  Dropdown,
   Form,
   Modal,
   Pagination,
-  ProgressBar,
   Row,
   Spinner,
   Table,
   Alert,
 } from "react-bootstrap";
 import {
-  FaFlag,
   FaInfoCircle,
   FaUser,
   FaClock,
   FaComment,
-  FaListAlt,
 } from "react-icons/fa";
 import {
   Filter,
@@ -492,7 +488,7 @@ export default function ExpenseApprovalPage() {
                     <ListChecks size={28} className="text-primary" />
                   </div>
                   <div>
-                    <h5 className="mb-1 fw-bold">
+                    <h5 className="mb-1 fw-bold text-primary">
                       Queued Expenses
                     </h5>
                     <p className="mb-0 text-muted">
@@ -750,7 +746,7 @@ export default function ExpenseApprovalPage() {
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      <Filter size={14} style={{ color: '#667eea' }} />
+                      <Filter size={14} />
                     </Badge>
                   </div>
                   <Form.Control
@@ -802,10 +798,8 @@ export default function ExpenseApprovalPage() {
                   )}
                 </div>
                 {searchQuery && (
-                  <div className="mt-2">
+                  <div className="mt-2 bg-warning bg-opacity-10 p-2 rounded-3 border-start border-warning border-3 d-inline-block">
                     <Badge style={{
-                      background: 'rgba(102, 126, 234, 0.1)',
-                      color: '#667eea',
                       border: '1px solid rgba(102, 126, 234, 0.2)',
                       padding: '4px 10px',
                       fontSize: '0.75rem',
@@ -869,8 +863,9 @@ export default function ExpenseApprovalPage() {
                 </div>
 
                 <Button
-                  variant="outline-primary"
+                  variant="outline-light"
                   size="sm"
+                  className="text-muted"
                   onClick={() => window.print()}
                 >
                   <Download size={14} className="me-1" />
@@ -901,13 +896,111 @@ export default function ExpenseApprovalPage() {
                 </div>
               </Alert>
             ) : filteredExpenses.length === 0 ? (
-              <div className="text-center py-5">
-                <FileText size={48} className="text-muted mb-3" />
-                <h5>No expenses to approve</h5>
-                <p className="text-muted">
-                  When expenses are submitted for your approval, they will
-                  appear here.
-                </p>
+              <div className="text-center py-5 px-4 border-top p-3 mt-4" style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ maxWidth: '500px' }} className="">
+                  {/* Animated Icon Container */}
+                  <div style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    marginBottom: '2rem'
+                  }}>
+                    <div style={{
+                      width: '120px',
+                      height: '120px',
+                      background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto',
+                      border: '3px solid #C7D2FE',
+                      boxShadow: '0 8px 24px rgba(99, 102, 241, 0.15)',
+                      animation: 'pulse 2s ease-in-out infinite'
+                    }}>
+                      <ListChecks size={54} style={{ color: '#6366F1' }} />
+                    </div>
+                    {/* Decorative circles */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '10px',
+                      right: '-10px',
+                      width: '24px',
+                      height: '24px',
+                      background: '#FEF3C7',
+                      borderRadius: '50%',
+                      border: '2px solid #FDE047',
+                      animation: 'float 3s ease-in-out infinite'
+                    }}></div>
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '10px',
+                      left: '-10px',
+                      width: '32px',
+                      height: '32px',
+                      background: '#DBEAFE',
+                      borderRadius: '50%',
+                      border: '2px solid #93C5FD',
+                      animation: 'float 3s ease-in-out infinite 1s'
+                    }}></div>
+                  </div>
+
+                  {/* Title */}
+                  <h4 className="fw-bold mb-3" style={{
+                    color: '#1E293B',
+                    fontSize: '1.5rem'
+                  }}>
+                    All Clear! No Expenses in Queue
+                  </h4>
+
+                  {/* Description */}
+                  <p className="mb-4" style={{
+                    color: '#64748B',
+                    fontSize: '1rem',
+                    lineHeight: '1.6'
+                  }}>
+                    You're all caught up! New expense submissions will appear here once they've been approved and are ready for payment processing.
+                  </p>
+
+                  {/* Info Cards */}
+                  <div className="d-flex gap-3 justify-content-center flex-wrap mb-4">
+                    <div style={{
+                      background: '#F0FDF4',
+                      border: '1px solid #BBF7D0',
+                      borderRadius: '12px',
+                      padding: '12px 20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <CheckCircle size={18} style={{ color: '#16A34A' }} />
+                      <span style={{ color: '#166534', fontSize: '0.875rem', fontWeight: '600' }}>
+                        Nothing to Process
+                      </span>
+                    </div>
+
+                    {/* Action Button */}
+                    <Button
+                      variant="light"
+                      onClick={() => fetchExpensesToApprove()}
+                      style={{
+                        padding: '12px 28px',
+                        fontWeight: '600',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 8px 16px rgba(99, 102, 241, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <ArrowDownCircle size={18} className="me-2" />
+                      Refresh List
+                    </Button>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="table-responsive">
@@ -1239,8 +1332,8 @@ export default function ExpenseApprovalPage() {
                             </Badge>
                           </td>
                           <td className="py-3 px-4" style={{ minWidth: 200 }}>
-                            <div className="mb-2" style={{ 
-                              fontSize: '0.75rem', 
+                            <div className="mb-2" style={{
+                              fontSize: '0.75rem',
                               color: '#64748b',
                               fontWeight: '500'
                             }}>
@@ -2108,6 +2201,25 @@ export default function ExpenseApprovalPage() {
           }
           .comments-box {
             border-left: 3px solid #dee2e6;
+          }
+
+          /* Empty state animations */
+          @keyframes pulse {
+            0%, 100% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.05);
+            }
+          }
+          
+          @keyframes float {
+            0%, 100% {
+              transform: translateY(0px);
+            }
+            50% {
+              transform: translateY(-10px);
+            }
           }
         `}</style>
       </Container>
