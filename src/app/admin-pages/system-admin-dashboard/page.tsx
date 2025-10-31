@@ -1048,12 +1048,12 @@ function SuperAdminDashboardContent() {
                             </div>
                           </div>
                         </Card.Header>
-                        <Card.Body className="chart-body-gradient p-0">
+                        <Card.Body className="p-0 bg-white">
                           <div
                             style={{ height: "350px" }}
                             className="p-4 position-relative"
                           >
-                            <div className="chart-background-pattern"></div>
+                            
                             <ResponsiveContainer width="100%" height="100%">
                               <AreaChart
                                 data={generateUserGrowthData(users)}
@@ -1065,40 +1065,6 @@ function SuperAdminDashboardContent() {
                                 }}
                               >
                                 <defs>
-                                  <linearGradient
-                                    id="modernUserGrowthGradient"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#4f46e5"
-                                      stopOpacity={0.9}
-                                    />
-                                    <stop
-                                      offset="50%"
-                                      stopColor="#7c3aed"
-                                      stopOpacity={0.6}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#ec4899"
-                                      stopOpacity={0.1}
-                                    />
-                                  </linearGradient>
-                                  <linearGradient
-                                    id="modernStrokeGradient"
-                                    x1="0"
-                                    y1="0"
-                                    x2="1"
-                                    y2="0"
-                                  >
-                                    <stop offset="0%" stopColor="#4f46e5" />
-                                    <stop offset="50%" stopColor="#7c3aed" />
-                                    <stop offset="100%" stopColor="#ec4899" />
-                                  </linearGradient>
                                   <filter id="modernGlow">
                                     <feGaussianBlur
                                       stdDeviation="3"
@@ -1191,19 +1157,19 @@ function SuperAdminDashboardContent() {
                                 <Area
                                   type="monotone"
                                   dataKey="count"
-                                  stroke="url(#modernStrokeGradient)"
+                                  stroke="#0d6efd"
                                   strokeWidth={4}
-                                  fill="url(#modernUserGrowthGradient)"
+                                  fill="rgba(13,110,253,0.15)"
                                   dot={{
                                     fill: "#ffffff",
-                                    stroke: "#4f46e5",
+                                    stroke: "#0d6efd",
                                     strokeWidth: 3,
                                     r: 5,
                                     filter: "url(#modernGlow)",
                                   }}
                                   activeDot={{
                                     r: 8,
-                                    stroke: "#4f46e5",
+                                    stroke: "#0d6efd",
                                     strokeWidth: 4,
                                     fill: "#ffffff",
                                     filter: "url(#modernGlow)",
@@ -1246,12 +1212,12 @@ function SuperAdminDashboardContent() {
                             </div>
                           </div>
                         </Card.Header>
-                        <Card.Body className="chart-body-gradient-cyan p-0">
+                        <Card.Body className="p-0 bg-white">
                           <div
                             style={{ height: "350px" }}
                             className="p-4 position-relative"
                           >
-                            <div className="chart-background-pattern-cyan"></div>
+                            
                             <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
                                 <defs>
@@ -1405,12 +1371,12 @@ function SuperAdminDashboardContent() {
                             </div>
                           </div>
                         </Card.Header>
-                        <Card.Body className="chart-body-gradient-green p-0">
+                        <Card.Body className="p-0 bg-white">
                           <div
                             style={{ height: "350px" }}
                             className="p-4 position-relative"
                           >
-                            <div className="chart-background-pattern-green"></div>
+                            
                             <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
                                 <defs>
@@ -1424,57 +1390,7 @@ function SuperAdminDashboardContent() {
                                       <feMergeNode in="SourceGraphic" />
                                     </feMerge>
                                   </filter>
-                                  <radialGradient
-                                    id="activeGradient"
-                                    cx="0.5"
-                                    cy="0.5"
-                                    r="0.8"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#22c55e"
-                                      stopOpacity={1}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#16a34a"
-                                      stopOpacity={0.8}
-                                    />
-                                  </radialGradient>
-                                  <radialGradient
-                                    id="inactiveGradient"
-                                    cx="0.5"
-                                    cy="0.5"
-                                    r="0.8"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#f87171"
-                                      stopOpacity={1}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#dc2626"
-                                      stopOpacity={0.8}
-                                    />
-                                  </radialGradient>
-                                  <radialGradient
-                                    id="suspendedGradient"
-                                    cx="0.5"
-                                    cy="0.5"
-                                    r="0.8"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#fbbf24"
-                                      stopOpacity={1}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#f59e0b"
-                                      stopOpacity={0.8}
-                                    />
-                                  </radialGradient>
+                                  {/* gradients removed for solid color policy */}
                                 </defs>
                                 <Pie
                                   data={users.reduce(
@@ -1493,19 +1409,18 @@ function SuperAdminDashboardContent() {
                                       if (existing) {
                                         existing.value += 1;
                                       } else {
-                                        const gradientMap: {
+                                        const colorMap: {
                                           [key: string]: string;
                                         } = {
-                                          ACTIVE: "url(#activeGradient)",
-                                          INACTIVE: "url(#inactiveGradient)",
-                                          SUSPENDED: "url(#suspendedGradient)",
+                                          ACTIVE: "#198754",
+                                          INACTIVE: "#6c757d",
+                                          SUSPENDED: "#ffc107",
                                           UNKNOWN: "#94a3b8",
                                         };
                                         acc.push({
                                           name: status,
                                           value: 1,
-                                          color:
-                                            gradientMap[status] || "#94a3b8",
+                                          color: colorMap[status] || "#94a3b8",
                                         });
                                       }
                                       return acc;
@@ -1550,20 +1465,18 @@ function SuperAdminDashboardContent() {
                                             (item) => item.name === status
                                           )
                                         ) {
-                                          const gradientMap: {
+                                          const colorMap: {
                                             [key: string]: string;
                                           } = {
-                                            ACTIVE: "url(#activeGradient)",
-                                            INACTIVE: "url(#inactiveGradient)",
-                                            SUSPENDED:
-                                              "url(#suspendedGradient)",
+                                            ACTIVE: "#198754",
+                                            INACTIVE: "#6c757d",
+                                            SUSPENDED: "#ffc107",
                                             UNKNOWN: "#94a3b8",
                                           };
                                           acc.push({
                                             name: status,
                                             value: 1,
-                                            color:
-                                              gradientMap[status] || "#94a3b8",
+                                            color: colorMap[status] || "#94a3b8",
                                           });
                                         }
                                         return acc;
@@ -1657,12 +1570,12 @@ function SuperAdminDashboardContent() {
                             </div>
                           </div>
                         </Card.Header>
-                        <Card.Body className="chart-body-gradient-orange p-0">
+                        <Card.Body className="p-0 bg-white">
                           <div
                             style={{ height: "350px" }}
                             className="p-4 position-relative"
                           >
-                            <div className="chart-background-pattern-orange"></div>
+                            
                             <ResponsiveContainer width="100%" height="100%">
                               <BarChart
                                 data={institutions.reduce(
@@ -1708,78 +1621,6 @@ function SuperAdminDashboardContent() {
                                 }}
                               >
                                 <defs>
-                                  <linearGradient
-                                    id="barGradient1"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#22c55e"
-                                      stopOpacity={0.9}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#16a34a"
-                                      stopOpacity={0.7}
-                                    />
-                                  </linearGradient>
-                                  <linearGradient
-                                    id="barGradient2"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#ef4444"
-                                      stopOpacity={0.9}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#dc2626"
-                                      stopOpacity={0.7}
-                                    />
-                                  </linearGradient>
-                                  <linearGradient
-                                    id="barGradient3"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#f59e0b"
-                                      stopOpacity={0.9}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#d97706"
-                                      stopOpacity={0.7}
-                                    />
-                                  </linearGradient>
-                                  <linearGradient
-                                    id="barGradient4"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#8b5cf6"
-                                      stopOpacity={0.9}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#7c3aed"
-                                      stopOpacity={0.7}
-                                    />
-                                  </linearGradient>
                                   <filter id="barGlow">
                                     <feGaussianBlur
                                       stdDeviation="3"
@@ -1857,7 +1698,7 @@ function SuperAdminDashboardContent() {
                                 />
                                 <Bar
                                   dataKey="count"
-                                  fill="url(#barGradient1)"
+                                  fill="#0d6efd"
                                   name="Institutions"
                                   radius={[8, 8, 0, 0]}
                                   filter="url(#barGlow)"
@@ -1889,19 +1730,19 @@ function SuperAdminDashboardContent() {
                                       []
                                     )
                                     .map((entry, index) => {
-                                      const gradientMap: {
+                                      const colorMap: {
                                         [key: string]: string;
                                       } = {
-                                        ACTIVE: "url(#barGradient1)",
-                                        INACTIVE: "url(#barGradient2)",
-                                        SUSPENDED: "url(#barGradient3)",
-                                        TRIAL: "url(#barGradient4)",
+                                        ACTIVE: "#198754",
+                                        INACTIVE: "#dc3545",
+                                        SUSPENDED: "#ffc107",
+                                        TRIAL: "#0d6efd",
                                       };
                                       return (
                                         <Cell
                                           key={`cell-${index}`}
                                           fill={
-                                            gradientMap[entry.status] ||
+                                            colorMap[entry.status] ||
                                             "#94a3b8"
                                           }
                                         />
@@ -1946,12 +1787,12 @@ function SuperAdminDashboardContent() {
                             </div>
                           </div>
                         </Card.Header>
-                        <Card.Body className="chart-body-gradient-purple p-0">
+                        <Card.Body className="p-0 bg-white">
                           <div
                             style={{ height: "350px" }}
                             className="p-4 position-relative"
                           >
-                            <div className="chart-background-pattern-purple"></div>
+                            
                             <ResponsiveContainer width="100%" height="100%">
                               <BarChart
                                 data={usersByInstitution
@@ -1970,121 +1811,6 @@ function SuperAdminDashboardContent() {
                                 }}
                               >
                                 <defs>
-                                  <linearGradient
-                                    id="horizontalGradient1"
-                                    x1="0"
-                                    y1="0"
-                                    x2="1"
-                                    y2="0"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#8b5cf6"
-                                      stopOpacity={0.9}
-                                    />
-                                    <stop
-                                      offset="50%"
-                                      stopColor="#a855f7"
-                                      stopOpacity={0.8}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#c084fc"
-                                      stopOpacity={0.7}
-                                    />
-                                  </linearGradient>
-                                  <linearGradient
-                                    id="horizontalGradient2"
-                                    x1="0"
-                                    y1="0"
-                                    x2="1"
-                                    y2="0"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#06b6d4"
-                                      stopOpacity={0.9}
-                                    />
-                                    <stop
-                                      offset="50%"
-                                      stopColor="#0891b2"
-                                      stopOpacity={0.8}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#0e7490"
-                                      stopOpacity={0.7}
-                                    />
-                                  </linearGradient>
-                                  <linearGradient
-                                    id="horizontalGradient3"
-                                    x1="0"
-                                    y1="0"
-                                    x2="1"
-                                    y2="0"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#10b981"
-                                      stopOpacity={0.9}
-                                    />
-                                    <stop
-                                      offset="50%"
-                                      stopColor="#059669"
-                                      stopOpacity={0.8}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#047857"
-                                      stopOpacity={0.7}
-                                    />
-                                  </linearGradient>
-                                  <linearGradient
-                                    id="horizontalGradient4"
-                                    x1="0"
-                                    y1="0"
-                                    x2="1"
-                                    y2="0"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#f59e0b"
-                                      stopOpacity={0.9}
-                                    />
-                                    <stop
-                                      offset="50%"
-                                      stopColor="#d97706"
-                                      stopOpacity={0.8}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#b45309"
-                                      stopOpacity={0.7}
-                                    />
-                                  </linearGradient>
-                                  <linearGradient
-                                    id="horizontalGradient5"
-                                    x1="0"
-                                    y1="0"
-                                    x2="1"
-                                    y2="0"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#ef4444"
-                                      stopOpacity={0.9}
-                                    />
-                                    <stop
-                                      offset="50%"
-                                      stopColor="#dc2626"
-                                      stopOpacity={0.8}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#b91c1c"
-                                      stopOpacity={0.7}
-                                    />
-                                  </linearGradient>
                                   <filter id="horizontalGlow">
                                     <feGaussianBlur
                                       stdDeviation="3"
@@ -2163,7 +1889,7 @@ function SuperAdminDashboardContent() {
                                 />
                                 <Bar
                                   dataKey="users"
-                                  fill="url(#horizontalGradient1)"
+                                  fill="#0d6efd"
                                   name="Users"
                                   radius={[0, 8, 8, 0]}
                                   filter="url(#horizontalGlow)"
@@ -2175,19 +1901,17 @@ function SuperAdminDashboardContent() {
                                   {usersByInstitution
                                     .slice(0, 5)
                                     .map((entry, index) => {
-                                      const gradients = [
-                                        "url(#horizontalGradient1)",
-                                        "url(#horizontalGradient2)",
-                                        "url(#horizontalGradient3)",
-                                        "url(#horizontalGradient4)",
-                                        "url(#horizontalGradient5)",
+                                      const palette = [
+                                        "#0d6efd",
+                                        "#198754",
+                                        "#ffc107",
+                                        "#0dcaf0",
+                                        "#dc3545",
                                       ];
                                       return (
                                         <Cell
                                           key={`cell-${index}`}
-                                          fill={
-                                            gradients[index] || gradients[0]
-                                          }
+                                          fill={palette[index % palette.length]}
                                         />
                                       );
                                     })}
@@ -2228,12 +1952,12 @@ function SuperAdminDashboardContent() {
                             </div>
                           </div>
                         </Card.Header>
-                        <Card.Body className="chart-body-gradient-pink p-0">
+                        <Card.Body className="p-0 bg-white">
                           <div
                             style={{ height: "350px" }}
                             className="p-4 position-relative"
                           >
-                            <div className="chart-background-pattern-pink"></div>
+                            
                             <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
                                 <defs>
@@ -2247,74 +1971,7 @@ function SuperAdminDashboardContent() {
                                       <feMergeNode in="SourceGraphic" />
                                     </feMerge>
                                   </filter>
-                                  <radialGradient
-                                    id="premiumGradient"
-                                    cx="0.5"
-                                    cy="0.5"
-                                    r="0.8"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#8b5cf6"
-                                      stopOpacity={1}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#7c3aed"
-                                      stopOpacity={0.8}
-                                    />
-                                  </radialGradient>
-                                  <radialGradient
-                                    id="enterpriseGradient"
-                                    cx="0.5"
-                                    cy="0.5"
-                                    r="0.8"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#1f2937"
-                                      stopOpacity={1}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#374151"
-                                      stopOpacity={0.8}
-                                    />
-                                  </radialGradient>
-                                  <radialGradient
-                                    id="freeGradient"
-                                    cx="0.5"
-                                    cy="0.5"
-                                    r="0.8"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#06b6d4"
-                                      stopOpacity={1}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#0891b2"
-                                      stopOpacity={0.8}
-                                    />
-                                  </radialGradient>
-                                  <radialGradient
-                                    id="trialGradient"
-                                    cx="0.5"
-                                    cy="0.5"
-                                    r="0.8"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#f59e0b"
-                                      stopOpacity={1}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#d97706"
-                                      stopOpacity={0.8}
-                                    />
-                                  </radialGradient>
+                                  {/* gradients removed for solid color policy */}
                                 </defs>
                                 <Pie
                                   data={institutions.reduce(
@@ -2334,21 +1991,18 @@ function SuperAdminDashboardContent() {
                                       if (existing) {
                                         existing.value += 1;
                                       } else {
-                                        const gradientMap: {
+                                        const colorMap: {
                                           [key: string]: string;
                                         } = {
-                                          PREMIUM: "url(#premiumGradient)",
-                                          ENTERPRISE:
-                                            "url(#enterpriseGradient)",
-                                          FREE: "url(#freeGradient)",
-                                          TRIAL: "url(#trialGradient)",
+                                          PREMIUM: "#6f42c1", // bootstrap purple
+                                          ENTERPRISE: "#343a40", // bootstrap dark
+                                          FREE: "#0dcaf0", // bootstrap info
+                                          TRIAL: "#ffc107", // bootstrap warning
                                         };
                                         acc.push({
                                           name: plan,
                                           value: 1,
-                                          color:
-                                            gradientMap[plan] ||
-                                            "url(#freeGradient)",
+                                          color: colorMap[plan] || "#0dcaf0",
                                         });
                                       }
                                       return acc;
@@ -2394,21 +2048,18 @@ function SuperAdminDashboardContent() {
                                             (item) => item.name === plan
                                           )
                                         ) {
-                                          const gradientMap: {
+                                          const colorMap: {
                                             [key: string]: string;
                                           } = {
-                                            PREMIUM: "url(#premiumGradient)",
-                                            ENTERPRISE:
-                                              "url(#enterpriseGradient)",
-                                            FREE: "url(#freeGradient)",
-                                            TRIAL: "url(#trialGradient)",
+                                            PREMIUM: "#6f42c1",
+                                            ENTERPRISE: "#343a40",
+                                            FREE: "#0dcaf0",
+                                            TRIAL: "#ffc107",
                                           };
                                           acc.push({
                                             name: plan,
                                             value: 1,
-                                            color:
-                                              gradientMap[plan] ||
-                                              "url(#freeGradient)",
+                                            color: colorMap[plan] || "#0dcaf0",
                                           });
                                         }
                                         return acc;
@@ -2527,7 +2178,7 @@ function SuperAdminDashboardContent() {
                   </div>
 
                   <Card className="mb-4 shadow-sm border-0">
-                    <Card.Body className="p-4 bg-gradient-light">
+                    <Card.Body className="p-4 bg-white">
                       <Row className="align-items-center">
                         <Col md={6}>
                           <div className="position-relative search-wrapper">
@@ -2712,7 +2363,7 @@ function SuperAdminDashboardContent() {
                                   <div className="d-flex align-items-center">
                                     <div className="position-relative me-3">
                                       <div
-                                        className="bg-gradient-to-br from-blue-400 to-purple-500 rounded-circle d-flex align-items-center justify-content-center"
+                                        className="bg-primary rounded-circle d-flex align-items-center justify-content-center"
                                         style={{
                                           width: "48px",
                                           height: "48px",
@@ -2912,7 +2563,7 @@ function SuperAdminDashboardContent() {
                   </div>
 
                   <Card className="mb-4 shadow-sm border-0">
-                    <Card.Body className="p-4 bg-gradient-light">
+                    <Card.Body className="p-4 bg-white">
                       <Row className="align-items-center">
                         <Col md={6}>
                           <div className="position-relative search-wrapper">
@@ -3071,7 +2722,7 @@ function SuperAdminDashboardContent() {
                                         />
                                       ) : (
                                         <div
-                                          className="bg-gradient-to-br from-cyan-400 to-blue-500 rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                          className="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-sm"
                                           style={{
                                             width: "48px",
                                             height: "48px",
@@ -3302,7 +2953,7 @@ function SuperAdminDashboardContent() {
                   </div>
 
                   <Card className="mb-4 shadow-sm border-0">
-                    <Card.Body className="p-4 bg-gradient-light">
+                    <Card.Body className="p-4 bg-white">
                       <Row className="align-items-center">
                         <Col md={6}>
                           <div className="position-relative search-wrapper">
@@ -3447,10 +3098,10 @@ function SuperAdminDashboardContent() {
                                   <div className="d-flex align-items-center">
                                     <div className="position-relative me-3">
                                       <div
-                                        className={`bg-gradient-to-br ${
+                                        className={`${
                                           role.adminCreatedRole
-                                            ? "from-blue-400 to-purple-500"
-                                            : "from-green-400 to-emerald-500"
+                                            ? "bg-primary"
+                                            : "bg-success"
                                         } rounded-circle d-flex align-items-center justify-content-center shadow-sm`}
                                         style={{
                                           width: "48px",
@@ -3789,11 +3440,7 @@ function SuperAdminDashboardContent() {
           }
 
           .modern-table .table-header {
-            background: linear-gradient(
-              135deg,
-              #f8fafc 0%,
-              #f1f5f9 100%
-            ) !important;
+            background-color: #f8fafc !important;
             border: none !important;
             font-weight: 700;
             color: #334155 !important;
@@ -3811,12 +3458,7 @@ function SuperAdminDashboardContent() {
             left: 0;
             right: 0;
             height: 1px;
-            background: linear-gradient(
-              90deg,
-              transparent,
-              #e2e8f0,
-              transparent
-            );
+            background: #e2e8f0;
           }
 
           .modern-table .table-row {
@@ -3826,11 +3468,7 @@ function SuperAdminDashboardContent() {
           }
 
           .modern-table .table-row:hover {
-            background: linear-gradient(
-              135deg,
-              #f8fafc 0%,
-              #f1f5f9 100%
-            ) !important;
+            background: #f8fafc !important;
             transform: scale(1.005);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
           }
@@ -3943,12 +3581,12 @@ function SuperAdminDashboardContent() {
           }
 
           .modern-table-container::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+            background: #cbd5e1;
             border-radius: 4px;
           }
 
           .modern-table-container::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, #94a3b8, #64748b);
+            background: #94a3b8;
           }
 
           /* Modern Chart Styling */
@@ -4091,33 +3729,13 @@ function SuperAdminDashboardContent() {
             letter-spacing: 0.5px;
           }
 
-          .chart-body-gradient {
-            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-            position: relative;
-          }
-
-          .chart-body-gradient-cyan {
-            background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%);
-            position: relative;
-          }
-
-          .chart-body-gradient-green {
-            background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
-            position: relative;
-          }
-
-          .chart-body-gradient-orange {
-            background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);
-            position: relative;
-          }
-
-          .chart-body-gradient-purple {
-            background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);
-            position: relative;
-          }
-
+          .chart-body-gradient,
+          .chart-body-gradient-cyan,
+          .chart-body-gradient-green,
+          .chart-body-gradient-orange,
+          .chart-body-gradient-purple,
           .chart-body-gradient-pink {
-            background: linear-gradient(180deg, #fdf2f8 0%, #ffffff 100%);
+            background-color: #ffffff;
             position: relative;
           }
 
@@ -4127,21 +3745,7 @@ function SuperAdminDashboardContent() {
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: radial-gradient(
-                circle at 20% 80%,
-                rgba(120, 119, 198, 0.05) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 80% 20%,
-                rgba(120, 119, 198, 0.05) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 40% 40%,
-                rgba(120, 119, 198, 0.05) 0%,
-                transparent 50%
-              );
+            background: none;
             pointer-events: none;
           }
 
@@ -4151,21 +3755,7 @@ function SuperAdminDashboardContent() {
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: radial-gradient(
-                circle at 20% 80%,
-                rgba(6, 182, 212, 0.05) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 80% 20%,
-                rgba(6, 182, 212, 0.05) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 40% 40%,
-                rgba(6, 182, 212, 0.05) 0%,
-                transparent 50%
-              );
+            background: none;
             pointer-events: none;
           }
 
@@ -4175,21 +3765,7 @@ function SuperAdminDashboardContent() {
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: radial-gradient(
-                circle at 20% 80%,
-                rgba(16, 185, 129, 0.05) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 80% 20%,
-                rgba(16, 185, 129, 0.05) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 40% 40%,
-                rgba(16, 185, 129, 0.05) 0%,
-                transparent 50%
-              );
+            background: none;
             pointer-events: none;
           }
 
@@ -4199,21 +3775,7 @@ function SuperAdminDashboardContent() {
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: radial-gradient(
-                circle at 20% 80%,
-                rgba(245, 158, 11, 0.05) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 80% 20%,
-                rgba(245, 158, 11, 0.05) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 40% 40%,
-                rgba(245, 158, 11, 0.05) 0%,
-                transparent 50%
-              );
+            background: none;
             pointer-events: none;
           }
 
@@ -4223,21 +3785,7 @@ function SuperAdminDashboardContent() {
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: radial-gradient(
-                circle at 20% 80%,
-                rgba(139, 92, 246, 0.05) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 80% 20%,
-                rgba(139, 92, 246, 0.05) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 40% 40%,
-                rgba(139, 92, 246, 0.05) 0%,
-                transparent 50%
-              );
+            background: none;
             pointer-events: none;
           }
 
@@ -4247,21 +3795,7 @@ function SuperAdminDashboardContent() {
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: radial-gradient(
-                circle at 20% 80%,
-                rgba(236, 72, 153, 0.05) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 80% 20%,
-                rgba(236, 72, 153, 0.05) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 40% 40%,
-                rgba(236, 72, 153, 0.05) 0%,
-                transparent 50%
-              );
+            background: none;
             pointer-events: none;
           }
 
@@ -4344,7 +3878,7 @@ function SuperAdminDashboardContent() {
 
           /* Modern Search Input Styles */
           .bg-gradient-light {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background-color: #ffffff;
           }
 
           .modern-search-input {
@@ -4392,37 +3926,20 @@ function SuperAdminDashboardContent() {
           .user-details-modal .modal-header,
           .edit-user-modal .modal-header,
           .delete-user-modal .modal-header {
-            background: linear-gradient(
-              135deg,
-              rgba(255, 255, 255, 0.1) 0%,
-              rgba(255, 255, 255, 0.05) 100%
-            ) !important;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
           }
 
           .user-details-modal .modal-header {
-            background: linear-gradient(
-              135deg,
-              #0d6efd 0%,
-              #0a58ca 100%
-            ) !important;
+            background-color: #0d6efd !important;
           }
 
           .edit-user-modal .modal-header {
-            background: linear-gradient(
-              135deg,
-              #198754 0%,
-              #146c43 100%
-            ) !important;
+            background-color: #198754 !important;
           }
 
           .delete-user-modal .modal-header {
-            background: linear-gradient(
-              135deg,
-              #dc3545 0%,
-              #b02a37 100%
-            ) !important;
+            background-color: #dc3545 !important;
           }
 
           .info-card {
@@ -4492,7 +4009,7 @@ function SuperAdminDashboardContent() {
                     style={{ width: "120px", height: "120px" }}
                   >
                     <div
-                      className="bg-gradient-to-br from-primary to-info rounded-circle d-flex align-items-center justify-content-center shadow-lg"
+                      className="bg-primary rounded-circle d-flex align-items-center justify-content-center shadow-lg"
                       style={{ width: "80px", height: "80px" }}
                     >
                       <PersonCircle size={40} className="text-white" />
@@ -5545,7 +5062,7 @@ function SuperAdminDashboardContent() {
                       />
                     ) : (
                       <div
-                        className="bg-gradient-to-br from-cyan-400 to-blue-500 rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                        className="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-sm"
                         style={{ width: "48px", height: "48px" }}
                       >
                         <span
@@ -5661,7 +5178,7 @@ function SuperAdminDashboardContent() {
                     ) : (
                       <div className="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center h-100">
                         <div
-                          className="bg-gradient-to-br from-primary to-info rounded-circle d-flex align-items-center justify-content-center shadow-lg"
+                          className="bg-primary rounded-circle d-flex align-items-center justify-content-center shadow-lg"
                           style={{ width: "80px", height: "80px" }}
                         >
                           <Building size={40} className="text-white" />

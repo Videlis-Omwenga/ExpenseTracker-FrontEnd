@@ -92,52 +92,55 @@ export default function AdminCreateUserModal({
     <>
       {/* Trigger Button */}
       <Button
-        size="sm"
         variant="primary"
-        className="d-flex align-items-center gap-2 px-2 py-1 rounded-3 fw-semibold shadow-primary-button"
+        className="d-flex align-items-center gap-2 px-4 py-2 rounded-pill fw-semibold shadow-sm border-0"
         onClick={handleShow}
+        style={{ fontSize: '0.95rem' }}
       >
         <PersonPlus size={18} />
-        Add User
+        Add New User
       </Button>
 
       {/* Modal */}
-      <Modal show={show} onHide={handleClose} size="xl">
+      <Modal show={show} onHide={handleClose} size="xl" centered>
         <Modal.Header
           closeButton
-          className="border-0 pb-0 pt-4 px-4"
-          style={{ backgroundColor: "#f8f9fa" }}
+          className="border-0 pb-3 pt-4 px-4"
+          style={{ backgroundColor: '#0d6efd', borderRadius: '0' }}
         >
-          <h6 className="fw-bold text-dark d-flex align-items-center">
+          <div className="d-flex align-items-center w-100">
             <div
-              className="icon-wrapper bg-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
-              style={{ width: "48px", height: "48px" }}
+              className="icon-wrapper bg-white bg-opacity-20 me-3 rounded-3 d-flex align-items-center justify-content-center shadow-sm"
+              style={{ width: "56px", height: "56px" }}
             >
-              <PersonPlus size={24} className="text-white" />
+              <PersonPlus size={26} className="text-white" />
             </div>
             <div>
-              Add New User
-              <div className="text-muted fw-normal small">
+              <h5 className="fw-bold text-white mb-1">Add New User</h5>
+              <p className="text-white text-opacity-90 mb-0 small">
                 Fill out the details to create a new user
-              </div>
+              </p>
             </div>
-          </h6>
+          </div>
         </Modal.Header>
 
         <Form onSubmit={handleSubmit}>
-          <Modal.Body className="px-4 py-3">
-            <Card className="border shadow-sm">
-              <Card.Header className="bg-info bg-opacity-10 border-0 py-3">
-                <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                  <Briefcase className="me-2 text-primary" size={18} />
-                  User Details
+          <Modal.Body className="px-4 py-4" style={{ backgroundColor: '#f8f9fa' }}>
+            <Card className="border-0 shadow-sm" style={{ borderRadius: '16px' }}>
+              <Card.Header className="bg-white border-0 py-3 px-4">
+                <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                  <div className="bg-primary bg-opacity-10 p-2 rounded-circle">
+                    <Briefcase className="text-primary" size={18} />
+                  </div>
+                  User Information
                 </h6>
               </Card.Header>
               <Card.Body className="p-4">
                 <Row>
                   <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-semibold text-dark">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark small mb-2 d-flex align-items-center gap-2">
+                        <i className="bi bi-person-fill text-primary"></i>
                         First Name <span className="text-danger">*</span>
                       </Form.Label>
                       <Form.Control
@@ -145,16 +148,20 @@ export default function AdminCreateUserModal({
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         required
-                        className="rounded-3 py-2 px-3 modern-input"
+                        placeholder="Enter first name"
+                        className="rounded-3 border-0 shadow-sm"
+                        style={{ padding: '0.85rem 1rem', fontSize: '0.95rem', backgroundColor: '#ffffff' }}
                       />
-                      <Form.Text className="text-muted">
+                      <Form.Text className="text-muted small mt-1 d-block">
+                        <i className="bi bi-info-circle me-1"></i>
                         Please enter the user&apos;s first name.
                       </Form.Text>
                     </Form.Group>
                   </Col>
                   <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-semibold text-dark">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark small mb-2 d-flex align-items-center gap-2">
+                        <i className="bi bi-person-fill text-primary"></i>
                         Last Name <span className="text-danger">*</span>
                       </Form.Label>
                       <Form.Control
@@ -162,9 +169,12 @@ export default function AdminCreateUserModal({
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         required
-                        className="rounded-3 py-2 px-3 modern-input"
+                        placeholder="Enter last name"
+                        className="rounded-3 border-0 shadow-sm"
+                        style={{ padding: '0.85rem 1rem', fontSize: '0.95rem', backgroundColor: '#ffffff' }}
                       />
-                      <Form.Text className="text-muted">
+                      <Form.Text className="text-muted small mt-1 d-block">
+                        <i className="bi bi-info-circle me-1"></i>
                         Please enter the user&apos;s last name.
                       </Form.Text>
                     </Form.Group>
@@ -173,8 +183,9 @@ export default function AdminCreateUserModal({
 
                 <Row>
                   <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-semibold text-dark">
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark small mb-2 d-flex align-items-center gap-2">
+                        <i className="bi bi-envelope-fill text-primary"></i>
                         Email Address <span className="text-danger">*</span>
                       </Form.Label>
                       <Form.Control
@@ -182,79 +193,107 @@ export default function AdminCreateUserModal({
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        className="rounded-3 py-2 px-3 modern-input"
+                        placeholder="user@company.com"
+                        className="rounded-3 border-0 shadow-sm"
+                        style={{ padding: '0.85rem 1rem', fontSize: '0.95rem', backgroundColor: '#ffffff' }}
                       />
-                      <Form.Text className="text-muted">
+                      <Form.Text className="text-muted small mt-1 d-block">
+                        <i className="bi bi-info-circle me-1"></i>
                         Please enter the user&apos;s email address.
                       </Form.Text>
                     </Form.Group>
                   </Col>
                   <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-semibold text-dark">
-                        Phone number <span className="text-danger">*</span>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark small mb-2 d-flex align-items-center gap-2">
+                        <i className="bi bi-telephone-fill text-primary"></i>
+                        Phone Number <span className="text-danger">*</span>
                       </Form.Label>
                       <Form.Control
                         type="text"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         required
-                        className="rounded-3 py-2 px-3 modern-input"
+                        placeholder="254712345678"
+                        className="rounded-3 border-0 shadow-sm"
+                        style={{ padding: '0.85rem 1rem', fontSize: '0.95rem', backgroundColor: '#ffffff' }}
                       />
-                      <Form.Text className="text-muted">
+                      <Form.Text className="text-muted small mt-1 d-block">
+                        <i className="bi bi-info-circle me-1"></i>
                         Please enter the user&apos;s phone number. 25471234567
                       </Form.Text>
                     </Form.Group>
                   </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-semibold text-dark">
+                  <Col md={12}>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark small mb-3 d-flex align-items-center gap-2">
+                        <i className="bi bi-shield-fill text-primary"></i>
                         Roles <span className="text-danger">*</span>
                       </Form.Label>
-                      <div className="border rounded p-3 bg-light">
-                        {roles.map((role) => (
-                          <Form.Check
-                            key={role.id}
-                            type="checkbox"
-                            id={`role-${role.id}`}
-                            label={`${role.name} - ${role.description}`}
-                            checked={selectedRoles.includes(role.id)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedRoles([...selectedRoles, role.id]);
-                              } else {
-                                setSelectedRoles(selectedRoles.filter(id => id !== role.id));
-                              }
-                            }}
-                            className="mb-2"
-                          />
-                        ))}
+                      <div className="border-0 rounded-3 p-3 shadow-sm" style={{ maxHeight: '200px', overflowY: 'auto', backgroundColor: '#ffffff' }}>
+                        {roles.length === 0 ? (
+                          <div className="text-muted text-center py-3">
+                            <i className="bi bi-info-circle me-2"></i>
+                            No roles available
+                          </div>
+                        ) : (
+                          <div className="row g-2">
+                            {roles.map((role) => (
+                              <div key={role.id} className="col-md-4 col-sm-6">
+                                <Form.Check
+                                  type="checkbox"
+                                  id={`role-${role.id}`}
+                                  checked={selectedRoles.includes(role.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedRoles([...selectedRoles, role.id]);
+                                    } else {
+                                      setSelectedRoles(selectedRoles.filter(id => id !== role.id));
+                                    }
+                                  }}
+                                  label={
+                                    <span className="d-flex align-items-center gap-2">
+                                      <i className="bi bi-shield-check text-success"></i>
+                                      {role.name}{role.description ? ` - ${role.description}` : ''}
+                                    </span>
+                                  }
+                                  className="p-2 rounded hover-bg-light"
+                                  style={{ cursor: 'pointer' }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <Form.Text className="text-muted">
-                        Please select one or more roles for the user.
+                      <Form.Text className="text-muted small mt-2 d-block">
+                        <i className="bi bi-info-circle me-1"></i>
+                        Please select one or more roles for the user. Selected: <strong className="text-primary">{selectedRoles.length}</strong>
                       </Form.Text>
                     </Form.Group>
                   </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-semibold text-dark">
+                  <Col md={12}>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold text-dark small mb-2 d-flex align-items-center gap-2">
+                        <i className="bi bi-building text-primary"></i>
                         Institution <span className="text-danger">*</span>
                       </Form.Label>
                       <Form.Select
                         value={institution}
                         onChange={(e) => setInstitution(e.target.value)}
                         required
-                        className="rounded-3 py-2 px-3 modern-input"
+                        className="rounded-3 border-0 shadow-sm"
+                        style={{ padding: '0.85rem 1rem', fontSize: '0.95rem', backgroundColor: '#ffffff' }}
                       >
-                        <option value=""></option>
+                        <option value="">Select Institution</option>
                         {institutions.map((i) => (
                           <option key={i.id} value={i.id}>
                             {i.name}
                           </option>
                         ))}
                       </Form.Select>
-                      <Form.Text className="text-muted">
-                        Please select the user&apos;s role.
+                      <Form.Text className="text-muted small mt-1 d-block">
+                        <i className="bi bi-info-circle me-1"></i>
+                        Please select the user&apos;s institution.
                       </Form.Text>
                     </Form.Group>
                   </Col>
@@ -263,37 +302,33 @@ export default function AdminCreateUserModal({
             </Card>
           </Modal.Body>
 
-          <Modal.Footer
-            className="border-0 pt-0 px-4 pb-4 mt-4"
-            style={{ backgroundColor: "#f8f9fa" }}
-          >
+          <Modal.Footer className="border-0 p-4" style={{ backgroundColor: '#ffffff' }}>
             <Button
-              size="sm"
-              variant="outline-secondary"
+              variant="light"
               onClick={handleClose}
-              className="rounded-3 px-4 py-2 fw-semibold"
+              className="px-5 py-3 rounded-pill fw-semibold border-2 shadow-sm"
               disabled={loading}
+              style={{ fontSize: '0.95rem' }}
             >
+              <i className="bi bi-x-lg me-2"></i>
               Cancel
             </Button>
             <Button
-              size="sm"
-              variant="primary"
               type="submit"
               disabled={loading}
-              className="rounded-3 px-4 py-2 fw-semibold gradient-button"
+              className="px-5 py-3 rounded-pill fw-semibold shadow border-0"
+              style={{ fontSize: '0.95rem', backgroundColor: '#0d6efd', color: 'white' }}
             >
               {loading ? (
                 <>
-                  <span
-                    className="spinner-border spinner-border-sm me-2"
-                    role="status"
-                    aria-hidden="true"
-                  ></span>
-                  Adding...
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Adding User...
                 </>
               ) : (
-                "Add User"
+                <>
+                  <PersonPlus size={18} className="me-2" />
+                  Add User
+                </>
               )}
             </Button>
           </Modal.Footer>
@@ -311,8 +346,8 @@ export default function AdminCreateUserModal({
         }
 
         .modern-input:focus {
-          border-color: #06b6d4;
-          box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.1);
+          border-color: #0d6efd;
+          box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
           transform: translateY(-1px);
           background: #fefefe;
         }
@@ -331,42 +366,29 @@ export default function AdminCreateUserModal({
         }
 
         .shadow-primary-button {
-          box-shadow: 0 8px 24px rgba(6, 182, 212, 0.2);
+          box-shadow: 0 8px 24px rgba(13, 110, 253, 0.2);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .shadow-primary-button:hover {
-          box-shadow: 0 12px 32px rgba(6, 182, 212, 0.3);
+          box-shadow: 0 12px 32px rgba(13, 110, 253, 0.28);
           transform: translateY(-2px);
         }
 
         .gradient-button {
-          background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+          background-color: #0d6efd;
           border: none;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           overflow: hidden;
         }
 
-        .gradient-button::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-          transition: left 0.5s;
-        }
-
-        .gradient-button:hover::before {
-          left: 100%;
-        }
+        .gradient-button::before { display: none; }
 
         .gradient-button:hover:not(:disabled) {
-          background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+          background-color: #0b5ed7;
           transform: translateY(-2px);
-          box-shadow: 0 12px 32px rgba(6, 182, 212, 0.4);
+          box-shadow: 0 12px 32px rgba(13, 110, 253, 0.35);
         }
 
         .gradient-button:active {
@@ -385,7 +407,7 @@ export default function AdminCreateUserModal({
         }
 
         .modal .card-header {
-          background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
+          background-color: #ffffff;
           border-bottom: 1px solid #e5e7eb;
         }
 
@@ -404,12 +426,12 @@ export default function AdminCreateUserModal({
         }
 
         .modal-header {
-          background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
+          background-color: #ffffff;
           border-bottom: 2px solid #e5e7eb;
         }
 
         .modal-footer {
-          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          background-color: #ffffff;
           border-top: 2px solid #e5e7eb;
         }
 
@@ -428,8 +450,8 @@ export default function AdminCreateUserModal({
         }
 
         .icon-wrapper {
-          background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-          box-shadow: 0 4px 16px rgba(6, 182, 212, 0.3);
+          /* controlled by utility classes; keep subtle primary-tinted shadow */
+          box-shadow: 0 4px 16px rgba(13, 110, 253, 0.25);
         }
 
         @keyframes slideUp {

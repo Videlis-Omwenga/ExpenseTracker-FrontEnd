@@ -22,6 +22,8 @@ import {
   FaClock,
   FaComment,
   FaListAlt,
+  FaFileUpload,
+  FaFileExport,
 } from "react-icons/fa";
 import {
   Filter,
@@ -40,6 +42,7 @@ import AuthProvider from "../../authPages/tokenData";
 import { ArrowDownCircle, DollarSign, Tag, CheckCircle, User } from "lucide-react";
 import TopNavbar from "../../components/Navbar";
 import { BASE_API_URL } from "@/app/static/apiConfig";
+import CsvUploadModal from "@/app/components/modals/csv-upload-modal";
 
 /**
  * TYPES aligned to your NestJS / Prisma backend
@@ -149,6 +152,8 @@ export default function ExpenseApprovalPage() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+  const [showCsvUploadModal, setShowCsvUploadModal] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Form input states
   const [paymentMethodId, setPaymentMethodId] = useState<number | "">("");
@@ -407,6 +412,84 @@ export default function ExpenseApprovalPage() {
     setShowDetailsModal(true);
   };
 
+  const handleExportExpenses = async () => {
+    setIsExporting(true);
+    try {
+      const response = await fetch(`${BASE_API_URL}/finance/expenses/export`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("expenseTrackerToken")}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Convert JSON to CSV
+        if (data.expenses && data.expenses.length > 0) {
+          const headers = [
+            "ID",
+            "Description",
+            "Amount",
+            "Currency",
+            "Category",
+            "Department",
+            "Payee",
+            "Payment Method",
+            "Status",
+            "Payment Status",
+            "Payment Reference",
+            "Created At",
+            "Submitted By",
+          ];
+
+          const rows = data.expenses.map((expense: any) => [
+            expense.id,
+            expense.description,
+            expense.amount,
+            expense.currency || "",
+            expense.category || "",
+            expense.department || "",
+            expense.payee,
+            expense.paymentMethod || "",
+            expense.status,
+            expense.paymentStatus,
+            expense.paymentReference || "",
+            new Date(expense.createdAt).toLocaleString(),
+            expense.submittedBy || "",
+          ]);
+
+          const csvContent = [
+            headers.join(","),
+            ...rows.map((row: any[]) =>
+              row.map(cell => `"${cell}"`).join(",")
+            ),
+          ].join("\n");
+
+          const blob = new Blob([csvContent], { type: "text/csv" });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `expenses_export_${new Date().toISOString().split("T")[0]}.csv`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+
+          toast.success("Expenses exported successfully");
+        } else {
+          toast.info("No expenses available to export");
+        }
+      } else {
+        const error = await response.json();
+        toast.error(error.message || "Failed to export expenses");
+      }
+    } catch (error) {
+      toast.error("An error occurred while exporting expenses");
+      console.error(error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <AuthProvider>
       <TopNavbar />
@@ -454,10 +537,25 @@ export default function ExpenseApprovalPage() {
                   <Button
                     variant="success"
                     size="sm"
-                    onClick={() => window.print()}
+                    onClick={() => setShowCsvUploadModal(true)}
                   >
-                    <Download size={16} className="me-2" />
-                    Export
+                    <FaFileUpload size={14} className="me-2" />
+                    Upload CSV
+                  </Button>
+                  <Button
+                    variant="info"
+                    size="sm"
+                    onClick={handleExportExpenses}
+                    disabled={isExporting}
+                  >
+                    {isExporting ? (
+                      <Spinner animation="border" size="sm" />
+                    ) : (
+                      <>
+                        <FaFileExport size={14} className="me-2" />
+                        Export
+                      </>
+                    )}
                   </Button>
                 </div>
               </Col>
@@ -1561,6 +1659,15 @@ export default function ExpenseApprovalPage() {
             </>
           )}
         </Modal>
+
+        {/* CSV Upload Modal */}
+        <CsvUploadModal
+          show={showCsvUploadModal}
+          onHide={() => setShowCsvUploadModal(false)}
+          onUploadSuccess={() => {
+            fetchExpensesToApprove();
+          }}
+        />
 
         {/* Styles */}
         <style jsx>{`
