@@ -1321,156 +1321,239 @@ function AdminDashboardContent() {
           </Col>
 
           {/* Main Content */}
-          <Col md={10} className="p-4 bg-light content-area">
+          <Col md={10} className="p-4 content-area" style={{ backgroundColor: '#f8f9fa' }}>
             {/* Dashboard Overview */}
             {activeTab === "dashboard" && (
               <>
                 <div className="mb-4">
-                  <div className="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                      <div className="d-flex align-items-center mb-2">
-                        <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                          <Grid3x3Gap className="text-primary" size={24} />
+                  <div className="d-flex justify-content-between align-items-center mb-4">
+                    <div className="d-flex align-items-center">
+                      <div className="position-relative">
+                        <div 
+                          className="d-flex align-items-center justify-content-center rounded-3 shadow-sm" 
+                          style={{ 
+                            width: '60px', 
+                            height: '60px', 
+                            backgroundColor: '#0d6efd'
+                          }}
+                        >
+                          <Grid3x3Gap className="text-white" size={28} />
                         </div>
-                        <div>
-                          <h2 className="fw-bold text-dark mb-0">
-                            Dashboard Overview
-                          </h2>
-                          <p className="text-muted mb-0 small">
-                            Monitor your company&apos;s key metrics and performance
-                          </p>
-                        </div>
+                        <div 
+                          className="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white" 
+                          style={{ width: '16px', height: '16px' }}
+                        />
+                      </div>
+                      <div className="ms-3">
+                        <h5 className="fw-bold text-dark mb-1" >
+                          Dashboard Overview
+                        </h5>
+                        <p className="text-muted mb-0" style={{ fontSize: '0.95rem' }}>
+                          <i className="bi bi-graph-up me-1"></i>
+                          Monitor your company&apos;s key metrics and performance
+                        </p>
                       </div>
                     </div>
-                    <div className="d-flex align-items-center gap-3">
-                      <Breadcrumb className="bg-light rounded-pill px-3 py-2 mb-0 small">
-                        <Breadcrumb.Item
-                          active
-                          className="text-primary fw-semibold"
-                        >
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="bg-white rounded-pill px-4 py-2 shadow-sm border">
+                        <small className="text-primary fw-semibold">
+                          <i className="bi bi-house-fill me-1"></i>
                           Dashboard
-                        </Breadcrumb.Item>
-                      </Breadcrumb>
+                        </small>
+                      </div>
                     </div>
                   </div>
-                  <hr className="border-2 border-primary opacity-25 mb-4" />
                 </div>
 
                 {/* Quick Actions Section */}
-                <Row className="mb-5">
-                  <Col md={12} className="mb-4">
-                    <h4 className="fw-bold text-dark mb-4 d-flex align-items-center">
-                      <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
-                        <Lightning className="text-warning" size={20} />
-                      </div>
-                      Quick Actions
-                    </h4>
-                  </Col>
-                  {quickActions.map((action) => (
-                    <Col md={4} lg={2} key={action.id} className="mb-3">
-                      <Card
-                        className="h-100 border-0 shadow-sm quick-action-card cursor-pointer"
-                        onClick={action.action}
-                        style={{ transition: 'all 0.3s ease' }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-5px)';
-                          e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-                        }}
-                      >
-                        <Card.Body className="text-center p-3">
-                          <div className={`bg-${action.color} bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center`} style={{ width: '50px', height: '50px' }}>
-                            <span className={`text-${action.color}`}>{action.icon}</span>
+                <div className="mb-5">
+                  <div className="d-flex align-items-center mb-5 mt-5">
+                    <div 
+                      className="d-flex align-items-center justify-content-center rounded-3 me-3 bg-warning" 
+                      style={{ 
+                        width: '42px', 
+                        height: '42px'
+                      }}
+                    >
+                      <Lightning className="text-white" size={20} />
+                    </div>
+                    <div>
+                      <h6 className="fw-bold text-dark mb-0">Quick Actions</h6>
+                      <small className="text-muted">Perform common tasks quickly</small>
+                    </div>
+                  </div>
+                  <Row className="g-3">
+                    {quickActions.map((action) => (
+                      <Col md={4} lg={2} key={action.id}>
+                        <Card
+                          className="h-100 border-0 shadow-sm quick-action-card cursor-pointer overflow-hidden"
+                          onClick={action.action}
+                          style={{ 
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            cursor: 'pointer'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+                            e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.12)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                          }}
+                        >
+                          <div 
+                            className={`w-100 py-1 bg-${action.color}`} 
+                            style={{ height: '4px' }}
+                          />
+                          <Card.Body className="text-center p-4">
+                            <div 
+                              className={`bg-${action.color} bg-opacity-10 rounded-3 mx-auto mb-3 d-flex align-items-center justify-content-center`} 
+                              style={{ 
+                                width: '60px', 
+                                height: '60px',
+                                transition: 'all 0.3s ease'
+                              }}
+                            >
+                              <span className={`text-${action.color}`} style={{ fontSize: '24px' }}>{action.icon}</span>
+                            </div>
+                            <h6 className="fw-bold mb-2 text-dark" style={{ fontSize: '0.9rem' }}>{action.title}</h6>
+                            <small className="text-muted d-block" style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>
+                              {action.description}
+                            </small>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    ))}
+                  </Row>
+                </div>
+
+                {/* Charts Section */}
+                <div className="mb-5">
+                  <div className="d-flex align-items-center mb-4">
+                    <div 
+                      className="d-flex align-items-center justify-content-center rounded-3 me-3 bg-info" 
+                      style={{ 
+                        width: '42px', 
+                        height: '42px'
+                      }}
+                    >
+                      <StarFill className="text-white" size={20} />
+                    </div>
+                    <div>
+                      <h6 className="fw-bold text-dark mb-0">Analytics & Insights</h6>
+                      <small className="text-muted">Visualize your data trends and patterns</small>
+                    </div>
+                  </div>
+
+                  <Row className="g-4">
+                    {/* User Analytics */}
+                    <Col md={6}>
+                      <Card className="h-100 border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                        <Card.Header className="bg-white border-0 py-3 px-4">
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center">
+                              <div 
+                                className="bg-primary bg-opacity-10 rounded-3 p-2 me-2"
+                                style={{ width: '36px', height: '36px' }}
+                              >
+                                <People className="text-primary" size={20} />
+                              </div>
+                              <div>
+                                <h6 className="fw-bold text-dark mb-0">User Status Distribution</h6>
+                                <small className="text-muted">Active vs Inactive users</small>
+                              </div>
+                            </div>
                           </div>
-                          <h6 className="fw-bold mb-2 text-dark">{action.title}</h6>
-                          <small className="text-muted">{action.description}</small>
+                        </Card.Header>
+                        <Card.Body className="p-4">
+                          <div style={{ height: '300px' }}>
+                            <Pie data={getUserStatusData()} options={chartOptions} />
+                          </div>
                         </Card.Body>
                       </Card>
                     </Col>
-                  ))}
-                </Row>
 
-                {/* Charts Section */}
-                <Row className="mb-5">
-                  <Col md={12} className="mb-4">
-                    <h4 className="fw-bold text-dark mb-4 d-flex align-items-center">
-                      <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
-                        <StarFill className="text-info" size={20} />
-                      </div>
-                      Analytics & Insights
-                    </h4>
-                  </Col>
+                    <Col md={6}>
+                      <Card className="h-100 border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                        <Card.Header className="bg-white border-0 py-3 px-4">
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center">
+                              <div 
+                                className="bg-success bg-opacity-10 rounded-3 p-2 me-2"
+                                style={{ width: '36px', height: '36px' }}
+                              >
+                                <ShieldLock className="text-success" size={20} />
+                              </div>
+                              <div>
+                                <h6 className="fw-bold text-dark mb-0">Role Status Distribution</h6>
+                                <small className="text-muted">Active vs Inactive roles</small>
+                              </div>
+                            </div>
+                          </div>
+                        </Card.Header>
+                        <Card.Body className="p-4">
+                          <div style={{ height: '300px' }}>
+                            <Pie data={getRoleStatusData()} options={chartOptions} />
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
 
-                  {/* User Analytics */}
-                  <Col md={6} className="mb-4">
-                    <Card className="shadow-lg border-0 h-100">
-                      <Card.Header className="bg-light border-0 py-3">
-                        <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                          <People className="me-2 text-primary" size={18} />
-                          User Status Distribution
-                        </h6>
-                      </Card.Header>
-                      <Card.Body className="p-4">
-                        <div style={{ height: '300px' }}>
-                          <Pie data={getUserStatusData()} options={chartOptions} />
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
+                    {/* User Growth Chart */}
+                    <Col md={12}>
+                      <Card className="border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                        <Card.Header className="bg-white border-0 py-3 px-4">
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center">
+                              <div 
+                                className="bg-info bg-opacity-10 rounded-3 p-2 me-2"
+                                style={{ width: '36px', height: '36px' }}
+                              >
+                                <Grid3x3Gap className="text-info" size={20} />
+                              </div>
+                              <div>
+                                <h6 className="fw-bold text-dark mb-0">User Growth Over Time</h6>
+                                <small className="text-muted">Track user registration trends</small>
+                              </div>
+                            </div>
+                          </div>
+                        </Card.Header>
+                        <Card.Body className="p-4">
+                          <div style={{ height: '350px' }}>
+                            <Line data={getUserGrowthData()} options={lineChartOptions} />
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
 
-                  <Col md={6} className="mb-4">
-                    <Card className="shadow-lg border-0 h-100">
-                      <Card.Header className="bg-light border-0 py-3">
-                        <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                          <ShieldLock className="me-2 text-success" size={18} />
-                          Role Status Distribution
-                        </h6>
-                      </Card.Header>
-                      <Card.Body className="p-4">
-                        <div style={{ height: '300px' }}>
-                          <Pie data={getRoleStatusData()} options={chartOptions} />
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-
-                  {/* User Growth Chart */}
-                  <Col md={12} className="mb-4">
-                    <Card className="shadow-lg border-0">
-                      <Card.Header className="bg-light border-0 py-3">
-                        <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                          <Grid3x3Gap className="me-2 text-info" size={18} />
-                          User Growth Over Time
-                        </h6>
-                      </Card.Header>
-                      <Card.Body className="p-4">
-                        <div style={{ height: '350px' }}>
-                          <Line data={getUserGrowthData()} options={lineChartOptions} />
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-
-                  {/* Role Distribution Bar Chart */}
-                  <Col md={12} className="mb-4">
-                    <Card className="shadow-lg border-0">
-                      <Card.Header className="bg-light border-0 py-3">
-                        <h6 className="fw-bold text-dark mb-0 d-flex align-items-center">
-                          <Gear className="me-2 text-warning" size={18} />
-                          Top User Roles Distribution
-                        </h6>
-                      </Card.Header>
-                      <Card.Body className="p-4">
-                        <div style={{ height: '350px' }}>
-                          <Bar data={getUserRolesData()} options={barChartOptions} />
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                </Row>
+                    {/* Role Distribution Bar Chart */}
+                    <Col md={12}>
+                      <Card className="border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                        <Card.Header className="bg-white border-0 py-3 px-4">
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center">
+                              <div 
+                                className="bg-warning bg-opacity-10 rounded-3 p-2 me-2"
+                                style={{ width: '36px', height: '36px' }}
+                              >
+                                <Gear className="text-warning" size={20} />
+                              </div>
+                              <div>
+                                <h6 className="fw-bold text-dark mb-0">Top User Roles Distribution</h6>
+                                <small className="text-muted">Most assigned roles in the system</small>
+                              </div>
+                            </div>
+                          </div>
+                        </Card.Header>
+                        <Card.Body className="p-4">
+                          <div style={{ height: '350px' }}>
+                            <Bar data={getUserRolesData()} options={barChartOptions} />
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </Row>
+                </div>
               </>
             )}
 
@@ -1478,60 +1561,65 @@ function AdminDashboardContent() {
             {activeTab === "users" && (
               <>
                 <div className="mb-4">
-                  <div className="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                      <div className="d-flex align-items-center mb-2">
-                        <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
-                          <People className="text-success" size={24} />
+                  <div className="d-flex justify-content-between align-items-center mb-4">
+                    <div className="d-flex align-items-center">
+                      <div className="position-relative">
+                        <div 
+                          className="d-flex align-items-center justify-content-center rounded-3 shadow-sm bg-success" 
+                          style={{ 
+                            width: '60px', 
+                            height: '60px'
+                          }}
+                        >
+                          <People className="text-white" size={28} />
                         </div>
-                        <div>
-                          <h2 className="fw-bold text-dark mb-0">
-                            User Management
-                          </h2>
-                          <p className="text-muted mb-0 small">
-                            Manage company users, roles and permissions
-                          </p>
-                        </div>
+                        <div 
+                          className="position-absolute bottom-0 end-0 bg-primary rounded-circle border border-2 border-white" 
+                          style={{ width: '16px', height: '16px' }}
+                        />
+                      </div>
+                      <div className="ms-3">
+                        <h5 className="fw-bold text-dark mb-1" >
+                          User Management
+                        </h5>
+                        <p className="text-muted mb-0" style={{ fontSize: '0.95rem' }}>
+                          <i className="bi bi-people me-1"></i>
+                          Manage company users, roles and permissions
+                        </p>
                       </div>
                     </div>
-                    <div className="d-flex align-items-center gap-3">
-                      <Breadcrumb className="bg-light rounded-pill px-3 py-2 mb-0 small">
-                        <Breadcrumb.Item
-                          href="#"
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="bg-white rounded-pill px-3 py-2 shadow-sm border">
+                        <small 
+                          className="text-muted text-decoration-none" 
                           onClick={() => handleTabChange("dashboard")}
-                          className="text-decoration-none"
+                          style={{ cursor: 'pointer' }}
                         >
+                          <i className="bi bi-house me-1"></i>
                           Dashboard
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item
-                          active
-                          className="text-success fw-semibold"
-                        >
-                          Users
-                        </Breadcrumb.Item>
-                      </Breadcrumb>
+                        </small>
+                        <span className="mx-2 text-muted">/</span>
+                        <small className="text-success fw-semibold">Users</small>
+                      </div>
                     </div>
                   </div>
-                  <hr className="border-2 border-success opacity-25 mb-4" />
                 </div>
 
-                <Card className="shadow-lg border-0 mb-4 modern-search-card">
+                <Card className="border-0 shadow-sm mb-4" style={{ borderRadius: '16px' }}>
                   <Card.Body className="p-4">
                     {/* Search and Add User Row */}
-                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
-                      <div className="search-container">
-                        <InputGroup
-                          style={{ width: "350px" }}
-                          className="modern-search-group"
-                        >
-                          <InputGroup.Text className="bg-white border-end-0">
-                            <Search className="text-primary" />
+                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                      <div className="position-relative" style={{ width: "400px" }}>
+                        <InputGroup className="border rounded-pill overflow-hidden shadow-sm">
+                          <InputGroup.Text className="bg-white border-0 ps-4">
+                            <Search className="text-primary" size={18} />
                           </InputGroup.Text>
                           <FormControl
                             placeholder="Search users by name, email, phone, or role..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="border-start-0 ps-0"
+                            className="border-0 shadow-none"
+                            style={{ fontSize: '0.95rem' }}
                           />
                         </InputGroup>
                       </div>
@@ -1548,23 +1636,30 @@ function AdminDashboardContent() {
                     </div>
 
                     {/* Filters Row */}
-                    <div className="bg-light rounded-4 p-3 border-0">
+                    <div className="bg-light rounded-4 p-4 border-0" style={{ backgroundColor: '#f8f9fa' }}>
                       <div className="d-flex flex-wrap gap-3 align-items-center">
                         <div className="d-flex align-items-center gap-2">
-                          <div className="bg-primary bg-opacity-10 p-2 rounded-circle">
-                            <Filter className="text-primary" size={14} />
+                          <div 
+                            className="d-flex align-items-center justify-content-center rounded-3 bg-primary" 
+                            style={{ 
+                              width: '32px', 
+                              height: '32px'
+                            }}
+                          >
+                            <Filter className="text-white" size={16} />
                           </div>
-                          <span className="text-dark fw-bold small text-uppercase letter-spacing">Filters</span>
+                          <span className="text-dark fw-bold text-uppercase" style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}>Filters</span>
                         </div>
 
                         {/* Status Filter */}
-                        <div className="filter-group">
-                          <label className="filter-label">Status</label>
+                        <div>
+                          <label className="text-muted mb-1 d-block" style={{ fontSize: '0.75rem', fontWeight: '600' }}>Status</label>
                           <Form.Select
                             size="sm"
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="modern-filter-select"
+                            className="border-0 shadow-sm rounded-pill px-3"
+                            style={{ minWidth: '150px', fontSize: '0.85rem' }}
                           >
                             <option value="">All Status</option>
                             <option value="ACTIVE">🟢 Active</option>
@@ -1575,13 +1670,14 @@ function AdminDashboardContent() {
                         </div>
 
                         {/* Role Filter */}
-                        <div className="filter-group">
-                          <label className="filter-label">Role</label>
+                        <div>
+                          <label className="text-muted mb-1 d-block" style={{ fontSize: '0.75rem', fontWeight: '600' }}>Role</label>
                           <Form.Select
                             size="sm"
                             value={roleFilter}
                             onChange={(e) => setRoleFilter(e.target.value)}
-                            className="modern-filter-select"
+                            className="border-0 shadow-sm rounded-pill px-3"
+                            style={{ minWidth: '150px', fontSize: '0.85rem' }}
                           >
                             <option value="">All Roles</option>
                             {roles.map((role) => (
@@ -1596,8 +1692,13 @@ function AdminDashboardContent() {
                         <div className="d-flex align-items-center gap-2 ms-auto">
                           {/* Active Filter Count */}
                           {(statusFilter || roleFilter) && (
-                            <Badge bg="success" className="px-3 py-2 rounded-pill fw-semibold">
-                              📊 {filteredUsers.length} results
+                            <Badge 
+                              bg="success" 
+                              className="px-4 py-2 rounded-pill fw-semibold shadow-sm"
+                              style={{ fontSize: '0.85rem' }}
+                            >
+                              <i className="bi bi-check-circle me-1"></i>
+                              {filteredUsers.length} results
                             </Badge>
                           )}
 
@@ -1610,9 +1711,10 @@ function AdminDashboardContent() {
                                 setStatusFilter("");
                                 setRoleFilter("");
                               }}
-                              className="rounded-pill px-3 py-2 d-flex align-items-center gap-2 fw-semibold"
+                              className="rounded-pill px-4 py-2 d-flex align-items-center gap-2 fw-semibold border-2"
+                              style={{ fontSize: '0.85rem' }}
                             >
-                              <X size={14} />
+                              <X size={16} />
                               Clear All
                             </Button>
                           )}
@@ -1622,105 +1724,114 @@ function AdminDashboardContent() {
                   </Card.Body>
                 </Card>
 
-                <Card className="shadow-lg border-0 modern-table-card">
-                  <Card.Header className="bg-light border-0 py-4">
+                <Card className="border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                  <Card.Header className="bg-white border-0 py-4 px-4">
                     <div className="d-flex justify-content-between align-items-center">
                       <div className="d-flex align-items-center">
-                        <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
-                          <People className="text-primary" size={20} />
+                        <div 
+                          className="d-flex align-items-center justify-content-center rounded-3 me-3 bg-primary" 
+                          style={{ 
+                            width: '48px', 
+                            height: '48px'
+                          }}
+                        >
+                          <People className="text-white" size={24} />
                         </div>
                         <div>
-                          <h5 className="mb-0 fw-bold text-dark">
-                            User Management
-                          </h5>
+                          <h6 className="mb-1 fw-bold text-dark">
+                            User Directory
+                          </h6>
                           <small className="text-muted">
                             Manage all system users and permissions
                           </small>
                         </div>
                       </div>
                       <div className="d-flex align-items-center gap-2">
-                        <Badge
-                          bg="primary"
-                          className="px-3 py-2 rounded-pill fw-medium"
+                        <div 
+                          className="px-4 py-2 rounded-pill fw-semibold text-white shadow-sm bg-primary"
                         >
+                          <i className="bi bi-people-fill me-2"></i>
                           {filteredUsers.length} Users
-                        </Badge>
-                        <Badge
-                          bg="success"
-                          className="px-3 py-2 rounded-pill fw-medium"
+                        </div>
+                        <div 
+                          className="px-4 py-2 rounded-pill fw-semibold text-white shadow-sm bg-success"
                         >
-                          {
-                            filteredUsers.filter(
-                              (u) => u.status === UserStatus.ACTIVE
-                            ).length
-                          }{" "}
-                          Active
-                        </Badge>
+                          <i className="bi bi-check-circle-fill me-2"></i>
+                          {filteredUsers.filter((u) => u.status === UserStatus.ACTIVE).length} Active
+                        </div>
                       </div>
                     </div>
                   </Card.Header>
                   <Card.Body className="p-0">
-                    <div className="table-responsive modern-table-container">
-                      <Table className="mb-0 modern-table">
-                        <thead className="table-light">
+                    <div className="table-responsive">
+                      <Table className="mb-0 align-middle" hover>
+                        <thead style={{ backgroundColor: '#f8f9fa' }}>
                           <tr>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               #
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Name
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Email
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Phone
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Roles
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Status
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase text-center" style={{ fontSize: '0.75rem' }}>
                               Actions
                             </th>
                           </tr>
                         </thead>
                         <tbody>
                           {currentUsers.map((user, idx) => (
-                            <tr key={user.id} className="border-bottom">
+                            <tr key={user.id} className="border-bottom" style={{ transition: 'background-color 0.2s' }}>
                               <td className="py-3 px-4">
-                                <span className="fw-semibold text-primary">
-                                  {indexOfFirstUser + idx + 1}
-                                </span>
+                                <div 
+                                  className="d-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10"
+                                  style={{ width: '32px', height: '32px' }}
+                                >
+                                  <span className="fw-bold text-primary" style={{ fontSize: '0.85rem' }}>
+                                    {indexOfFirstUser + idx + 1}
+                                  </span>
+                                </div>
                               </td>
                               <td className="py-3 px-4">
                                 <div className="d-flex align-items-center">
                                   <div
-                                    className="bg-primary bg-opacity-10 rounded-circle me-3 d-flex align-items-center justify-content-center"
-                                    style={{ width: "30px", height: "30px" }}
+                                    className="d-flex align-items-center justify-content-center rounded-circle me-3 bg-primary"
+                                    style={{ 
+                                      width: "40px", 
+                                      height: "40px"
+                                    }}
                                   >
-                                    <PersonCircle
-                                      className="text-primary"
-                                      size={15}
-                                    />
+                                    <PersonCircle className="text-white" size={20} />
                                   </div>
-                                  <div className="text-muted">
-                                    {user.name ||
-                                      `${user.firstName} ${user.lastName}`}
+                                  <div>
+                                    <div className="fw-semibold text-dark" style={{ fontSize: '0.95rem' }}>
+                                      {user.name || `${user.firstName} ${user.lastName}`}
+                                    </div>
                                   </div>
                                 </div>
                               </td>
                               <td className="py-3 px-4">
-                                <span className="text-muted fw-medium">
+                                <span className="text-muted" style={{ fontSize: '0.9rem' }}>
+                                  <i className="bi bi-envelope me-1"></i>
                                   {user.email}
                                 </span>
                               </td>
                               <td className="py-3 px-4">
-                                <small className="text-muted fw-medium">
+                                <span className="text-muted" style={{ fontSize: '0.9rem' }}>
+                                  <i className="bi bi-telephone me-1"></i>
                                   {user.phone || "N/A"}
-                                </small>
+                                </span>
                               </td>
                               <td className="py-3 px-4">
                                 <div className="d-flex flex-wrap gap-1">
@@ -1738,18 +1849,19 @@ function AdminDashboardContent() {
                                           )
                                           .join("");
                                         return (
-                                          <small
+                                          <div
                                             key={index}
-                                            className="px-2 py-0 rounded-pill small bg-success bg-opacity-10 border text-success fw-bold"
+                                            className="px-3 py-1 rounded-pill bg-success bg-opacity-10 border border-success border-opacity-25"
                                             title={roleName}
+                                            style={{ fontSize: '0.8rem' }}
                                           >
-                                            {initials}
-                                          </small>
+                                            <span className="text-success fw-bold">{initials}</span>
+                                          </div>
                                         );
                                       }
                                     )
                                   ) : (
-                                    <small className="text-muted small">
+                                    <small className="text-muted">
                                       No roles
                                     </small>
                                   )}
@@ -1764,48 +1876,54 @@ function AdminDashboardContent() {
                                       ? "warning"
                                       : "secondary"
                                   }
-                                  className="px-3 py-1 rounded-pill fw-medium"
+                                  className="px-3 py-2 rounded-pill fw-semibold shadow-sm"
+                                  style={{ fontSize: '0.8rem' }}
                                 >
+                                  {user.status === UserStatus.ACTIVE && "🟢 "}
+                                  {user.status === UserStatus.INACTIVE && "🟡 "}
                                   {user.status}
                                 </Badge>
                               </td>
-                              <td className="text-center">
+                              <td className="text-center py-3 px-4">
                                 <div className="d-flex justify-content-center gap-2">
                                   <Button
                                     size="sm"
                                     variant="outline-primary"
-                                    className="rounded-pill px-3 py-1 fw-medium"
+                                    className="rounded-pill px-3 py-2 fw-semibold border-2"
                                     onClick={() => {
                                       setSelectedUser(user);
                                       setShowUserModal(true);
                                     }}
                                     title="View Details"
+                                    style={{ fontSize: '0.8rem' }}
                                   >
                                     <Eye size={14} className="me-1" />
                                     View
                                   </Button>
-                                  <Badge
-                                    className="bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
+                                  <Button
+                                    size="sm"
+                                    className="rounded-circle border-0 p-2 bg-primary"
+                                    style={{ 
+                                      width: '32px', 
+                                      height: '32px'
+                                    }}
                                     title="Edit User"
                                     onClick={() => handleEditUser(user)}
-                                    style={{ cursor: "pointer" }}
                                   >
-                                    <Pencil
-                                      className="text-primary"
-                                      size={16}
-                                    />
-                                  </Badge>
-                                  <Badge
-                                    className="bg-danger bg-opacity-10 text-danger border-0 px-2 py-1 rounded-pill fw-medium cursor-pointer"
+                                    <Pencil className="text-white" size={14} />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    className="rounded-circle border-0 p-2 bg-danger"
+                                    style={{ 
+                                      width: '32px', 
+                                      height: '32px'
+                                    }}
                                     title="Delete User"
                                     onClick={() => handleDeleteUser(user)}
-                                    style={{ cursor: "pointer" }}
                                   >
-                                    <Trash
-                                      className="text-danger"
-                                      size={16}
-                                    />
-                                  </Badge>
+                                    <Trash className="text-white" size={14} />
+                                  </Button>
                                 </div>
                               </td>
                             </tr>
@@ -1818,17 +1936,23 @@ function AdminDashboardContent() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <Card className="shadow-sm border-0 mt-3">
+                  <Card className="border-0 shadow-sm mt-4" style={{ borderRadius: '16px' }}>
                     <Card.Body className="p-4">
                       <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
                         {/* Pagination Info */}
                         <div className="d-flex align-items-center gap-3">
-                          <span className="text-muted small">
-                            Showing {indexOfFirstUser + 1}-{Math.min(indexOfLastUser, filteredUsers.length)} of {filteredUsers.length} users
-                          </span>
-                          <Badge bg="light" text="dark" className="px-3 py-2 rounded-pill">
+                          <div className="d-flex align-items-center gap-2">
+                            <i className="bi bi-info-circle text-primary"></i>
+                            <span className="text-muted" style={{ fontSize: '0.9rem' }}>
+                              Showing <span className="fw-bold text-dark">{indexOfFirstUser + 1}-{Math.min(indexOfLastUser, filteredUsers.length)}</span> of <span className="fw-bold text-dark">{filteredUsers.length}</span> users
+                            </span>
+                          </div>
+                          <div 
+                            className="px-3 py-2 rounded-pill text-white fw-semibold shadow-sm bg-primary"
+                            style={{ fontSize: '0.85rem' }}
+                          >
                             Page {currentPage} of {totalPages}
-                          </Badge>
+                          </div>
                         </div>
 
                         {/* Pagination Controls */}
@@ -1836,10 +1960,12 @@ function AdminDashboardContent() {
                           <Pagination.First
                             onClick={() => setCurrentPage(1)}
                             disabled={currentPage === 1}
+                            className="rounded-circle"
                           />
                           <Pagination.Prev
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
+                            className="rounded-circle"
                           />
 
                           {/* Page Numbers */}
@@ -1888,10 +2014,12 @@ function AdminDashboardContent() {
                           <Pagination.Next
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages}
+                            className="rounded-circle"
                           />
                           <Pagination.Last
                             onClick={() => setCurrentPage(totalPages)}
                             disabled={currentPage === totalPages}
+                            className="rounded-circle"
                           />
                         </Pagination>
                       </div>
@@ -1905,61 +2033,65 @@ function AdminDashboardContent() {
             {activeTab === "roles" && (
               <>
                 <div className="mb-4">
-                  <div className="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                      <div className="d-flex align-items-center mb-2">
-                        <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
-                          <Gear className="text-warning" size={24} />
+                  <div className="d-flex justify-content-between align-items-center mb-4">
+                    <div className="d-flex align-items-center">
+                      <div className="position-relative">
+                        <div 
+                          className="d-flex align-items-center justify-content-center rounded-3 shadow-sm bg-warning" 
+                          style={{ 
+                            width: '60px', 
+                            height: '60px'
+                          }}
+                        >
+                          <Gear className="text-white" size={28} />
                         </div>
-                        <div>
-                          <h2 className="fw-bold text-dark mb-0">
-                            Role Management
-                          </h2>
-                          <p className="text-muted mb-0 small">
-                            Configure roles and access permissions for your
-                            organization
-                          </p>
-                        </div>
+                        <div 
+                          className="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white" 
+                          style={{ width: '16px', height: '16px' }}
+                        />
+                      </div>
+                      <div className="ms-3">
+                        <h5 className="fw-bold text-dark mb-1" >
+                          Role Management
+                        </h5>
+                        <p className="text-muted mb-0" style={{ fontSize: '0.95rem' }}>
+                          <i className="bi bi-shield-lock me-1"></i>
+                          Configure roles and access permissions for your organization
+                        </p>
                       </div>
                     </div>
-                    <div className="d-flex align-items-center gap-3">
-                      <Breadcrumb className="bg-light rounded-pill px-3 py-2 mb-0 small">
-                        <Breadcrumb.Item
-                          href="#"
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="bg-white rounded-pill px-3 py-2 shadow-sm border">
+                        <small 
+                          className="text-muted text-decoration-none" 
                           onClick={() => handleTabChange("dashboard")}
-                          className="text-decoration-none"
+                          style={{ cursor: 'pointer' }}
                         >
+                          <i className="bi bi-house me-1"></i>
                           Dashboard
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item
-                          active
-                          className="text-warning fw-semibold"
-                        >
-                          Roles
-                        </Breadcrumb.Item>
-                      </Breadcrumb>
+                        </small>
+                        <span className="mx-2 text-muted">/</span>
+                        <small className="text-warning fw-semibold">Roles</small>
+                      </div>
                     </div>
                   </div>
-                  <hr className="border-2 border-warning opacity-25 mb-4" />
                 </div>
 
-                <Card className="shadow-lg border-0 mb-4 modern-search-card">
+                <Card className="border-0 shadow-sm mb-4" style={{ borderRadius: '16px' }}>
                   <Card.Body className="p-4">
                     {/* Search and Add Role Row */}
-                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
-                      <div className="search-container">
-                        <InputGroup
-                          style={{ width: "350px" }}
-                          className="modern-search-group"
-                        >
-                          <InputGroup.Text className="bg-white border-end-0">
-                            <Search className="text-primary" />
+                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                      <div className="position-relative" style={{ width: "400px" }}>
+                        <InputGroup className="border rounded-pill overflow-hidden shadow-sm">
+                          <InputGroup.Text className="bg-white border-0 ps-4">
+                            <Search className="text-primary" size={18} />
                           </InputGroup.Text>
                           <FormControl
                             placeholder="Search roles by name, description..."
                             value={roleSearchTerm}
                             onChange={(e) => setRoleSearchTerm(e.target.value)}
-                            className="border-start-0 ps-0"
+                            className="border-0 shadow-none"
+                            style={{ fontSize: '0.95rem' }}
                           />
                         </InputGroup>
                       </div>
@@ -1973,23 +2105,30 @@ function AdminDashboardContent() {
                     </div>
 
                     {/* Filters Row */}
-                    <div className="bg-light rounded-4 p-3 border-0">
+                    <div className="bg-light rounded-4 p-4 border-0" style={{ backgroundColor: '#f8f9fa' }}>
                       <div className="d-flex flex-wrap gap-3 align-items-center">
                         <div className="d-flex align-items-center gap-2">
-                          <div className="bg-warning bg-opacity-10 p-2 rounded-circle">
-                            <Filter className="text-warning" size={14} />
+                          <div 
+                            className="d-flex align-items-center justify-content-center rounded-3 bg-warning" 
+                            style={{ 
+                              width: '32px', 
+                              height: '32px'
+                            }}
+                          >
+                            <Filter className="text-white" size={16} />
                           </div>
-                          <span className="text-dark fw-bold small text-uppercase letter-spacing">Filters</span>
+                          <span className="text-dark fw-bold text-uppercase" style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}>Filters</span>
                         </div>
 
                         {/* Status Filter */}
-                        <div className="filter-group">
-                          <label className="filter-label">Status</label>
+                        <div>
+                          <label className="text-muted mb-1 d-block" style={{ fontSize: '0.75rem', fontWeight: '600' }}>Status</label>
                           <Form.Select
                             size="sm"
                             value={roleStatusFilter}
                             onChange={(e) => setRoleStatusFilter(e.target.value)}
-                            className="modern-filter-select"
+                            className="border-0 shadow-sm rounded-pill px-3"
+                            style={{ minWidth: '150px', fontSize: '0.85rem' }}
                           >
                             <option value="">All Status</option>
                             <option value="active">🟢 Active</option>
@@ -2001,8 +2140,13 @@ function AdminDashboardContent() {
                         <div className="d-flex align-items-center gap-2 ms-auto">
                           {/* Active Filter Count */}
                           {roleStatusFilter && (
-                            <Badge bg="success" className="px-3 py-2 rounded-pill fw-semibold">
-                              📊 {filteredRoles.length} results
+                            <Badge 
+                              bg="success" 
+                              className="px-4 py-2 rounded-pill fw-semibold shadow-sm"
+                              style={{ fontSize: '0.85rem' }}
+                            >
+                              <i className="bi bi-check-circle me-1"></i>
+                              {filteredRoles.length} results
                             </Badge>
                           )}
 
@@ -2014,9 +2158,10 @@ function AdminDashboardContent() {
                               onClick={() => {
                                 setRoleStatusFilter("");
                               }}
-                              className="rounded-pill px-3 py-2 d-flex align-items-center gap-2 fw-semibold"
+                              className="rounded-pill px-4 py-2 d-flex align-items-center gap-2 fw-semibold border-2"
+                              style={{ fontSize: '0.85rem' }}
                             >
-                              <X size={14} />
+                              <X size={16} />
                               Clear All
                             </Button>
                           )}
@@ -2026,163 +2171,198 @@ function AdminDashboardContent() {
                   </Card.Body>
                 </Card>
 
-                <Card className="shadow-lg border-0 modern-table-card">
-                  <Card.Header className="bg-light border-0 py-4">
+                <Card className="border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                  <Card.Header className="bg-white border-0 py-4 px-4">
                     <div className="d-flex justify-content-between align-items-center">
                       <div className="d-flex align-items-center">
-                        <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
-                          <Gear className="text-success" size={20} />
+                        <div 
+                          className="d-flex align-items-center justify-content-center rounded-3 me-3 bg-warning" 
+                          style={{ 
+                            width: '48px', 
+                            height: '48px'
+                          }}
+                        >
+                          <Gear className="text-white" size={24} />
                         </div>
                         <div>
-                          <h5 className="mb-0 fw-bold text-dark">
-                            Role Management
-                          </h5>
+                          <h6 className="mb-1 fw-bold text-dark">
+                            Role Directory
+                          </h6>
                           <small className="text-muted">
                             Manage system roles and permissions
                           </small>
                         </div>
                       </div>
                       <div className="d-flex align-items-center gap-2">
-                        <Badge
-                          bg="primary"
-                          className="px-3 py-2 rounded-pill fw-medium"
+                        <div 
+                          className="px-4 py-2 rounded-pill fw-semibold text-white shadow-sm bg-primary"
                         >
+                          <i className="bi bi-shield-fill me-2"></i>
                           {roles.length} Roles
-                        </Badge>
-                        <Badge
-                          bg="success"
-                          className="px-3 py-2 rounded-pill fw-medium"
+                        </div>
+                        <div 
+                          className="px-4 py-2 rounded-pill fw-semibold text-white shadow-sm bg-success"
                         >
+                          <i className="bi bi-check-circle-fill me-2"></i>
                           {roles.filter((r) => r.isActive).length} Active
-                        </Badge>
+                        </div>
                       </div>
                     </div>
                   </Card.Header>
                   <Card.Body className="p-0">
-                    <div className="table-responsive modern-table-container">
-                      <Table className="mb-0 modern-table">
-                        <thead className="table-light">
+                    <div className="table-responsive">
+                      <Table className="mb-0 align-middle" hover>
+                        <thead style={{ backgroundColor: '#f8f9fa' }}>
                           <tr>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               #
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Role Name
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Description
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Region
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Page
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Institution
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Created By
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Status
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase text-center" style={{ fontSize: '0.75rem' }}>
                               Actions
                             </th>
                           </tr>
                         </thead>
                         <tbody>
                           {currentRoles.map((role, idx) => (
-                            <tr key={role.id} className="border-bottom">
+                            <tr key={role.id} className="border-bottom" style={{ transition: 'background-color 0.2s' }}>
                               <td className="py-3 px-4">
-                                <span className="fw-semibold text-primary">
-                                  {indexOfFirstRole + idx + 1}
-                                </span>
+                                <div 
+                                  className="d-flex align-items-center justify-content-center rounded-circle bg-warning"
+                                  style={{ 
+                                    width: '32px', 
+                                    height: '32px',
+                                    opacity: '0.15'
+                                  }}
+                                >
+                                  <span className="fw-bold text-dark" style={{ fontSize: '0.85rem', position: 'relative', zIndex: 1 }}>
+                                    {indexOfFirstRole + idx + 1}
+                                  </span>
+                                </div>
                               </td>
                               <td className="py-3 px-4">
                                 <div className="d-flex align-items-center">
                                   <div
-                                    className="bg-success bg-opacity-10 rounded-circle me-3 d-flex align-items-center justify-content-center"
-                                    style={{ width: "35px", height: "35px" }}
+                                    className="d-flex align-items-center justify-content-center rounded-circle me-3 bg-warning"
+                                    style={{ 
+                                      width: "42px", 
+                                      height: "42px"
+                                    }}
                                   >
-                                    <Gear className="text-success" size={18} />
+                                    <Gear className="text-white" size={20} />
                                   </div>
-                                  <div className="fw-semibold text-dark">
+                                  <div className="fw-semibold text-dark" style={{ fontSize: '0.95rem' }}>
                                     {role.name}
                                   </div>
                                 </div>
                               </td>
                               <td className="py-3 px-4">
-                                <span className="text-muted fw-medium" title={role.description || "No description"}>
+                                <span className="text-muted" style={{ fontSize: '0.9rem' }} title={role.description || "No description"}>
                                   {role.description
                                     ? role.description.length > 30
                                       ? `${role.description.substring(0, 30)}...`
                                       : role.description
-                                    : "No description"
+                                    : <em className="text-muted">No description</em>
                                   }
                                 </span>
                               </td>
                               <td className="py-3 px-4">
-                                <Badge bg="warning" className="px-3 py-1 rounded-pill fw-medium">
+                                <div 
+                                  className="px-3 py-2 rounded-pill fw-semibold text-white shadow-sm d-inline-block bg-warning"
+                                  style={{ fontSize: '0.8rem' }}
+                                >
+                                  <i className="bi bi-geo-alt-fill me-1"></i>
                                   {role.region?.name || regions.find(r => r.id === role.regionId)?.name || "No Region"}
-                                </Badge>
+                                </div>
                               </td>
                               <td className="py-3 px-4">
-                                <Badge bg="info" className="px-3 py-1 rounded-pill fw-medium">
+                                <div 
+                                  className="px-3 py-2 rounded-pill fw-semibold text-white shadow-sm d-inline-block bg-info"
+                                  style={{ fontSize: '0.8rem' }}
+                                >
+                                  <i className="bi bi-file-text-fill me-1"></i>
                                   {role.page?.name || pages.find(p => p.id === role.pageId)?.name || "No Page"}
-                                </Badge>
+                                </div>
                               </td>
                               <td className="py-3 px-4">
-                                <span className="fw-medium text-dark">
-                                  {role.institution?.name || "N/A"}
+                                <span className="text-dark" style={{ fontSize: '0.9rem' }}>
+                                  <i className="bi bi-building me-1 text-muted"></i>
+                                  {role.institution?.name || <em className="text-muted">N/A</em>}
                                 </span>
                               </td>
                               <td className="py-3 px-4">
-                                <small className="text-muted fw-medium">
+                                <small className="text-muted" style={{ fontSize: '0.85rem' }}>
+                                  <i className="bi bi-person-circle me-1"></i>
                                   User #{role.createdBy || "System"}
                                 </small>
                               </td>
                               <td className="py-3 px-4">
                                 <Badge
                                   bg={role.isActive ? "success" : "secondary"}
-                                  className="px-3 py-1 rounded-pill fw-medium"
+                                  className="px-3 py-2 rounded-pill fw-semibold shadow-sm"
+                                  style={{ fontSize: '0.8rem' }}
                                 >
-                                  {role.isActive ? "Active" : "Inactive"}
+                                  {role.isActive ? "🟢 Active" : "🔴 Inactive"}
                                 </Badge>
                               </td>
                               <td className="py-3 px-4 text-center">
                                 <div className="d-flex justify-content-center gap-2">
                                   <Button
                                     size="sm"
-                                    variant="outline-warning"
-                                    className="rounded-pill px-3 py-1 fw-medium"
+                                    className="rounded-pill px-3 py-2 fw-semibold border-2 bg-white text-dark border"
                                     onClick={() => {
                                       setSelectedRole(role);
                                       setShowRoleModal(true);
                                     }}
                                     title="View Details"
+                                    style={{ fontSize: '0.8rem' }}
                                   >
                                     <Eye size={14} className="me-1" />
                                     View
                                   </Button>
                                   <Button
-                                    variant="outline-primary"
                                     size="sm"
-                                    className="modern-action-btn border-0 bg-primary bg-opacity-10 text-primary"
+                                    className="rounded-circle border-0 p-2 bg-primary"
+                                    style={{ 
+                                      width: '32px', 
+                                      height: '32px'
+                                    }}
                                     title="Edit Role"
                                     onClick={() => handleEditRole(role)}
                                   >
-                                    <Pencil size={14} />
+                                    <Pencil className="text-white" size={14} />
                                   </Button>
                                   <Button
-                                    variant="outline-danger"
                                     size="sm"
-                                    className="modern-action-btn border-0 bg-danger bg-opacity-10 text-danger"
+                                    className="rounded-circle border-0 p-2 bg-danger"
+                                    style={{ 
+                                      width: '32px', 
+                                      height: '32px'
+                                    }}
                                     title="Delete Role"
                                     onClick={() => handleDeleteRole(role)}
                                   >
-                                    <Trash size={14} />
+                                    <Trash className="text-white" size={14} />
                                   </Button>
                                 </div>
                               </td>
@@ -2196,17 +2376,23 @@ function AdminDashboardContent() {
 
                 {/* Role Pagination */}
                 {totalRolePages > 1 && (
-                  <Card className="shadow-sm border-0 mt-3">
+                  <Card className="border-0 shadow-sm mt-4" style={{ borderRadius: '16px' }}>
                     <Card.Body className="p-4">
                       <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
                         {/* Pagination Info */}
                         <div className="d-flex align-items-center gap-3">
-                          <span className="text-muted small">
-                            Showing {indexOfFirstRole + 1}-{Math.min(indexOfLastRole, filteredRoles.length)} of {filteredRoles.length} roles
-                          </span>
-                          <Badge bg="light" text="dark" className="px-3 py-2 rounded-pill">
+                          <div className="d-flex align-items-center gap-2">
+                            <i className="bi bi-info-circle text-primary"></i>
+                            <span className="text-muted" style={{ fontSize: '0.9rem' }}>
+                              Showing <span className="fw-bold text-dark">{indexOfFirstRole + 1}-{Math.min(indexOfLastRole, filteredRoles.length)}</span> of <span className="fw-bold text-dark">{filteredRoles.length}</span> roles
+                            </span>
+                          </div>
+                          <div 
+                            className="px-3 py-2 rounded-pill text-white fw-semibold shadow-sm bg-warning"
+                            style={{ fontSize: '0.85rem' }}
+                          >
                             Page {currentRolePage} of {totalRolePages}
-                          </Badge>
+                          </div>
                         </div>
 
                         {/* Pagination Controls */}
@@ -2283,66 +2469,70 @@ function AdminDashboardContent() {
             {activeTab === "regions" && (
               <>
                 <div className="mb-4">
-                  <div className="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                      <div className="d-flex align-items-center mb-2">
-                        <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
-                          <ShieldLock className="text-warning" size={24} />
+                  <div className="d-flex justify-content-between align-items-center mb-4">
+                    <div className="d-flex align-items-center">
+                      <div className="position-relative">
+                        <div 
+                          className="d-flex align-items-center justify-content-center rounded-3 shadow-sm bg-danger" 
+                          style={{ 
+                            width: '60px', 
+                            height: '60px'
+                          }}
+                        >
+                          <ShieldLock className="text-white" size={28} />
                         </div>
-                        <div>
-                          <h2 className="fw-bold text-dark mb-0">
-                            Region Management
-                          </h2>
-                          <p className="text-muted mb-0 small">
-                            Manage company regions and locations
-                          </p>
-                        </div>
+                        <div 
+                          className="position-absolute bottom-0 end-0 bg-info rounded-circle border border-2 border-white" 
+                          style={{ width: '16px', height: '16px' }}
+                        />
+                      </div>
+                      <div className="ms-3">
+                        <h5 className="fw-bold text-dark mb-1" >
+                          Region Management
+                        </h5>
+                        <p className="text-muted mb-0" style={{ fontSize: '0.95rem' }}>
+                          <i className="bi bi-geo-alt me-1"></i>
+                          Manage company regions and locations
+                        </p>
                       </div>
                     </div>
-                    <div className="d-flex align-items-center gap-3">
-                      <Breadcrumb className="bg-light rounded-pill px-3 py-2 mb-0 small">
-                        <Breadcrumb.Item
-                          href="#"
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="bg-white rounded-pill px-3 py-2 shadow-sm border">
+                        <small 
+                          className="text-muted text-decoration-none" 
                           onClick={() => handleTabChange("dashboard")}
-                          className="text-decoration-none"
+                          style={{ cursor: 'pointer' }}
                         >
+                          <i className="bi bi-house me-1"></i>
                           Dashboard
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item
-                          active
-                          className="text-warning fw-semibold"
-                        >
-                          Regions
-                        </Breadcrumb.Item>
-                      </Breadcrumb>
+                        </small>
+                        <span className="mx-2 text-muted">/</span>
+                        <small className="text-danger fw-semibold">Regions</small>
+                      </div>
                     </div>
                   </div>
-                  <hr className="border-2 border-warning opacity-25 mb-4" />
                 </div>
 
-                <Card className="shadow-lg border-0 mb-4 modern-search-card">
+                <Card className="border-0 shadow-sm mb-4" style={{ borderRadius: '16px' }}>
                   <Card.Body className="p-4">
                     {/* Search and Add Region Row */}
                     <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
-                      <div className="search-container">
-                        <InputGroup
-                          style={{ width: "350px" }}
-                          className="modern-search-group"
-                        >
-                          <InputGroup.Text className="bg-white border-end-0">
-                            <Search className="text-primary" />
+                      <div className="position-relative" style={{ width: "400px" }}>
+                        <InputGroup className="border rounded-pill overflow-hidden shadow-sm">
+                          <InputGroup.Text className="bg-white border-0 ps-4">
+                            <Search className="text-primary" size={18} />
                           </InputGroup.Text>
                           <FormControl
                             placeholder="Search regions by name..."
                             value={regionSearchTerm}
                             onChange={(e) => setRegionSearchTerm(e.target.value)}
-                            className="border-start-0 ps-0"
+                            className="border-0 shadow-none"
+                            style={{ fontSize: '0.95rem' }}
                           />
                         </InputGroup>
                       </div>
                       <Button
-                        variant="warning"
-                        className="px-4 py-2 rounded-pill fw-medium shadow-sm"
+                        className="px-4 py-2 rounded-pill fw-semibold shadow-sm border-0 bg-danger text-white"
                         onClick={() => setShowCreateRegionModal(true)}
                       >
                         <ShieldLock size={16} className="me-2" />
@@ -2350,20 +2540,29 @@ function AdminDashboardContent() {
                       </Button>
                     </div>
 
-                    {/* Filters Row */}
-                    <div className="bg-light rounded-4 p-3 border-0">
-                      <div className="d-flex flex-wrap gap-3 align-items-center">
+                    {/* Info Row */}
+                    <div className="bg-light rounded-4 p-4 border-0" style={{ backgroundColor: '#f8f9fa' }}>
+                      <div className="d-flex align-items-center justify-content-between">
                         <div className="d-flex align-items-center gap-2">
-                          <div className="bg-warning bg-opacity-10 p-2 rounded-circle">
-                            <Filter className="text-warning" size={14} />
+                          <div 
+                            className="d-flex align-items-center justify-content-center rounded-3 bg-danger" 
+                            style={{ 
+                              width: '32px', 
+                              height: '32px'
+                            }}
+                          >
+                            <i className="bi bi-info-circle text-white" style={{ fontSize: '16px' }}></i>
                           </div>
-                          <span className="text-dark fw-bold small text-uppercase letter-spacing">Filters</span>
+                          <span className="text-dark fw-bold text-uppercase" style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}>Region Overview</span>
                         </div>
 
-                        {/* No filters for regions, but keep the structure */}
-                        <div className="d-flex align-items-center gap-2 ms-auto">
-                          <Badge bg="info" className="px-3 py-2 rounded-pill fw-semibold">
-                            📊 {filteredRegions.length} regions
+                        <div className="d-flex align-items-center gap-2">
+                          <Badge 
+                            className="px-4 py-2 rounded-pill fw-semibold shadow-sm text-white bg-info"
+                            style={{ fontSize: '0.85rem' }}
+                          >
+                            <i className="bi bi-geo-alt-fill me-1"></i>
+                            {filteredRegions.length} regions
                           </Badge>
                         </div>
                       </div>
@@ -2371,99 +2570,135 @@ function AdminDashboardContent() {
                   </Card.Body>
                 </Card>
 
-                <Card className="shadow-lg border-0 modern-table-card">
-                  <Card.Header className="bg-light border-0 py-4">
+                <Card className="border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                  <Card.Header className="bg-white border-0 py-4 px-4">
                     <div className="d-flex justify-content-between align-items-center">
                       <div className="d-flex align-items-center">
-                        <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
-                          <ShieldLock className="text-warning" size={20} />
+                        <div 
+                          className="d-flex align-items-center justify-content-center rounded-3 me-3 bg-danger" 
+                          style={{ 
+                            width: '48px', 
+                            height: '48px'
+                          }}
+                        >
+                          <ShieldLock className="text-white" size={24} />
                         </div>
                         <div>
-                          <h5 className="mb-0 fw-bold text-dark">
-                            Region Management
-                          </h5>
+                          <h6 className="mb-1 fw-bold text-dark">
+                            Regional Directory
+                          </h6>
                           <small className="text-muted">
                             Manage company regions and locations
                           </small>
                         </div>
                       </div>
                       <div className="d-flex align-items-center gap-2">
-                        <Badge
-                          bg="primary"
-                          className="px-3 py-2 rounded-pill fw-medium"
+                        <div 
+                          className="px-4 py-2 rounded-pill fw-semibold text-white shadow-sm bg-primary"
                         >
+                          <i className="bi bi-pin-map-fill me-2"></i>
                           {regions.length} Regions
-                        </Badge>
+                        </div>
                       </div>
                     </div>
                   </Card.Header>
                   <Card.Body className="p-0">
-                    <div className="table-responsive modern-table-container">
-                      <Table className="mb-0 modern-table">
-                        <thead className="table-light">
+                    <div className="table-responsive">
+                      <Table className="mb-0 align-middle" hover>
+                        <thead style={{ backgroundColor: '#f8f9fa' }}>
                           <tr>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               #
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Region Name
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Institution
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
                               Created At
                             </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase small text-center">
+                            <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase text-center" style={{ fontSize: '0.75rem' }}>
                               Actions
                             </th>
                           </tr>
                         </thead>
                         <tbody>
                           {currentRegions.map((region, index) => (
-                            <tr key={region.id}>
-                              <td className="py-3 px-4 text-muted fw-medium">
-                                {indexOfFirstRegion + index + 1}
+                            <tr key={region.id} className="border-bottom" style={{ transition: 'background-color 0.2s' }}>
+                              <td className="py-3 px-4">
+                                <div 
+                                  className="d-flex align-items-center justify-content-center rounded-circle bg-danger"
+                                  style={{ 
+                                    width: '32px', 
+                                    height: '32px',
+                                    opacity: '0.15'
+                                  }}
+                                >
+                                  <span className="fw-bold text-dark" style={{ fontSize: '0.85rem', position: 'relative', zIndex: 1 }}>
+                                    {indexOfFirstRegion + index + 1}
+                                  </span>
+                                </div>
                               </td>
                               <td className="py-3 px-4">
                                 <div className="d-flex align-items-center">
-                                  <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
-                                    <ShieldLock className="text-warning" size={18} />
+                                  <div 
+                                    className="d-flex align-items-center justify-content-center rounded-circle me-3 bg-danger"
+                                    style={{ 
+                                      width: "42px", 
+                                      height: "42px"
+                                    }}
+                                  >
+                                    <ShieldLock className="text-white" size={20} />
                                   </div>
-                                  <div className="fw-semibold text-dark">
+                                  <div className="fw-semibold text-dark" style={{ fontSize: '0.95rem' }}>
+                                    <i className="bi bi-geo-alt-fill me-2 text-danger"></i>
                                     {region.name}
                                   </div>
                                 </div>
                               </td>
                               <td className="py-3 px-4">
-                                <span className="fw-medium text-dark">
-                                  {region.institution?.name || "N/A"}
+                                <span className="text-dark" style={{ fontSize: '0.9rem' }}>
+                                  <i className="bi bi-building me-1 text-muted"></i>
+                                  {region.institution?.name || <em className="text-muted">N/A</em>}
                                 </span>
                               </td>
                               <td className="py-3 px-4">
-                                <small className="text-muted fw-medium">
-                                  {new Date(region.createdAt).toLocaleDateString()}
-                                </small>
+                                <span className="text-muted" style={{ fontSize: '0.85rem' }}>
+                                  <i className="bi bi-calendar-event me-1"></i>
+                                  {new Date(region.createdAt).toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'short', 
+                                    day: 'numeric' 
+                                  })}
+                                </span>
                               </td>
                               <td className="py-3 px-4 text-center">
                                 <div className="d-flex justify-content-center gap-2">
                                   <Button
-                                    variant="outline-primary"
                                     size="sm"
-                                    className="modern-action-btn border-0 bg-primary bg-opacity-10 text-primary"
+                                    className="rounded-circle border-0 p-2 bg-primary"
+                                    style={{ 
+                                      width: '32px', 
+                                      height: '32px'
+                                    }}
                                     title="Edit Region"
                                     onClick={() => handleEditRegion(region)}
                                   >
-                                    <Pencil size={14} />
+                                    <Pencil className="text-white" size={14} />
                                   </Button>
                                   <Button
-                                    variant="outline-danger"
                                     size="sm"
-                                    className="modern-action-btn border-0 bg-danger bg-opacity-10 text-danger"
+                                    className="rounded-circle border-0 p-2 bg-danger"
+                                    style={{ 
+                                      width: '32px', 
+                                      height: '32px'
+                                    }}
                                     title="Delete Region"
                                     onClick={() => handleDeleteRegion(region)}
                                   >
-                                    <Trash size={14} />
+                                    <Trash className="text-white" size={14} />
                                   </Button>
                                 </div>
                               </td>
@@ -2477,17 +2712,23 @@ function AdminDashboardContent() {
 
                 {/* Region Pagination */}
                 {totalRegionPages > 1 && (
-                  <Card className="shadow-sm border-0 mt-3">
+                  <Card className="border-0 shadow-sm mt-4" style={{ borderRadius: '16px' }}>
                     <Card.Body className="p-4">
                       <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
                         {/* Pagination Info */}
                         <div className="d-flex align-items-center gap-3">
-                          <span className="text-muted small">
-                            Showing {indexOfFirstRegion + 1}-{Math.min(indexOfLastRegion, filteredRegions.length)} of {filteredRegions.length} regions
-                          </span>
-                          <Badge bg="light" text="dark" className="px-3 py-2 rounded-pill">
+                          <div className="d-flex align-items-center gap-2">
+                            <i className="bi bi-info-circle text-primary"></i>
+                            <span className="text-muted" style={{ fontSize: '0.9rem' }}>
+                              Showing <span className="fw-bold text-dark">{indexOfFirstRegion + 1}-{Math.min(indexOfLastRegion, filteredRegions.length)}</span> of <span className="fw-bold text-dark">{filteredRegions.length}</span> regions
+                            </span>
+                          </div>
+                          <div 
+                            className="px-3 py-2 rounded-pill text-white fw-semibold shadow-sm bg-danger"
+                            style={{ fontSize: '0.85rem' }}
+                          >
                             Page {currentRegionPage} of {totalRegionPages}
-                          </Badge>
+                          </div>
                         </div>
 
                         {/* Pagination Controls */}
@@ -2568,55 +2809,64 @@ function AdminDashboardContent() {
             {activeTab === "approval-hierarchy" && (
               <>
                 <div className="mb-4">
-                  <div className="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                      <div className="d-flex align-items-center mb-2">
-                        <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
-                          <Activity className="text-success" size={24} />
+                  <div className="d-flex justify-content-between align-items-center mb-4">
+                    <div className="d-flex align-items-center">
+                      <div className="position-relative">
+                        <div 
+                          className="d-flex align-items-center justify-content-center rounded-3 shadow-sm bg-success" 
+                          style={{ 
+                            width: '60px', 
+                            height: '60px'
+                          }}
+                        >
+                          <Activity className="text-white" size={28} />
                         </div>
-                        <div>
-                          <h2 className="fw-bold text-dark mb-0">
-                            Approval Hierarchy Management
-                          </h2>
-                          <p className="text-muted mb-0 small">
-                            Configure expense approval workflows and hierarchies
-                          </p>
-                        </div>
+                        <div 
+                          className="position-absolute bottom-0 end-0 bg-warning rounded-circle border border-2 border-white" 
+                          style={{ width: '16px', height: '16px' }}
+                        />
+                      </div>
+                      <div className="ms-3">
+                        <h5 className="fw-bold text-dark mb-1" >
+                          Approval Hierarchy Management
+                        </h5>
+                        <p className="text-muted mb-0" style={{ fontSize: '0.95rem' }}>
+                          <i className="bi bi-diagram-3 me-1"></i>
+                          Configure expense approval workflows and hierarchies
+                        </p>
                       </div>
                     </div>
-                    <div className="d-flex align-items-center gap-3">
-                      <Breadcrumb className="bg-light rounded-pill px-3 py-2 mb-0 small">
-                        <Breadcrumb.Item
-                          href="#"
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="bg-white rounded-pill px-3 py-2 shadow-sm border">
+                        <small 
+                          className="text-muted text-decoration-none" 
                           onClick={() => handleTabChange("dashboard")}
-                          className="text-decoration-none"
+                          style={{ cursor: 'pointer' }}
                         >
+                          <i className="bi bi-house me-1"></i>
                           Dashboard
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item
-                          active
-                          className="text-success fw-semibold"
-                        >
-                          Approval Hierarchy
-                        </Breadcrumb.Item>
-                      </Breadcrumb>
+                        </small>
+                        <span className="mx-2 text-muted">/</span>
+                        <small className="text-success fw-semibold">Approval Hierarchy</small>
+                      </div>
                     </div>
                   </div>
-                  <hr className="border-2 border-success opacity-25 mb-4" />
                 </div>
 
-                <Card className="shadow-lg border-0 mb-4">
+                <Card className="border-0 shadow-sm mb-4" style={{ borderRadius: '16px', overflow: 'hidden' }}>
                   <Card.Body className="p-4">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
+                    <div className="d-flex justify-content-between align-items-center">
                       <div>
-                        <h5 className="mb-1 fw-bold">Approval Workflows</h5>
-                        <p className="text-muted small mb-0">
+                        <h6 className="mb-2 fw-bold text-dark">
+                          <i className="bi bi-diagram-3-fill me-2 text-success"></i>
+                          Approval Workflows
+                        </h6>
+                        <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
                           Create and manage approval hierarchies for expense submissions
                         </p>
                       </div>
                       <Button
-                        variant="success"
-                        className="px-4 py-2 rounded-pill fw-medium shadow-sm"
+                        className="px-4 py-2 rounded-pill fw-semibold shadow-sm border-0 bg-success text-white"
                         onClick={() => setShowCreateHierarchyModal(true)}
                       >
                         <Activity size={16} className="me-2" />
@@ -2626,18 +2876,25 @@ function AdminDashboardContent() {
                   </Card.Body>
                 </Card>
 
-                <Card className="shadow-lg border-0">
-                  <Card.Header className="bg-light border-0 py-4">
+                <Card className="border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                  <Card.Header className="bg-white border-0 py-4 px-4">
                     <div className="d-flex justify-content-between align-items-center">
                       <div className="d-flex align-items-center">
-                        <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
-                          <Activity className="text-success" size={20} />
+                        <div 
+                          className="d-flex align-items-center justify-content-center rounded-3 me-3 bg-success" 
+                          style={{ 
+                            width: '48px', 
+                            height: '48px'
+                          }}
+                        >
+                          <Activity className="text-white" size={24} />
                         </div>
                         <div>
-                          <h5 className="mb-0 fw-bold text-dark">
+                          <h6 className="mb-1 fw-bold text-dark">
                             Configured Hierarchies
-                          </h5>
+                          </h6>
                           <p className="text-muted mb-0 small">
+                            <i className="bi bi-stack me-1"></i>
                             {approvalHierarchies.length} approval workflow{approvalHierarchies.length !== 1 ? 's' : ''}
                           </p>
                         </div>
@@ -2646,14 +2903,23 @@ function AdminDashboardContent() {
                   </Card.Header>
                   <Card.Body className="p-0">
                     {approvalHierarchies.length === 0 ? (
-                      <div className="text-center py-5">
-                        <Activity size={48} className="text-muted mb-3" />
-                        <h5 className="text-dark">No approval hierarchies created</h5>
+                      <div className="text-center py-5 px-4">
+                        <div 
+                          className="d-flex align-items-center justify-content-center rounded-circle mx-auto mb-4 bg-success"
+                          style={{ 
+                            width: '80px', 
+                            height: '80px',
+                            opacity: '0.1'
+                          }}
+                        >
+                          <Activity size={48} className="text-success" style={{ position: 'relative', zIndex: 1, opacity: 1 }} />
+                        </div>
+                        <h5 className="text-dark fw-bold mb-2">No approval hierarchies created</h5>
                         <p className="text-muted mb-4">
                           Create your first approval hierarchy to start managing expense approvals
                         </p>
                         <Button
-                          variant="success"
+                          className="px-4 py-2 rounded-pill fw-semibold shadow-sm border-0 bg-success text-white"
                           onClick={() => setShowCreateHierarchyModal(true)}
                         >
                           <Activity size={16} className="me-2" />
@@ -2661,71 +2927,113 @@ function AdminDashboardContent() {
                         </Button>
                       </div>
                     ) : (
-                      <Table hover responsive className="mb-0 modern-table">
-                        <thead className="bg-light">
-                          <tr>
-                            <th className="border-0 py-3 px-4 fw-semibold text-uppercase small">
-                              Hierarchy Name
-                            </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-uppercase small">
-                              Created Date
-                            </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-uppercase small">
-                              Type
-                            </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-uppercase small">
-                              Status
-                            </th>
-                            <th className="border-0 py-3 px-4 fw-semibold text-uppercase small text-end">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {approvalHierarchies.map((hierarchy) => (
-                            <tr key={hierarchy.id}>
-                              <td className="py-3 px-4 fw-semibold">{hierarchy.name}</td>
-                              <td className="py-3 px-4 text-muted">
-                                {hierarchy.createdAt ? new Date(hierarchy.createdAt).toLocaleDateString() : 'N/A'}
-                              </td>
-                              <td className="py-3 px-4">
-                                <Badge bg="info" className="px-3 py-2 rounded-pill">
-                                  Hierarchy Level
-                                </Badge>
-                              </td>
-                              <td className="py-3 px-4">
-                                <Badge bg="success" className="px-3 py-2 rounded-pill">
-                                  Active
-                                </Badge>
-                              </td>
-                              <td className="py-3 px-4 text-end">
-                                <Button
-                                  variant="outline-warning"
-                                  size="sm"
-                                  className="me-2"
-                                  onClick={() => {
-                                    setSelectedHierarchy(hierarchy);
-                                    setHierarchyFormData({ name: hierarchy.name });
-                                    setShowEditHierarchyModal(true);
-                                  }}
-                                >
-                                  <Pencil size={14} />
-                                </Button>
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedHierarchy(hierarchy);
-                                    setShowDeleteHierarchyModal(true);
-                                  }}
-                                >
-                                  <Trash size={14} />
-                                </Button>
-                              </td>
+                      <div className="table-responsive">
+                        <Table className="mb-0 align-middle" hover>
+                          <thead style={{ backgroundColor: '#f8f9fa' }}>
+                            <tr>
+                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
+                                Hierarchy Name
+                              </th>
+                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
+                                Created Date
+                              </th>
+                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
+                                Type
+                              </th>
+                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>
+                                Status
+                              </th>
+                              <th className="border-0 py-3 px-4 fw-semibold text-muted text-uppercase text-end" style={{ fontSize: '0.75rem' }}>
+                                Actions
+                              </th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </Table>
+                          </thead>
+                          <tbody>
+                            {approvalHierarchies.map((hierarchy) => (
+                              <tr key={hierarchy.id} className="border-bottom" style={{ transition: 'background-color 0.2s' }}>
+                                <td className="py-3 px-4">
+                                  <div className="d-flex align-items-center">
+                                    <div 
+                                      className="d-flex align-items-center justify-content-center rounded-circle me-3 bg-success"
+                                      style={{ 
+                                        width: "40px", 
+                                        height: "40px"
+                                      }}
+                                    >
+                                      <Activity className="text-white" size={18} />
+                                    </div>
+                                    <span className="fw-semibold text-dark" style={{ fontSize: '0.95rem' }}>
+                                      {hierarchy.name}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <span className="text-muted" style={{ fontSize: '0.85rem' }}>
+                                    <i className="bi bi-calendar-event me-1"></i>
+                                    {hierarchy.createdAt ? new Date(hierarchy.createdAt).toLocaleDateString('en-US', { 
+                                      year: 'numeric', 
+                                      month: 'short', 
+                                      day: 'numeric' 
+                                    }) : <em>N/A</em>}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <div 
+                                    className="px-3 py-2 rounded-pill fw-semibold text-white shadow-sm d-inline-block bg-info"
+                                    style={{ fontSize: '0.8rem' }}
+                                  >
+                                    <i className="bi bi-diagram-2 me-1"></i>
+                                    Hierarchy Level
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <Badge
+                                    className="px-3 py-2 rounded-pill fw-semibold shadow-sm text-white bg-success"
+                                    style={{ fontSize: '0.8rem' }}
+                                  >
+                                    🟢 Active
+                                  </Badge>
+                                </td>
+                                <td className="py-3 px-4 text-end">
+                                  <div className="d-flex justify-content-end gap-2">
+                                    <Button
+                                      size="sm"
+                                      className="rounded-circle border-0 p-2 bg-warning"
+                                      style={{ 
+                                        width: '32px', 
+                                        height: '32px'
+                                      }}
+                                      onClick={() => {
+                                        setSelectedHierarchy(hierarchy);
+                                        setHierarchyFormData({ name: hierarchy.name });
+                                        setShowEditHierarchyModal(true);
+                                      }}
+                                      title="Edit Hierarchy"
+                                    >
+                                      <Pencil className="text-white" size={14} />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      className="rounded-circle border-0 p-2 bg-danger"
+                                      style={{ 
+                                        width: '32px', 
+                                        height: '32px'
+                                      }}
+                                      onClick={() => {
+                                        setSelectedHierarchy(hierarchy);
+                                        setShowDeleteHierarchyModal(true);
+                                      }}
+                                      title="Delete Hierarchy"
+                                    >
+                                      <Trash className="text-white" size={14} />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </div>
                     )}
                   </Card.Body>
                 </Card>
@@ -2993,12 +3301,12 @@ function AdminDashboardContent() {
           .admin-dashboard {
             font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana,
               sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: #f8f9fa;
             min-height: 100vh;
           }
 
           .sidebar {
-            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+            background: #ffffff;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
           }
@@ -3012,22 +3320,14 @@ function AdminDashboardContent() {
           }
 
           .nav-link:hover {
-            background: linear-gradient(
-              135deg,
-              #f1f5f9 0%,
-              #e2e8f0 100%
-            ) !important;
+            background: #e9ecef !important;
             color: #3b82f6 !important;
             transform: translateX(8px);
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
           }
 
           .active-nav-link {
-            background: linear-gradient(
-              135deg,
-              #3b82f6 0%,
-              #1d4ed8 100%
-            ) !important;
+            background: #0d6efd !important;
             color: #ffffff !important;
             font-weight: 600;
             box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
@@ -3035,7 +3335,7 @@ function AdminDashboardContent() {
           }
 
           .content-area {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            background: #f8f9fa;
             min-height: 100vh;
           }
 
@@ -3052,19 +3352,19 @@ function AdminDashboardContent() {
           }
 
           .stat-body-gradient-blue {
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            background: #cfe2ff;
           }
 
           .stat-body-gradient-green {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            background: #d1e7dd;
           }
 
           .stat-body-gradient-orange {
-            background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+            background: #ffe5d0;
           }
 
           .stat-body-gradient-cyan {
-            background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%);
+            background: #cff4fc;
           }
 
           .letter-spacing {
@@ -3117,12 +3417,7 @@ function AdminDashboardContent() {
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(
-              90deg,
-              transparent,
-              rgba(255, 255, 255, 0.2),
-              transparent
-            );
+            background: rgba(255, 255, 255, 0.2);
             transition: left 0.5s;
           }
 
@@ -3170,7 +3465,7 @@ function AdminDashboardContent() {
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            background: #f8f9fa;
           }
 
           .table td {
@@ -3314,7 +3609,7 @@ function AdminDashboardContent() {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 16px;
             overflow: hidden;
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            background: #ffffff;
           }
 
           .modern-kpi-card:hover {
@@ -3361,7 +3656,7 @@ function AdminDashboardContent() {
           }
 
           .progress-bar {
-            background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+            background: #ffc107;
             transition: width 0.6s ease;
           }
 
@@ -3438,33 +3733,38 @@ function AdminDashboardContent() {
         show={showEditUserModal}
         onHide={() => setShowEditUserModal(false)}
         size="xl"
+        centered
       >
         <Modal.Header
           closeButton
-          className="border-0 pb-0 pt-4 px-4"
-          style={{ backgroundColor: "#f8f9fa" }}
+          className="border-0 pb-3 pt-4 px-4"
+          style={{ 
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: '0'
+          }}
         >
-          <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+          <div className="d-flex align-items-center w-100">
             <div
-              className="icon-wrapper bg-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
-              style={{ width: "48px", height: "48px" }}
+              className="icon-wrapper bg-white bg-opacity-20 me-3 rounded-3 d-flex align-items-center justify-content-center shadow-sm"
+              style={{ width: "56px", height: "56px" }}
             >
-              <Pencil size={24} className="text-white" />
+              <Pencil size={26} className="text-white" />
             </div>
             <div>
-              Edit User
-              <div className="text-muted fw-normal small">
+              <h5 className="fw-bold text-white mb-1">Edit User</h5>
+              <p className="text-white text-opacity-90 mb-0 small">
                 Update user information and permissions
-              </div>
+              </p>
             </div>
-          </h5>
+          </div>
         </Modal.Header>
-        <Modal.Body className="p-4">
+        <Modal.Body className="p-4" style={{ backgroundColor: '#f8f9fa' }}>
           <Form>
             <Row className="g-4">
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label className="fw-semibold text-muted small mb-2">
+                  <Form.Label className="fw-semibold text-dark small mb-2 d-flex align-items-center gap-2">
+                    <i className="bi bi-person-fill text-primary"></i>
                     First Name <span className="text-danger">*</span>
                   </Form.Label>
                   <Form.Control
@@ -3477,10 +3777,11 @@ function AdminDashboardContent() {
                         firstName: e.target.value,
                       })
                     }
-                    className="rounded-3 border-2"
+                    className="rounded-3 border-0 shadow-sm"
                     style={{
-                      padding: "0.75rem",
+                      padding: "0.85rem 1rem",
                       fontSize: "0.95rem",
+                      backgroundColor: '#ffffff'
                     }}
                   />
                 </Form.Group>
@@ -3488,7 +3789,8 @@ function AdminDashboardContent() {
 
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label className="fw-semibold text-muted small mb-2">
+                  <Form.Label className="fw-semibold text-dark small mb-2 d-flex align-items-center gap-2">
+                    <i className="bi bi-person-fill text-primary"></i>
                     Last Name <span className="text-danger">*</span>
                   </Form.Label>
                   <Form.Control
@@ -3501,10 +3803,11 @@ function AdminDashboardContent() {
                         lastName: e.target.value,
                       })
                     }
-                    className="rounded-3 border-2"
+                    className="rounded-3 border-0 shadow-sm"
                     style={{
-                      padding: "0.75rem",
+                      padding: "0.85rem 1rem",
                       fontSize: "0.95rem",
+                      backgroundColor: '#ffffff'
                     }}
                   />
                 </Form.Group>
@@ -3512,7 +3815,8 @@ function AdminDashboardContent() {
 
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label className="fw-semibold text-muted small mb-2">
+                  <Form.Label className="fw-semibold text-dark small mb-2 d-flex align-items-center gap-2">
+                    <i className="bi bi-envelope-fill text-primary"></i>
                     Email Address <span className="text-danger">*</span>
                   </Form.Label>
                   <Form.Control
@@ -3525,10 +3829,11 @@ function AdminDashboardContent() {
                         email: e.target.value,
                       })
                     }
-                    className="rounded-3 border-2"
+                    className="rounded-3 border-0 shadow-sm"
                     style={{
-                      padding: "0.75rem",
+                      padding: "0.85rem 1rem",
                       fontSize: "0.95rem",
+                      backgroundColor: '#ffffff'
                     }}
                   />
                 </Form.Group>
@@ -3536,7 +3841,8 @@ function AdminDashboardContent() {
 
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label className="fw-semibold text-muted small mb-2">
+                  <Form.Label className="fw-semibold text-dark small mb-2 d-flex align-items-center gap-2">
+                    <i className="bi bi-telephone-fill text-primary"></i>
                     Phone Number
                   </Form.Label>
                   <Form.Control
@@ -3549,10 +3855,11 @@ function AdminDashboardContent() {
                         phone: e.target.value,
                       })
                     }
-                    className="rounded-3 border-2"
+                    className="rounded-3 border-0 shadow-sm"
                     style={{
-                      padding: "0.75rem",
+                      padding: "0.85rem 1rem",
                       fontSize: "0.95rem",
+                      backgroundColor: '#ffffff'
                     }}
                   />
                 </Form.Group>
@@ -3781,20 +4088,26 @@ function AdminDashboardContent() {
             )}
           </Form>
         </Modal.Body>
-        <Modal.Footer className="border-0 bg-light p-4">
+        <Modal.Footer className="border-0 p-4" style={{ backgroundColor: '#ffffff' }}>
           <Button
-            variant="outline-secondary"
+            variant="light"
             onClick={() => setShowEditUserModal(false)}
-            className="px-4 py-2 rounded-pill fw-medium"
+            className="px-5 py-3 rounded-pill fw-semibold border-2 shadow-sm"
             disabled={isUpdatingUser}
+            style={{ fontSize: '0.95rem' }}
           >
+            <X size={18} className="me-2" />
             Cancel
           </Button>
           <Button
-            variant="primary"
             onClick={handleUpdateUser}
-            className="px-4 py-2 rounded-pill fw-medium"
+            className="px-5 py-3 rounded-pill fw-semibold shadow border-0"
             disabled={isUpdatingUser}
+            style={{
+              fontSize: '0.95rem',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white'
+            }}
           >
             {isUpdatingUser ? (
               <>
@@ -3807,7 +4120,7 @@ function AdminDashboardContent() {
               </>
             ) : (
               <>
-                <Pencil size={16} className="me-2" />
+                <Pencil size={18} className="me-2" />
                 Update User
               </>
             )}
@@ -3819,36 +4132,46 @@ function AdminDashboardContent() {
       <Modal
         show={showDeleteUserModal}
         onHide={() => setShowDeleteUserModal(false)}
-        size="xl"
+        size="lg"
+        centered
       >
         <Modal.Header
           closeButton
-          className="border-0 pb-0 pt-4 px-4"
-          style={{ backgroundColor: "#f8f9fa" }}
+          className="border-0 pb-3 pt-4 px-4"
+          style={{
+            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            borderRadius: '0'
+          }}
         >
-          <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
+          <div className="d-flex align-items-center w-100">
             <div
-              className="icon-wrapper bg-danger me-3 rounded-circle d-flex align-items-center justify-content-center"
-              style={{ width: "48px", height: "48px" }}
+              className="icon-wrapper bg-white bg-opacity-20 me-3 rounded-3 d-flex align-items-center justify-content-center shadow-sm"
+              style={{ width: "56px", height: "56px" }}
             >
-              <Trash size={24} className="text-white" />
+              <Trash size={26} className="text-white" />
             </div>
             <div>
-              Delete User
-              <div className="text-muted fw-normal small">
+              <h5 className="fw-bold text-white mb-1">Delete User</h5>
+              <p className="text-white text-opacity-90 mb-0 small">
                 This action cannot be undone
-              </div>
+              </p>
             </div>
-          </h5>
+          </div>
         </Modal.Header>
-        <Modal.Body className="p-4">
-          <div className="alert alert-danger d-flex align-items-start gap-3 border-0 shadow-sm">
-            <div className="bg-danger bg-opacity-15 p-2 rounded-circle flex-shrink-0">
-              <ExclamationTriangle size={24} className="text-danger" />
+        <Modal.Body className="p-4" style={{ backgroundColor: '#f8f9fa' }}>
+          <div className="alert border-0 d-flex align-items-start gap-3 shadow-sm mb-4" style={{
+            backgroundColor: '#fee2e2',
+            borderLeft: '4px solid #dc3545'
+          }}>
+            <div className="bg-danger bg-opacity-15 p-3 rounded-3 flex-shrink-0">
+              <ExclamationTriangle size={28} className="text-danger" />
             </div>
             <div>
-              <h6 className="fw-bold mb-2">Warning: Permanent Action</h6>
-              <p className="mb-0 text-muted">
+              <h6 className="fw-bold mb-2 text-danger">
+                <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                Warning: Permanent Action
+              </h6>
+              <p className="mb-0 text-dark">
                 Are you sure you want to delete this user? This will permanently
                 remove the user from the system and cannot be reversed.
               </p>
@@ -3856,45 +4179,56 @@ function AdminDashboardContent() {
           </div>
 
           {selectedUser && (
-            <div className="mt-4 p-4 bg-light rounded-3">
-              <h6 className="fw-bold mb-3 text-dark">User Details:</h6>
-              <Row className="g-3">
+            <div className="mt-4 p-4 bg-white rounded-4 shadow-sm border-0">
+              <h6 className="fw-bold mb-4 text-dark d-flex align-items-center gap-2">
+                <i className="bi bi-info-circle-fill text-primary"></i>
+                User Details
+              </h6>
+              <Row className="g-4">
                 <Col md={6}>
-                  <div className="d-flex align-items-center gap-2">
-                    <People size={18} className="text-primary" />
+                  <div className="d-flex align-items-center gap-3 p-3 bg-light rounded-3">
+                    <div className="bg-primary bg-opacity-10 p-2 rounded-circle">
+                      <People size={20} className="text-primary" />
+                    </div>
                     <div>
-                      <small className="text-muted d-block">Name</small>
-                      <span className="fw-semibold">
+                      <small className="text-muted d-block mb-1" style={{ fontSize: '0.75rem' }}>Full Name</small>
+                      <span className="fw-bold text-dark">
                         {selectedUser.firstName} {selectedUser.lastName}
                       </span>
                     </div>
                   </div>
                 </Col>
                 <Col md={6}>
-                  <div className="d-flex align-items-center gap-2">
-                    <Envelope size={18} className="text-info" />
+                  <div className="d-flex align-items-center gap-3 p-3 bg-light rounded-3">
+                    <div className="bg-info bg-opacity-10 p-2 rounded-circle">
+                      <Envelope size={20} className="text-info" />
+                    </div>
                     <div>
-                      <small className="text-muted d-block">Email</small>
-                      <span className="fw-semibold">{selectedUser.email}</span>
+                      <small className="text-muted d-block mb-1" style={{ fontSize: '0.75rem' }}>Email Address</small>
+                      <span className="fw-bold text-dark">{selectedUser.email}</span>
                     </div>
                   </div>
                 </Col>
                 <Col md={6}>
-                  <div className="d-flex align-items-center gap-2">
-                    <Telephone size={18} className="text-success" />
+                  <div className="d-flex align-items-center gap-3 p-3 bg-light rounded-3">
+                    <div className="bg-success bg-opacity-10 p-2 rounded-circle">
+                      <Telephone size={20} className="text-success" />
+                    </div>
                     <div>
-                      <small className="text-muted d-block">Phone</small>
-                      <span className="fw-semibold">
+                      <small className="text-muted d-block mb-1" style={{ fontSize: '0.75rem' }}>Phone Number</small>
+                      <span className="fw-bold text-dark">
                         {selectedUser.phone || "N/A"}
                       </span>
                     </div>
                   </div>
                 </Col>
                 <Col md={6}>
-                  <div className="d-flex align-items-center gap-2">
-                    <Gear size={18} className="text-warning" />
+                  <div className="d-flex align-items-center gap-3 p-3 bg-light rounded-3">
+                    <div className="bg-warning bg-opacity-10 p-2 rounded-circle">
+                      <Gear size={20} className="text-warning" />
+                    </div>
                     <div>
-                      <small className="text-muted d-block">Status</small>
+                      <small className="text-muted d-block mb-1" style={{ fontSize: '0.75rem' }}>Account Status</small>
                       <Badge
                         bg={
                           selectedUser.status === "ACTIVE"
@@ -3903,8 +4237,10 @@ function AdminDashboardContent() {
                             ? "warning"
                             : "secondary"
                         }
-                        className="px-2 py-1"
+                        className="px-3 py-2 rounded-pill"
                       >
+                        {selectedUser.status === "ACTIVE" && "🟢 "}
+                        {selectedUser.status === "INACTIVE" && "🟡 "}
                         {selectedUser.status}
                       </Badge>
                     </div>
@@ -3914,20 +4250,26 @@ function AdminDashboardContent() {
             </div>
           )}
         </Modal.Body>
-        <Modal.Footer className="border-0 bg-light p-4">
+        <Modal.Footer className="border-0 p-4" style={{ backgroundColor: '#ffffff' }}>
           <Button
-            variant="outline-secondary"
+            variant="light"
             onClick={() => setShowDeleteUserModal(false)}
-            className="px-4 py-2 rounded-pill fw-medium"
+            className="px-5 py-3 rounded-pill fw-semibold border-2 shadow-sm"
             disabled={isDeletingUser}
+            style={{ fontSize: '0.95rem' }}
           >
+            <X size={18} className="me-2" />
             Cancel
           </Button>
           <Button
-            variant="danger"
             onClick={confirmDeleteUser}
-            className="px-4 py-2 rounded-pill fw-medium"
+            className="px-5 py-3 rounded-pill fw-semibold shadow border-0"
             disabled={isDeletingUser}
+            style={{
+              fontSize: '0.95rem',
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              color: 'white'
+            }}
           >
             {isDeletingUser ? (
               <>
@@ -3940,7 +4282,7 @@ function AdminDashboardContent() {
               </>
             ) : (
               <>
-                <Trash size={16} className="me-2" />
+                <Trash size={18} className="me-2" />
                 Yes, Delete User
               </>
             )}
@@ -3953,11 +4295,15 @@ function AdminDashboardContent() {
         show={showEditRoleModal}
         onHide={() => setShowEditRoleModal(false)}
         size="xl"
+        centered
       >
         <Modal.Header
           closeButton
-          className="border-0 pb-0 pt-4 px-4"
-          style={{ backgroundColor: "#f8f9fa" }}
+          className="border-0 pb-3 pt-4 px-4"
+          style={{
+            background: 'linear-gradient(135deg, #f093fb 0%, #fee140 100%)',
+            borderRadius: '0'
+          }}
         >
           <h5 className="fw-bold text-dark fs-5 d-flex align-items-center">
             <div

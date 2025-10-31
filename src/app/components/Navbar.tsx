@@ -92,7 +92,7 @@ export default function TopNavbar() {
             <div className="navbar-right-container">
               {/* Quick Add Button */}
               <button className="btn btn-primary btn-sm me-2 quick-add-btn">
-                <PlusCircle size={16} className="me-1" />
+                <PlusCircle size={14} className="me-1" />
                 <span className="d-none d-md-inline">New Expense</span>
               </button>
 
@@ -102,7 +102,7 @@ export default function TopNavbar() {
                   variant="dark"
                   className="notification-toggle position-relative"
                 >
-                  <Bell size={16} />
+                  <Bell size={14} />
                   <Badge
                     bg="danger"
                     className="notification-badge position-absolute"
@@ -200,7 +200,7 @@ export default function TopNavbar() {
                 >
                   <div className="d-flex align-items-center">
                     <div className="user-avatar me-2 position-relative">
-                      <PersonCircle size={32} />
+                      <PersonCircle size={28} />
                       <span className="user-status position-absolute bg-success rounded-circle"></span>
                     </div>
                     <div className="user-info d-none d-md-block text-start">
@@ -209,7 +209,7 @@ export default function TopNavbar() {
                       </div>
                       <small className="text-secondary">{user?.email}</small>
                     </div>
-                    <ChevronDown size={16} className="ms-1 d-none d-md-block" />
+                    <ChevronDown size={14} className="ms-1 d-none d-md-block" />
                   </div>
                 </Dropdown.Toggle>
 
@@ -311,128 +311,347 @@ export default function TopNavbar() {
             <Nav className="me-auto main-navigation gap-2 gap-md-3">
               <Nav.Link
                 onClick={() => handleNavigation("/dashboard")}
-                className="nav-link-item rounded-3 px-3 py-2 fw-semibold"
-                style={{ background: "rgba(13,110,253,0.10)" }}
+                className="nav-link-item rounded-3 px-2"
+                style={{ 
+                  background: "rgba(13,110,253,0.10)",
+                  fontSize: "0.875rem",
+                  paddingTop: "0.35rem",
+                  paddingBottom: "0.35rem"
+                }}
               >
-                <GraphUp className="me-1 text-primary" size={16} />
-                Dashboard
+                <GraphUp className="me-1 text-primary" size={14} />
+                <span className="fw-semibold">Dashboard</span>
               </Nav.Link>
 
               {/* Expenses Dropdown */}
               <Dropdown as={Nav.Item} className="nav-dropdown">
-                <Dropdown.Toggle as={Nav.Link} className="nav-link-item rounded-3 px-3 py-2 fw-semibold" style={{ background: "rgba(25,135,84,0.10)" }}>
-                  <CashStack className="me-1 text-primary" size={16} />
-                  Expenses
+                <Dropdown.Toggle 
+                  as={Nav.Link} 
+                  className="nav-link-item rounded-3 px-2 position-relative overflow-hidden" 
+                  style={{ 
+                    background: "linear-gradient(135deg, rgba(25,135,84,0.12) 0%, rgba(32,201,151,0.08) 100%)",
+                    border: "1px solid rgba(25,135,84,0.2)",
+                    boxShadow: "0 2px 8px rgba(25,135,84,0.08)",
+                    fontSize: "0.875rem",
+                    paddingTop: "0.35rem",
+                    paddingBottom: "0.35rem"
+                  }}
+                >
+                  <CashStack className="me-1" size={14} style={{ color: "#198754" }} />
+                  <span style={{ color: "#198754", fontWeight: 600 }}>Expenses</span>
                 </Dropdown.Toggle>
-                <Dropdown.Menu className="dropdown-menu shadow-sm border-0 rounded-3 mt-2">
+                <Dropdown.Menu className="dropdown-menu shadow border-0 rounded-3 mt-2" style={{ borderTop: "3px solid #198754" }}>
+                  <Dropdown.Header className="text-muted text-uppercase" style={{ fontSize: "0.7rem", letterSpacing: "0.5px" }}>
+                    <CashStack className="me-1" size={12} style={{ color: "#198754" }} />
+                    Expense Management
+                  </Dropdown.Header>
                   <Dropdown.Item onClick={() => handleNavigation("/expense-management/my-expenses")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <Journal className="me-2 text-primary" size={16} /> My Expenses
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(13,110,253,0.1)" }}>
+                        <Journal size={16} style={{ color: "#0d6efd" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: "#2d3748" }}>My Expenses</div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>View your submissions</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => handleNavigation("/expense-management/create-expense")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <PlusCircle className="me-2 text-success" size={16} /> Create Expense
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(25,135,84,0.1)" }}>
+                        <PlusCircle size={16} style={{ color: "#198754" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: "#2d3748" }}>Create Expense</div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Submit new expense</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => handleNavigation("/expense-management/reports")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <BarChart className="me-2 text-warning" size={16} /> Reports
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(255,193,7,0.1)" }}>
+                        <BarChart size={16} style={{ color: "#ffc107" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: "#2d3748" }}>Reports</div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Analytics & insights</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => handleNavigation("/data-inputs/policies")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <FileText className="me-2 text-info" size={16} /> Expense Policies
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(13,202,240,0.1)" }}>
+                        <FileText size={16} style={{ color: "#0dcaf0" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: "#2d3748" }}>Expense Policies</div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>View guidelines</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
 
               {/* Approvals Dropdown */}
               <Dropdown as={Nav.Item} className="nav-dropdown">
-                <Dropdown.Toggle as={Nav.Link} className="nav-link-item rounded-3 px-3 py-2 fw-semibold" style={{ background: "rgba(13,110,253,0.10)" }}>
-                  <ClipboardCheck className="me-1 text-primary" size={16} />
-                  Approvals
+                <Dropdown.Toggle 
+                  as={Nav.Link} 
+                  className="nav-link-item rounded-3 px-2 position-relative overflow-hidden" 
+                  style={{ 
+                    background: "linear-gradient(135deg, rgba(13,110,253,0.12) 0%, rgba(72,149,239,0.08) 100%)",
+                    border: "1px solid rgba(13,110,253,0.2)",
+                    boxShadow: "0 2px 8px rgba(13,110,253,0.08)",
+                    fontSize: "0.875rem",
+                    paddingTop: "0.35rem",
+                    paddingBottom: "0.35rem"
+                  }}
+                >
+                  <ClipboardCheck className="me-1" size={14} style={{ color: "#0d6efd" }} />
+                  <span style={{ color: "#0d6efd", fontWeight: 600 }}>Approvals</span>
                 </Dropdown.Toggle>
-                <Dropdown.Menu className="dropdown-menu shadow-sm border-0 rounded-3 mt-2">
+                <Dropdown.Menu className="dropdown-menu shadow border-0 rounded-3 mt-2" style={{ borderTop: "3px solid #0d6efd" }}>
+                  <Dropdown.Header className="text-muted text-uppercase" style={{ fontSize: "0.7rem", letterSpacing: "0.5px" }}>
+                    <ClipboardCheck className="me-1" size={12} style={{ color: "#0d6efd" }} />
+                    Approval Center
+                  </Dropdown.Header>
                   <Dropdown.Item onClick={() => handleNavigation("/expense-approvals/approvals")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <CheckCircle className="me-2 text-success" size={16} /> Pending approvals
-                    <Badge bg="warning" text="dark" className="ms-2" pill>5</Badge>
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(25,135,84,0.1)" }}>
+                        <CheckCircle size={16} style={{ color: "#198754" }} />
+                      </div>
+                      <div className="flex-grow-1">
+                        <div className="d-flex align-items-center justify-content-between">
+                          <div style={{ fontWeight: 500, color: "#2d3748" }}>Pending Approvals</div>
+                          <Badge bg="warning" text="dark" pill style={{ fontSize: "0.7rem" }}>5</Badge>
+                        </div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Review & approve</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => handleNavigation("/expense-approvals/history")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <Clock className="me-2 text-info" size={16} /> Departmental expenses
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(13,202,240,0.1)" }}>
+                        <Clock size={16} style={{ color: "#0dcaf0" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: "#2d3748" }}>Departmental Expenses</div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Track team expenses</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => handleNavigation("/expense-approvals/history")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <Clock className="me-2 text-warning" size={16} /> Departmental budgets
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(255,193,7,0.1)" }}>
+                        <Clock size={16} style={{ color: "#ffc107" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: "#2d3748" }}>Departmental Budgets</div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Monitor allocations</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
 
               {/* Finance Dropdown */}
               <Dropdown as={Nav.Item} className="nav-dropdown">
-                <Dropdown.Toggle as={Nav.Link} className="nav-link-item rounded-3 px-3 py-2 fw-semibold" style={{ background: "rgba(13,110,253,0.10)" }}>
-                  <Wallet2 className="me-1 text-primary" size={16} />
-                  Finance
+                <Dropdown.Toggle 
+                  as={Nav.Link} 
+                  className="nav-link-item rounded-3 px-2 position-relative overflow-hidden" 
+                  style={{ 
+                    background: "linear-gradient(135deg, rgba(220,53,69,0.12) 0%, rgba(236,100,75,0.08) 100%)",
+                    border: "1px solid rgba(220,53,69,0.2)",
+                    boxShadow: "0 2px 8px rgba(220,53,69,0.08)",
+                    fontSize: "0.875rem",
+                    paddingTop: "0.35rem",
+                    paddingBottom: "0.35rem"
+                  }}
+                >
+                  <Wallet2 className="me-1" size={14} style={{ color: "#dc3545" }} />
+                  <span style={{ color: "#dc3545", fontWeight: 600 }}>Finance</span>
                 </Dropdown.Toggle>
-                <Dropdown.Menu className="dropdown-menu shadow-sm border-0 rounded-3 mt-2">
+                <Dropdown.Menu className="dropdown-menu shadow border-0 rounded-3 mt-2" style={{ borderTop: "3px solid #dc3545", minWidth: "280px" }}>
+                  <Dropdown.Header className="text-muted text-uppercase" style={{ fontSize: "0.7rem", letterSpacing: "0.5px" }}>
+                    <Wallet2 className="me-1" size={12} style={{ color: "#dc3545" }} />
+                    Financial Operations
+                  </Dropdown.Header>
                   <Dropdown.Item onClick={() => handleNavigation("/finance/qued-expenses")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <Collection className="me-2 text-primary" size={16} /> Manage expenses
-                    <Badge bg="info" className="ms-2" pill>12</Badge>
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(13,110,253,0.1)" }}>
+                        <Collection size={16} style={{ color: "#0d6efd" }} />
+                      </div>
+                      <div className="flex-grow-1">
+                        <div className="d-flex align-items-center justify-content-between">
+                          <div style={{ fontWeight: 500, color: "#2d3748" }}>Manage Expenses</div>
+                          <Badge bg="info" pill style={{ fontSize: "0.7rem" }}>12</Badge>
+                        </div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Queue & process</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => handleNavigation("/finance/pay-expenses")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <CreditCard className="me-2 text-success" size={16} /> Pay expenses
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(25,135,84,0.1)" }}>
+                        <CreditCard size={16} style={{ color: "#198754" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: "#2d3748" }}>Pay Expenses</div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Process payments</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => handleNavigation("/finance/budgets")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <Receipt className="me-2 text-warning" size={16} /> Budgets
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(255,193,7,0.1)" }}>
+                        <Receipt size={16} style={{ color: "#ffc107" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: "#2d3748" }}>Budgets</div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Budget management</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
+                  <Dropdown.Divider />
                   <Dropdown.Item onClick={() => handleNavigation("/finance/currencies")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <CurrencyExchange className="me-2 text-info" size={16} /> Currencies
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(13,202,240,0.1)" }}>
+                        <CurrencyExchange size={16} style={{ color: "#0dcaf0" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: "#2d3748" }}>Currencies</div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Exchange rates</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => handleNavigation("/finance/payment-methods")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <CreditCard className="me-2 text-danger" size={16} /> Payment Methods
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(220,53,69,0.1)" }}>
+                        <CreditCard size={16} style={{ color: "#dc3545" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: "#2d3748" }}>Payment Methods</div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Configure methods</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
+                  <Dropdown.Divider />
                   <Dropdown.Item onClick={() => handleNavigation("/finance/accounts")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <Folder className="me-2 text-primary" size={16} /> All expenses
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(108,117,125,0.1)" }}>
+                        <Folder size={16} style={{ color: "#6c757d" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: "#2d3748" }}>All Expenses</div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Complete archive</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => handleNavigation("/data-inputs/categories")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <Collection className="me-2 text-success" size={16} /> Categories
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(111,66,193,0.1)" }}>
+                        <Collection size={16} style={{ color: "#6f42c1" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: "#2d3748" }}>Categories</div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Manage categories</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => handleNavigation("/data-inputs/departments")}
-                    className="dropdown-item" style={{ fontSize: '0.95rem' }}>
-                    <People className="me-2 text-warning" size={16} /> Departments
+                    className="dropdown-item" style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(13,110,253,0.1)" }}>
+                        <People size={16} style={{ color: "#0d6efd" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: "#2d3748" }}>Departments</div>
+                        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Department setup</small>
+                      </div>
+                    </div>
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
               {user?.roles?.some((r) => r.role.name === "Company admin") && (
                 <Dropdown as={Nav.Item} className="nav-dropdown">
-                  <Dropdown.Toggle as={Nav.Link} className="nav-link-item">
-                    <Building className="me-1 text-primary " size={16} />
-                    Workflow management
+                  <Dropdown.Toggle 
+                    as={Nav.Link} 
+                    className="nav-link-item rounded-3 px-2 position-relative overflow-hidden" 
+                    style={{ 
+                      background: "linear-gradient(135deg, rgba(111,66,193,0.12) 0%, rgba(142,84,233,0.08) 100%)",
+                      border: "1px solid rgba(111,66,193,0.2)",
+                      boxShadow: "0 2px 8px rgba(111,66,193,0.08)",
+                      fontSize: "0.875rem",
+                      paddingTop: "0.35rem",
+                      paddingBottom: "0.35rem"
+                    }}
+                  >
+                    <Building className="me-1" size={14} style={{ color: "#6f42c1" }} />
+                    <span style={{ color: "#6f42c1", fontWeight: 600 }}>Workflow</span>
+                    <Badge 
+                      bg="purple" 
+                      className="ms-1" 
+                      style={{ 
+                        fontSize: "0.6rem", 
+                        padding: "0.2em 0.4em",
+                        background: "rgba(111,66,193,0.85)",
+                        verticalAlign: "middle"
+                      }}
+                    >
+                      Admin
+                    </Badge>
                   </Dropdown.Toggle>
-                  <Dropdown.Menu className="dropdown-menu">
+                  <Dropdown.Menu className="dropdown-menu shadow border-0 rounded-3 mt-2" style={{ borderTop: "3px solid #6f42c1" }}>
+                    <Dropdown.Header className="text-muted text-uppercase" style={{ fontSize: "0.7rem", letterSpacing: "0.5px" }}>
+                      <Building className="me-1" size={12} style={{ color: "#6f42c1" }} />
+                      Workflow Management
+                    </Dropdown.Header>
                     <Dropdown.Item
                       onClick={() =>
                         handleNavigation("/expense-approvals/hierarchies")
                       }
                       className="dropdown-item"
+                      style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}
                     >
-                      <FileText className="me-2" size={16} />
-                      Approval Hierarchies
+                      <div className="d-flex align-items-center">
+                        <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(111,66,193,0.1)" }}>
+                          <FileText size={16} style={{ color: "#6f42c1" }} />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 500, color: "#2d3748" }}>Approval Hierarchies</div>
+                          <small className="text-muted" style={{ fontSize: "0.75rem" }}>Manage approval levels</small>
+                        </div>
+                      </div>
                     </Dropdown.Item>
                     <Dropdown.Item
                       onClick={() =>
                         handleNavigation("/expense-approvals/workflows")
                       }
                       className="dropdown-item"
+                      style={{ fontSize: '0.95rem', padding: "0.625rem 1rem" }}
                     >
-                      <FileText className="me-2" size={16} />
-                      Expense approval workflows
+                      <div className="d-flex align-items-center">
+                        <div className="me-2 d-flex align-items-center justify-content-center rounded" style={{ width: "32px", height: "32px", background: "rgba(142,84,233,0.1)" }}>
+                          <FileText size={16} style={{ color: "#8e54e9" }} />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 500, color: "#2d3748" }}>Approval Workflows</div>
+                          <small className="text-muted" style={{ fontSize: "0.75rem" }}>Configure workflow rules</small>
+                        </div>
+                      </div>
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
@@ -567,8 +786,9 @@ export default function TopNavbar() {
           background: linear-gradient(45deg, #4361ee, #3a0ca3);
           border: none;
           border-radius: 8px;
-          padding: 0.5rem 1rem;
+          padding: 0.35rem 0.75rem;
           font-weight: 500;
+          font-size: 0.875rem;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
           transition: all 0.2s ease;
         }
@@ -586,8 +806,8 @@ export default function TopNavbar() {
           background: rgba(255, 255, 255, 0.08) !important;
           border: 1px solid rgba(255, 255, 255, 0.12) !important;
           border-radius: 8px !important;
-          width: 42px;
-          height: 42px;
+          width: 36px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -662,7 +882,7 @@ export default function TopNavbar() {
         .user-dropdown-toggle {
           background: transparent !important;
           border: none !important;
-          padding: 0.25rem 0.5rem;
+          padding: 0.15rem 0.35rem;
           border-radius: 8px;
           transition: all 0.2s ease;
         }
