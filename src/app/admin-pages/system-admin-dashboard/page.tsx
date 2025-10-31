@@ -57,6 +57,7 @@ import {
 import AuthProvider from "../../authPages/tokenData";
 import { toast } from "react-toastify";
 import { BASE_API_URL } from "../../static/apiConfig";
+import { hasRole } from "@/app/utils/roleGuard";
 import TopNavbar from "../../components/Navbar";
 import InstitutionCreationModal from "../../components/modals/create-institution";
 import { default as PageLoader } from "@/app/components/PageLoader";
@@ -154,6 +155,18 @@ interface Role {
 function SuperAdminDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Role-based access control
+  useEffect(() => {
+    const checkAccess = () => {
+      if (!hasRole("System admin")) {
+        toast.error("You don't have permission to access this page");
+        router.push("/unauthorized");
+      }
+    };
+
+    checkAccess();
+  }, [router]);
 
   const [users, setUsers] = useState<User[]>([]);
   const [institutions, setInstitutions] = useState<Institution[]>([]);

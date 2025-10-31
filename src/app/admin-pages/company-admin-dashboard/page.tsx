@@ -48,6 +48,7 @@ import TopNavbar from "@/app/components/Navbar";
 import AdminCreateUserModal from "@/app/components/modals/admin-create-user-modal";
 import { toast } from "react-toastify";
 import { BASE_API_URL } from "@/app/static/apiConfig";
+import { hasRole } from "@/app/utils/roleGuard";
 import PageLoader from "@/app/components/PageLoader";
 import RoleCreationModal from "@/app/components/modals/admin-role-creation";
 import UserDetailsModal from "@/app/components/modals/user-details-modal";
@@ -331,6 +332,18 @@ interface Page {
 function AdminDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Role-based access control
+  useEffect(() => {
+    const checkAccess = () => {
+      if (!hasRole("Company admin")) {
+        toast.error("You don't have permission to access this page");
+        router.push("/unauthorized");
+      }
+    };
+
+    checkAccess();
+  }, [router]);
 
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "dashboard");
   const [searchTerm, setSearchTerm] = useState("");
